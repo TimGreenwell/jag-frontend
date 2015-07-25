@@ -64,7 +64,7 @@ div.playground kpl-node-element {
 }
 
 div.playground kpl-node-element.selected-node {
-	border: 2px solid hsl(240, 36%, 13%);
+	border: 2px solid hsl(127, 80%, 50%);
 }
 
 div.playground kpl-node-element header, div.playground kpl-node-element div.content {
@@ -81,7 +81,7 @@ div.playground kpl-node-element header {
 
 div.playground kpl-node-element header.moving {
 	cursor: -webkit-grabbing;
-	cursor: -grabbing;
+	cursor: -grabb	ing;
 }
 
 div.playground kpl-node-element div.content {
