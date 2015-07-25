@@ -6,7 +6,11 @@ body, html {
 
 body {
 	background-color: hsl(240, 49%, 10%);
-	background: radial-gradient(hsla(240,20%,30%,1), hsl(240, 50%, 10%));
+	background-image: url(http://www.transparenttextures.com/patterns/black-mamba.png),   radial-gradient(hsl(240, 30%, 15%), hsl(240, 50%, 10%));
+  	
+	background-position: bottom right, left, right;
+	color: hsla(250,15%,20%,1);
+	text-shadow: 1px 1px white;
 	-webkit-font-smoothing: antialiased;
 	font-family:'Open Sans', 'Helvetica Neue Light', Helvetica, sans-serif;
 	font-size: small;
@@ -16,13 +20,51 @@ body {
 	user-select: none;
 }
 
+/* Tools */
+side.tools {
+	position: absolute;
+	top:0;
+	left:0;
+	display: flex;
+	flex-direction: column;
+	width: 5vw;
+	margin: 0.25em;
+}
+
+side.tools button {
+	flex-basis: 1;
+	border: none;
+	padding: 0.25em;
+	margin:0.25em;
+
+	line-height: 3em;
+	z-index: 1;
+}
+
+/* Playground */
+
+div.playground {
+	height: 100%;
+	width: 100%;
+}
 
 div.playground kpl-node-element {
 	position: absolute;
-	top:150px;
-	left: 250px;
-	color: hsla(250,15%,20%,1);
-	text-shadow: 1px 1px white;
+	top: 0px;
+	left: 0px;
+	padding: 0.15em;
+	background-clip: content-box;
+	z-index: 3;
+
+	/* Invisible Border for transition */
+	border: 2px solid rgba(0,0,0,0);
+	border-radius: 0.5em;
+	transition: border 0.5s;
+	text-align: center;
+}
+
+div.playground kpl-node-element.selected-node {
+	border: 2px solid hsl(240, 36%, 13%);
 }
 
 div.playground kpl-node-element header, div.playground kpl-node-element div.content {
@@ -30,10 +72,16 @@ div.playground kpl-node-element header, div.playground kpl-node-element div.cont
 }
 
 div.playground kpl-node-element header {
-	cursor: move;
+	cursor: -webkit-grab;
+	cursor: grab;
 	background: hsla(240,5%,85%,1);
 	border-bottom: 1px solid whitesmoke;
 	border-radius: 0.25em 0.25em 0 0;
+}
+
+div.playground kpl-node-element header.moving {
+	cursor: -webkit-grabbing;
+	cursor: -grabbing;
 }
 
 div.playground kpl-node-element div.content {
@@ -42,11 +90,12 @@ div.playground kpl-node-element div.content {
 }
 
 div.playground kpl-node-element div.connector {
-	position: absolute; 
-	top: 45%;
-	left:100%; 
-	width: 2.5em; 
-	border-radius: 0 100% 100% 0; 
-	background: hsl(0, 0%, 86%); 
-	border-left: white; 
+	position: absolute;    
+	background: hsl(0, 0%, 86%);  
+	padding: 0.25em;
+	left: 50%;
+	transform: translate(-50%,0);
+	border-top: 1px solid darkslategray;
+	border-radius: 0 0 0.25em 0.25em;
+	cursor: pointer;
 }
