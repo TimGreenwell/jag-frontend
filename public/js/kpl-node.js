@@ -11,12 +11,12 @@ class KPLNodeElement extends HTMLElement {
 		this._content = DEFAULT_CONTENT;
 
 		this.init();
-		this.addMouseHandlers();
+		this._addDragHandlers();
 	}
 
 	init() {
-		this._title_el = document.createElement('header');
-		this.appendChild(this._title_el);
+		this._header_el = document.createElement('header');
+		this.appendChild(this._header_el);
 
 		this._content_el= document.createElement('div');
 		this._content_el.className = 'content';
@@ -27,6 +27,7 @@ class KPLNodeElement extends HTMLElement {
 		this._connector_el.className = 'connector';
 		this.appendChild(this._connector_el);
 
+		this.setTranslation('100px', '100px');
 		this._applyTitle();
 		this._applyContent();
 	}
@@ -37,7 +38,7 @@ class KPLNodeElement extends HTMLElement {
 	}
 
 	 _applyTitle() {
-		this._title_el.innerHTML = this._title;
+		this._header_el.innerHTML = this._title;
 	}
 
 	setContent(content) {
@@ -67,27 +68,17 @@ class KPLNodeElement extends HTMLElement {
 			this.className = '';
 	}
 
-	addMouseHandlers() {
-		console.log(this);
-		let header = this.querySelector('header');
-		header.addEventListener('mousedown', (e) => {
-			console.log(this);
+	_addDragHandlers() {
+		this._header_el.addEventListener('mousedown', (e) => {
 			this._initial_x = e.offsetX;
 			this._initial_y = e.offsetY;
 			this._is_moving = true;
-			header.className = 'moving';
+			this._header_el.className = 'moving';
 		});
 
-		header.addEventListener('mouseup', (e) => {
-			console.log(this);
+		this._header_el.addEventListener('mouseup', (e) => {
 			this._is_moving = false;
-			header.className = '';
-
-		// 	let new_top = this.offsetTop;
-		// 	let new_left = this.offsetLeft;
-		// 	new_top = Math.round(new_top/SNAP_SIZE)*SNAP_SIZE;
-		// 	new_left = Math.round(new_left/SNAP_SIZE)*SNAP_SIZE;
-		// 	this.setTranslation(new_left, new_top);
+			this._header_el.className = '';
 		});
 	
 		document.addEventListener('mousemove', (e) => {
@@ -98,7 +89,17 @@ class KPLNodeElement extends HTMLElement {
 			let new_left = ( e.clientX - this._initial_x ) + 'px';
 
 			this.setTranslation(new_left, new_top);
+		});		
+	}
+
+	addOnEdgeInitializedListener(listener) {
+		this._connector_el.addEventListener('mousedown', e => {
+			listener(e, this);
 		});
+	}
+
+	addOnEdgeFinalizedListener(listener) {
+		this._header_el.addEventListener('mouseup', listener);
 	}
 
 	setTranslation(x, y) {
@@ -106,4 +107,4 @@ class KPLNodeElement extends HTMLElement {
 	}
 }
 
-export default document.registerElement('kpl-node-element', KPLNodeElement);
+export default document.registerElement('kpl-node', KPLNodeElement);

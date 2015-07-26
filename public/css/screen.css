@@ -43,12 +43,19 @@ side.tools button {
 
 /* Playground */
 
-div.playground {
+kpl-playground {
+	display: block;
 	height: 100%;
 	width: 100%;
 }
 
-div.playground kpl-node-element {
+kpl-playground svg {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+	
+kpl-playground kpl-node {
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -63,15 +70,15 @@ div.playground kpl-node-element {
 	text-align: center;
 }
 
-div.playground kpl-node-element.selected-node {
+kpl-playground kpl-node.selected-node {
 	border: 2px solid hsl(127, 80%, 50%);
 }
 
-div.playground kpl-node-element header, div.playground kpl-node-element div.content {
+kpl-playground kpl-node header, kpl-playground kpl-node div.content {
 	padding: 0.5em;
 }
 
-div.playground kpl-node-element header {
+kpl-playground kpl-node header {
 	cursor: -webkit-grab;
 	cursor: grab;
 	background: hsla(240,5%,85%,1);
@@ -79,17 +86,17 @@ div.playground kpl-node-element header {
 	border-radius: 0.25em 0.25em 0 0;
 }
 
-div.playground kpl-node-element header.moving {
+kpl-playground kpl-node header.moving {
 	cursor: -webkit-grabbing;
 	cursor: -grabb	ing;
 }
 
-div.playground kpl-node-element div.content {
+kpl-playground kpl-node div.content {
 	background: hsla(240,5%,90%,1);
 	height: 50px;
 }
 
-div.playground kpl-node-element div.connector {
+kpl-playground kpl-node div.connector {
 	position: absolute;    
 	background: hsl(0, 0%, 86%);  
 	padding: 0.25em;
