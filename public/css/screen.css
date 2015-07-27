@@ -23,22 +23,51 @@ body {
 /* Tools */
 side.tools {
 	position: absolute;
-	top:0;
-	left:0;
-	display: flex;
-	flex-direction: column;
-	width: 5vw;
-	margin: 0.25em;
+	top: 0;
+	left: 0;
+	margin: 0;
 }
 
-side.tools button {
-	flex-basis: 1;
-	border: none;
-	padding: 0.25em;
-	margin:0.25em;
+side.tools ol {
+	display: flex;
+	flex-direction: row;
+	list-style: none;
+	position: relative;
+	margin: 0;
+	padding: 0;
+}
 
-	line-height: 3em;
-	z-index: 1;
+side.tools ol li {
+	position: relative;
+	flex-basis: 1;
+	margin: 0;
+	padding: 0.75em;
+	background: hsla(220,15%,80%,1);
+	transition: background 0.5s;
+	cursor: pointer;
+	text-align: center;
+	width: 75px;
+}
+
+side.tools li a {
+	display:block;
+	text-decoration:none;
+}
+
+side.tools ol li:hover {
+	background: hsla(240,15%,90%,1);
+}
+
+side.tools ol ol {
+	display:none; 
+	position:absolute;
+	padding: 0;
+	top:100%;
+	left:0%;
+}
+
+side.tools ol li:hover > ol {
+	display: block;
 }
 
 /* Playground */
@@ -54,8 +83,8 @@ kpl-playground svg {
 	height: 100%;
 	width: 100%;
 }
-	
-kpl-playground kpl-node {
+
+kpl-playground [is='kpl-node'] {
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -70,15 +99,15 @@ kpl-playground kpl-node {
 	text-align: center;
 }
 
-kpl-playground kpl-node.selected-node {
+kpl-playground .selected-node[is='kpl-node'] {
 	border: 2px solid hsl(127, 80%, 50%);
 }
 
-kpl-playground kpl-node header, kpl-playground kpl-node div.content {
+kpl-playground [is='kpl-node'] header, kpl-playground [is='kpl-node'] div.content {
 	padding: 0.5em;
 }
 
-kpl-playground kpl-node header {
+kpl-playground [is='kpl-node'] header {
 	cursor: -webkit-grab;
 	cursor: grab;
 	background: hsla(240,5%,85%,1);
@@ -86,17 +115,17 @@ kpl-playground kpl-node header {
 	border-radius: 0.25em 0.25em 0 0;
 }
 
-kpl-playground kpl-node header.moving {
+kpl-playground [is='kpl-node'] header.moving {
 	cursor: -webkit-grabbing;
 	cursor: -grabb	ing;
 }
 
-kpl-playground kpl-node div.content {
+kpl-playground [is='kpl-node'] div.content {
 	background: hsla(240,5%,90%,1);
 	height: 50px;
 }
 
-kpl-playground kpl-node div.connector {
+kpl-playground [is='kpl-node'] div.connector {
 	position: absolute;    
 	background: hsl(0, 0%, 86%);  
 	padding: 0.25em;

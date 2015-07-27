@@ -16,11 +16,15 @@ class KPLEdgeElement extends SVGGElement {
 		this._edge_el.setAttributeNS(null, 'stroke', 'white');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
 		this.appendChild(this._edge_el);
+
+		this._edge_el.addEventListener('click', e => {
+			this._edge_el.setAttributeNS(null, 'stroke', 'red');
+		});
 	}
 
 	destroy() {
 		this.ownerSVGElement.removeChild(this);
-		
+
 		if(this._node_origin != undefined)
 			this._node_origin.removeOutEdge(this);
 		if(this._node_end != undefined)

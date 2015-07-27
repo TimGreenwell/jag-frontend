@@ -1,4 +1,5 @@
-import KPLNode from './kpl-node.js';
+import KPLGoal from './kpl-node-goal.js';
+import KPLActivity from './kpl-node-activity.js';
 import KPLEdge from './kpl-edge.js';
 
 
@@ -13,8 +14,13 @@ class PlaygroundElement extends HTMLElement {
 	}
 
 	initMenu() {
-		let add_node_button = document.querySelector('#new-node');
-		add_node_button.addEventListener('click', this.addNode.bind(this));
+		let add_root_goal = document.querySelector('#new-root');
+		let add_subgoal = document.querySelector('#new-subgoal');
+		let add_activity = document.querySelector('#new-activity');
+
+		add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
+		add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
+		add_activity.addEventListener('click', this.addActivity.bind(this));
 		let del_node_button = document.querySelector('#del-node');
 		del_node_button.addEventListener('click', this.deleteSelected.bind(this));
 	}
@@ -25,8 +31,7 @@ class PlaygroundElement extends HTMLElement {
 		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
 	}
 
-	addNode() {
-		let node = new KPLNode();
+	_initGenericNode(node) {
 		node.addEventListener('mousedown', (e) => {
 			console.log('adding', node, 'to selected set');
 			// If meta isn't pressed clear previous selection
@@ -40,11 +45,33 @@ class PlaygroundElement extends HTMLElement {
 			e.stopPropagation();
 		});
 
-		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-
 		this._nodes.push(node);
 		this.appendChild(node);
+		return node;
+	}
+
+	addRootGoal() {
+		let node = new KPLGoal();
+		node.setTitle('Root goal');
+		node = this._initGenericNode(node);
+
+		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
+	}
+
+	addSubGoal() {
+		let node = new KPLGoal();
+		node.setTitle('Subgoal');
+		node = this._initGenericNode(node);
+
+		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
+		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
+	}
+
+	addActivity() {
+		let node = new KPLActivity();
+		node = this._initGenericNode(node);
+
+		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
 	}
 
 	deselectAll() {

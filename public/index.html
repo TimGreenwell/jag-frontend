@@ -17,9 +17,19 @@
 </head>
 <body unselectable='on'>
 	<side class='tools'>
-		<button id='new-node'>Add</button>
-		<button id='edit-node'>Edit</button>
-		<button id='del-node'>Delete</button>
+	<ol>
+		<li>
+			<a>Add</a>
+			<ol>
+				<li><a id='new-root'>Root Goal</a></li>
+				<li><a id='new-subgoal'>Sub Goal</a></li>
+				<li><a id='new-activity'>Activity</a></li>
+			</ol>
+		</li>
+		<li>
+			<a id='del-node'>Delete node</a>
+		</li>
+	</ol>
 	</side>
 	<kpl-playground>
 		<svg version="1.1" xmlns="http://www.w3.org/2000/svg"></svg>
