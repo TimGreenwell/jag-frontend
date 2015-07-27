@@ -10,10 +10,31 @@ class KPLEdgeElement extends SVGGElement {
 	init() {
 		this._origin = {x : 0, y : 0};
 		this._end = {x : 0, y : 0};
+		this._node_origin = undefined;
+		this._node_end = undefined;
 		this._edge_el = document.createElementNS(XMLNS, 'path');
 		this._edge_el.setAttributeNS(null, 'stroke', 'white');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
 		this.appendChild(this._edge_el);
+	}
+
+	destroy() {
+		this.ownerSVGElement.removeChild(this);
+		
+		if(this._node_origin != undefined)
+			this._node_origin.removeOutEdge(this);
+		if(this._node_end != undefined)
+			this._node_end.removeInEdge(this);
+	}
+
+	setNodeOrigin(node) {
+		this._node_origin = node;
+		node.addOutEdge(this);
+	}
+
+	setNodeEnd(node) {
+		this._node_end = node;
+		node.addInEdge(this);
 	}
 
 	setOrigin(x, y) {

@@ -10,8 +10,8 @@ class KPLNodeElement extends HTMLElement {
 		this._title = DEFAULT_TITLE;
 		this._content = DEFAULT_CONTENT;
 		this._translation = {x: 0, y:0};
-		this._outs = [];
-		this._ins = [];
+		this._outs = new Set();
+		this._ins = new Set();
 
 		this.init();
 		this._addDragHandlers();
@@ -56,13 +56,26 @@ class KPLNodeElement extends HTMLElement {
 	addOutEdge(edge) {
 		let [c_center_x, c_center_y] = this._computeConnectorCenter();
 		edge.setOrigin(c_center_x, c_center_y);
-		this._outs.push(edge);
+		this._outs.add(edge);
 	}
 
 	addInEdge(edge) {
 		let [h_center_x, h_center_y] = this._computeHeaderCenter();
 		edge.setEnd(h_center_x, h_center_y);
-		this._ins.push(edge);
+		this._ins.add(edge);
+	}
+
+	removeOutEdge(edge) {
+		this._outs.delete(edge);
+	}
+
+	removeInEdge(edge) {
+		this._ins.delete(edge);
+	}
+
+	removeAllEdges() {
+		this._ins.forEach(edge => edge.remove());
+		this._outs.forEach(edge => edge.remove());
 	}
 
 	setGreyedOut(is_greyed_out) {
@@ -114,7 +127,7 @@ class KPLNodeElement extends HTMLElement {
 	}
 
 	addOnEdgeFinalizedListener(listener) {
-		this._header_el.addEventListener('mouseup', e => {
+		this.addEventListener('mouseup', e => {
 			listener(e, this);
 		});
 	}

@@ -22,6 +22,7 @@ class PlaygroundElement extends HTMLElement {
 	initGlobalEvents() {
 		this.addEventListener('mousedown', this.deselectAll.bind(this));
 		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
+		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
 	}
 
 	addNode() {
@@ -53,6 +54,7 @@ class PlaygroundElement extends HTMLElement {
 	deleteSelected() {
 		for(let node of this._selected) {
 			console.log('removing node', node);
+			node.removeAllEdges();
 			this._selected.delete(node);
 			this.removeChild(node);
 		}
@@ -62,7 +64,7 @@ class PlaygroundElement extends HTMLElement {
 
 		let svg = document.querySelector('kpl-playground svg');
 		this._created_edge = new KPLEdge();
-		node.addOutEdge(this._created_edge);
+		this._created_edge.setNodeOrigin(node);
 
 		this._is_edge_being_created = true;
 		this._created_edge.setEnd(e.clientX, e.clientY);
@@ -81,7 +83,15 @@ class PlaygroundElement extends HTMLElement {
 		if(!this._is_edge_being_created)
 			return;
 		this._is_edge_being_created = false;
-		node.addInEdge(this._created_edge);
+		this._created_edge.setNodeEnd(node);
+	}
+
+	onEdgeCanceled(e, node) {
+		if(!this._is_edge_being_created)
+			return;
+		this._created_edge.remove();
+		this._created_edge = undefined;
+		this._is_edge_being_created = false;
 	}
 }
 
