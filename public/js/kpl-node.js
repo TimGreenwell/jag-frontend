@@ -9,6 +9,7 @@ class KPLNodeElement extends HTMLElement {
 		console.log('Creating new KPLNode');
 		this._title = DEFAULT_TITLE;
 		this._content = DEFAULT_CONTENT;
+		this._translation = {x: 0, y:0};
 		this._outs = [];
 		this._ins = [];
 
@@ -53,10 +54,14 @@ class KPLNodeElement extends HTMLElement {
 	}
 
 	addOutEdge(edge) {
+		let [c_center_x, c_center_y] = this._computeConnectorCenter();
+		edge.setOrigin(c_center_x, c_center_y);
 		this._outs.push(edge);
 	}
 
 	addInEdge(edge) {
+		let [h_center_x, h_center_y] = this._computeHeaderCenter();
+		edge.setEnd(h_center_x, h_center_y);
 		this._ins.push(edge);
 	}
 
@@ -115,10 +120,13 @@ class KPLNodeElement extends HTMLElement {
 	}
 
 	setTranslation(x, y) {
+		this._translation.x = x;
+		this._translation.y = y;
+
 		this.style.transform = `translate(${x}px,${y}px)`;
 
-		let [c_center_x, c_center_y] = this._computeConnectorCenter(x,y),
-			[h_center_x, h_center_y] = this._computeConnectorCenter(x,y);
+		let [c_center_x, c_center_y] = this._computeConnectorCenter(),
+			[h_center_x, h_center_y] = this._computeHeaderCenter();
 
 		this._outs.forEach((edge) => {
 			edge.setOrigin(c_center_x, c_center_y);
@@ -129,16 +137,16 @@ class KPLNodeElement extends HTMLElement {
 		});
 	}
 
-	_computeConnectorCenter(x,y) {
-		let center_x = this.clientWidth / 2.0 + x,
-			center_y = this.clientHeight + y;
+	_computeConnectorCenter() {
+		let center_x = this.clientWidth / 2.0 + this._translation.x,
+			center_y = this.clientHeight + this._translation.y;
 
 		return [center_x, center_y];
 	}
 
-	_computeHeaderCenter(x,y) {
-		let center_x = this.clientWidth / 2.0 + x,
-			center_y = y - this.clientHeight;
+	_computeHeaderCenter() {
+		let center_x = this.clientWidth / 2.0 + this._translation.x,
+			center_y = this._translation.y + this._header_el.clientHeight / 2.0;
 
 		return [center_x, center_y];
 	}
