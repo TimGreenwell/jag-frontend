@@ -37,8 +37,7 @@ class KPLEdgeElement extends SVGGElement {
 			x2 = this._end.x + 0,
 			y2 = this._end.y - 50;
 
-		this._data = `M ${this._origin.x} ${this._origin.y} 
-		C ${x1} ${y1}, ${x2} ${y2}, ${this._end.x} ${this._end.y}`;
+		this._data = `M ${this._origin.x} ${this._origin.y} C ${x1} ${y1}, ${x2} ${y2}, ${this._end.x} ${this._end.y}`;
 
 		this._edge_el.setAttributeNS(null, 'd', this._data);
 	}

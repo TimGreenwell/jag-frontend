@@ -62,6 +62,7 @@ class PlaygroundElement extends HTMLElement {
 
 		let svg = document.querySelector('kpl-playground svg');
 		this._created_edge = new KPLEdge();
+		node.addOutEdge(this._created_edge);
 
 		this._is_edge_being_created = true;
 		this._created_edge.setOrigin(e.clientX, e.clientY);
@@ -77,8 +78,11 @@ class PlaygroundElement extends HTMLElement {
 		this._created_edge.setEnd(e.clientX, e.clientY);
 	}
 
-	onEdgeFinalized() {
+	onEdgeFinalized(e, node) {
+		if(!this._is_edge_being_created)
+			return;
 		this._is_edge_being_created = false;
+		node.addInEdge(this._created_edge);
 	}
 }
 
