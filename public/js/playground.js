@@ -14,14 +14,14 @@ class PlaygroundElement extends HTMLElement {
 	}
 
 	initMenu() {
-		let add_root_goal = document.querySelector('#new-root');
-		let add_subgoal = document.querySelector('#new-subgoal');
-		let add_activity = document.querySelector('#new-activity');
+		let add_root_goal = document.querySelector('#new-root'),
+			add_subgoal = document.querySelector('#new-subgoal'),
+			add_activity = document.querySelector('#new-activity'),
+			del_node_button = document.querySelector('#del-node');
 
 		add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
 		add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
 		add_activity.addEventListener('click', this.addActivity.bind(this));
-		let del_node_button = document.querySelector('#del-node');
 		del_node_button.addEventListener('click', this.deleteSelected.bind(this));
 	}
 
