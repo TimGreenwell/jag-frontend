@@ -1,12 +1,10 @@
 import KPLNodeElement from './kpl-node.js';
 
-const DEFAULT_TITLE = 'Activity';
-
 class KPLActivity extends KPLNodeElement {
 
 	createdCallback() {
 		super.createdCallback();
-		this._title = DEFAULT_TITLE; 
+		console.log('Activity node');
 	}
 
 	init() {

@@ -1,5 +1,6 @@
 import KPLGoal from './kpl-node-goal.js';
 import KPLActivity from './kpl-node-activity.js';
+import KPLNodePropertiesUI from './kpl-node-properties-ui.js';
 import KPLEdge from './kpl-edge.js';
 
 
@@ -9,6 +10,8 @@ class PlaygroundElement extends HTMLElement {
 		this._nodes = [];
 		this._selected = new Set();
 		this._is_edge_being_created = false;
+		this._property_ui = new KPLNodePropertiesUI();
+
 		this.initMenu();
 		this.initGlobalEvents();
 	}
@@ -41,6 +44,7 @@ class PlaygroundElement extends HTMLElement {
 			}
 
 			this._selected.add(node);
+			this._property_ui.setNode(node);
 			node.setSelected(true);
 			e.stopPropagation();
 		});
@@ -69,6 +73,7 @@ class PlaygroundElement extends HTMLElement {
 
 	addActivity() {
 		let node = new KPLActivity();
+		node.setTitle('Activity');
 		node = this._initGenericNode(node);
 
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
@@ -76,6 +81,7 @@ class PlaygroundElement extends HTMLElement {
 
 	deselectAll() {
 		this._selected.forEach(n => n.setSelected(false));
+		this._property_ui.setNode(undefined);
 	}
 
 	deleteSelected() {

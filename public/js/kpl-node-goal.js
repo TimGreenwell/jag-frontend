@@ -1,21 +1,22 @@
 import KPLNodeElement from './kpl-node.js';
-
-const DEFAULT_TITLE = 'Subgoal';
+import KPLConnector from './kpl-connector.js';
 
 class KPLGoal extends KPLNodeElement {
 
 	createdCallback() {
 		super.createdCallback();
-		this._title = DEFAULT_TITLE;
+		console.log('Goal node')
 	}
 
 	init() {
 		super.init();
 		console.log('Initializing subgoal.');
-		this._connector_el= document.createElement('div');
-		this._connector_el.innerHTML = 'AND';
-		this._connector_el.className = 'connector';
+		this._connector_el = new KPLConnector();
 		this.appendChild(this._connector_el);
+	}
+
+	getConnector() { 
+		return this._connector_el;
 	}
 
 	addOnEdgeInitializedListener(listener) {

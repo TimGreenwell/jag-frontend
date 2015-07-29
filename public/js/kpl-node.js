@@ -7,7 +7,7 @@ export default class KPLNodeElement extends HTMLElement {
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._ins = new Set();
-
+		
 		this.init();
 		this._addDragHandlers();
 	}

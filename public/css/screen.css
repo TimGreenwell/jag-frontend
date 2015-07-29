@@ -176,7 +176,7 @@ kpl-playground [is='kpl-node'] div.content {
 	height: 50px;
 }
 
-kpl-playground [is='kpl-node'] div.connector {
+kpl-playground [is='kpl-node'] kpl-connector {
 	position: absolute;    
 	background: hsl(0, 0%, 86%);  
 	padding: 0.25em;
