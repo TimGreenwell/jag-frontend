@@ -1,6 +1,6 @@
 const CONNECTOR_TYPE = {
-	AND: 'and',
-	OR: 'or'
+	AND: 'AND',
+	OR: 'OR'
 };
 
 

@@ -1,4 +1,4 @@
-const SNAP_SIZE = 10;
+const SNAP_SIZE = 50.0;
 
 export default class KPLNodeElement extends HTMLElement {
 
@@ -80,26 +80,31 @@ export default class KPLNodeElement extends HTMLElement {
 		this._header_el.addEventListener('mouseup', (e) => {
 			this._is_moving = false;
 			this._header_el.className = '';
+			this._snap();
 		});
 	
 		document.addEventListener('mousemove', (e) => {
 			if(!this._is_moving)
 				return;
 
-			let new_top = ( e.clientY - this._initial_y );
-			let new_left = ( e.clientX - this._initial_x );
+			let new_top = ( e.clientY - this._initial_y + this.clientHeight / 2.0);
+			let new_left = ( e.clientX - this._initial_x + this.clientWidth / 2.0);
 
 			this.setTranslation(new_left, new_top);
 		});		
 	}
 
 	setTranslation(x, y) {
+		let cx = x - this.clientWidth / 2.0,
+			cy = y - this.clientHeight / 2.0,
+			h_center_x, h_center_y;
+
 		this._translation.x = x;
 		this._translation.y = y;
 
-		this.style.transform = `translate(${x}px,${y}px)`;
+		this.style.transform = `translate(${cx}px,${cy}px)`;
 
-		let	[h_center_x, h_center_y] = this._computeHeaderCenter();
+		[h_center_x, h_center_y] = this._computeHeaderCenter();
 
 		if(this._ins != undefined) {
 			this._ins.forEach((edge) => {
@@ -108,9 +113,17 @@ export default class KPLNodeElement extends HTMLElement {
 		}
 	}
 
+	_snap() {
+		let adj_x = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE,
+			adj_y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
+
+		this.setTranslation(adj_x, adj_y);
+
+	}
+
 	_computeHeaderCenter() {
-		let center_x = this.clientWidth / 2.0 + this._translation.x,
-			center_y = this._translation.y + this._header_el.clientHeight / 2.0;
+		let center_x = this._translation.x,
+			center_y = this._translation.y - this.clientHeight / 2.0;
 
 		return [center_x, center_y];
 	}
