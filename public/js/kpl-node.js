@@ -1,4 +1,4 @@
-const SNAP_SIZE = 50.0;
+const SNAP_SIZE = 20.0;
 
 export default class KPLNodeElement extends HTMLElement {
 
@@ -122,8 +122,8 @@ export default class KPLNodeElement extends HTMLElement {
 	}
 
 	_computeHeaderCenter() {
-		let center_x = this._translation.x,
-			center_y = this._translation.y - this.clientHeight / 2.0;
+		let center_x = this._translation.x - this.clientWidth / 2.0, 
+			center_y = this._translation.y;
 
 		return [center_x, center_y];
 	}

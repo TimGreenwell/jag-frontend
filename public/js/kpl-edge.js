@@ -57,10 +57,10 @@ class KPLEdgeElement extends SVGGElement {
 
 	_applyPath() {
 
-		let x1 = this._origin.x + 0,
-			y1 = this._origin.y + 50,
-			x2 = this._end.x + 0,
-			y2 = this._end.y - 50;
+		let x1 = this._origin.x + 50,
+			y1 = this._origin.y,
+			x2 = this._end.x - 50,
+			y2 = this._end.y;
 
 		this._data = `M ${this._origin.x} ${this._origin.y} C ${x1} ${y1}, ${x2} ${y2}, ${this._end.x} ${this._end.y}`;
 

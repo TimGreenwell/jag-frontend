@@ -53,8 +53,9 @@ class KPLGoal extends KPLNodeElement {
 	}
 
 	_computeConnectorCenter() {
-		let center_x = this._translation.x,
-			center_y = this._translation.y + this.clientHeight / 2.0;
+		let offset = (this._connector_el) ? this._connector_el.clientWidth : 0 ;
+		let center_x = this._translation.x + this.clientWidth / 2.0 + offset,
+			center_y = this._translation.y;
 
 		return [center_x, center_y];
 	}
