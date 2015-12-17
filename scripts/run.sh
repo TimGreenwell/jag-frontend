@@ -1,3 +1,2 @@
 #!/bin/bash
-pkill node
-node --harmony --use_strict ../bin/app.js &
+node --harmony_destructuring ../bin/app.js

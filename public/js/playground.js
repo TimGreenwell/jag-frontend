@@ -59,7 +59,7 @@ class PlaygroundElement extends HTMLElement {
 		return node;
 	}
 
-	addRootGoal(name = 'Root Goal', description = 'Default description') {
+	addRootGoal(event, name = 'Root Goal', description = 'Default description') {
 		let node = new KPLGoal();
 		node = this._initGenericNode(node, name, description);
 
@@ -67,7 +67,7 @@ class PlaygroundElement extends HTMLElement {
 		return node;
 	}
 
-	addSubGoal(name = 'Subgoal', description = 'Default description') {
+	addSubGoal(event, name = 'Subgoal', description = 'Default description') {
 		let node = new KPLGoal();
 		node = this._initGenericNode(node, name, description);
 
@@ -77,7 +77,7 @@ class PlaygroundElement extends HTMLElement {
 		return node;
 	}
 
-	addActivity(name = 'Activity', description = 'Default activity description') {
+	addActivity(event, name = 'Activity', description = 'Default activity description') {
 		let node = new KPLActivity();
 		node = this._initGenericNode(node, name, description);
 
