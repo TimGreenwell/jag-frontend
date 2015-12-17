@@ -159,11 +159,18 @@ kpl-playground [is='kpl-node'] header, kpl-playground [is='kpl-node'] div.conten
 }
 
 kpl-playground [is='kpl-node'] header {
-	cursor: -webkit-grab;
+	cursor: 
+	
+	
+	
+	
+	
+	
+	-webkit-grab;
 	cursor: grab;
 	background: hsla(240,5%,85%,1);
 	border-bottom: 1px solid whitesmoke;
-	border-radius: 0.25em 0.25em 0 0;
+	border-radius: 0 0.25em 0.25em 0;
 }
 
 kpl-playground [is='kpl-node'] header.moving {
@@ -172,17 +179,21 @@ kpl-playground [is='kpl-node'] header.moving {
 }
 
 kpl-playground [is='kpl-node'] div.content {
+	display: none;
 	background: hsla(240,5%,90%,1);
 	height: 50px;
 }
 
 kpl-playground [is='kpl-node'] kpl-connector {
-	position: absolute;    
-	background: hsl(0, 0%, 86%);  
+	font-size: 0.75em;
+	position: absolute;
+	background: hsl(0, 0%, 86%);
 	padding: 0.25em;
-	left: 50%;
-	transform: translate(-50%,0);
+	left: 100%;
+	top: 50%;
 	border-top: 1px solid darkslategray;
-	border-radius: 0 0 0.25em 0.25em;
+	border-radius: 0 0.5em 0.5em 0;
 	cursor: pointer;
+	
+	transform: translate(0, -50%);
 }

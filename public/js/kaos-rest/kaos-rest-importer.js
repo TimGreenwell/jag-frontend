@@ -1,4 +1,4 @@
-const URL = 'http://localhost:8080/kaos/kpl/getActivityGraph';
+const URL = 'http://localhost:8097/kaos/kpl/getActivityGraph';
 
 export default class KAoSRestImporter {
 	constructor() {
