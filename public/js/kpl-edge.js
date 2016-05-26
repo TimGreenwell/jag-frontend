@@ -13,7 +13,7 @@ class KPLEdgeElement extends SVGGElement {
 		this._node_origin = undefined;
 		this._node_end = undefined;
 		this._edge_el = document.createElementNS(XMLNS, 'path');
-		this._edge_el.setAttributeNS(null, 'stroke', 'white');
+		this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
 		this.appendChild(this._edge_el);
 

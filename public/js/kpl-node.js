@@ -87,16 +87,16 @@ export default class KPLNodeElement extends HTMLElement {
 			if(!this._is_moving)
 				return;
 
-			let new_top = ( e.clientY - this._initial_y + this.clientHeight / 2.0);
-			let new_left = ( e.clientX - this._initial_x + this.clientWidth / 2.0);
+			let new_top = ( e.clientY - this._initial_y ); //+ this.clientHeight / 2.0);
+			let new_left = ( e.clientX - this._initial_x ); //+ this.clientWidth / 2.0);
 
 			this.setTranslation(new_left, new_top);
 		});		
 	}
 
 	setTranslation(x, y) {
-		let cx = x - this.clientWidth / 2.0,
-			cy = y - this.clientHeight / 2.0,
+		let cx = x, // - this.clientWidth / 2.0,
+			cy = y, // - this.clientHeight / 2.0,
 			h_center_x, h_center_y;
 
 		this._translation.x = x;
@@ -122,8 +122,8 @@ export default class KPLNodeElement extends HTMLElement {
 	}
 
 	_computeHeaderCenter() {
-		let center_x = this._translation.x - this.clientWidth / 2.0, 
-			center_y = this._translation.y;
+		let center_x = this._translation.x, 
+			center_y = this._translation.y + this.clientHeight / 2.0;
 
 		return [center_x, center_y];
 	}
