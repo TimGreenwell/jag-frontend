@@ -22,20 +22,21 @@ class PlaygroundElement extends HTMLElement {
 		let add_root_goal = document.querySelector('#new-root'),
 			add_subgoal = document.querySelector('#new-subgoal'),
 			add_activity = document.querySelector('#new-activity'),
-			del_node = document.querySelector('#del-node'),
-			import_from_kaos= document.querySelector('#import-kaos');
+			del_node = document.querySelector('#del-node');
 
 		add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
 		add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
 		add_activity.addEventListener('click', this.addActivity.bind(this));
 		del_node.addEventListener('click', this.deleteSelected.bind(this));
-		import_from_kaos.addEventListener('click', this.importFromKAoS.bind(this));
 	}
 
 	initGlobalEvents() {
 		this.addEventListener('mousedown', this.deselectAll.bind(this));
 		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
 		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
+		this.addEventListener('dragenter', this.onPreImport.bind(this));
+		this.addEventListener('dragover', this.cancelDefault.bind(this));
+		this.addEventListener('drop', this.onImport.bind(this));
 	}
 
 	_initGenericNode(node, name, description) {
@@ -135,6 +136,24 @@ class PlaygroundElement extends HTMLElement {
 		this._created_edge.remove();
 		this._created_edge = undefined;
 		this._is_edge_being_created = false;
+	}
+
+	onPreImport(e) {
+		console.log('pre imp');
+	}
+
+	onImport(e) {
+		e.preventDefault();
+		const files = e.dataTransfer.files;
+		const reader = new FileReader();
+		reader.addEventListener('load', function(content) {
+			console.log(reader.result);
+		});
+		reader.readAsText(files[0]);
+	}
+
+	cancelDefault(e) {
+		e.preventDefault();
 	}
 
 	importFromKAoS() {
