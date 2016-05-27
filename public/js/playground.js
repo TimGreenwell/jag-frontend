@@ -146,9 +146,7 @@ class PlaygroundElement extends HTMLElement {
 		e.preventDefault();
 		const files = e.dataTransfer.files;
 		const reader = new FileReader();
-		reader.addEventListener('load', function(content) {
-			console.log(reader.result);
-		});
+		reader.addEventListener('load', function(content) {});
 		reader.readAsText(files[0]);
 	}
 

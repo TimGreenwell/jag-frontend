@@ -47,18 +47,22 @@
 	</kpl-playground>
 	<side class='properties'>
 		<div>
-			<label for='title-property'>Title</label>
-			<input id='title-property' type='text' value=''>
+			<label for='content-property'>URN</label>
+			<input id='content-property' type='text' value=''>
 		</div>
 		<div>
-			<label for='content-property'>Content</label>
-			<input id='content-property' type='text' value=''>
+			<label for='title-property'>Name</label>
+			<input id='title-property' type='text' value=''>
 		</div>
 		<div>
 			<label for='connector-property'>Connector</label>
 			<select id='connector-property'>
-				<option value='and'>And</option>
-				<option value='or'>Or</option>
+				<option value='AND' selected="true">And</option>
+				<option value='OR'>Or</option>
+			</select>
+			<select id='connector-property-seq'>
+				<option value='seq'>Sequential</option>
+				<option value='par'>Parallel</option>
 			</select>
 		</div>
 	</side>
