@@ -24,10 +24,15 @@ class PlaygroundElement extends HTMLElement {
 			add_activity = document.querySelector('#new-activity'),
 			del_node = document.querySelector('#del-node');
 
-		add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
-		add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
-		add_activity.addEventListener('click', this.addActivity.bind(this));
-		del_node.addEventListener('click', this.deleteSelected.bind(this));
+		const it = document.querySelectorAll('side.library li');
+		for(let item of it) {
+			item.addEventListener('click', this.addSubGoal.bind(this, item.attributes['name'].value));
+		}
+
+		// add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
+		// add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
+		// add_activity.addEventListener('click', this.addActivity.bind(this));
+		// del_node.addEventListener('click', this.deleteSelected.bind(this));
 	}
 
 	initGlobalEvents() {
@@ -54,23 +59,23 @@ class PlaygroundElement extends HTMLElement {
 			node.setSelected(true);
 			e.stopPropagation();
 		});
+		node.setTranslation(300, 100);
 
 		this._nodes.push(node);
 		this.appendChild(node);
-		return node;
 	}
 
-	addRootGoal(event, name = 'Root Goal', description = 'Default description') {
-		let node = new KPLGoal();
-		node = this._initGenericNode(node, name, description);
+	addRootGoal(name = 'Root Goal', description = 'Default description') {
+		const node = new KPLGoal();
+		this._initGenericNode(node, name, description);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
 		return node;
 	}
 
-	addSubGoal(event, name = 'Subgoal', description = 'Default description') {
-		let node = new KPLGoal();
-		node = this._initGenericNode(node, name, description);
+	addSubGoal(name = 'Subgoal', description = 'Default description') {
+		const node = new KPLGoal();
+		this._initGenericNode(node, name, description);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
@@ -78,12 +83,11 @@ class PlaygroundElement extends HTMLElement {
 		return node;
 	}
 
-	addActivity(event, name = 'Activity', description = 'Default activity description') {
-		let node = new KPLActivity();
-		node = this._initGenericNode(node, name, description);
+	addActivity(name = 'Activity', description = 'Default activity description') {
+		const node = new KPLActivity();
+		this._initGenericNode(node, name, description);
 
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-
 		return node;
 	}
 
@@ -164,7 +168,7 @@ class PlaygroundElement extends HTMLElement {
 		let root_goal = json.rootGoal;
 		let root_node = this.addRootGoal(root_goal.name, root_goal.description);
 		root_node.getConnector().setType(root_goal.connectorType);
-		root_node.setTranslation(100, 100);
+		root_node.setTranslation(200, 200);
 		this._generateSubGoals(root_node, root_goal);
 	}
 

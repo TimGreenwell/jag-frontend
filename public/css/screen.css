@@ -4,6 +4,7 @@
 	--main-bg-active: hsla(200,90%,92%,1);
 
 	--main-fg: hsla(200,90%,35%,1);
+	--main-fg-light: hsla(200,90%,55%,1);
 	--main-fg-active: lime;
 }
 
@@ -51,8 +52,15 @@ select {
 	background-position: 100% 50%;
 }
 
+ol {
+	list-style: none;
+	margin: 0;	
+	padding: 0;	
+}
+
 /* Tools */
 side.tools {
+	display: none;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -101,18 +109,43 @@ side.tools ol li:hover > ol {
 	display: block;
 }
 
-/* Property panel */
-
-side.properties {
+side.properties, side.library {
 	position:absolute;
 	top:0;
-	right:0;
 	background: var(--main-bg-darker);
 	height: 100%;
-	border-left: 1px solid darkslategray;
 	padding: 0.75em;
 	color: var(--main-fg);
 	text-shadow: 1px 1px var(--main-bg);
+}
+
+span.variable {
+	color: var(--main-fg-light);
+	font-style: italic;
+}
+
+/* Library panel */
+side.library {
+	border-right: 1px solid darkslategray;
+	left: 0;
+}
+
+side.library header h1 {
+	font-size: 1.5em;
+}
+
+side.library li {
+	padding: 0.25em;
+	border-bottom: 1px solid white;
+	cursor: pointer;
+}
+
+
+
+/* Properties panel */
+side.properties {
+	border-left: 1px solid darkslategray;
+	right: 0;
 }
 
 side.properties div {
