@@ -1,0 +1,23 @@
+{
+  "name": "kpl",
+  "version": "1.1.2",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "kpl": "app.js"
+  },
+  "dependencies": {
+    "goblin": "git+https://github.com/Noodep/Goblin.git#develop"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@git.ihmc.us:22000/mvignati/kaos-planner-lite.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "private": true
+}

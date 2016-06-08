@@ -5,15 +5,7 @@
 	<title>KAoS Planner Lite</title>
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 	<link rel='stylesheet' type='text/css' href='/css/screen.css'>
-	<script src='/js/vendors/browser.js'></script>
-	<script src='/js/vendors/es6-module-loader-dev.js'></script>
-	<script>
-		System.transpiler = 'babel';	
-		System.import('/js/kpl.js')
-		.then(function(module) {
-			new module.KAoSPlannerLite();
-		});
-	</script>
+	<script src='/js/kpl.js+bundle'></script>
 </head>
 <body unselectable='on'>
 	<side class='tools'>

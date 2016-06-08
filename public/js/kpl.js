@@ -1,9 +1,6 @@
 import Playground from './playground.js';
 
-export class KAoSPlannerLite {
+document.addEventListener('DOMContentLoaded', (e) => {
+	const playground = document.querySelector('kpl-playground');
+});
 
-	constructor() {
-		console.log('Initializing KPL');
-		this._playground = document.querySelector('kpl-playground');
-	}
-}
