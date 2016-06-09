@@ -14,6 +14,7 @@ export default class KPLNodeElement extends HTMLElement {
 
 	init() {
 		this.setAttribute('is', 'kpl-node');
+		this.setAttribute('tabindex', '-1');
 
 		this._header_el = document.createElement('header');
 		this.appendChild(this._header_el);
@@ -64,9 +65,11 @@ export default class KPLNodeElement extends HTMLElement {
 		this._is_selected = is_selected;
 
 		if(is_selected)
-			this.className += 'selected-node';
+			this.focus();
+			// this.className += 'selected-node';
 		else
-			this.className = '';
+			this.blur();
+			// this.className = '';
 	}
 
 	_addDragHandlers() {

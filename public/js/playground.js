@@ -26,7 +26,10 @@ class PlaygroundElement extends HTMLElement {
 
 		const it = document.querySelectorAll('side.library li');
 		for(let item of it) {
-			item.addEventListener('click', this.addSubGoal.bind(this, item.attributes['name'].value));
+			if(item.attributes['type'].value == 'activity')
+				item.addEventListener('click', this.addActivity.bind(this, item.attributes['name'].value, 'urn:ihmc:caril'));
+			else
+				item.addEventListener('click', this.addSubGoal.bind(this, item.attributes['name'].value, 'urn:ihmc:caril'));
 		}
 
 		// add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
@@ -36,6 +39,7 @@ class PlaygroundElement extends HTMLElement {
 	}
 
 	initGlobalEvents() {
+		// document.addEventListener('keydown', this.onKeyDown.bind(this));
 		this.addEventListener('mousedown', this.deselectAll.bind(this));
 		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
 		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
@@ -59,6 +63,7 @@ class PlaygroundElement extends HTMLElement {
 			node.setSelected(true);
 			e.stopPropagation();
 		});
+		node.addEventListener('keydown', this.onKeyDown.bind(this));
 		node.setTranslation(300, 100);
 
 		this._nodes.push(node);
@@ -113,6 +118,12 @@ class PlaygroundElement extends HTMLElement {
 		svg.appendChild(edge);
 		return edge;
 	}
+
+	onKeyDown(e) {
+		if(e.key == 'Delete')
+			this.deleteSelected();
+	}
+
 
 	onEdgeInitialized(e, node) {
 		this._created_edge = this._createEdge(node);

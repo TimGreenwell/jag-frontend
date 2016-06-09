@@ -186,6 +186,7 @@ kpl-playground [is='kpl-node'] {
 	/* Invisible Border for transition */
 	border: 1px solid rgba(0,0,0,0);
 	text-align: center;
+	outline: none;
 }
 
 kpl-playground [is='kpl-node'] header, kpl-playground [is='kpl-node'] div.content {
@@ -199,7 +200,7 @@ kpl-playground [is='kpl-node'] header {
 	transition: border 0.5s;
 }
 
-kpl-playground .selected-node[is='kpl-node'] header{
+kpl-playground [is='kpl-node']:focus header{
 	border-bottom: 2px solid var(--main-fg-active);
 }
 
