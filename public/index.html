@@ -3,55 +3,18 @@
 <head>
 	<meta charset='UTF-8'/>
 	<title>KAoS Planner Lite</title>
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 	<link rel='stylesheet' type='text/css' href='/css/screen.css'>
-	<script src='/js/kpl.js+bundle'></script>
+	<script src='/js/jag-at.js+bundle'></script>
 </head>
 <body unselectable='on'>
-	<side class='library'>
+	<side id='library'>
 			<header>
-				<h1>Behavior Library</h1>
+				<input type='text' class='library-search' placeholder='search...' />
 			</header>
 			<div>
-				<ol>
-					<li type='activity' name='Go to location'>Go To <span class='variable'>location</span></li>
-					<li type='activity' name='Pick up X'>Pick up <span class='variable'>X</span></li>
-					<li type='activity' name='Release X'>Release <span class='variable'>X</span></li>
-					<li type='activity' name='Find X location'>Find <span class='variable'>X</span> location</li>
-					<li type='activity' name='Monitor for X'>Monitor for <span class='variable'>X</span></li>
-					<li type='activity' name='Actvity'>New Activity</li>
-					<li type='goal' name='Get X'>Get <span class='variable'>X</span></li>
-					<li type='goal' name='Deliver X to location'>Deliver <span class='variable'>X</span> to <span class="variable">location</span></li>
-					<li type='goal' name='Goal'>New Goal</li>
-				</ol>
+				<ol class='library-list'></ol>
 			</div>
 		</section>
-	</side>
-	<side class='tools'>
-	<ol>
-		<li>
-			<a>Add</a>
-			<ol>
-				<li><a id='new-root'>Root Goal</a></li>
-				<li><a id='new-subgoal'>Sub Goal</a></li>
-				<li><a id='new-activity'>Activity</a></li>
-			</ol>
-		</li>
-		<li>
-			<a id='del-node'>Delete node</a>
-		</li>
-		<li>
-			<a>Import</a>
-			<ol>
-				<li>
-					<a id='import-local'>File</a>
-				</li>
-				<li>
-					<a id='import-url'>URL</a>
-				</li>
-			</ol>
-		</li>
-	</ol>
 	</side>
 	<kpl-playground>
 		<svg version='1.1' xmlns='http://www.w3.org/2000/svg'></svg>
