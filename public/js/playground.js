@@ -1,104 +1,84 @@
-import KPLGoal from './kpl-node-goal.js';
-import KPLActivity from './kpl-node-activity.js';
-import KPLNodePropertiesUI from './kpl-node-properties-ui.js';
+'use strict';
+
+import Node from './graph/node.js';
+import NodeElement from './ui/node.js';
 import KPLEdge from './kpl-edge.js';
-import KAOSRestImporter from './kaos-rest/kaos-rest-importer.js';
+import Listenable from './listenable.js';
 
+export default class Playground extends Listenable {
 
-class PlaygroundElement extends HTMLElement {
-	createdCallback() {
-		console.log('Play ground created');
+	constructor(playground_container) {
+		super();
+		this._container = playground_container;
+		this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		this._edges_container.setAttribute('version', '1.1');
+		this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+		this._container.appendChild(this._edges_container);
+
+		this._nodes_container = document.createElement('div');
+		this._container.appendChild(this._nodes_container);
+
 		this._nodes = [];
 		this._selected = new Set();
 		this._is_edge_being_created = false;
-		this._property_ui = new KPLNodePropertiesUI();
-		this._kaos_rest_importer = new KAOSRestImporter(); 
 
-		this.initMenu();
 		this.initGlobalEvents();
 	}
 
-	initMenu() {
-		let add_root_goal = document.querySelector('#new-root'),
-			add_subgoal = document.querySelector('#new-subgoal'),
-			add_activity = document.querySelector('#new-activity'),
-			del_node = document.querySelector('#del-node');
-
-		const it = document.querySelectorAll('side.library li');
-		for(let item of it) {
-			if(item.attributes['type'].value == 'activity')
-				item.addEventListener('click', this.addActivity.bind(this, item.attributes['name'].value, 'urn:ihmc:caril'));
-			else
-				item.addEventListener('click', this.addSubGoal.bind(this, item.attributes['name'].value, 'urn:ihmc:caril'));
-		}
-
-		// add_root_goal.addEventListener('click', this.addRootGoal.bind(this));
-		// add_subgoal.addEventListener('click', this.addSubGoal.bind(this));
-		// add_activity.addEventListener('click', this.addActivity.bind(this));
-		// del_node.addEventListener('click', this.deleteSelected.bind(this));
-	}
-
 	initGlobalEvents() {
-		// document.addEventListener('keydown', this.onKeyDown.bind(this));
-		this.addEventListener('mousedown', this.deselectAll.bind(this));
-		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
-		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
-		this.addEventListener('dragenter', this.onPreImport.bind(this));
-		this.addEventListener('dragover', this.cancelDefault.bind(this));
-		this.addEventListener('drop', this.onImport.bind(this));
+		document.addEventListener('keydown', this.onKeyDown.bind(this));
+		this._container.addEventListener('mousedown', (e) => {
+			this.deselectAll();
+			this.notify('selection', this._selected);
+		});
+
+		this._container.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
+		this._container.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
+		this._container.addEventListener('dragenter', this.onPreImport.bind(this));
+		this._container.addEventListener('dragover', this.cancelDefault.bind(this));
+		this._container.addEventListener('drop', this.onImport.bind(this));
 	}
 
-	_initGenericNode(node, name, description) {
-		node.setTitle(name);
-		node.setContent(description);
-		node.addEventListener('mousedown', (e) => {
+	getSelectedAsJSON() {
+		if(this._selected.size != 1)
+			return undefined;
+
+		return this._selected.values().next().value.model.toJSON();
+	}
+
+	getSelectedURN() {
+		return this._selected.values().next().value.model.urn;
+	}
+
+	addNode(node_definition) {
+		const node_model = Node.fromJSON(node_definition);
+		const node = new NodeElement(node_model);
+
+		node.element.addEventListener('mousedown', (e) => {
 			// If meta isn't pressed clear previous selection
 			if(!e.metaKey) {
 				this.deselectAll();
-				this._selected.clear();
 			}
 
 			this._selected.add(node);
-			this._property_ui.setNode(node);
 			node.setSelected(true);
+			this.notify('selection', this._selected);
 			e.stopPropagation();
 		});
-		node.addEventListener('keydown', this.onKeyDown.bind(this));
-		node.setTranslation(300, 100);
+		node.element.addEventListener('keydown', this.onKeyDown.bind(this));
+		node.setTranslation(50, 50);
 
 		this._nodes.push(node);
-		this.appendChild(node);
-	}
-
-	addRootGoal(name = 'Root Goal', description = 'Default description') {
-		const node = new KPLGoal();
-		this._initGenericNode(node, name, description);
+		this._nodes_container.appendChild(node.element);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-		return node;
-	}
-
-	addSubGoal(name = 'Subgoal', description = 'Default description') {
-		const node = new KPLGoal();
-		this._initGenericNode(node, name, description);
-
-		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-
-		return node;
-	}
-
-	addActivity(name = 'Activity', description = 'Default activity description') {
-		const node = new KPLActivity();
-		this._initGenericNode(node, name, description);
-
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
 		return node;
 	}
 
 	deselectAll() {
 		this._selected.forEach(n => n.setSelected(false));
-		this._property_ui.setNode(undefined);
+		this._selected.clear();
 	}
 
 	deleteSelected() {
@@ -106,16 +86,39 @@ class PlaygroundElement extends HTMLElement {
 			console.log('removing node', node);
 			node.removeAllEdges();
 			this._selected.delete(node);
-			this.removeChild(node);
+			this._nodes_container.removeChild(node.element);
+		}
+	}
+
+	fromClientToPlaygroundCoordinates(x, y) {
+		const playground = this._container;
+		const px = x - playground.offsetLeft;
+		const py = y - playground.offsetTop;
+		return [px, py];
+	}
+
+	handleItemSelected(item) {
+		this.addNode(item);
+	}
+
+	handlePropertyUpdate(event) {
+		if(event.property == 'name') {
+			this._selected.forEach(node => {
+				node.name = event.value;
+			});
+		}
+		if(event.property == 'urn') {
+			this._selected.forEach(node => {
+				node.model.urn = event.value;
+			});
 		}
 	}
 
 	_createEdge(origin) {
-		let svg = document.querySelector('kpl-playground svg'),
-			edge = new KPLEdge();
+		const edge = new KPLEdge();
 
 		edge.setNodeOrigin(origin);
-		svg.appendChild(edge);
+		this._edges_container.appendChild(edge);
 		return edge;
 	}
 
@@ -124,25 +127,31 @@ class PlaygroundElement extends HTMLElement {
 			this.deleteSelected();
 	}
 
-
 	onEdgeInitialized(e, node) {
 		this._created_edge = this._createEdge(node);
 		this._is_edge_being_created = true;
-		this._created_edge.setEnd(e.clientX, e.clientY);
+
+		const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
+		this._created_edge.setEnd(x, y);
 	}
 
 	onEdgeUpdated(e) {
 		if(!this._is_edge_being_created)
 			return;
 
-		this._created_edge.setEnd(e.clientX, e.clientY);
+		const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
+		this._created_edge.setEnd(x, y);
 	}
 
 	onEdgeFinalized(e, node) {
 		if(!this._is_edge_being_created)
 			return;
+
 		this._is_edge_being_created = false;
 		this._created_edge.setNodeEnd(node);
+
+		// TEMPORARY QUICK HACK ! VERY BAD ! DO NOT DO ! PLEASE FIX !
+		this._created_edge._node_origin.model.addChild(node.model);
 	}
 
 	onEdgeCanceled(e, node) {
@@ -169,17 +178,14 @@ class PlaygroundElement extends HTMLElement {
 		e.preventDefault();
 	}
 
-	importFromKAoS() {
-		this._kaos_rest_importer.getActivityGraph()
-		.then(this._generateActivityGraphFromJSON.bind(this));
-	}
+
 
 	_generateActivityGraphFromJSON(json) {
 		console.log(json);
 		let root_goal = json.rootGoal;
 		let root_node = this.addRootGoal(root_goal.name, root_goal.description);
 		root_node.getConnector().setType(root_goal.connectorType);
-		root_node.setTranslation(200, 200);
+		root_node.setTranslation(50, 50);
 		this._generateSubGoals(root_node, root_goal);
 	}
 
@@ -212,4 +218,3 @@ class PlaygroundElement extends HTMLElement {
 	}
 }
 
-export default document.registerElement('kpl-playground', PlaygroundElement);

@@ -1,27 +1,48 @@
 'use strict';
 
-export default class GraphService {
+import Listenable from '../listenable.js';
+
+export default class GraphService extends Listenable {
 
 	constructor() {
+		super();
+	}
+
+	connect() {
 		this._ch = new WebSocket('ws://localhost:8887');
 		this._ch.addEventListener('open', this._handleConnection.bind(this));
 		this._ch.addEventListener('message', this._handleMessage.bind(this));
 	}
 
 	_handleConnection(e) {
-		console.log('New connection.');
+		this.notify('connection-opened');
 	}
 
 	_handleMessage(e) {
 		const data = JSON.parse(e.data);
-		if(data.type == "inputs")
-			this._displayInputs(data.inputs);
-		else if(data.type == "resources")
-			this._displayInputs(data.resources);
+		console.log(data);
+		this.notify(data.type, data);
 	}
 
-	_displayInputs(inputs) {
-		inputs.forEach(input => console.log(input));
+	runGraph(urn, provider) {
+		const payload = {
+			type: 'run',
+			data: {
+				urn: urn,
+				provider: provider
+			}
+		};
+
+		this._ch.send(JSON.stringify(payload));
+	}
+
+	uploadGraph(graph) {
+		const payload = {
+			type: 'upload',
+			data: graph
+		};
+
+		this._ch.send(JSON.stringify(payload));
 	}
 }
 

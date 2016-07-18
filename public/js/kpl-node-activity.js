@@ -12,11 +12,7 @@ class KPLActivity extends KPLNodeElement {
 		console.log('Initializing activity.');
 	}
 
-	addOnEdgeFinalizedListener(listener) {
-		this.addEventListener('mouseup', e => {
-			listener(e, this);
-		});
-	}
+
 
 }
 

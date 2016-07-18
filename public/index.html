@@ -2,42 +2,31 @@
 <html>
 <head>
 	<meta charset='UTF-8'/>
-	<title>KAoS Planner Lite</title>
+	<title>JAG Authoring Tool</title>
 	<link rel='stylesheet' type='text/css' href='/css/screen.css'>
 	<script src='/js/jag-at.js+bundle'></script>
 </head>
 <body unselectable='on'>
 	<side id='library'>
-			<header>
-				<input type='text' class='library-search' placeholder='search...' />
-			</header>
-			<div>
-				<ol class='library-list'></ol>
-			</div>
-		</section>
+		<header>
+			<input type='text' class='library-search' placeholder='search...' />
+		</header>
+		<div>
+			<ol class='library-list'></ol>
+		</div>
 	</side>
-	<kpl-playground>
-		<svg version='1.1' xmlns='http://www.w3.org/2000/svg'></svg>
-	</kpl-playground>
-	<side class='properties'>
-		<div>
-			<label for='content-property'>URN</label>
-			<input id='content-property' type='text' value=''>
+	<div id='playground'></div>
+	<side id='properties'></side>
+	<side id='ide'>
+		<div id='ide-toolbar'>
+			<div id='connect' class='ide-button'>Connect</div>
+			<div id='upload' class='ide-button'>Upload selected</div>
+			<div id='run' class='ide-button'>Run selected</div>
 		</div>
 		<div>
-			<label for='title-property'>Name</label>
-			<input id='title-property' type='text' value=''>
-		</div>
-		<div>
-			<label for='connector-property'>Connector</label>
-			<select id='connector-property'>
-				<option value='AND' selected="true">And</option>
-				<option value='OR'>Or</option>
-			</select>
-			<select id='connector-property-seq'>
-				<option value='seq'>Sequential</option>
-				<option value='par'>Parallel</option>
-			</select>
+			<h1>Inputs</h1>
+			<ul id='ide-inputs'>
+			</ul>
 		</div>
 	</side>
 </body>

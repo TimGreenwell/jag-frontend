@@ -1,108 +1,80 @@
 import Library from './library.js';
+import Playground from './playground.js';
+import IDE from './ide.js';
+import Properties from './ui/properties.js';
+import GraphService from './net/graph-service.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
-	const library = new Library(document.querySelector('#library'));
+	const body = document.querySelector('body');
 
-	library.addItem({
-		id: 'urn:ihmc:caril-go-to-location',
-		name: 'Go To',
-		desc: 'Sends the agent to the specified location.'
+	const playground_container = document.querySelector('#playground');
+	const playground = new Playground(playground_container);
+
+	const ide_container = document.querySelector('#ide');
+	const ide = new IDE(ide_container);
+
+	const properties_container = document.querySelector('#properties');
+	const properties = new Properties(properties_container);
+
+	const library_container = document.querySelector('#library');
+	const library = new Library(library_container);
+
+	const graph_service = new GraphService();
+
+	library.addListener('item-selected', (item) => {
+		playground.handleItemSelected(item);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:caril-pick-up-interactable',
-		name: 'Pick Up',
-		desc: 'Makes the agent grab an interactable object.'
+	properties.addListener('update', (event) => {
+		playground.handlePropertyUpdate(event);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:caril-release-interactable',
-		name: 'Release',
-		desc: 'Makes the agent release an interactable object.'
+	graph_service.addListener('resources', (event) => {
+		library.handleResourceUpdate(event);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:caril-find-interactable-location',
-		name: 'Find Location',
-		desc: 'Ask the simulation for the location of an interactable object.'
+	graph_service.addListener('inputs', (event) => {
+		ide.handleInputs(event);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:caril-detect-interactable',
-		name: 'Detect interactable',
-		desc: 'Returns successfully when the specified interactable enters the agents FOV.'
+	graph_service.addListener('connection-opened', (event) => {
+		ide.handleNewConnection(event);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-2',
-		name: 'Lorem ipsum',
-		desc: 'Maecenas at libero quis augue interdum malesuada.'
+	playground.addListener('selection', (event) => {
+		properties.handleSelectionUpdate(event);
+		ide.handleSelectionUpdate(event);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-3',
-		name: 'Cras in dui',
-		desc: 'Cras quis magna sit amet sem blandit euismod.'
+	ide.addListener('connect', (event) => {
+		graph_service.connect();
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-3',
-		name: 'Maecenas ipsum',
-		desc: 'Nullam in dui facilisis, interdum tortor at, porta est.'
+	ide.addListener('upload', (event) => {
+		const json = playground.getSelectedAsJSON();
+		console.log(JSON.stringify(json));
+		if(json != undefined)
+			graph_service.uploadGraph(json);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-4',
-		name: 'Ultries',
-		desc: 'Maecenas ultricies justo vel dui dictum vestibulum.'
+	ide.addListener('run', (data) => {
+		const urn = playground.getSelectedURN();
+		console.log(data);
+
+		if(urn != undefined)
+			graph_service.runGraph(urn, data);
 	});
 
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-5',
-		name: 'Justo urnas',
-		desc: 'Vestibulum posuere tortor ac urna ornare, a aliquet dui varius.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-6',
-		name: 'Magna tortor',
-		desc: 'Praesent non leo commodo, ornare tortor interdum, malesuada arcu.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-7',
-		name: 'Justo urnas',
-		desc: 'Vestibulum posuere tortor ac urna ornare, a aliquet dui varius.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-8',
-		name: 'Magna tortor',
-		desc: 'Praesent non leo commodo, ornare tortor interdum, malesuada arcu.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-9',
-		name: 'Justo urnas',
-		desc: 'Vestibulum posuere tortor ac urna ornare, a aliquet dui varius.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-10',
-		name: 'Magna tortor',
-		desc: 'Praesent non leo commodo, ornare tortor interdum, malesuada arcu.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-11',
-		name: 'Justo urnas',
-		desc: 'Vestibulum posuere tortor ac urna ornare, a aliquet dui varius.'
-	});
-
-	library.addItem({
-		id: 'urn:ihmc:lorem-lorem-12',
-		name: 'Magna tortor',
-		desc: 'Praesent non leo commodo, ornare tortor interdum, malesuada arcu.'
-	});
+	loadStaticLibrary(library);
 });
+
+function loadStaticLibrary(library) {
+	library.addItem({
+		urn: '',
+		name: 'Empty',
+		description: 'Empty node that can be used to create new behaviors.',
+		inputs: [],
+		outputs: []
+	});
+}
 
