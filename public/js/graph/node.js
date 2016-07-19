@@ -86,8 +86,34 @@ export default class Node {
 	}
 
 	addBinding(binding) {
-		console.log(binding);
+		const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
+
+		if(existing_binding !== undefined)
+			this._bindings.delete(existing_binding);
+
 		this._bindings.add(binding);
+
+		console.log(this._bindings);
+	}
+
+	/**
+	 * Check if a binding with the same consumer:property combination already exists
+	 */
+	hasBinding(consumer_id, consumer_property) {
+		const binding = this.getBinding(consumer_id, consumer_property);
+		return binding !== undefined;
+	}
+
+	/**
+	 * Gets a binding for the specified consumer id and property
+	 */
+	getBinding(consumer_id, consumer_property) {
+		for(let binding of this._bindings) {
+			if(consumer_id === binding.consumer.id &&
+				consumer_property === binding.consumer.property)
+				return binding;
+		}
+		return undefined;
 	}
 
 	static fromJSON(json_node) {
