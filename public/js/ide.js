@@ -13,7 +13,18 @@ export default class IDE extends Listenable {
 	}
 
 	handleNewConnection() {
-		this._connect.innerHTML = 'Connected &#x2714;';
+		const progress = this._connect.querySelector('.button-progress');
+		const icon = this._connect.querySelector('.button-icon');
+		icon.style.backgroundImage = "url('/icons/connected.png')";
+		progress.style.transform = 'translateY(-100%) scaleX(1.0)';
+		setTimeout(() => {
+			progress.addEventListener('animationend', () => {
+				progress.classList.remove('progress-reset');
+				progress.style.transform = 'translateY(-100%) scaleX(0.0)';
+			});
+			progress.classList.add('progress-reset');
+
+		}, 2000);
 	}
 
 	handleInputs(data) {
@@ -74,16 +85,30 @@ export default class IDE extends Listenable {
 	_init() {
 		this._connect = this._container.querySelector('#connect');
 		this._connect.addEventListener('click', e => {
+			const progress = this._connect.querySelector('.button-progress');
+			progress.style.transform = 'translateY(-100%) scaleX(0.25)';
 			this.notify('connect');
 		});
 
 		this._upload = this._container.querySelector('#upload');
 		this._upload.addEventListener('click', e => {
+			const progress = this._upload.querySelector('.button-progress');
+			progress.style.transform = 'translateY(-100%) scaleX(1.0)';
+			setTimeout(() => {
+				progress.addEventListener('animationend', () => {
+					progress.classList.remove('progress-reset');
+					progress.style.transform = 'translateY(-100%) scaleX(0.0)';
+				});
+				progress.classList.add('progress-reset');
+			},2000);
 			this.notify('upload');
 		});
 
 		this._run = this._container.querySelector('#run');
 		this._run.addEventListener('click', e => {
+			const icon = this._run.querySelector('.button-icon');
+			icon.style.backgroundImage = 'url("/icons/pause.png")';
+
 			const provider = this._createInstanceProvider();
 			this.notify('run', provider);
 		});
