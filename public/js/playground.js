@@ -1,6 +1,6 @@
 'use strict';
 
-import Node from './graph/node.js';
+import GraphNode from './graph/node.js';
 import NodeElement from './ui/node.js';
 import KPLEdge from './kpl-edge.js';
 import Listenable from './listenable.js';
@@ -51,7 +51,7 @@ export default class Playground extends Listenable {
 	}
 
 	addNode(node_definition) {
-		const node_model = Node.fromJSON(node_definition);
+		const node_model = GraphNode.fromJSON(node_definition);
 		const node = new NodeElement(node_model);
 
 		node.element.addEventListener('mousedown', (e) => {
@@ -99,19 +99,6 @@ export default class Playground extends Listenable {
 
 	handleItemSelected(item) {
 		this.addNode(item);
-	}
-
-	handlePropertyUpdate(event) {
-		if(event.property == 'name') {
-			this._selected.forEach(node => {
-				node.name = event.value;
-			});
-		}
-		if(event.property == 'urn') {
-			this._selected.forEach(node => {
-				node.model.urn = event.value;
-			});
-		}
 	}
 
 	_createEdge(origin) {

@@ -3,6 +3,7 @@
 const SNAP_SIZE = 20.0;
 
 import Listenable from '../listenable.js';
+import GraphNode from '../graph/node.js';
 
 export default class NodeElement extends Listenable {
 
@@ -35,6 +36,7 @@ export default class NodeElement extends Listenable {
 
 		this.setTranslation(100, 100);
 		this._applyName();
+		this._applyOperator();
 	}
 
 	get element() {
@@ -48,10 +50,34 @@ export default class NodeElement extends Listenable {
 	set name(name) {
 		this._model.name = name;
 		this._applyName();
+		this._refresh();
 	}
 
-	 _applyName() {
+	set execution(type) {
+		this._model.execution = type;
+	}
+
+	set operator(type) {
+		this._model.operator = type;
+		this._applyOperator();
+	}
+
+	_applyName() {
 		this._header_name.innerHTML = this._model.name;
+	}
+
+	_applyOperator() {
+		let op = '';
+		if(this._model.operator == GraphNode.OPERATOR.AND)
+			op = 'and';
+		else if(this._model.operator == GraphNode.OPERATOR.OR)
+			op = 'or';
+
+		this._connector_el.innerHTML = op;
+		if(op == '')
+			this._connector_el.style.display = 'none';
+		else
+			this._connector_el.style.display = 'block';
 	}
 
 	addInEdge(edge) {
@@ -132,6 +158,10 @@ export default class NodeElement extends Listenable {
 			this._snap();
 			this._root_el.parentNode.removeEventListener('mousemove', drag);
 		});
+	}
+
+	_refresh() {
+		this.setTranslation(this._translation.x, this._translation.y);
 	}
 
 	setTranslation(x, y) {

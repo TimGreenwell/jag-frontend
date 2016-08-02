@@ -25,10 +25,6 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		playground.handleItemSelected(item);
 	});
 
-	properties.addListener('update', (event) => {
-		playground.handlePropertyUpdate(event);
-	});
-
 	graph_service.addListener('resources', (event) => {
 		library.handleResourceUpdate(event);
 	});

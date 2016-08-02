@@ -1,6 +1,7 @@
 'use strict';
 
 import Listenable from '../listenable.js';
+import GraphNode from '../graph/node.js';
 
 export default class NodeProperties extends Listenable {
 
@@ -16,11 +17,15 @@ export default class NodeProperties extends Listenable {
 
 	handleSelectionUpdate(selection) {
 		this._clearProperties();
+		this._enableProperties(selection.size != 0);
+
 		if(selection.size == 1) {
 			const node = selection.values().next().value;
 			this._node = node;
 			this._urn.value = node.model.urn;
 			this._name.value = node.model.name;
+			this._execution.value = node.model.execution || 'none';
+			this._operator.value = node.model.operator || 'none';
 			this._desc.value = node.model.description;
 
 			const input_options = this.findInputOptions();
@@ -132,30 +137,31 @@ export default class NodeProperties extends Listenable {
 
 		const execution_el = createPropertyElement('execution-property', 'Execution');
 		this._execution = createSelect('execution-property', [{
-			name: 'none',
-			value: 'None'
+			value: GraphNode.EXECUTION.NONE,
+			text: 'None'
 		},{
-			name: 'sequential',
-			value: 'Sequential'
+			value: GraphNode.EXECUTION.SEQUENTIAL,
+			text: 'Sequential'
 		},{
-			name: 'parallel',
-			value: 'Parallel'
+			value: GraphNode.EXECUTION.PARALLEL,
+			text: 'Parallel'
 		}]);
 
 		execution_el.appendChild(this._execution);
 
-		const logic_el = createPropertyElement('logic-property', 'Logic');
-		this._logic  = createSelect('logic-property', [{
-			name: 'none',
-			value: 'None'
+		const operator_el = createPropertyElement('operator-property', 'Operator');
+		this._operator  = createSelect('operator-property', [{
+			value: GraphNode.OPERATOR.NONE,
+			text: 'None'
 		},{
-			name: 'and',
-			value: 'And'
+			value: GraphNode.OPERATOR.AND,
+			text: 'And'
 		},{
-			name: 'or',
-			value: 'Or'
+			value: GraphNode.OPERATOR.OR,
+			text: 'Or'
 		}]);
-		logic_el.appendChild(this._logic);
+
+		operator_el.appendChild(this._operator);
 
 		const inputs_el = createPropertyElement('inputs-property', 'Inputs');
 
@@ -172,34 +178,36 @@ export default class NodeProperties extends Listenable {
 		this._outputs = createEmptyInputContainer('outputs-property');
 		outputs_el.appendChild(this._outputs);
 
+		this._enableProperties(false);
+
 		this._container.appendChild(urn_el);
 		this._container.appendChild(name_el);
 		this._container.appendChild(desc_el);
 		this._container.appendChild(execution_el);
-		this._container.appendChild(logic_el);
+		this._container.appendChild(operator_el);
 		this._container.appendChild(inputs_el);
 		this._container.appendChild(outputs_el);
 	}
 
 	_initHandlers() {
 		this._urn.addEventListener('keyup', e => {
-			this._doNotifyUpdate('urn', this._urn.value);
+			this._node.urn = this._urn.value;
 		});
 
 		this._name.addEventListener('keyup', e => {
-			this._doNotifyUpdate('name', this._name.value);
+			this._node.name = this._name.value;
 		});
 
 		this._desc.addEventListener('keyup', e => {
-			this._doNotifyUpdate('description', this._desc.value);
+			this._node.description = this._desc.value;
 		});
 
-	}
+		this._execution.addEventListener('change', e => {
+			this._node.execution = this._execution.value;
+		});
 
-	_doNotifyUpdate(property, new_value) {
-		this.notify('update', {
-			property: property,
-			value: new_value
+		this._operator.addEventListener('change', e => {
+			this._node.operator = this._operator.value;
 		});
 	}
 
@@ -207,8 +215,8 @@ export default class NodeProperties extends Listenable {
 		this._urn.value = '';
 		this._name.value = '';
 		this._desc.value = '';
-		this._execution.selected = 'none';
-		this._logic.selected = 'none';
+		this._execution.value = GraphNode.EXECUTION.NONE;
+		this._operator.value = GraphNode.OPERATOR.NONE;
 
 		this._input_elements.clear();
 		while(this._inputs.firstChild) {
@@ -219,6 +227,17 @@ export default class NodeProperties extends Listenable {
 		while(this._outputs.firstChild) {
 			this._outputs.removeChild(this._outputs.firstChild);
 		}
+	}
+
+	_enableProperties(enabled) {
+		this._urn.disabled = !enabled;
+		this._name.disabled = !enabled;
+		this._desc.disabled = !enabled;
+		this._execution.disabled = !enabled;
+		this._operator.disabled = !enabled;
+
+		this._input_elements.disabled = !enabled;
+		this._output_elements.disabled = !enabled;
 	}
 }
 
@@ -254,11 +273,8 @@ function createSelect(id, options) {
 	options.forEach(option => {
 		const opt_el = document.createElement('option');
 		opt_el.value = option.value;
-		opt_el.text = option.name;
+		opt_el.text = option.text;
 		input.add(opt_el);
-		// opt_el.innerHTML = option.name;
-
-		// input.appendChild(opt_el);
 	});
 
 	return input;

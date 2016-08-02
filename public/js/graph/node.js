@@ -2,12 +2,14 @@
 
 import {UUIDv4} from '../../../node_modules/goblin/src/crypto/uuid.js';
 
-export default class Node {
-	constructor({urn, name, desc = ''} = {}) {
+export default class GraphNode {
+	constructor({urn, name, execution = GraphNode.EXECUTION.NONE, operator = GraphNode.OPERATOR.NONE, desc = ''} = {}) {
 		this._id = UUIDv4();
 		this._urn = urn;
 		this._name = name;
 		this._desc = desc;
+		this._execution = execution;
+		this._operator = operator;
 		this._inputs = new Set();
 		this._outputs = new Set();
 		this._children = new Map();
@@ -38,6 +40,22 @@ export default class Node {
 
 	get name() {
 		return this._name;
+	}
+
+	set execution(type) {
+		this._execution = type;
+	}
+
+	get execution() {
+		return this._execution;
+	}
+
+	set operator(type) {
+		this._operator = type;
+	}
+
+	get operator() {
+		return this._operator;
 	}
 
 	set description(description) {
@@ -117,9 +135,11 @@ export default class Node {
 	}
 
 	static fromJSON(json_node) {
-		const node = new Node({
+		const node = new GraphNode({
 			urn: json_node.urn,
 			name: json_node.name,
+			execution: json_node.execution,
+			operator: json_node.operator,
 			desc: json_node.description
 		});
 
@@ -140,10 +160,8 @@ export default class Node {
 			name: this._name,
 			description: this._desc,
 			type: 'goal',
-			connector: {
-				type: 'and',
-				execution: 'sequential'
-			},
+			execution: this._execution,
+			operator: this._operator,
 			inputs: [],
 			outputs: [],
 			children: [],
@@ -173,3 +191,16 @@ export default class Node {
 		return json;
 	}
 }
+
+GraphNode.EXECUTION = {
+	NONE: 'node.execution.none',
+	SEQUENTIAL: 'node.execution.sequential',
+	PARALLEL: 'node.execution.parallel'
+}
+
+GraphNode.OPERATOR = {
+	NONE: 'node.operator.none',
+	AND: 'node.operator.and',
+	OR: 'node.operator.or'
+}
+
