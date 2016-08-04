@@ -9,13 +9,21 @@ export default class GraphService extends Listenable {
 	}
 
 	connect() {
-		this._ch = new WebSocket('ws://localhost:8887');
+		const host = window.location.hostname;
+		this._ch = new WebSocket(`ws://${host}:8887`);
 		this._ch.addEventListener('open', this._handleConnection.bind(this));
 		this._ch.addEventListener('message', this._handleMessage.bind(this));
+		this._ch.addEventListener('error', this._handleConnection.bind(this));
 	}
 
 	_handleConnection(e) {
-		this.notify('connection-opened');
+		this.notify('connection', {
+			type: e.type,
+			data: {
+				timestamp: e.timestamp,
+				websocket: e.target
+			}
+		});
 	}
 
 	_handleMessage(e) {

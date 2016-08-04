@@ -57,7 +57,11 @@ export default class Playground extends Listenable {
 		node.element.addEventListener('mousedown', (e) => {
 			// If meta isn't pressed clear previous selection
 			if(!e.metaKey) {
-				this.deselectAll();
+				this._selected.forEach(local_node => {
+					if(local_node != node)
+						local_node.setSelected(false);
+				});
+				this._selected.clear();
 			}
 
 			this._selected.add(node);
@@ -65,6 +69,7 @@ export default class Playground extends Listenable {
 			this.notify('selection', this._selected);
 			e.stopPropagation();
 		});
+
 		node.element.addEventListener('keydown', this.onKeyDown.bind(this));
 		node.setTranslation(50, 50);
 

@@ -147,6 +147,18 @@ side#ide div#ide-toolbar {
 	box-shadow: 0px 1px 5px var(--main-fg-lighter);
 }
 
+side#ide div#ide-toolbar div#ide-feedback {
+	font-size: 1.25em;
+	margin-right: 1.5em;
+	margin-left: auto;
+	align-self: center;
+	transition: color 0.5s linear;
+}
+
+side#ide div#ide-toolbar div#ide-feedback.error {
+	color: red;
+}
+
 side#ide div.ide-button {
 	cursor: pointer;
 	margin: 0.75em;
@@ -268,6 +280,10 @@ div#playground div.node {
 	top: 0px;
 	left: 0px;
 }
+div#playground div.node > * {
+	background: white;
+	box-shadow: 1px 1px 5px hsla(0, 50%, 50%, 0.2);
+}
 
 div#playground div.node.selected-node {
 	outline: none;
@@ -275,6 +291,7 @@ div#playground div.node.selected-node {
 
 div#playground div.node.selected-node header h1.node-name {
 	border: 1px solid var(--input-active);
+	padding: 0.5em;
 }
 
 div#playground div.node header {
@@ -289,7 +306,7 @@ div#playground div.node header h1.node-name {
 	border: 1px solid var(--main-fg);
 	border-radius: 2px;
 	-webkit-user-select: none;
-	transition: border 0.5s ease;
+	transition: border 0.150s ease-out, padding 0.150s ease-out;
 }
 
 

@@ -12,19 +12,22 @@ export default class IDE extends Listenable {
 		this._init();
 	}
 
-	handleNewConnection() {
-		const progress = this._connect.querySelector('.button-progress');
-		const icon = this._connect.querySelector('.button-icon');
-		icon.style.backgroundImage = "url('/icons/connected.png')";
-		progress.style.transform = 'translateY(-100%) scaleX(1.0)';
-		setTimeout(() => {
-			progress.addEventListener('animationend', () => {
-				progress.classList.remove('progress-reset');
-				progress.style.transform = 'translateY(-100%) scaleX(0.0)';
-			});
-			progress.classList.add('progress-reset');
+	handleConnection(event) {
+		if(event.type == 'open') {
+			this._handleNewConnection();
+		} else if (event.type == 'error') {
+			const progress = this._container.querySelector('#connect .button-progress');
+			this._setFeedback('Connection failed', true);
+			this._resetButtonProgress(progress);
+		}
+	}
 
-		}, 2000);
+	handleError(event) {
+		let msg = 'An unknown error occurred. This should not happen.';
+		if(event.data)
+			msg = event.data;
+
+		this._setFeedback(msg, true);
 	}
 
 	handleInputs(data) {
@@ -94,13 +97,7 @@ export default class IDE extends Listenable {
 		this._upload.addEventListener('click', e => {
 			const progress = this._upload.querySelector('.button-progress');
 			progress.style.transform = 'translateY(-100%) scaleX(1.0)';
-			setTimeout(() => {
-				progress.addEventListener('animationend', () => {
-					progress.classList.remove('progress-reset');
-					progress.style.transform = 'translateY(-100%) scaleX(0.0)';
-				});
-				progress.classList.add('progress-reset');
-			},2000);
+			setTimeout(this._resetButtonProgress.bind(this, progress), 1500);
 			this.notify('upload');
 		});
 
@@ -108,10 +105,38 @@ export default class IDE extends Listenable {
 		this._run.addEventListener('click', e => {
 			const icon = this._run.querySelector('.button-icon');
 			icon.style.backgroundImage = 'url("/icons/pause.png")';
-
 			const provider = this._createInstanceProvider();
 			this.notify('run', provider);
 		});
+
+		this._feedback = this._container.querySelector('#ide-feedback');
 	}
+
+	_handleNewConnection() {
+		const progress = this._connect.querySelector('.button-progress');
+		const icon = this._connect.querySelector('.button-icon');
+		icon.style.backgroundImage = "url('/icons/connected.png')";
+		progress.style.transform = 'translateY(-100%) scaleX(1.0)';
+		setTimeout(this._resetButtonProgress.bind(this, progress), 1500);
+		this._setFeedback('Connection successfull');
+	}
+
+	_resetButtonProgress(button) {
+		button.addEventListener('animationend', () => {
+			button.classList.remove('progress-reset');
+			button.style.transform = 'translateY(-100%) scaleX(0.0)';
+		});
+
+		button.classList.add('progress-reset');
+	}
+
+	_setFeedback(msg, error = false) {
+		this._feedback.innerHTML = msg;
+		if(error)
+			this._feedback.classList.add('error');
+		else
+			this._feedback.classList.remove('error');
+	}
+
 }
 

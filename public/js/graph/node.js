@@ -160,8 +160,10 @@ export default class GraphNode {
 			name: this._name,
 			description: this._desc,
 			type: 'goal',
-			execution: this._execution,
-			operator: this._operator,
+			connector: {
+				execution: this._execution,
+				operator: this._operator
+			},
 			inputs: [],
 			outputs: [],
 			children: [],

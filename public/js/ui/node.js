@@ -47,6 +47,10 @@ export default class NodeElement extends Listenable {
 		return this._model;
 	}
 
+	set urn(urn) {
+		this._model.urn = urn;
+	}
+	
 	set name(name) {
 		this._model.name = name;
 		this._applyName();
@@ -118,6 +122,9 @@ export default class NodeElement extends Listenable {
 	}
 
 	setSelected(is_selected) {
+		if(is_selected != this._is_selected)
+			this._animationRefresh();
+
 		this._is_selected = is_selected;
 
 		if(is_selected)
@@ -158,6 +165,18 @@ export default class NodeElement extends Listenable {
 			this._snap();
 			this._root_el.parentNode.removeEventListener('mousemove', drag);
 		});
+
+		this._header_name.addEventListener('transitionend', () => {
+			console.log(`Canceling animation ${this._animation_frame_id}`);
+			window.cancelAnimationFrame(this._animation_frame_id);
+		});
+	}
+
+	_animationRefresh() {
+		console.log(`Animation ${this._animation_frame_id}`);
+		this._refresh();
+
+		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
 	}
 
 	_refresh() {

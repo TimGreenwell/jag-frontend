@@ -33,8 +33,12 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		ide.handleInputs(event);
 	});
 
-	graph_service.addListener('connection-opened', (event) => {
-		ide.handleNewConnection(event);
+	graph_service.addListener('connection', (event) => {
+		ide.handleConnection(event);
+	});
+
+	graph_service.addListener('error', (event) => {
+		ide.handleError(event);
 	});
 
 	playground.addListener('selection', (event) => {

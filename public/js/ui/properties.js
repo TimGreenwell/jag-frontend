@@ -28,13 +28,16 @@ export default class NodeProperties extends Listenable {
 			this._operator.value = node.model.operator || 'none';
 			this._desc.value = node.model.description;
 
-			const input_options = this.findInputOptions();
+			let input_options = undefined;
+			if(node.model.parent)
+				input_options = this.findInputOptions();
+
 			node.model.inputs.forEach(input => {
 				const input_id = `${input}-inputs-property`;
 				this.addInputElement(input_id, input, input_options);
 			});
 
-			const output_options = [];
+			const output_options = undefined;
 			node.model.outputs.forEach(output => {
 				const output_id = `${output}-outputs-property`;
 				this.addOutputElement(output_id, output, output_options);
@@ -56,7 +59,11 @@ export default class NodeProperties extends Listenable {
 
 	addInput(e) {
 		const name = window.prompt('Input name');
-		const options = this.findInputOptions();
+
+		let options = undefined;
+		if(this._node.model.parent)
+			options = this.findInputOptions();
+
 		const input_id = `${name}-inputs-property`;
 		this.addInputElement(input_id, name, options);
 		this._node.model.addInput(name);
@@ -64,45 +71,47 @@ export default class NodeProperties extends Listenable {
 
 	addInputElement(id, name, options) {
 		const input_el = createPropertyElement(id, name);
-		const input = createSelect(id, options);
-		input.addEventListener('change', e => {
-			const provider = e.target.selectedOptions[0].value.split(':');
-			this._node.model.parent.addBinding({
-				consumer: {
-					id: this._node.model.id,
-					property: name
-				},
-				provider: {
-					id: provider[0],
-					property: provider[1]
-				}
+
+		// only creates select element if option is defined
+		if(options != undefined) {
+			const input = createSelect(id, options);
+			input.addEventListener('change', e => {
+				const provider = e.target.selectedOptions[0].value.split(':');
+				this._node.model.parent.addBinding({
+					consumer: {
+						id: this._node.model.id,
+						property: name
+					},
+					provider: {
+						id: provider[0],
+						property: provider[1]
+					}
+				});
 			});
-		});
-		input_el.appendChild(input);
-		this._input_elements.set(id, input);
+			input_el.appendChild(input);
+			this._input_elements.set(id, input);
+		}
+
 		this._inputs.appendChild(input_el);
 	}
 
 	addOutputElement(id, name, options) {
 		const output_el = createPropertyElement(id, name);
-		const output = createSelect(id, options);
-		output_el.appendChild(output);
-		this._output_elements.set(id, output);
+		// const output = createSelect(id, options);
+		// output_el.appendChild(output);
+		// this._output_elements.set(id, output);
 		this._outputs.appendChild(output_el);
 	}
 
 	findInputOptions() {
 		const options = [{
-			name:'not bound',
+			text:'not bound',
 			value:'not bound'
 		}];
 
-		if(!this._node.model.parent)
-			return options;
-
 		this._node.model.parent.inputs.forEach((input) => {
 			options.push({
-				name: `${this._node.model.parent.name}:${input}`,
+				text: `${this._node.model.parent.name}:${input}`,
 				value: `this:${input}`
 			});
 		});
@@ -113,7 +122,7 @@ export default class NodeProperties extends Listenable {
 
 			sibling.outputs.forEach((output) => {
 				options.push({
-					name: `${sibling.name}:${output}`,
+					text: `${sibling.name}:${output}`,
 					value: `${sibling.id}:${output}`
 				});
 			});
