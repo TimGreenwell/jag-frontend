@@ -280,9 +280,14 @@ div#playground div.node {
 	top: 0px;
 	left: 0px;
 }
+
 div#playground div.node > * {
 	background: white;
-	box-shadow: 1px 1px 5px hsla(0, 50%, 50%, 0.2);
+	box-shadow: 0px 1px 2px hsla(0, 0%, 0%, 0.1), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
+}
+
+div#playground div.node.selected-node > * {
+	box-shadow: 0px 1px 5px hsla(0, 0%, 0%, 0.1), 0px 0px 15px hsla(0, 0%, 0%, 0.05);
 }
 
 div#playground div.node.selected-node {
@@ -291,7 +296,7 @@ div#playground div.node.selected-node {
 
 div#playground div.node.selected-node header h1.node-name {
 	border: 1px solid var(--input-active);
-	padding: 0.5em;
+	padding: 0.75em;
 }
 
 div#playground div.node header {
@@ -306,7 +311,7 @@ div#playground div.node header h1.node-name {
 	border: 1px solid var(--main-fg);
 	border-radius: 2px;
 	-webkit-user-select: none;
-	transition: border 0.150s ease-out, padding 0.150s ease-out;
+	transition: border 0.100s ease-out, padding 0.100s ease-out;
 }
 
 
@@ -335,7 +340,7 @@ div#playground div.node header:hover + div.node-io {
 	transform:rotateX(0deg);
 }
 
-div#playground div.node div.node-io div.io-content{
+div#playground div.node div.node-io div.io-content {
 	background: lightblue;
 	box-shadow: inset 1px 1px 2px 2px hsla(200, 91%, 35%, 0.08);
 	padding: 0.75em;
