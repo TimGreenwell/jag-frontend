@@ -10,6 +10,7 @@
 
 	--library-search-height: 2em;
 	--ide-height: 33%;
+	--transition-function: cubic-bezier(0.4, 0.0, 0.2, 1) ;
 }
 
 body, html {
@@ -100,7 +101,7 @@ side#library li {
 	padding: 0.25em;
 	border-bottom: 1px solid white;
 	cursor: pointer;
-	transition: background-color 0.3s ease-out;
+	transition: background-color 350ms var(--transition-function);
 }
 
 side#library li:hover {
@@ -152,7 +153,7 @@ side#ide div#ide-toolbar div#ide-feedback {
 	margin-right: 1.5em;
 	margin-left: auto;
 	align-self: center;
-	transition: color 0.5s linear;
+	transition: color 350ms var(--transition-function);
 }
 
 side#ide div#ide-toolbar div#ide-feedback.error {
@@ -165,7 +166,7 @@ side#ide div.ide-button {
 	width: 48px;
 	height: 48px;
 	border: 1px solid var(--main-fg-lighter);
-	transition: border 0.25s ease, background 0.5s ease;
+	transition: border 350ms var(--transition-function), background 350ms var(--transition-function);
 	border-radius: 2px;
 	overflow: hidden;
 }
@@ -283,20 +284,16 @@ div#playground div.node {
 
 div#playground div.node > * {
 	background: white;
-	box-shadow: 0px 1px 2px hsla(0, 0%, 0%, 0.1), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
+	box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.11), 0px 0px 6px hsla(0, 0%, 0%, 0.11);
+	transition: box-shadow 350ms var(--transition-function);
 }
 
 div#playground div.node.selected-node > * {
-	box-shadow: 0px 1px 5px hsla(0, 0%, 0%, 0.1), 0px 0px 15px hsla(0, 0%, 0%, 0.05);
+	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.15), 0px 0px 10px hsla(0, 0%, 0%, 0.22);
 }
 
 div#playground div.node.selected-node {
 	outline: none;
-}
-
-div#playground div.node.selected-node header h1.node-name {
-	border: 1px solid var(--input-active);
-	padding: 0.75em;
 }
 
 div#playground div.node header {
@@ -308,12 +305,16 @@ div#playground div.node header h1.node-name {
 	width: 100%;
 	font-size: 1.25em;
 	padding: 0.25em;
-	border: 1px solid var(--main-fg);
+	border: 1px solid var(--input-border);
 	border-radius: 2px;
 	-webkit-user-select: none;
-	transition: border 0.100s ease-out, padding 0.100s ease-out;
+	transition: border 350ms var(--transition-function), padding 100ms var(--transition-function);
 }
 
+div#playground div.node.selected-node header h1.node-name {
+	border: 1px solid var(--main-fg);
+	padding: 0.35em;
+}
 
 div#playground div.node div.connector {
 	font-size: 0.75em;

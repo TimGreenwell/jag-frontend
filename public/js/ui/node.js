@@ -1,6 +1,6 @@
 'use strict';
 
-const SNAP_SIZE = 20.0;
+const SNAP_SIZE = 5.0;
 
 import Listenable from '../listenable.js';
 import GraphNode from '../graph/node.js';
@@ -85,7 +85,7 @@ export default class NodeElement extends Listenable {
 	}
 
 	addInEdge(edge) {
-		let [h_center_x, h_center_y] = this._computeHeaderCenter();
+		let [h_center_x, h_center_y] = this._computeNodeInputAttachment();
 		edge.setEnd(h_center_x, h_center_y);
 		this._ins.add(edge);
 	}
@@ -112,7 +112,7 @@ export default class NodeElement extends Listenable {
 	}
 
 	addOutEdge(edge) {
-		let [c_center_x, c_center_y] = this._computeConnectorCenter();
+		let [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 		edge.setOrigin(c_center_x, c_center_y);
 		this._outs.add(edge);
 	}
@@ -143,17 +143,20 @@ export default class NodeElement extends Listenable {
 			const mx = e.clientX - playground.offsetLeft;
 			const my = e.clientY - playground.offsetTop;
 
-			let new_left = mx - this._initial_x;
-			let new_top =  my - this._initial_y;
+			let center_x = mx + this._center_offset.x;
+			let center_y = my + this._center_offset.y;
 
-			[new_left, new_top] = this._adjustPosition(new_left, new_top);
+			// [center_x, center_y] = this._adjustPosition(center_x, center_y);
 
-			this.setTranslation(new_left, new_top);
+			this.setTranslation(center_x, center_y);
 		}).bind(this);
 
 		this._header_el.addEventListener('mousedown', (e) => {
-			this._initial_x = e.offsetX;
-			this._initial_y = e.offsetY;
+			this._center_offset = {
+				x: this._header_el.clientWidth / 2.0 - e.offsetX,
+				y: this._header_el.clientHeight / 2.0 - e.offsetY
+			};
+
 			this._is_moving = true;
 			this._header_el.className = 'moving';
 			this._root_el.parentNode.addEventListener('mousemove', drag);
@@ -184,17 +187,17 @@ export default class NodeElement extends Listenable {
 	}
 
 	setTranslation(x, y) {
-		const cx = x;
-		const cy = y;
-		let h_center_x, h_center_y, c_center_x, c_center_y;
-
-		this._root_el.clientWidth
 		this._translation.x = x;
 		this._translation.y = y;
 
-		this._root_el.style.transform = `translate(${cx}px,${cy}px)`;
+		if(!this._root_el.parentNode)
+			return;
 
-		[h_center_x, h_center_y] = this._computeHeaderCenter();
+		const [left, top] = this._computeTrueTopLeft();
+
+		this._root_el.style.transform = `translate(${left}px,${top}px)`;
+
+		const [h_center_x, h_center_y] = this._computeNodeInputAttachment();
 
 		if(this._ins != undefined) {
 			this._ins.forEach((edge) => {
@@ -202,7 +205,7 @@ export default class NodeElement extends Listenable {
 			});
 		}
 
-		[c_center_x, c_center_y] = this._computeConnectorCenter();
+		const [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 
 		if(this._outs != undefined) {
 			this._outs.forEach((edge) => {
@@ -214,33 +217,42 @@ export default class NodeElement extends Listenable {
 	_adjustPosition(x,y) {
 		const pw = this._root_el.parentNode.clientWidth;
 		const ph = this._root_el.parentNode.clientHeight;
-		const nw = this._root_el.clientWidth;
-		const nh = this._root_el.clientHeight;
+		const nw = this._root_el.clientWidth / 2.0;
+		const nh = this._root_el.clientHeight / 2.0;
 
-		const adjusted_x = Math.min(Math.max(x, 0), pw - nw);
-		const adjusted_y = Math.min(Math.max(y, 0), ph - nh);
+		const adjusted_x = Math.min(Math.max(x, nw), pw - nw);
+		const adjusted_y = Math.min(Math.max(y, nh), ph - nh);
 		return [adjusted_x, adjusted_y];
 	}
 
 	_snap() {
-		let adj_x = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE,
-			adj_y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
+		// const adj_x = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
+		// const adj_y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
 
-		this.setTranslation(adj_x, adj_y);
-
+		// return [adj_x, adj_y];
 	}
 
-	_computeHeaderCenter() {
-		let center_x = this._translation.x, 
-			center_y = this._translation.y + this._root_el.clientHeight / 2.0;
+	_computeTrueTopLeft() {
+		const left = this._translation.x - this._root_el.clientWidth / 2.0;
+		const top = this._translation.y - this._root_el.clientHeight / 2.0;
 
-		return [center_x, center_y];
+		const snapped_top = Math.round(top / SNAP_SIZE) * SNAP_SIZE;
+		const snapped_left = Math.round(left / SNAP_SIZE) * SNAP_SIZE;
+
+		return this._adjustPosition(snapped_left, snapped_top);
 	}
 
-	_computeConnectorCenter() {
-		let center_x = this._translation.x + this._root_el.clientWidth,
-			center_y = this._translation.y + this._root_el.clientHeight / 2.0;
+	_computeNodeInputAttachment() {
+		const x = this._translation.x;
+		const y = this._translation.y + this._root_el.clientHeight / 2.0;
 
-		return [center_x, center_y];
+		return [x, y];
+	}
+
+	_computeNodeOutputAttachment() {
+		const x = this._translation.x + this._root_el.clientWidth;
+		const y = this._translation.y + this._root_el.clientHeight / 2.0;
+
+		return [x, y];
 	}
 }
