@@ -146,8 +146,6 @@ export default class NodeElement extends Listenable {
 			let center_x = mx + this._center_offset.x;
 			let center_y = my + this._center_offset.y;
 
-			// [center_x, center_y] = this._adjustPosition(center_x, center_y);
-
 			this.setTranslation(center_x, center_y);
 		}).bind(this);
 
@@ -226,32 +224,29 @@ export default class NodeElement extends Listenable {
 	}
 
 	_snap() {
-		// const adj_x = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
-		// const adj_y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
-
+		this._translation.z = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
+		this._translation.y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
+		this._refresh();
 		// return [adj_x, adj_y];
 	}
 
 	_computeTrueTopLeft() {
-		const left = this._translation.x - this._root_el.clientWidth / 2.0;
-		const top = this._translation.y - this._root_el.clientHeight / 2.0;
+		const left = Math.round(this._translation.x - this._root_el.clientWidth / 2.0);
+		const top = Math.round(this._translation.y - this._root_el.clientHeight / 2.0);
 
-		const snapped_top = Math.round(top / SNAP_SIZE) * SNAP_SIZE;
-		const snapped_left = Math.round(left / SNAP_SIZE) * SNAP_SIZE;
-
-		return this._adjustPosition(snapped_left, snapped_top);
+		return this._adjustPosition(left, top);
 	}
 
 	_computeNodeInputAttachment() {
-		const x = this._translation.x;
-		const y = this._translation.y + this._root_el.clientHeight / 2.0;
+		const x = this._translation.x - this._header_el.clientWidth / 2.0;
+		const y = this._translation.y;
 
 		return [x, y];
 	}
 
 	_computeNodeOutputAttachment() {
-		const x = this._translation.x + this._root_el.clientWidth;
-		const y = this._translation.y + this._root_el.clientHeight / 2.0;
+		const x = this._translation.x + this._root_el.clientWidth / 2.0;
+		const y = this._translation.y;
 
 		return [x, y];
 	}

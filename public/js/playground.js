@@ -71,10 +71,10 @@ export default class Playground extends Listenable {
 		});
 
 		node.element.addEventListener('keydown', this.onKeyDown.bind(this));
-		node.setTranslation(50, 50);
 
 		this._nodes.push(node);
 		this._nodes_container.appendChild(node.element);
+		node.setTranslation(50, 50);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
