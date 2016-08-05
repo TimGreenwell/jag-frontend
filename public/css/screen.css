@@ -312,8 +312,8 @@ div#playground div.node header h1.node-name {
 }
 
 div#playground div.node.selected-node header h1.node-name {
-	border: 1px solid var(--main-fg);
-	padding: 0.35em;
+	border: 1px solid var(--input-active);
+	padding: 0.5em;
 }
 
 div#playground div.node div.connector {
