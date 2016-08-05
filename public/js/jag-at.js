@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		ide.handleError(event);
 	});
 
+	graph_service.addListener('info', (event) => {
+		ide.handleInfo(event);
+	});
+
 	playground.addListener('selection', (event) => {
 		properties.handleSelectionUpdate(event);
 		ide.handleSelectionUpdate(event);

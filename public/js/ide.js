@@ -22,6 +22,11 @@ export default class IDE extends Listenable {
 		}
 	}
 
+	handleInfo(event) {
+		let msg = event.data;
+		this._setFeedback(msg);
+	}
+
 	handleError(event) {
 		let msg = 'An unknown error occurred. This should not happen.';
 		if(event.data)

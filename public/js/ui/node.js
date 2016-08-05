@@ -82,6 +82,8 @@ export default class NodeElement extends Listenable {
 			this._connector_el.style.display = 'none';
 		else
 			this._connector_el.style.display = 'block';
+
+		this._snap();
 	}
 
 	addInEdge(edge) {
@@ -168,15 +170,12 @@ export default class NodeElement extends Listenable {
 		});
 
 		this._header_name.addEventListener('transitionend', () => {
-			console.log(`Canceling animation ${this._animation_frame_id}`);
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
 	}
 
 	_animationRefresh() {
-		console.log(`Animation ${this._animation_frame_id}`);
 		this._refresh();
-
 		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
 	}
 

@@ -28,7 +28,6 @@ export default class GraphService extends Listenable {
 
 	_handleMessage(e) {
 		const data = JSON.parse(e.data);
-		console.log(data);
 		this.notify(data.type, data);
 	}
 
@@ -40,7 +39,6 @@ export default class GraphService extends Listenable {
 				provider: provider
 			}
 		};
-
 		this._ch.send(JSON.stringify(payload));
 	}
 
@@ -49,7 +47,6 @@ export default class GraphService extends Listenable {
 			type: 'upload',
 			data: graph
 		};
-
 		this._ch.send(JSON.stringify(payload));
 	}
 }
