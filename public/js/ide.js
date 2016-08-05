@@ -31,6 +31,7 @@ export default class IDE extends Listenable {
 	}
 
 	handleInputs(data) {
+		data.inputs.sort();
 		data.inputs.forEach(input => {
 			this._variables.add(input);
 		});
