@@ -13,7 +13,6 @@ class KPLEdgeElement extends SVGGElement {
 		this._node_origin = undefined;
 		this._node_end = undefined;
 		this._edge_el = document.createElementNS(XMLNS, 'path');
-		this._edge_el.setAttributeNS(null, 'stroke-weight', '2');
 		this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
 		this.appendChild(this._edge_el);
@@ -57,13 +56,17 @@ class KPLEdgeElement extends SVGGElement {
 	}
 
 	_applyPath() {
+		const ox = Math.round(this._origin.x) + 0.5;
+		const oy = Math.round(this._origin.y) + 0.5;
+		const ex = Math.round(this._end.x) + 0.5;
+		const ey = Math.round(this._end.y) + 0.5;
+		const delta_x = (ex - ox) / 2.0;
+		const x1 = ox + delta_x;
+		const y1 = oy;
+		const x2 = ex - delta_x;
+		const y2 = ey;
 
-		let x1 = this._origin.x + 50,
-			y1 = this._origin.y,
-			x2 = this._end.x - 50,
-			y2 = this._end.y;
-
-		this._data = `M ${this._origin.x} ${this._origin.y} C ${x1} ${y1}, ${x2} ${y2}, ${this._end.x} ${this._end.y}`;
+		this._data = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
 
 		this._edge_el.setAttributeNS(null, 'd', this._data);
 	}
