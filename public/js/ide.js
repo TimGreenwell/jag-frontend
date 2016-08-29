@@ -7,7 +7,8 @@ export default class IDE extends Listenable {
 		super();
 		this._container = ide_container;
 		this._variables = new Set();
-		this._inputs = this._container.querySelector('#ide-inputs');
+		this._inputs = this._container.querySelector('#behavior-inputs');
+		this._actor = this._container.querySelector('#behavior-actor');
 		this._instance_inputs = new Map();
 		this._init();
 	}
@@ -38,6 +39,7 @@ export default class IDE extends Listenable {
 	handleInputs(data) {
 		data.inputs.sort();
 		data.inputs.forEach(input => {
+			this._addActorOption(input);
 			this._variables.add(input);
 		});
 	}
@@ -49,7 +51,6 @@ export default class IDE extends Listenable {
 
 		if(selection.size == 1) {
 			const node = selection.values().next().value;
-
 			node.model.inputs.forEach(input => {
 				this.addInputElement(input, this._variables);
 			});
@@ -77,6 +78,17 @@ export default class IDE extends Listenable {
 		li.appendChild(label);
 		li.appendChild(select);
 		this._inputs.appendChild(li);
+	}
+
+	_addActorOption(input) {
+		const opt_el = document.createElement('option');
+		opt_el.value = input;
+		opt_el.text = input;
+		this._actor.add(opt_el);
+	}
+
+	_getInstanceActor() {
+		return this._actor.value; 
 	}
 
 	_createInstanceProvider() {
@@ -112,7 +124,13 @@ export default class IDE extends Listenable {
 			const icon = this._run.querySelector('.button-icon');
 			icon.style.backgroundImage = 'url("/icons/pause.png")';
 			const provider = this._createInstanceProvider();
-			this.notify('run', provider);
+			const actor = this._getInstanceActor();
+			const instance_data = {
+				'inputs': provider,
+				'actor': actor
+			};
+
+			this.notify('run', instance_data);
 		});
 
 		this._feedback = this._container.querySelector('#ide-feedback');

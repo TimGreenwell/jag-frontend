@@ -31,12 +31,13 @@ export default class GraphService extends Listenable {
 		this.notify(data.type, data);
 	}
 
-	runGraph(urn, provider) {
+	runGraph(urn, data) {
 		const payload = {
 			type: 'run',
 			data: {
 				urn: urn,
-				provider: provider
+				inputs: data.inputs,
+				actor: data.actor
 			}
 		};
 		this._ch.send(JSON.stringify(payload));

@@ -237,6 +237,10 @@ side#ide h1 {
 	margin: 0.75em;
 }
 
+side#ide ul {
+	width: 100%;
+}
+
 side#ide ul li {
 	display: flex;
 }
@@ -245,7 +249,8 @@ side#ide ul li > label {
 	font-size: 1.25em;
 }
 
-side#ide ul li > * {
+side#ide ul li > label,
+side#ide ul li > select {
 	margin: 0.75em;
 	align-self: center;
 	width: 15%;
