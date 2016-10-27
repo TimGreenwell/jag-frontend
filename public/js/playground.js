@@ -40,13 +40,16 @@ export default class Playground extends Listenable {
 	}
 
 	getSelectedAsJSON() {
-		if(this._selected.size != 1)
+		if(this._selected.size == 0)
 			return undefined;
 
 		return this._selected.values().next().value.model.toJSON();
 	}
 
 	getSelectedURN() {
+		if(this._selected.size == 0)
+			return undefined;
+
 		return this._selected.values().next().value.model.urn;
 	}
 
@@ -74,7 +77,6 @@ export default class Playground extends Listenable {
 
 		this._nodes.push(node);
 		this._nodes_container.appendChild(node.element);
-		node.setTranslation(50, 50);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
@@ -103,7 +105,12 @@ export default class Playground extends Listenable {
 	}
 
 	handleItemSelected(item) {
-		this.addNode(item);
+		if(item.top) {
+			this._addNodeRecursive(item);
+		} else {
+			const node = this.addNode(item);
+			node.setTranslation(50, 500);
+		}
 	}
 
 	_createEdge(origin) {
@@ -171,6 +178,36 @@ export default class Playground extends Listenable {
 	}
 
 
+	_addNodeRecursive(item) {
+		const definition_set = item.definition_set;
+
+		const recursive_add = (sub_item, x, y) => {
+			const node = this.addNode(sub_item);
+			node.setTranslation(x + node.element.clientWidth / 2.0 ,y);
+
+			if(!sub_item.children)
+				return node;
+
+			const item_num = sub_item.children.length;
+			let y_offset = y - (item_num / 2) * 50;
+			const x_offset = x+node.element.clientWidth;
+
+			sub_item.children.forEach((child) => {
+				for(const def of definition_set) {
+					if(def.urn == child) {
+						const sub_node = recursive_add(def, x_offset, y_offset);
+						let edge = this._createEdge(node);
+						edge.setNodeEnd(sub_node);
+						y_offset += 50;
+					}
+				}
+			});
+
+			return node;
+		}
+
+		recursive_add(item.top, 50, 500);
+	}
 
 	_generateActivityGraphFromJSON(json) {
 		console.log(json);

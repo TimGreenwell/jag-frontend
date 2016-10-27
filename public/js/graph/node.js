@@ -90,12 +90,12 @@ export default class GraphNode {
 		this._parent = node;
 	}
 
-	addInput(input_name) {
-		this._inputs.add(input_name);
+	addInput(input) {
+		this._inputs.add(input);
 	}
 
-	addOutput(output_name) {
-		this._outputs.add(output_name);
+	addOutput(output) {
+		this._outputs.add(output);
 	}
 
 	addChild(child) {
@@ -111,7 +111,14 @@ export default class GraphNode {
 
 		this._bindings.add(binding);
 
-		console.log(this._bindings);
+		// Sets the type of the provider's input to the type of the consumer's it's bound to.
+		const consumer_node = this.getNodeForId(binding.consumer.id);
+		const provider_node = this.getNodeForId(binding.provider.id);
+
+		const consumer_property = consumer_node.getPropertyForName(binding.consumer.property);
+		const provider_property = provider_node.getPropertyForName(binding.provider.property);
+
+		provider_property.type = consumer_property.type;
 	}
 
 	/**
@@ -134,6 +141,27 @@ export default class GraphNode {
 		return undefined;
 	}
 
+	getNodeForId(id) {
+		if(id === 'this')
+			return this;
+
+		return this._children.get(id);
+	}
+
+	getPropertyForName(property) {
+		for(let input of this._inputs) {
+			if(input.name == property)
+				return input;
+		}
+
+		for(let output of this._outputs) {
+			if(output.name == property)
+				return output;
+		}
+
+		return undefined;
+	}
+
 	static fromJSON(json_node) {
 		const node = new GraphNode({
 			urn: json_node.urn,
@@ -147,8 +175,8 @@ export default class GraphNode {
 		json_node.outputs.forEach(node.addOutput.bind(node));
 
 		if(json_node.type === 'goal') {
-			json_node.children.forEach(node.addChild.bind(node));
-			json_node.bindings.forEach(node.addBinding.bind(node));
+			// json_node.children.forEach(node.addChild.bind(node));
+			// json_node.bindings.forEach(node.addBinding.bind(node));
 		}
 
 		return node;

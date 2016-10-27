@@ -33,14 +33,14 @@ export default class NodeProperties extends Listenable {
 				input_options = this.findInputOptions();
 
 			node.model.inputs.forEach(input => {
-				const input_id = `${input}-inputs-property`;
+				const input_id = `${input.name}-inputs-property`;
 				this.addInputElement(input_id, input, input_options);
 			});
 
 			const output_options = undefined;
 			node.model.outputs.forEach(output => {
 				const output_id = `${output}-outputs-property`;
-				this.addOutputElement(output_id, output, output_options);
+				this.addOutputElement(output_id, {name: output}, output_options);
 			});
 
 			if(node.model.parent) {
@@ -59,28 +59,36 @@ export default class NodeProperties extends Listenable {
 
 	addInput(e) {
 		const name = window.prompt('Input name');
+		if(name === null)
+			return;
 
 		let options = undefined;
 		if(this._node.model.parent)
 			options = this.findInputOptions();
 
+		const input = {
+			name: name,
+			type: undefined
+		};
+
 		const input_id = `${name}-inputs-property`;
-		this.addInputElement(input_id, name, options);
-		this._node.model.addInput(name);
+		this.addInputElement(input_id, input, options);
+		this._node.model.addInput(input);
 	}
 
-	addInputElement(id, name, options) {
-		const input_el = createPropertyElement(id, name);
+	addInputElement(id, input, options) {
+		const input_el = createPropertyElement(id, input.name);
 
 		// only creates select element if option is defined
 		if(options != undefined) {
-			const input = createSelect(id, options);
-			input.addEventListener('change', e => {
+			const select_el = createSelect(id, options);
+			select_el.addEventListener('change', e => {
 				const provider = e.target.selectedOptions[0].value.split(':');
+
 				this._node.model.parent.addBinding({
 					consumer: {
 						id: this._node.model.id,
-						property: name
+						property: input.name
 					},
 					provider: {
 						id: provider[0],
@@ -88,15 +96,15 @@ export default class NodeProperties extends Listenable {
 					}
 				});
 			});
-			input_el.appendChild(input);
-			this._input_elements.set(id, input);
+			input_el.appendChild(select_el);
+			this._input_elements.set(id, select_el);
 		}
 
 		this._inputs.appendChild(input_el);
 	}
 
-	addOutputElement(id, name, options) {
-		const output_el = createPropertyElement(id, name);
+	addOutputElement(id, output, options) {
+		const output_el = createPropertyElement(id, output.name);
 		// const output = createSelect(id, options);
 		// output_el.appendChild(output);
 		// this._output_elements.set(id, output);
@@ -111,8 +119,8 @@ export default class NodeProperties extends Listenable {
 
 		this._node.model.parent.inputs.forEach((input) => {
 			options.push({
-				text: `${this._node.model.parent.name}:${input}`,
-				value: `this:${input}`
+				text: `${this._node.model.parent.name}:${input.name}`,
+				value: `this:${input.name}`
 			});
 		});
 

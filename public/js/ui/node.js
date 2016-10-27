@@ -214,11 +214,11 @@ export default class NodeElement extends Listenable {
 	_adjustPosition(x,y) {
 		const pw = this._root_el.parentNode.clientWidth;
 		const ph = this._root_el.parentNode.clientHeight;
-		const nw = this._root_el.clientWidth / 2.0;
-		const nh = this._root_el.clientHeight / 2.0;
+		const nw = this._root_el.clientWidth;
+		const nh = this._root_el.clientHeight;
 
-		const adjusted_x = Math.min(Math.max(x, nw), pw - nw);
-		const adjusted_y = Math.min(Math.max(y, nh), ph - nh);
+		const adjusted_x = Math.min(Math.max(x, 0), pw - nw);
+		const adjusted_y = Math.min(Math.max(y, 0), ph - nh);
 		return [adjusted_x, adjusted_y];
 	}
 

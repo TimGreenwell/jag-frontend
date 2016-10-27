@@ -8,7 +8,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bin/app.js public/",
+    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;rollup -i public/js/jag-at.js -o dist/js/jag-at.js+bundle;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;"
   },
   "repository": {
     "type": "git",

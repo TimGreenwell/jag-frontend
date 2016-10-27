@@ -35,14 +35,28 @@ export default class Library extends Listenable {
 		});
 
 		li.addEventListener('click', (event) => {
-			this.notify('item-selected', definition);
+			if(event.shiftKey) {
+				const all_definitions = this._getChildDefinitions(definition, new Set());
+				this.notify('item-selected', {
+					top: definition,
+					definition_set: all_definitions
+				});
+			}
+			else
+			{
+				this.notify('item-selected', definition);
+			}
 		});
 
 		this._list.appendChild(li);
 	}
 
-	handleResourceUpdate(event) {
-		event.resources.forEach((resource) => {
+	handleResourceUpdate(message) {
+		message.data.sort((a, b) => {
+			return a.name.localeCompare(b.name);
+		});
+
+		message.data.forEach((resource) => {
 			this.addItem(resource);
 		});
 	}
@@ -59,6 +73,31 @@ export default class Library extends Listenable {
 			if(!item.search_content.includes(search_text))
 				item.element.style.display = 'none';
 		});
+	}
+
+	_getChildDefinitions(definition, set) {
+		if(!definition.children)
+			return set;
+
+
+		definition.children.forEach((child_urn) => {
+			const child = this._getDefinitionForURN(child_urn);
+
+			set.add(child);
+			set = this._getChildDefinitions(child, set);
+		});
+
+		return set;
+	}
+
+	_getDefinitionForURN(urn) {
+		for(const item of this._items)
+		{
+			if(item.definition.urn == urn)
+				return item.definition;
+		}
+
+		return undefined;
 	}
 }
 

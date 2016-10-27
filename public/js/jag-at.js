@@ -25,24 +25,24 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		playground.handleItemSelected(item);
 	});
 
-	graph_service.addListener('resources', (event) => {
-		library.handleResourceUpdate(event);
+	graph_service.addListener('resources', (message) => {
+		library.handleResourceUpdate(message);
 	});
 
-	graph_service.addListener('inputs', (event) => {
-		ide.handleInputs(event);
+	graph_service.addListener('inputs', (message) => {
+		ide.handleInputs(message);
 	});
 
 	graph_service.addListener('connection', (event) => {
 		ide.handleConnection(event);
 	});
 
-	graph_service.addListener('error', (event) => {
-		ide.handleError(event);
+	graph_service.addListener('error', (message) => {
+		ide.handleError(message);
 	});
 
-	graph_service.addListener('info', (event) => {
-		ide.handleInfo(event);
+	graph_service.addListener('info', (message) => {
+		ide.handleInfo(message);
 	});
 
 	playground.addListener('selection', (event) => {
@@ -56,17 +56,28 @@ document.addEventListener('DOMContentLoaded', (e) => {
 
 	ide.addListener('upload', (event) => {
 		const json = playground.getSelectedAsJSON();
-		console.log(JSON.stringify(json));
-		if(json != undefined)
+		if(json == undefined) {
+			ide.handleError({
+				data: 'No graph selected.'
+			});
+
+			ide.stop();
+		} else {
 			graph_service.uploadGraph(json);
+		}
 	});
 
 	ide.addListener('run', (data) => {
 		const urn = playground.getSelectedURN();
-		console.log(data);
+		if(urn == undefined) {
+			ide.handleError({
+				data: 'No graph selected.'
+			});
 
-		if(urn != undefined)
+			ide.stop();
+		} else {
 			graph_service.runGraph(urn, data);
+		}
 	});
 
 	loadStaticLibrary(library);
