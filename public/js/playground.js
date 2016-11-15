@@ -179,6 +179,7 @@ export default class Playground extends Listenable {
 
 
 	_addNodeRecursive(item) {
+		const margin = 10;
 		const definition_set = item.definition_set;
 
 		const recursive_add = (sub_item, x, y) => {
@@ -188,18 +189,24 @@ export default class Playground extends Listenable {
 			if(!sub_item.children)
 				return node;
 
-			const item_num = sub_item.children.length;
-			let y_offset = y - (item_num / 2) * 50;
-			const x_offset = x+node.element.clientWidth;
+			const preferred_size = this._getNodePreferredHeight(sub_item, definition_set);
+
+			// assume all children have same height as the parent.
+			const node_height = node.element.clientHeight + margin;
+			const preferred_height = preferred_size * node_height;
+
+			const x_offset = x + node.element.clientWidth + margin;
+			let y_offset = y - preferred_height / 2;
 
 			sub_item.children.forEach((child) => {
-				for(const def of definition_set) {
-					if(def.urn == child) {
-						const sub_node = recursive_add(def, x_offset, y_offset);
-						let edge = this._createEdge(node);
-						edge.setNodeEnd(sub_node);
-						y_offset += 50;
-					}
+				const def = this._getDefinitionFromURN(child, definition_set);
+				if(def) {
+					const local_preferred_size = this._getNodePreferredHeight(def, definition_set);
+					y_offset += (local_preferred_size * node_height) / 2;
+					const sub_node = recursive_add(def, x_offset, y_offset);
+					y_offset += (local_preferred_size * node_height) / 2;
+					let edge = this._createEdge(node);
+					edge.setNodeEnd(sub_node);
 				}
 			});
 
@@ -207,6 +214,16 @@ export default class Playground extends Listenable {
 		}
 
 		recursive_add(item.top, 50, 500);
+	}
+
+	_getNodePreferredHeight(item, definition_set) {
+		if(!item.children || item.children.size === 0)
+			return 1;
+
+		return item.children.reduce((cut_set_size, child) => {
+			const def = this._getDefinitionFromURN(child, definition_set);
+			return cut_set_size + (def ? this._getNodePreferredHeight(def, definition_set) : 0);
+		}, 0);
 	}
 
 	_generateActivityGraphFromJSON(json) {
@@ -244,6 +261,12 @@ export default class Playground extends Listenable {
 			x_start += 175;
 
 		});
+	}
+
+	_getDefinitionFromURN(urn, definition_set) {
+		for(const def of definition_set)
+			if(def.urn == urn) return def;
+		return undefined;
 	}
 }
 

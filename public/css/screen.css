@@ -256,7 +256,9 @@ side#ide ul li > label {
 }
 
 side#ide ul li > label,
-side#ide ul li > select {
+side#ide ul li > select,
+side#ide ul li > input
+{
 	margin: 0.75em;
 	align-self: center;
 	width: 15%;
