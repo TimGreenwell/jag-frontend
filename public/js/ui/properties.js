@@ -40,7 +40,7 @@ export default class NodeProperties extends Listenable {
 			const output_options = undefined;
 			node.model.outputs.forEach(output => {
 				const output_id = `${output}-outputs-property`;
-				this.addOutputElement(output_id, {name: output}, output_options);
+				this.addOutputElement(output_id, output, output_options);
 			});
 
 			if(node.model.parent) {
@@ -130,8 +130,8 @@ export default class NodeProperties extends Listenable {
 
 			sibling.outputs.forEach((output) => {
 				options.push({
-					text: `${sibling.name}:${output}`,
-					value: `${sibling.id}:${output}`
+					text: `${sibling.name}:${output.name}`,
+					value: `${sibling.id}:${output.name}`
 				});
 			});
 		});
