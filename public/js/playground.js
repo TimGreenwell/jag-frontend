@@ -185,6 +185,10 @@ export default class Playground extends Listenable {
 		const recursive_add = (sub_item, x, y) => {
 			const node = this.addNode(sub_item);
 			node.setTranslation(x + node.element.clientWidth / 2.0 ,y);
+			if(sub_item.type === 'node.type.plan') {
+				node.operator = sub_item.connector.operator;
+				node.execution = sub_item.connector.execution;
+			}
 
 			if(!sub_item.children)
 				return node;
@@ -213,7 +217,8 @@ export default class Playground extends Listenable {
 			return node;
 		}
 
-		recursive_add(item.top, 50, 500);
+		const ch = this._container.clientHeight;
+		recursive_add(item.top, 10, ch/2);
 	}
 
 	_getNodePreferredHeight(item, definition_set) {

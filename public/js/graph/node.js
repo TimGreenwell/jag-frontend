@@ -187,7 +187,7 @@ export default class GraphNode {
 			urn: this._urn,
 			name: this._name,
 			description: this._desc,
-			type: 'goal',
+			type: 'node.type.plan',
 			connector: {
 				execution: this._execution,
 				operator: this._operator
