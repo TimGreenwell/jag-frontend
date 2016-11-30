@@ -50,7 +50,7 @@ export default class NodeElement extends Listenable {
 	set urn(urn) {
 		this._model.urn = urn;
 	}
-	
+
 	set name(name) {
 		this._model.name = name;
 		this._applyName();
@@ -148,7 +148,7 @@ export default class NodeElement extends Listenable {
 			let center_x = mx + this._center_offset.x;
 			let center_y = my + this._center_offset.y;
 
-			this.setTranslation(center_x, center_y);
+			this.translate(e.movementX, e.movementY, e.shiftKey);
 		}).bind(this);
 
 		this._header_el.addEventListener('mousedown', (e) => {
@@ -181,6 +181,16 @@ export default class NodeElement extends Listenable {
 
 	_refresh() {
 		this.setTranslation(this._translation.x, this._translation.y);
+	}
+
+	translate(dx, dy, recursive = false) {
+		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
+
+		if(this._outs != undefined && recursive) {
+			this._outs.forEach((edge) => {
+				edge._node_end.translate(dx, dy, recursive);
+			});
+		}
 	}
 
 	setTranslation(x, y) {

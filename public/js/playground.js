@@ -90,11 +90,18 @@ export default class Playground extends Listenable {
 
 	deleteSelected() {
 		for(let node of this._selected) {
-			console.log('removing node', node);
 			node.removeAllEdges();
 			this._selected.delete(node);
 			this._nodes_container.removeChild(node.element);
 		}
+	}
+
+	clearPlayground() {
+		for(let node of this._nodes) {
+			node.removeAllEdges();
+			this._nodes_container.removeChild(node.element)
+		}
+		this._nodes = [];
 	}
 
 	fromClientToPlaygroundCoordinates(x, y) {
@@ -123,8 +130,13 @@ export default class Playground extends Listenable {
 	}
 
 	onKeyDown(e) {
-		if(e.key == 'Delete')
-			this.deleteSelected();
+		if(e.key == 'Delete') {
+			if(e.ctrlKey) {
+				this.clearPlayground();
+			} else {
+				this.deleteSelected();
+			}
+		}
 	}
 
 	onEdgeInitialized(e, node) {
