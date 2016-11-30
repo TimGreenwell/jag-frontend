@@ -37,10 +37,10 @@ export default class IDE extends Listenable {
 	}
 
 	handleInputs(message) {
-		message.data.sort();
+		message.data.sort(($1, $2) => { return $1.name.localeCompare($2.name);});
 		message.data.forEach(input => {
-			const typed_input_set = this._getInputSetForVariableType(input.type);
-			typed_input_set.add({
+			const typed_input_set = this._getInputArrayForVariableType(input.type);
+			typed_input_set.push({
 				id: input.id,
 				name: input.name
 			});
@@ -113,9 +113,9 @@ export default class IDE extends Listenable {
 		return this._actor.value;
 	}
 
-	_getInputSetForVariableType(type) {
+	_getInputArrayForVariableType(type) {
 		if(!this._variables.has(type))
-			this._variables.set(type, new Set());
+			this._variables.set(type, new Array());
 
 		return this._variables.get(type);
 	}
@@ -197,7 +197,7 @@ export default class IDE extends Listenable {
 			this._actor.removeChild(this._actor.firstChild);
 
 		// Add all the actors available
-		const available_actors = this._getInputSetForVariableType('actor');
+		const available_actors = this._getInputArrayForVariableType('actor');
 		available_actors.forEach(actor => {
 			const opt_el = document.createElement('option');
 			opt_el.value = actor.id;

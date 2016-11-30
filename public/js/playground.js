@@ -108,8 +108,9 @@ export default class Playground extends Listenable {
 		if(item.top) {
 			this._addNodeRecursive(item);
 		} else {
+			const ch = this._container.clientHeight;
 			const node = this.addNode(item);
-			node.setTranslation(50, 500);
+			node.setTranslation(10 + node.element.clientWidth / 2.0 ,ch/2);
 		}
 	}
 
@@ -184,11 +185,11 @@ export default class Playground extends Listenable {
 
 		const recursive_add = (sub_item, x, y) => {
 			const node = this.addNode(sub_item);
-			node.setTranslation(x + node.element.clientWidth / 2.0 ,y);
 			if(sub_item.type === 'node.type.plan') {
 				node.operator = sub_item.connector.operator;
 				node.execution = sub_item.connector.execution;
 			}
+			node.setTranslation(x + node.element.clientWidth / 2.0 ,y);
 
 			if(!sub_item.children)
 				return node;

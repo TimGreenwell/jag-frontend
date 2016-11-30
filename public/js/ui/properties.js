@@ -195,6 +195,11 @@ export default class NodeProperties extends Listenable {
 		this._outputs = createEmptyInputContainer('outputs-property');
 		outputs_el.appendChild(this._outputs);
 
+		const export_el = createEmptyInputContainer('export');
+		this._export = document.createElement('button');
+		this._export.innerHTML = 'export';
+		export_el.appendChild(this._export);
+
 		this._enableProperties(false);
 
 		this._container.appendChild(urn_el);
@@ -204,6 +209,7 @@ export default class NodeProperties extends Listenable {
 		this._container.appendChild(operator_el);
 		this._container.appendChild(inputs_el);
 		this._container.appendChild(outputs_el);
+		this._container.appendChild(export_el);
 	}
 
 	_initHandlers() {
@@ -225,6 +231,17 @@ export default class NodeProperties extends Listenable {
 
 		this._operator.addEventListener('change', e => {
 			this._node.operator = this._operator.value;
+		});
+
+		this._export.addEventListener('click', e => {
+			const node = this._node.model;
+
+			const json = JSON.stringify(node.toJSON());
+			const a = document.createElement('a');
+			const data = `data:application/json,${encodeURI(json)}`;
+			a.href = data;
+			a.download = `${node.name}.json`;
+			a.click();
 		});
 	}
 
@@ -255,6 +272,7 @@ export default class NodeProperties extends Listenable {
 
 		this._input_elements.disabled = !enabled;
 		this._output_elements.disabled = !enabled;
+		this._export.disabled = !enabled;
 	}
 }
 
