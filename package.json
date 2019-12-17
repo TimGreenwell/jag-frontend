@@ -4,12 +4,13 @@
   "description": "",
   "main": "",
   "dependencies": {
-    "goblin": "git+https://github.com/Noodep/Goblin.git#develop"
+    "express": "^4.17.1",
+    "express-session": "^1.17.0"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node bin/app.js public/",
-    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;rollup -i public/js/jag-at.js -o dist/js/jag-at.js+bundle;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;"
+    "start": "node bin/app.js development",
+    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;"
   },
   "repository": {
     "type": "git",

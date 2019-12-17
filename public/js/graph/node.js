@@ -1,6 +1,6 @@
 'use strict';
 
-import {UUIDv4} from '../../../node_modules/goblin/src/crypto/uuid.js';
+import {UUIDv4} from '../../../lib/uuid';
 
 export default class GraphNode {
 	constructor({urn, name, execution = GraphNode.EXECUTION.NONE, operator = GraphNode.OPERATOR.NONE, desc = ''} = {}) {
