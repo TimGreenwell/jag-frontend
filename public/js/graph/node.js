@@ -1,6 +1,6 @@
 'use strict';
 
-import {UUIDv4} from '../../../lib/uuid';
+import {UUIDv4} from '../lib/uuid.js';
 
 export default class GraphNode {
 	constructor({urn, name, execution = GraphNode.EXECUTION.NONE, operator = GraphNode.OPERATOR.NONE, desc = ''} = {}) {
