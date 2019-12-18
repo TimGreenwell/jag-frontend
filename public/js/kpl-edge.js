@@ -1,13 +1,13 @@
 const XMLNS = 'http://www.w3.org/2000/svg';
 
-class KPLEdgeElement extends SVGGElement {
-
-	createdCallback() {
+export default class KPLEdge {
+	constructor() {
 		console.log('Creating new KPLEdge');
 		this.init();
 	}
 
 	init() {
+		this._group = document.createElementNS(XMLNS, 'g');
 		this._origin = {x : 0, y : 0};
 		this._end = {x : 0, y : 0};
 		this._node_origin = undefined;
@@ -15,7 +15,7 @@ class KPLEdgeElement extends SVGGElement {
 		this._edge_el = document.createElementNS(XMLNS, 'path');
 		this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
-		this.appendChild(this._edge_el);
+		this._group.appendChild(this._edge_el);
 
 		this._edge_el.addEventListener('click', e => {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
@@ -23,7 +23,7 @@ class KPLEdgeElement extends SVGGElement {
 	}
 
 	destroy() {
-		this.ownerSVGElement.removeChild(this);
+		this._group.ownerSVGElement.removeChild(this._group);
 
 		if(this._node_origin != undefined)
 			this._node_origin.removeOutEdge(this);
@@ -75,22 +75,17 @@ class KPLEdgeElement extends SVGGElement {
 		this._is_greyed_out = is_greyed_out;
 
 		if(is_greyed_out)
-			this.className = 'greyed-out-node';
+			this._group.className = 'greyed-out-node';
 		else
-			this.className = '';
+			this._group.className = '';
 	}
 
 	setSelected(is_selected) {
 		this._is_selected = is_selected;
 
 		if(is_selected)
-			this.className = 'selected-node';
+			this._group.className = 'selected-node';
 		else
-			this.className = '';
+			this._group.className = '';
 	}
 }
-
-export default document.registerElement('kpl-edge', {
-	prototype: KPLEdgeElement.prototype,
-	extends: 'g'
-});

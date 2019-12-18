@@ -125,7 +125,7 @@ export default class Playground extends Listenable {
 		const edge = new KPLEdge();
 
 		edge.setNodeOrigin(origin);
-		this._edges_container.appendChild(edge);
+		this._edges_container.appendChild(edge._group);
 		return edge;
 	}
 

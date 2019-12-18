@@ -97,8 +97,8 @@ export default class NodeElement extends Listenable {
 	}
 
 	removeAllEdges() {
-		this._ins.forEach(edge => edge.remove());
-		this._outs.forEach(edge => edge.remove());
+		this._ins.forEach(edge => edge.destroy());
+		this._outs.forEach(edge => edge.destroy());
 	}
 
 	addOnEdgeInitializedListener(listener) {
