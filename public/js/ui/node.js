@@ -117,10 +117,12 @@ export default class NodeElement extends Listenable {
 		let [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 		edge.setOrigin(c_center_x, c_center_y);
 		this._outs.add(edge);
+		this._model.addChild(edge.getNodeEnd().model);
 	}
 
 	removeOutEdge(edge) {
 		this._outs.delete(edge);
+		this._model.removeChild(edge.getNodeEnd().model);
 	}
 
 	setSelected(is_selected) {

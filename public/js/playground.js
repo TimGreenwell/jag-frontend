@@ -16,6 +16,7 @@ export default class Playground extends Listenable {
 		this._container.appendChild(this._edges_container);
 
 		this._nodes_container = document.createElement('div');
+		this._nodes_container.style.pointerEvents = "none";
 		this._container.appendChild(this._nodes_container);
 
 		this._nodes = [];
@@ -122,10 +123,8 @@ export default class Playground extends Listenable {
 	}
 
 	_createEdge(origin) {
-		const edge = new KPLEdge();
-
+		const edge = new KPLEdge(this._edges_container);
 		edge.setNodeOrigin(origin);
-		this._edges_container.appendChild(edge._group);
 		return edge;
 	}
 
@@ -161,15 +160,12 @@ export default class Playground extends Listenable {
 
 		this._is_edge_being_created = false;
 		this._created_edge.setNodeEnd(node);
-
-		// TEMPORARY QUICK HACK ! VERY BAD ! DO NOT DO ! PLEASE FIX !
-		this._created_edge._node_origin.model.addChild(node.model);
 	}
 
 	onEdgeCanceled(e, node) {
 		if(!this._is_edge_being_created)
 			return;
-		this._created_edge.remove();
+		this._created_edge.destroy();
 		this._created_edge = undefined;
 		this._is_edge_being_created = false;
 	}

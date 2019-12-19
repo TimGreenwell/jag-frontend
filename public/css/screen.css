@@ -293,6 +293,7 @@ div#playground div.node {
 	z-index: 3;
 	top: 0px;
 	left: 0px;
+	pointer-events: all;
 }
 
 div#playground div.node > * {
@@ -377,3 +378,7 @@ div#playground div.node div.node-io div.io-options {
 	text-align: right;
 }
 
+div#playground svg text.sequential-label {
+	font-family: sans-serif;
+	font-size: 8pt;
+}
