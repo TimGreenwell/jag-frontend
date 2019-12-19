@@ -14,7 +14,6 @@ export default class GraphNode {
 		this._outputs = new Set();
 		this._children = new Array();
 		this._bindings = new Set();
-		this.ordered = undefined;
 
 		this._parent = undefined;
 	}
