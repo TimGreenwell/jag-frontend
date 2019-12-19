@@ -12,7 +12,7 @@ export default class GraphNode {
 		this._operator = operator;
 		this._inputs = new Set();
 		this._outputs = new Set();
-		this._children = new Map();
+		this._children = new Array();
 		this._bindings = new Set();
 		this.ordered = undefined;
 
@@ -45,7 +45,6 @@ export default class GraphNode {
 
 	set execution(type) {
 		this._execution = type;
-		this._updateOrder();
 	}
 
 	get execution() {
@@ -92,11 +91,6 @@ export default class GraphNode {
 		this._parent = node;
 	}
 
-	_updateOrder() {
-		// If the execution is sequential, order is taken to be the insertion order in the map.
-		this._ordered = this._execution == GraphNode.EXECUTION.PARALLEL ? undefined : Array.from(this._children.keys());
-	}
-
 	addInput(input) {
 		this._inputs.add(input);
 	}
@@ -106,15 +100,18 @@ export default class GraphNode {
 	}
 
 	addChild(child) {
-		this._children.set(child.id, child);
+		this._children.push(child);
 		child.parent = this;
-		this._updateOrder();
+		// TODO: dispatch event
 	}
 
 	removeChild(child) {
-		this._children.delete(child.id);
-		child.parent = undefined;
-		this._updateOrder();
+		this._children = this._children.filter((c) => {
+			let ret = c.id !== child.id;
+			if (!ret) c.parent = undefined;
+			return ret;
+		});
+		// TODO: dispatch event
 	}
 
 	addBinding(binding) {
@@ -177,7 +174,15 @@ export default class GraphNode {
 	}
 
 	getOrderForId(id) {
-		return this._ordered ? this._ordered.indexOf(id) + 1 : 0;
+		if (this._execution == GraphNode.EXECUTION.PARALLEL) return 0;
+
+		for (let i = 0; i < this._children.length; ++i) {
+			if (this._children[i].id === id) {
+				return i + 1;
+			}
+		}
+		
+		return 0;
 	}
 
 	static fromJSON(json_node) {
@@ -219,8 +224,7 @@ export default class GraphNode {
 		this._children.forEach((child, id) => {
 			json.children.push({
 				urn: child.urn,
-				id: child.id,
-				order: this.getOrderForId(id)
+				id: child.id
 			});
 		});
 
