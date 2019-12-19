@@ -53,14 +53,13 @@ export default class KPLEdge {
 
 	setNodeOrigin(node) {
 		this._node_origin = node;
+		this._node_origin.prepareOutEdge(this);
 	}
 
 	setNodeEnd(node) {
 		this._node_end = node;
-
-		this._node_origin.addOutEdge(this);
 		this._node_end.addInEdge(this);
-
+		this._node_origin.completeOutEdge(this);
 		this._updateOrder();
 	}
 

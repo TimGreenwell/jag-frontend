@@ -113,9 +113,12 @@ export default class NodeElement extends Listenable {
 		});
 	}
 
-	addOutEdge(edge) {
+	prepareOutEdge(edge) {
 		let [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 		edge.setOrigin(c_center_x, c_center_y);
+	}
+
+	completeOutEdge(edge) {
 		this._outs.add(edge);
 		this._model.addChild(edge.getNodeEnd().model);
 	}
