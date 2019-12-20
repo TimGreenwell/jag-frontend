@@ -1,3 +1,5 @@
+import GraphNode from "./graph/node.js";
+
 const XMLNS = 'http://www.w3.org/2000/svg';
 
 export default class KPLEdge extends EventTarget {
@@ -26,7 +28,18 @@ export default class KPLEdge extends EventTarget {
 
 		this._boundUpdateOrder = this._updateOrder.bind(this);
 		this._boundHandleSelection = this._handleSelection.bind(this);
+		this._boundUpdateStrokeDash = this._updateStrokeDash.bind(this);
 		parent.addEventListener('click', this._boundHandleSelection);
+	}
+
+	_updateStrokeDash(e) {
+		if (this._node_origin) {
+			if (this._node_origin.model.operator == GraphNode.OPERATOR.OR) {
+				this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
+			} else {
+				this._edge_el.removeAttributeNS(null, 'stroke-dasharray');
+			}
+		}
 	}
 
 	_handleSelection(e) {
@@ -49,6 +62,7 @@ export default class KPLEdge extends EventTarget {
 		if(this._node_origin != undefined) {
 			this._node_origin.model.removeEventListener('update-children', this._boundUpdateOrder);
 			this._node_origin.model.removeEventListener('update-execution', this._boundUpdateOrder);
+			this._node_origin.model.removeEventListener('update-operator', this._boundUpdateStrokeDash);
 			this._node_origin.removeOutEdge(this);
 		}
 		if(this._node_end != undefined)
@@ -66,6 +80,7 @@ export default class KPLEdge extends EventTarget {
 	setNodeOrigin(node) {
 		this._node_origin = node;
 		this._node_origin.prepareOutEdge(this);
+		this._updateStrokeDash(null);
 	}
 
 	setNodeEnd(node) {
@@ -74,6 +89,7 @@ export default class KPLEdge extends EventTarget {
 
 		this._node_origin.model.addEventListener('update-children', this._boundUpdateOrder);
 		this._node_origin.model.addEventListener('update-execution', this._boundUpdateOrder);
+		this._node_origin.model.addEventListener('update-operator', this._boundUpdateStrokeDash);
 
 		this._node_origin.completeOutEdge(this);
 	}

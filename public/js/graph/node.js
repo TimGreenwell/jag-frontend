@@ -54,6 +54,7 @@ export default class GraphNode extends EventTarget {
 
 	set operator(type) {
 		this._operator = type;
+		this.dispatchEvent(new Event('update-operator'));
 	}
 
 	get operator() {
