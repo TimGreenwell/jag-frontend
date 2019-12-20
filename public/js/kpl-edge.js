@@ -37,8 +37,11 @@ export default class KPLEdge {
 	destroy() {
 		this._parent.removeChild(this._group);
 
-		if(this._node_origin != undefined)
+		if(this._node_origin != undefined) {
+			this._node_origin.model.removeEventListener('update-children', this._updateOrder.bind(this));
+			this._node_origin.model.removeEventListener('update-execution', this._updateOrder.bind(this));
 			this._node_origin.removeOutEdge(this);
+		}
 		if(this._node_end != undefined)
 			this._node_end.removeInEdge(this);
 	}
@@ -59,8 +62,11 @@ export default class KPLEdge {
 	setNodeEnd(node) {
 		this._node_end = node;
 		this._node_end.addInEdge(this);
+
+		this._node_origin.model.addEventListener('update-children', this._updateOrder.bind(this));
+		this._node_origin.model.addEventListener('update-execution', this._updateOrder.bind(this));
+
 		this._node_origin.completeOutEdge(this);
-		this._updateOrder();
 	}
 
 	setOrigin(x, y) {
@@ -97,7 +103,7 @@ export default class KPLEdge {
 		this._text_el.setAttributeNS(null, 'y', my);
 	}
 
-	_updateOrder() {
+	_updateOrder(e) {
 		let order = this._node_origin.model.getOrderForId(this._node_end.model.id);
 		this._text_el.innerHTML = order == 0 ? '' : order;
 	}
