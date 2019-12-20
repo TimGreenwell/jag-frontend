@@ -3,7 +3,6 @@
 import GraphNode from './graph/node.js';
 import NodeElement from './ui/node.js';
 import KPLEdge from './kpl-edge.js';
-import {SelectionEvent} from './events.js';
 
 export default class Playground extends EventTarget {
 
@@ -30,7 +29,7 @@ export default class Playground extends EventTarget {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
 		this._container.addEventListener('mousedown', (e) => {
 			this.deselectAll();
-			this.dispatchEvent(new SelectionEvent('selection', this._selected));
+			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 		});
 
 		this._container.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
@@ -70,7 +69,7 @@ export default class Playground extends EventTarget {
 
 			this._selected.add(node);
 			node.setSelected(true);
-			this.dispatchEvent(new SelectionEvent('selection', this._selected));
+			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 			e.stopPropagation();
 		});
 

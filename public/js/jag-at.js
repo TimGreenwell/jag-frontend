@@ -22,32 +22,32 @@ document.addEventListener('DOMContentLoaded', (e) => {
 	const graph_service = new GraphService();
 
 	library.addEventListener('item-selected', (e) => {
-		playground.handleItemSelected(e.data);
+		playground.handleItemSelected(e.detail);
 	});
 
 	graph_service.addEventListener('resources', (e) => {
-		library.handleResourceUpdate(e.data);
+		library.handleResourceUpdate(e.detail);
 	});
 
 	graph_service.addEventListener('inputs', (e) => {
-		ide.handleInputs(e.data);
+		ide.handleInputs(e.detail);
 	});
 
 	graph_service.addEventListener('connection', (e) => {
-		ide.handleConnection(e.data);
+		ide.handleConnection(e);
 	});
 
 	graph_service.addEventListener('error', (e) => {
-		ide.handleError(e.data);
+		ide.handleError(e.detail);
 	});
 
 	graph_service.addEventListener('info', (e) => {
-		ide.handleInfo(e.data);
+		ide.handleInfo(e.detail);
 	});
 
 	playground.addEventListener('selection', (e) => {
-		properties.handleSelectionUpdate(e.data);
-		ide.handleSelectionUpdate(e.data);
+		properties.handleSelectionUpdate(e.detail);
+		ide.handleSelectionUpdate(e.detail);
 	});
 
 	ide.addEventListener('connect', (e) => {
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', (e) => {
 
 			ide.stop();
 		} else {
-			graph_service.runGraph(urn, e.data);
+			graph_service.runGraph(urn, e.detail);
 		}
 	});
 

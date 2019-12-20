@@ -157,7 +157,7 @@ export default class IDE extends EventTarget {
 				'actor': actor
 			};
 
-			this.dispatchEvent(new DataEvent('run', instance_data));
+			this.dispatchEvent(new CustomEvent('run', { detail: instance_data }));
 		});
 
 		this._feedback = this._container.querySelector('#ide-feedback');

@@ -45,7 +45,7 @@ export default class GraphNode extends EventTarget {
 
 	set execution(type) {
 		this._execution = type;
-		this.dispatchEvent(new Event('updateExecution'));
+		this.dispatchEvent(new Event('update-execution'));
 	}
 
 	get execution() {
@@ -94,18 +94,18 @@ export default class GraphNode extends EventTarget {
 
 	addInput(input) {
 		this._inputs.add(input);
-		this.dispatchEvent(new Event('updateInput'));
+		this.dispatchEvent(new Event('update-input'));
 	}
 
 	addOutput(output) {
 		this._outputs.add(output);
-		this.dispatchEvent(new Event('updateOutput'));
+		this.dispatchEvent(new Event('update-output'));
 	}
 
 	addChild(child) {
 		this._children.push(child);
 		child.parent = this;
-		this.dispatchEvent(new Event('updateChildren'));
+		this.dispatchEvent(new Event('update-children'));
 	}
 
 	removeChild(child) {
@@ -114,7 +114,7 @@ export default class GraphNode extends EventTarget {
 			if (!ret) c.parent = undefined;
 			return ret;
 		});
-		this.dispatchEvent(new Event('updateChildren'));
+		this.dispatchEvent(new Event('update-children'));
 	}
 
 	addBinding(binding) {
@@ -134,7 +134,7 @@ export default class GraphNode extends EventTarget {
 
 		provider_property.type = consumer_property.type;
 
-		this.dispatchEvent(new Event('updateBindings'));
+		this.dispatchEvent(new Event('update-bindings'));
 	}
 
 	/**

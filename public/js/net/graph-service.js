@@ -1,7 +1,5 @@
 'use strict';
 
-import {DataEvent, ConnectionEvent} from '../events.js';
-
 export default class GraphService extends EventTarget {
 
 	constructor() {
@@ -17,18 +15,20 @@ export default class GraphService extends EventTarget {
 	}
 
 	_handleConnection(e) {
-		this.dispatchEvent(new ConnectionEvent('connection', {
-			type: e.type,
-			data: {
-				timestamp: e.timestamp,
-				websocket: e.target
+		this.dispatchEvent(new CustomEvent('connection', {
+			detail: {
+				type: e.type,
+				data: {
+					timestamp: e.timestamp,
+					websocket: e.target
+				}
 			}
 		}));
 	}
 
 	_handleMessage(e) {
-		const data = JSON.parse(e.data);
-		this.dispatchEvent(new DataEvent(data.type, data));
+		const data = JSON.parse(e.detail);
+		this.dispatchEvent(new CustomEvent(data.type, { detail: data }));
 	}
 
 	runGraph(urn, data) {

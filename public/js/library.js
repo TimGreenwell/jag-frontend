@@ -1,7 +1,5 @@
 'use strict';
 
-import {SelectionEvent} from './events.js';
-
 export default class Library extends EventTarget {
 	constructor(library_container) {
 		super();
@@ -37,14 +35,16 @@ export default class Library extends EventTarget {
 		li.addEventListener('click', (event) => {
 			if(event.shiftKey) {
 				const all_definitions = this._getChildDefinitions(definition, new Set());
-				this.dispatchEvent(new SelectionEvent('item-selected', {
-					top: definition,
-					definition_set: all_definitions
+				this.dispatchEvent(new CustomEvent('item-selected', {
+					detail: {
+						top: definition,
+						definition_set: all_definitions
+					}
 				}));
 			}
 			else
 			{
-				this.dispatchEvent(new SelectionEvent('item-selected', definition));
+				this.dispatchEvent(new CustomEvent('item-selected', { detail: definition }));
 			}
 		});
 
