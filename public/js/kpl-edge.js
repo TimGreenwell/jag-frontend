@@ -1,7 +1,8 @@
 const XMLNS = 'http://www.w3.org/2000/svg';
 
-export default class KPLEdge {
+export default class KPLEdge extends EventTarget {
 	constructor(parent) {
+		super();
 		console.log('Creating new KPLEdge');
 		this.init(parent);
 	}
@@ -23,23 +24,31 @@ export default class KPLEdge {
 		this._parent = parent;
 		parent.appendChild(this._group);
 
-		parent.addEventListener('click', (e) => {
-			let rect = this._group.getBoundingClientRect();
-			if ((e.clientX > rect.left && e.clientX < rect.right)
-				&& (e.clientY > rect.top && e.clientY < rect.bottom)) {
-				this._edge_el.setAttributeNS(null, 'stroke', 'red');
-			} else {
-				this._edge_el.setAttributeNS(null, 'stroke', 'black');
-			}
-		});
+		this._boundUpdateOrder = this._updateOrder.bind(this);
+		this._boundHandleSelection = this._handleSelection.bind(this);
+		parent.addEventListener('click', this._boundHandleSelection);
+	}
+
+	_handleSelection(e) {
+		let rect = this._group.getBoundingClientRect();
+
+		if ((e.clientX > rect.left && e.clientX < rect.right)
+			&& (e.clientY > rect.top && e.clientY < rect.bottom)) {
+			this._edge_el.setAttributeNS(null, 'stroke', 'red');
+			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
+		} else {
+			this._edge_el.setAttributeNS(null, 'stroke', 'gray');
+			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
+		}
 	}
 
 	destroy() {
 		this._parent.removeChild(this._group);
+		this._parent.removeEventListener('click', this._boundHandleSelection);
 
 		if(this._node_origin != undefined) {
-			this._node_origin.model.removeEventListener('update-children', this._updateOrder.bind(this));
-			this._node_origin.model.removeEventListener('update-execution', this._updateOrder.bind(this));
+			this._node_origin.model.removeEventListener('update-children', this._boundUpdateOrder);
+			this._node_origin.model.removeEventListener('update-execution', this._boundUpdateOrder);
 			this._node_origin.removeOutEdge(this);
 		}
 		if(this._node_end != undefined)
@@ -63,8 +72,8 @@ export default class KPLEdge {
 		this._node_end = node;
 		this._node_end.addInEdge(this);
 
-		this._node_origin.model.addEventListener('update-children', this._updateOrder.bind(this));
-		this._node_origin.model.addEventListener('update-execution', this._updateOrder.bind(this));
+		this._node_origin.model.addEventListener('update-children', this._boundUpdateOrder);
+		this._node_origin.model.addEventListener('update-execution', this._boundUpdateOrder);
 
 		this._node_origin.completeOutEdge(this);
 	}
@@ -112,17 +121,17 @@ export default class KPLEdge {
 		this._is_greyed_out = is_greyed_out;
 
 		if(is_greyed_out)
-			this._group.className = 'greyed-out-node';
+			this._group.setAttribute('class', 'greyed-out-node');
 		else
-			this._group.className = '';
+			this._group.setAttribute('class', '');
 	}
 
 	setSelected(is_selected) {
 		this._is_selected = is_selected;
 
 		if(is_selected)
-			this._group.className = 'selected-node';
+			this._group.setAttribute('class', 'selected-node');
 		else
-			this._group.className = '';
+			this._group.setAttribute('class', '');
 	}
 }

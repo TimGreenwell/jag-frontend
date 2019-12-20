@@ -89,10 +89,14 @@ export default class Playground extends EventTarget {
 	}
 
 	deleteSelected() {
-		for(let node of this._selected) {
-			node.removeAllEdges();
-			this._selected.delete(node);
-			this._nodes_container.removeChild(node.element);
+		for(let n of this._selected) {
+			if (n instanceof NodeElement) {
+				n.removeAllEdges();
+				this._selected.delete(n);
+				this._nodes_container.removeChild(n.element);
+			} else if (n instanceof KPLEdge) {
+				n.destroy();
+			}
 		}
 	}
 
@@ -159,6 +163,13 @@ export default class Playground extends EventTarget {
 
 		this._is_edge_being_created = false;
 		this._created_edge.setNodeEnd(node);
+		this._created_edge.addEventListener('selection', (e) => {
+			if (e.detail.selected) {
+				this._selected.add(e.target);
+			} else {
+				this._selected.delete(e.target);
+			}
+		})
 	}
 
 	onEdgeCanceled(e, node) {
