@@ -1,9 +1,8 @@
 'use strict';
 
-import Listenable from '../listenable.js';
 import GraphNode from '../graph/node.js';
 
-export default class NodeProperties extends Listenable {
+export default class NodeProperties extends EventTarget {
 
 	constructor(propreties_container) {
 		super();

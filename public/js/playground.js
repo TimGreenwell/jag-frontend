@@ -3,9 +3,9 @@
 import GraphNode from './graph/node.js';
 import NodeElement from './ui/node.js';
 import KPLEdge from './kpl-edge.js';
-import Listenable from './listenable.js';
+import {SelectionEvent} from './events.js';
 
-export default class Playground extends Listenable {
+export default class Playground extends EventTarget {
 
 	constructor(playground_container) {
 		super();
@@ -30,7 +30,7 @@ export default class Playground extends Listenable {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
 		this._container.addEventListener('mousedown', (e) => {
 			this.deselectAll();
-			this.notify('selection', this._selected);
+			this.dispatchEvent(new SelectionEvent('selection', this._selected));
 		});
 
 		this._container.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
@@ -70,7 +70,7 @@ export default class Playground extends Listenable {
 
 			this._selected.add(node);
 			node.setSelected(true);
-			this.notify('selection', this._selected);
+			this.dispatchEvent(new SelectionEvent('selection', this._selected));
 			e.stopPropagation();
 		});
 

@@ -2,8 +2,9 @@
 
 import {UUIDv4} from '../lib/uuid.js';
 
-export default class GraphNode {
+export default class GraphNode extends EventTarget {
 	constructor({urn, name, execution = GraphNode.EXECUTION.NONE, operator = GraphNode.OPERATOR.NONE, desc = ''} = {}) {
+		super();
 		this._id = UUIDv4();
 		this._urn = urn;
 		this._name = name;
@@ -44,6 +45,7 @@ export default class GraphNode {
 
 	set execution(type) {
 		this._execution = type;
+		this.dispatchEvent(new Event('updateExecution'));
 	}
 
 	get execution() {
@@ -92,16 +94,18 @@ export default class GraphNode {
 
 	addInput(input) {
 		this._inputs.add(input);
+		this.dispatchEvent(new Event('updateInput'));
 	}
 
 	addOutput(output) {
 		this._outputs.add(output);
+		this.dispatchEvent(new Event('updateOutput'));
 	}
 
 	addChild(child) {
 		this._children.push(child);
 		child.parent = this;
-		// TODO: dispatch event
+		this.dispatchEvent(new Event('updateChildren'));
 	}
 
 	removeChild(child) {
@@ -110,7 +114,7 @@ export default class GraphNode {
 			if (!ret) c.parent = undefined;
 			return ret;
 		});
-		// TODO: dispatch event
+		this.dispatchEvent(new Event('updateChildren'));
 	}
 
 	addBinding(binding) {
@@ -129,6 +133,8 @@ export default class GraphNode {
 		const provider_property = provider_node.getPropertyForName(binding.provider.property);
 
 		provider_property.type = consumer_property.type;
+
+		this.dispatchEvent(new Event('updateBindings'));
 	}
 
 	/**

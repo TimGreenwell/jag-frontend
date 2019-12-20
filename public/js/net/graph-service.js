@@ -1,8 +1,8 @@
 'use strict';
 
-import Listenable from '../listenable.js';
+import {DataEvent, ConnectionEvent} from '../events.js';
 
-export default class GraphService extends Listenable {
+export default class GraphService extends EventTarget {
 
 	constructor() {
 		super();
@@ -17,18 +17,18 @@ export default class GraphService extends Listenable {
 	}
 
 	_handleConnection(e) {
-		this.notify('connection', {
+		this.dispatchEvent(new ConnectionEvent('connection', {
 			type: e.type,
 			data: {
 				timestamp: e.timestamp,
 				websocket: e.target
 			}
-		});
+		}));
 	}
 
 	_handleMessage(e) {
 		const data = JSON.parse(e.data);
-		this.notify(data.type, data);
+		this.dispatchEvent(new DataEvent(data.type, data));
 	}
 
 	runGraph(urn, data) {

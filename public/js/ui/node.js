@@ -2,10 +2,9 @@
 
 const SNAP_SIZE = 5.0;
 
-import Listenable from '../listenable.js';
 import GraphNode from '../graph/node.js';
 
-export default class NodeElement extends Listenable {
+export default class NodeElement extends EventTarget {
 
 	constructor(node) {
 		super();

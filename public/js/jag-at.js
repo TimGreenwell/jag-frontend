@@ -21,40 +21,40 @@ document.addEventListener('DOMContentLoaded', (e) => {
 
 	const graph_service = new GraphService();
 
-	library.addListener('item-selected', (item) => {
-		playground.handleItemSelected(item);
+	library.addEventListener('item-selected', (e) => {
+		playground.handleItemSelected(e.data);
 	});
 
-	graph_service.addListener('resources', (message) => {
-		library.handleResourceUpdate(message);
+	graph_service.addEventListener('resources', (e) => {
+		library.handleResourceUpdate(e.data);
 	});
 
-	graph_service.addListener('inputs', (message) => {
-		ide.handleInputs(message);
+	graph_service.addEventListener('inputs', (e) => {
+		ide.handleInputs(e.data);
 	});
 
-	graph_service.addListener('connection', (event) => {
-		ide.handleConnection(event);
+	graph_service.addEventListener('connection', (e) => {
+		ide.handleConnection(e.data);
 	});
 
-	graph_service.addListener('error', (message) => {
-		ide.handleError(message);
+	graph_service.addEventListener('error', (e) => {
+		ide.handleError(e.data);
 	});
 
-	graph_service.addListener('info', (message) => {
-		ide.handleInfo(message);
+	graph_service.addEventListener('info', (e) => {
+		ide.handleInfo(e.data);
 	});
 
-	playground.addListener('selection', (event) => {
-		properties.handleSelectionUpdate(event);
-		ide.handleSelectionUpdate(event);
+	playground.addEventListener('selection', (e) => {
+		properties.handleSelectionUpdate(e.data);
+		ide.handleSelectionUpdate(e.data);
 	});
 
-	ide.addListener('connect', (event) => {
+	ide.addEventListener('connect', (e) => {
 		graph_service.connect();
 	});
 
-	ide.addListener('upload', (event) => {
+	ide.addEventListener('upload', (e) => {
 		const json = playground.getSelectedAsJSON();
 		if(json == undefined) {
 			ide.handleError({
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		}
 	});
 
-	ide.addListener('run', (data) => {
+	ide.addEventListener('run', (e) => {
 		const urn = playground.getSelectedURN();
 		if(urn == undefined) {
 			ide.handleError({
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', (e) => {
 
 			ide.stop();
 		} else {
-			graph_service.runGraph(urn, data);
+			graph_service.runGraph(urn, e.data);
 		}
 	});
 

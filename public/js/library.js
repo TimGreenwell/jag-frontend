@@ -1,8 +1,8 @@
 'use strict';
 
-import Listenable from './listenable.js';
+import {SelectionEvent} from './events.js';
 
-export default class Library extends Listenable {
+export default class Library extends EventTarget {
 	constructor(library_container) {
 		super();
 		this._container = library_container;
@@ -37,14 +37,14 @@ export default class Library extends Listenable {
 		li.addEventListener('click', (event) => {
 			if(event.shiftKey) {
 				const all_definitions = this._getChildDefinitions(definition, new Set());
-				this.notify('item-selected', {
+				this.dispatchEvent(new SelectionEvent('item-selected', {
 					top: definition,
 					definition_set: all_definitions
-				});
+				}));
 			}
 			else
 			{
-				this.notify('item-selected', definition);
+				this.dispatchEvent(new SelectionEvent('item-selected', definition));
 			}
 		});
 

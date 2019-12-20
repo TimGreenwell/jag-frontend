@@ -1,8 +1,6 @@
 'use strict';
 
-import Listenable from './listenable.js';
-
-export default class IDE extends Listenable {
+export default class IDE extends EventTarget {
 	constructor(ide_container) {
 		super();
 		this._container = ide_container;
@@ -137,7 +135,7 @@ export default class IDE extends Listenable {
 		this._connect.addEventListener('click', e => {
 			const progress = this._connect.querySelector('.button-progress');
 			progress.style.transform = 'translateY(-120%) scaleX(0.25)';
-			this.notify('connect');
+			this.dispatchEvent(new Event('connect'));
 		});
 
 		this._upload = this._container.querySelector('#upload');
@@ -145,7 +143,7 @@ export default class IDE extends Listenable {
 			const progress = this._upload.querySelector('.button-progress');
 			progress.style.transform = 'translateY(-120%) scaleX(1.0)';
 			setTimeout(this._resetButtonProgress.bind(this, progress), 1500);
-			this.notify('upload');
+			this.dispatchEvent(new Event('upload'));
 		});
 
 		this._run = this._container.querySelector('#run');
@@ -159,7 +157,7 @@ export default class IDE extends Listenable {
 				'actor': actor
 			};
 
-			this.notify('run', instance_data);
+			this.dispatchEvent(new DataEvent('run', instance_data));
 		});
 
 		this._feedback = this._container.querySelector('#ide-feedback');
