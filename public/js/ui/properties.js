@@ -123,17 +123,20 @@ export default class NodeProperties extends EventTarget {
 			});
 		});
 
-		this._node.model.parent.children.forEach(sibling => {
-			if(sibling === this._node.model)
-				return;
+		if (this._node.model.parent.execution == GraphNode.EXECUTION.SEQUENTIAL)
+		{
+			this._node.model.parent.children.forEach(sibling => {
+				if(sibling === this._node.model)
+					return;
 
-			sibling.outputs.forEach((output) => {
-				options.push({
-					text: `${sibling.name}:${output.name}`,
-					value: `${sibling.id}:${output.name}`
+				sibling.outputs.forEach((output) => {
+					options.push({
+						text: `${sibling.name}:${output.name}`,
+						value: `${sibling.id}:${output.name}`
+					});
 				});
 			});
-		});
+		}
 
 		return options;
 	}
