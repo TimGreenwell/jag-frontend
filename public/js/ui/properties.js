@@ -12,9 +12,18 @@ export default class NodeProperties extends EventTarget {
 		this._output_elements = new Map();
 		this._initUI();
 		this._initHandlers();
+		this._boundIOUpdate = this._updateIO.bind(this);
 	}
 
 	handleSelectionUpdate(selection) {
+		if (this._node)
+		{
+			this._node.model.removeEventListener('update-input', this._boundIOUpdate);
+			this._node.model.removeEventListener('update-output', this._boundIOUpdate);
+			this._node.model.removeEventListener('update-children', this._boundIOUpdate);
+			this._node.model.removeEventListener('update-parent', this._boundIOUpdate);
+		}
+
 		this._clearProperties();
 		this._enableProperties(selection.size != 0);
 
@@ -27,38 +36,21 @@ export default class NodeProperties extends EventTarget {
 			this._operator.value = node.model.operator || 'none';
 			this._desc.value = node.model.description;
 
-			let input_options = undefined;
-			if(node.model.parent)
-				input_options = this.findInputOptions();
-
-			node.model.inputs.forEach(input => {
-				const input_id = `${input.name}-inputs-property`;
-				this.addInputElement(input_id, input, input_options);
-			});
-
-			const output_options = undefined;
-			node.model.outputs.forEach(output => {
-				const output_id = `${output}-outputs-property`;
-				this.addOutputElement(output_id, output, output_options);
-			});
-
-			if(node.model.parent) {
-				node.model.parent.bindings.forEach(binding => {
-					if(node.model.id != binding.consumer.id)
-						return;
-
-					const in_property = binding.consumer.property;
-					const select = this._input_elements.get(`${in_property}-inputs-property`);
-
-					select.value = `${binding.provider.id}:${binding.provider.property}`;
-				});
-			}
+			this._updateIO();
+			this._node.model.addEventListener('update-input', this._boundIOUpdate);
+			this._node.model.addEventListener('update-output', this._boundIOUpdate);
+			this._node.model.addEventListener('update-children', this._boundIOUpdate);
+			this._node.model.addEventListener('update-parent', this._boundIOUpdate);
 		}
 	}
 
 	addInput(e) {
 		const name = window.prompt('Input name');
 		if(name === null)
+			return;
+		
+		const type = window.prompt('Input type');
+		if (type == null)
 			return;
 
 		let options = undefined;
@@ -67,12 +59,33 @@ export default class NodeProperties extends EventTarget {
 
 		const input = {
 			name: name,
-			type: undefined
+			type: type
 		};
 
 		const input_id = `${name}-inputs-property`;
 		this.addInputElement(input_id, input, options);
 		this._node.model.addInput(input);
+	}
+
+	addOutput(e) {
+		const name = window.prompt('Output name');
+		if(name === null)
+			return;
+		
+		const type = window.prompt('Output type');
+		if (type == null)
+			return;
+
+		let options = this.findOutputOptions();
+
+		const output = {
+			name: name,
+			type: type
+		};
+
+		const output_id = `${name}-outputs-property`;
+		this.addOutputElement(output_id, output, options);
+		this._node.model.addOutput(output);
 	}
 
 	addInputElement(id, input, options) {
@@ -104,9 +117,28 @@ export default class NodeProperties extends EventTarget {
 
 	addOutputElement(id, output, options) {
 		const output_el = createPropertyElement(id, output.name);
-		// const output = createSelect(id, options);
-		// output_el.appendChild(output);
-		// this._output_elements.set(id, output);
+
+		// only creates select element if option is defined
+		if(options != undefined) {
+			const select_el = createSelect(id, options);
+			select_el.addEventListener('change', e => {
+				const provider = e.target.selectedOptions[0].value.split(':');
+
+				this._node.model.addBinding({
+					consumer: {
+						id: this._node.model.id,
+						property: output.name
+					},
+					provider: {
+						id: provider[0],
+						property: provider[1]
+					}
+				});
+			});
+			output_el.appendChild(select_el);
+			this._output_elements.set(id, select_el);
+		}
+
 		this._outputs.appendChild(output_el);
 	}
 
@@ -157,6 +189,37 @@ export default class NodeProperties extends EventTarget {
 		});
 
 		return options;
+	}
+
+	_updateIO() {
+		this._clearIO();
+
+		let input_options = undefined;
+		if(this._node.model.parent)
+			input_options = this.findInputOptions();
+
+		this._node.model.inputs.forEach(input => {
+			const input_id = `${input.name}-inputs-property`;
+			this.addInputElement(input_id, input, input_options);
+		});
+
+		const output_options = this.findOutputOptions();
+		this._node.model.outputs.forEach(output => {
+			const output_id = `${output.name}-outputs-property`;
+			this.addOutputElement(output_id, output, output_options);
+		});
+
+		if(this._node.model.parent) {
+			this._node.model.parent.bindings.forEach(binding => {
+				if(this._node.model.id != binding.consumer.id)
+					return;
+
+				const in_property = binding.consumer.property;
+				const select = this._input_elements.get(`${in_property}-inputs-property`);
+
+				select.value = `${binding.provider.id}:${binding.provider.property}`;
+			});
+		}
 	}
 
 	_initUI() {
@@ -212,6 +275,13 @@ export default class NodeProperties extends EventTarget {
 		inputs_el.appendChild(this._inputs);
 
 		const outputs_el = createPropertyElement('outputs-property', 'Outputs');
+
+		const output_add = document.createElement('span');
+		output_add.innerHTML = '+';
+		output_add.className = 'io-add';
+		output_add.addEventListener('click', this.addOutput.bind(this));
+		outputs_el.appendChild(output_add);
+
 		this._outputs = createEmptyInputContainer('outputs-property');
 		outputs_el.appendChild(this._outputs);
 
@@ -272,6 +342,10 @@ export default class NodeProperties extends EventTarget {
 		this._execution.value = GraphNode.EXECUTION.NONE;
 		this._operator.value = GraphNode.OPERATOR.NONE;
 
+		this._clearIO();
+	}
+
+	_clearIO() {
 		this._input_elements.clear();
 		while(this._inputs.firstChild) {
 			this._inputs.removeChild(this._inputs.firstChild);

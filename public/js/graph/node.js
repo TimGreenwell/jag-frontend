@@ -91,6 +91,7 @@ export default class GraphNode extends EventTarget {
 
 	set parent(node) {
 		this._parent = node;
+		this.dispatchEvent(new Event('update-parent'));
 	}
 
 	addInput(input) {
