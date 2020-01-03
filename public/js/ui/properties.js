@@ -141,6 +141,24 @@ export default class NodeProperties extends EventTarget {
 		return options;
 	}
 
+	findOutputOptions() {
+		const options = [{
+			text:'not bound',
+			value:'not bound'
+		}];
+
+		this._node.model.children.forEach((child) => {
+			child.outputs.forEach((output) => {
+				options.push({
+					text: `${child.name}:${output.name}`,
+					value: `${child.id}:${output.name}`
+				});
+			});
+		});
+
+		return options;
+	}
+
 	_initUI() {
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
