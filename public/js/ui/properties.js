@@ -157,8 +157,13 @@ export default class NodeProperties extends EventTarget {
 
 		if (this._node.model.parent.execution == GraphNode.EXECUTION.SEQUENTIAL)
 		{
+			const index = this._node.model.parent.getOrderForId(this._node.model.id);
+
 			this._node.model.parent.children.forEach(sibling => {
 				if(sibling === this._node.model)
+					return;
+				
+				if(this._node.model.parent.getOrderForId(sibling.id) > index)
 					return;
 
 				sibling.outputs.forEach((output) => {
