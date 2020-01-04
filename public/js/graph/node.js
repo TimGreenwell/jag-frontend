@@ -163,7 +163,11 @@ export default class GraphNode extends EventTarget {
 		if(id === 'this')
 			return this;
 
-		return this._children.get(id);
+		for(let child of this._children)
+			if (child.id == id)
+				return child;
+		
+		return undefined;
 	}
 
 	getPropertyForName(property) {
