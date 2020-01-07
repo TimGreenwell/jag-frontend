@@ -120,6 +120,12 @@ export default class GraphNode extends EventTarget {
 	}
 
 	addBinding(binding) {
+		if (binding.consumer.id == this.id)
+			binding.consumer.id = "this";
+
+		if (binding.provider.id == this.id)
+			binding.provider.id = "this";
+
 		const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
 
 		if(existing_binding !== undefined)

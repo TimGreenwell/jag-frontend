@@ -139,6 +139,32 @@ export default class NodeElement extends EventTarget {
 			this._root_el.classList.remove('selected-node');
 	}
 
+	addInputBinding(input_name, provider_id, provider_input_name) {
+		this.model.parent.addBinding({
+			consumer: {
+				id: this.model.id,
+				property: input_name
+			},
+			provider: {
+				id: provider_id,
+				property: provider_input_name
+			}
+		});
+	}
+
+	addOutputBinding(output_name, provider_id, provider_output_name) {
+		this.model.addBinding({
+			consumer: {
+				id: this.model.id,
+				property: output_name
+			},
+			provider: {
+				id: provider_id,
+				property: provider_output_name
+			}
+		});
+	}
+
 	_addDragHandlers() {
 		const drag = (e => {
 			if(!this._is_moving)

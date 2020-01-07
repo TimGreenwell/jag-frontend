@@ -97,16 +97,7 @@ export default class NodeProperties extends EventTarget {
 			select_el.addEventListener('change', e => {
 				const provider = e.target.selectedOptions[0].value.split(':');
 
-				this._node.model.parent.addBinding({
-					consumer: {
-						id: this._node.model.id,
-						property: input.name
-					},
-					provider: {
-						id: provider[0],
-						property: provider[1]
-					}
-				});
+				this._node.addInputBinding(input.name, provider[0], provider[1]);
 			});
 			input_el.appendChild(select_el);
 			this._input_elements.set(id, select_el);
@@ -124,16 +115,7 @@ export default class NodeProperties extends EventTarget {
 			select_el.addEventListener('change', e => {
 				const provider = e.target.selectedOptions[0].value.split(':');
 
-				this._node.model.addBinding({
-					consumer: {
-						id: this._node.model.id,
-						property: output.name
-					},
-					provider: {
-						id: provider[0],
-						property: provider[1]
-					}
-				});
+				this._node.addOutputBinding(output.name, provider[0], provider[1]);
 			});
 			output_el.appendChild(select_el);
 			this._output_elements.set(id, select_el);
