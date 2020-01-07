@@ -139,6 +139,18 @@ export default class NodeElement extends EventTarget {
 			this._root_el.classList.remove('selected-node');
 	}
 
+	getAvailableInputs() {
+		return this.model.parent.inputsTo(this.model.id);
+	}
+
+	getAvailableOutputs() {
+		let outputs = [];
+
+		this.model.children.forEach((child) => child.outputsFrom().forEach(output => outputs.push(output)));
+
+		return outputs;
+	}
+
 	addInputBinding(input_name, provider_id, provider_input_name) {
 		this.model.parent.addBinding({
 			consumer: {
@@ -163,6 +175,13 @@ export default class NodeElement extends EventTarget {
 				property: provider_output_name
 			}
 		});
+	}
+
+	getBindings() {
+		if (this.model.parent)
+			return this.model.parent.bindingsFor(this.model.id);
+
+		return this.model.bindingsFor(this.model.id);
 	}
 
 	_addDragHandlers() {

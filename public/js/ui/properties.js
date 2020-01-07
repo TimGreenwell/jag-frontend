@@ -53,17 +53,11 @@ export default class NodeProperties extends EventTarget {
 		if (type == null)
 			return;
 
-		let options = undefined;
-		if(this._node.model.parent)
-			options = this.findInputOptions();
-
 		const input = {
 			name: name,
 			type: type
 		};
-
-		const input_id = `${name}-inputs-property`;
-		this.addInputElement(input_id, input, options);
+		
 		this._node.model.addInput(input);
 	}
 
@@ -76,15 +70,11 @@ export default class NodeProperties extends EventTarget {
 		if (type == null)
 			return;
 
-		let options = this.findOutputOptions();
-
 		const output = {
 			name: name,
 			type: type
 		};
 
-		const output_id = `${name}-outputs-property`;
-		this.addOutputElement(output_id, output, options);
 		this._node.model.addOutput(output);
 	}
 
@@ -95,7 +85,12 @@ export default class NodeProperties extends EventTarget {
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
 			select_el.addEventListener('change', e => {
-				const provider = e.target.selectedOptions[0].value.split(':');
+				const value = e.target.selectedOptions[0].value;
+
+				if (value == 'not bound')
+					return;
+
+				const provider = value.split(':');
 
 				this._node.addInputBinding(input.name, provider[0], provider[1]);
 			});
@@ -113,7 +108,12 @@ export default class NodeProperties extends EventTarget {
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
 			select_el.addEventListener('change', e => {
-				const provider = e.target.selectedOptions[0].value.split(':');
+				const value = e.target.selectedOptions[0].value;
+
+				if (value == 'not bound')
+					return;
+
+				const provider = value.split(':');
 
 				this._node.addOutputBinding(output.name, provider[0], provider[1]);
 			});
@@ -130,32 +130,12 @@ export default class NodeProperties extends EventTarget {
 			value:'not bound'
 		}];
 
-		this._node.model.parent.inputs.forEach((input) => {
+		this._node.getAvailableInputs().forEach((input) => {
 			options.push({
-				text: `${this._node.model.parent.name}:${input.name}`,
-				value: `this:${input.name}`
-			});
+				text: `${input.name}:${input.property}`,
+				value: `${input.id}:${input.property}`
+			})
 		});
-
-		if (this._node.model.parent.execution == GraphNode.EXECUTION.SEQUENTIAL)
-		{
-			const index = this._node.model.parent.getOrderForId(this._node.model.id);
-
-			this._node.model.parent.children.forEach(sibling => {
-				if(sibling === this._node.model)
-					return;
-				
-				if(this._node.model.parent.getOrderForId(sibling.id) > index)
-					return;
-
-				sibling.outputs.forEach((output) => {
-					options.push({
-						text: `${sibling.name}:${output.name}`,
-						value: `${sibling.id}:${output.name}`
-					});
-				});
-			});
-		}
 
 		return options;
 	}
@@ -166,13 +146,11 @@ export default class NodeProperties extends EventTarget {
 			value:'not bound'
 		}];
 
-		this._node.model.children.forEach((child) => {
-			child.outputs.forEach((output) => {
-				options.push({
-					text: `${child.name}:${output.name}`,
-					value: `${child.id}:${output.name}`
-				});
-			});
+		this._node.getAvailableOutputs().forEach((output) => {
+			options.push({
+				text: `${output.name}:${output.property}`,
+				value: `${output.id}:${output.property}`
+			})
 		});
 
 		return options;
@@ -186,27 +164,28 @@ export default class NodeProperties extends EventTarget {
 			input_options = this.findInputOptions();
 
 		this._node.model.inputs.forEach(input => {
-			const input_id = `${input.name}-inputs-property`;
+			const input_id = `${this._node.model.id}-${input.name}-inputs-property`;
 			this.addInputElement(input_id, input, input_options);
 		});
 
 		const output_options = this.findOutputOptions();
 		this._node.model.outputs.forEach(output => {
-			const output_id = `${output.name}-outputs-property`;
+			const output_id = `${this._node.model.id}-${output.name}-outputs-property`;
 			this.addOutputElement(output_id, output, output_options);
 		});
 
-		if(this._node.model.parent) {
-			this._node.model.parent.bindings.forEach(binding => {
-				if(this._node.model.id != binding.consumer.id)
-					return;
+		this._node.getBindings().forEach(binding => {
+			if(this._node.model.id != binding.consumer.id)
+				return;
 
-				const in_property = binding.consumer.property;
-				const select = this._input_elements.get(`${in_property}-inputs-property`);
+			let id_base = `${binding.consumer.id}-${binding.consumer.property}`;
 
-				select.value = `${binding.provider.id}:${binding.provider.property}`;
-			});
-		}
+			let select = this._input_elements.get(`${id_base}-inputs-property`);
+			if (select == undefined)
+				select = this._output_elements.get(`${id_base}-outputs-property`);
+
+			select.value = `${binding.provider.id}:${binding.provider.property}`;
+		});
 	}
 
 	_initUI() {

@@ -119,6 +119,45 @@ export default class GraphNode extends EventTarget {
 		this.dispatchEvent(new Event('update-children'));
 	}
 
+	inputsTo(id) {
+		let availableInputs = Array.from(this._inputs).map((input) => {
+			let suffix = this._execution == GraphNode.EXECUTION.SEQUENTIAL ? '(P)' : '';
+
+			return {
+				name: this._name + suffix,
+				id: this._id,
+				property: input.name
+			};
+		});
+
+		if (this._execution == GraphNode.EXECUTION.SEQUENTIAL)
+		{
+			for (let i = 0; i < this._children.length; ++i) {
+				if (this._children[i].id == id)
+					break;
+
+				this._children[i].outputsFrom().forEach(output => availableInputs.push(output));
+			}
+		}
+
+		return availableInputs;
+	}
+
+	outputsFrom() {
+		let suffix = '';
+		if (this._parent)
+			if (this._parent.execution == GraphNode.EXECUTION.SEQUENTIAL)
+				suffix = '(' + this._parent.getOrderForId(this._id) + ')';
+
+		return Array.from(this._outputs).map((output) => {
+			return {
+				name: this._name + suffix,
+				id: this._id,
+				property: output.name
+			}
+		});
+	}
+
 	addBinding(binding) {
 		if (binding.consumer.id == this.id)
 			binding.consumer.id = "this";
@@ -163,6 +202,19 @@ export default class GraphNode extends EventTarget {
 				return binding;
 		}
 		return undefined;
+	}
+
+	bindingsFor(id) {
+		return Array.from(this._bindings).map(binding => {
+			console.log(binding);
+			if (binding.consumer.id == "this")
+				binding.consumer.id = this._id;
+
+			if (binding.provider.id == "this")
+				binding.provider.id = this._id;
+
+			return binding;
+		}).filter(binding => id === binding.consumer.id || id === binding.provider.id);
 	}
 
 	getNodeForId(id) {
