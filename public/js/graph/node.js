@@ -212,7 +212,6 @@ export default class GraphNode extends EventTarget {
 
 	bindingsFor(id) {
 		return Array.from(this._bindings).map(binding => {
-			console.log(binding);
 			if (binding.consumer.id == "this")
 				binding.consumer.id = this._id;
 
