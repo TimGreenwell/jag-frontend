@@ -116,6 +116,12 @@ export default class GraphNode extends EventTarget {
 			if (!ret) c.parent = undefined;
 			return ret;
 		});
+
+		this._bindings = new Set(Array.from(this._bindings).filter((binding) => {
+			return !(binding.provider.id == child.id ||
+					binding.consumer.id == child.id);
+		}));
+
 		this.dispatchEvent(new Event('update-children'));
 	}
 
