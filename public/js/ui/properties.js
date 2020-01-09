@@ -18,29 +18,29 @@ export default class NodeProperties extends EventTarget {
 	handleSelectionUpdate(selection) {
 		if (this._node)
 		{
-			this._node.model.removeEventListener('update-input', this._boundIOUpdate);
-			this._node.model.removeEventListener('update-output', this._boundIOUpdate);
-			this._node.model.removeEventListener('update-children', this._boundIOUpdate);
-			this._node.model.removeEventListener('update-parent', this._boundIOUpdate);
+			this._node.removeEventListener('update-input', this._boundIOUpdate);
+			this._node.removeEventListener('update-output', this._boundIOUpdate);
+			this._node.removeEventListener('update-children', this._boundIOUpdate);
+			this._node.removeEventListener('update-parent', this._boundIOUpdate);
 		}
 
 		this._clearProperties();
 		this._enableProperties(selection.size != 0);
 
 		if(selection.size == 1) {
-			const node = selection.values().next().value;
+			const node = selection.values().next().value.model;
 			this._node = node;
-			this._urn.value = node.model.urn;
-			this._name.value = node.model.name;
-			this._execution.value = node.model.execution || 'none';
-			this._operator.value = node.model.operator || 'none';
-			this._desc.value = node.model.description;
+			this._urn.value = node.urn;
+			this._name.value = node.name;
+			this._execution.value = node.execution || 'none';
+			this._operator.value = node.operator || 'none';
+			this._desc.value = node.description;
 
 			this._updateIO();
-			this._node.model.addEventListener('update-input', this._boundIOUpdate);
-			this._node.model.addEventListener('update-output', this._boundIOUpdate);
-			this._node.model.addEventListener('update-children', this._boundIOUpdate);
-			this._node.model.addEventListener('update-parent', this._boundIOUpdate);
+			this._node.addEventListener('update-input', this._boundIOUpdate);
+			this._node.addEventListener('update-output', this._boundIOUpdate);
+			this._node.addEventListener('update-children', this._boundIOUpdate);
+			this._node.addEventListener('update-parent', this._boundIOUpdate);
 		}
 	}
 
@@ -58,7 +58,7 @@ export default class NodeProperties extends EventTarget {
 			type: type
 		};
 		
-		this._node.model.addInput(input);
+		this._node.addInput(input);
 	}
 
 	addOutput(e) {
@@ -75,7 +75,7 @@ export default class NodeProperties extends EventTarget {
 			type: type
 		};
 
-		this._node.model.addOutput(output);
+		this._node.addOutput(output);
 	}
 
 	addInputElement(id, input, options) {
@@ -92,7 +92,7 @@ export default class NodeProperties extends EventTarget {
 
 				const provider = value.split(':');
 
-				this._node.addInputBinding(input.name, provider[0], provider[1]);
+				this._node.addInputBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
 			});
 			input_el.appendChild(select_el);
 			this._input_elements.set(id, select_el);
@@ -110,12 +110,13 @@ export default class NodeProperties extends EventTarget {
 			select_el.addEventListener('change', e => {
 				const value = e.target.selectedOptions[0].value;
 
+				// TODO: destroy previous binding, if it exists, when 'not bound' selected
 				if (value == 'not bound')
 					return;
 
 				const provider = value.split(':');
 
-				this._node.addOutputBinding(output.name, provider[0], provider[1]);
+				this._node.addOutputBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
 			});
 			output_el.appendChild(select_el);
 			this._output_elements.set(id, select_el);
@@ -132,8 +133,8 @@ export default class NodeProperties extends EventTarget {
 
 		this._node.getAvailableInputs().forEach((input) => {
 			options.push({
-				text: `${input.name}:${input.property}`,
-				value: `${input.id}:${input.property}`
+				text: `${input.node.name}:${input.property}`,
+				value: `${input.node.id}:${input.property}`
 			})
 		});
 
@@ -148,8 +149,8 @@ export default class NodeProperties extends EventTarget {
 
 		this._node.getAvailableOutputs().forEach((output) => {
 			options.push({
-				text: `${output.name}:${output.property}`,
-				value: `${output.id}:${output.property}`
+				text: `${output.node.name}:${output.property}`,
+				value: `${output.node.id}:${output.property}`
 			})
 		});
 
@@ -160,32 +161,33 @@ export default class NodeProperties extends EventTarget {
 		this._clearIO();
 
 		let input_options = undefined;
-		if(this._node.model.parent)
+		if(this._node.parent)
 			input_options = this.findInputOptions();
 
-		this._node.model.inputs.forEach(input => {
-			const input_id = `${this._node.model.id}-${input.name}-inputs-property`;
+		for (let input of this._node.inputs) {
+			const input_id = `${this._node.id}-${input.name}-inputs-property`;
 			this.addInputElement(input_id, input, input_options);
-		});
+		}
 
 		const output_options = this.findOutputOptions();
-		this._node.model.outputs.forEach(output => {
-			const output_id = `${this._node.model.id}-${output.name}-outputs-property`;
+		
+		for (let output of this._node.outputs) {
+			const output_id = `${this._node.id}-${output.name}-outputs-property`;
 			this.addOutputElement(output_id, output, output_options);
-		});
+		}
 
-		this._node.getBindings().forEach(binding => {
-			if(this._node.model.id != binding.consumer.id)
+		for (let binding of this._node.getBindings()) {
+			if(this._node.id != binding.consumer.node.id)
 				return;
 
-			let id_base = `${binding.consumer.id}-${binding.consumer.property}`;
+			let id_base = `${binding.consumer.node.id}-${binding.consumer.property}`;
 
 			let select = this._input_elements.get(`${id_base}-inputs-property`);
 			if (select == undefined)
 				select = this._output_elements.get(`${id_base}-outputs-property`);
 
-			select.value = `${binding.provider.id}:${binding.provider.property}`;
-		});
+			select.value = `${binding.provider.node.id}:${binding.provider.property}`;
+		}
 	}
 
 	_initUI() {
@@ -290,7 +292,7 @@ export default class NodeProperties extends EventTarget {
 		});
 
 		this._export.addEventListener('click', e => {
-			const node = this._node.model;
+			const node = this._node;
 
 			const json = JSON.stringify(node.toJSON());
 			const a = document.createElement('a');

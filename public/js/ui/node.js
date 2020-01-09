@@ -13,11 +13,11 @@ export default class NodeElement extends EventTarget {
 		this._outs = new Set();
 		this._ins = new Set();
 
-		this.init();
-		this._addDragHandlers();
+		this._initUI();
+		this._initHandlers();
 	}
 
-	init() {
+	_initUI() {
 		this._root_el = document.createElement('div');
 		this._root_el.className = 'node';
 		this._root_el.setAttribute('tabindex', '-1');
@@ -46,27 +46,9 @@ export default class NodeElement extends EventTarget {
 		return this._model;
 	}
 
-	set urn(urn) {
-		this._model.urn = urn;
-	}
-
-	set name(name) {
-		this._model.name = name;
-		this._applyName();
-		this._refresh();
-	}
-
-	set execution(type) {
-		this._model.execution = type;
-	}
-
-	set operator(type) {
-		this._model.operator = type;
-		this._applyOperator();
-	}
-
 	_applyName() {
 		this._header_name.innerHTML = this._model.name;
+		this._refresh();
 	}
 
 	_applyOperator() {
@@ -139,52 +121,7 @@ export default class NodeElement extends EventTarget {
 			this._root_el.classList.remove('selected-node');
 	}
 
-	getAvailableInputs() {
-		return this.model.parent.inputsTo(this.model.id);
-	}
-
-	getAvailableOutputs() {
-		let outputs = [];
-
-		this.model.children.forEach((child) => child.outputsFrom().forEach(output => outputs.push(output)));
-
-		return outputs;
-	}
-
-	addInputBinding(input_name, provider_id, provider_input_name) {
-		this.model.parent.addBinding({
-			consumer: {
-				id: this.model.id,
-				property: input_name
-			},
-			provider: {
-				id: provider_id,
-				property: provider_input_name
-			}
-		});
-	}
-
-	addOutputBinding(output_name, provider_id, provider_output_name) {
-		this.model.addBinding({
-			consumer: {
-				id: this.model.id,
-				property: output_name
-			},
-			provider: {
-				id: provider_id,
-				property: provider_output_name
-			}
-		});
-	}
-
-	getBindings() {
-		if (this.model.parent)
-			return this.model.parent.bindingsFor(this.model.id);
-
-		return this.model.bindingsFor(this.model.id);
-	}
-
-	_addDragHandlers() {
+	_initHandlers() {
 		const drag = (e => {
 			if(!this._is_moving)
 				return;
@@ -221,6 +158,10 @@ export default class NodeElement extends EventTarget {
 		this._header_name.addEventListener('transitionend', () => {
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
+
+		this._model.addEventListener('update-operator', this._applyOperator.bind(this));
+
+		this._model.addEventListener('update-name', this._applyName.bind(this));
 	}
 
 	_animationRefresh() {

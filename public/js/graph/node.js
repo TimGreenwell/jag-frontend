@@ -11,8 +11,8 @@ export default class GraphNode extends EventTarget {
 		this._desc = desc;
 		this._execution = execution;
 		this._operator = operator;
-		this._inputs = new Set();
-		this._outputs = new Set();
+		this._inputs = new Array();
+		this._outputs = new Array();
 		this._children = new Array();
 		this._bindings = new Set();
 
@@ -37,6 +37,7 @@ export default class GraphNode extends EventTarget {
 
 	set name(name) {
 		this._name = name;
+		this.dispatchEvent(new Event('update-name'));
 	}
 
 	get name() {
@@ -95,12 +96,12 @@ export default class GraphNode extends EventTarget {
 	}
 
 	addInput(input) {
-		this._inputs.add(input);
+		this._inputs.push(input);
 		this.dispatchEvent(new Event('update-input'));
 	}
 
 	addOutput(output) {
-		this._outputs.add(output);
+		this._outputs.push(output);
 		this.dispatchEvent(new Event('update-output'));
 	}
 
@@ -111,27 +112,24 @@ export default class GraphNode extends EventTarget {
 	}
 
 	removeChild(child) {
-		this._children = this._children.filter((c) => {
-			let ret = c.id !== child.id;
-			if (!ret) c.parent = undefined;
-			return ret;
-		});
+		for (let index in this._children) {
+			if (this._children[index].id == child.id) {
+				this._children.splice(index, 1);
+				break;
+			}
+		}
 
-		this._bindings = new Set(Array.from(this._bindings).filter((binding) => {
-			return !(binding.provider.id == child.id ||
-					binding.consumer.id == child.id);
-		}));
+		for (let binding of this._bindings)
+			if (binding.provider.id == child.id || binding.consumer.node.id == child.id)
+				this._bindings.delete(binding);
 
 		this.dispatchEvent(new Event('update-children'));
 	}
 
 	inputsTo(id) {
-		let availableInputs = Array.from(this._inputs).map((input) => {
-			let suffix = this._execution == GraphNode.EXECUTION.SEQUENTIAL ? '(P)' : '';
-
+		let availableInputs = this._inputs.map((input) => {
 			return {
-				name: this._name + suffix,
-				id: this._id,
+				node: this,
 				property: input.name
 			};
 		});
@@ -142,7 +140,10 @@ export default class GraphNode extends EventTarget {
 				if (this._children[i].id == id)
 					break;
 
-				this._children[i].outputsFrom().forEach(output => availableInputs.push(output));
+				let child_outputs = this._children[i].outputsFrom();
+
+				for (let child_output of child_outputs)
+					availableInputs.push(child_output);
 			}
 		}
 
@@ -150,28 +151,60 @@ export default class GraphNode extends EventTarget {
 	}
 
 	outputsFrom() {
-		let suffix = '';
-		if (this._parent)
-			if (this._parent.execution == GraphNode.EXECUTION.SEQUENTIAL)
-				suffix = '(' + this._parent.getOrderForId(this._id) + ')';
-
-		return Array.from(this._outputs).map((output) => {
+		return this._outputs.map((output) => {
 			return {
-				name: this._name + suffix,
-				id: this._id,
+				node: this,
 				property: output.name
+			};
+		})
+	}
+
+	getAvailableInputs() {
+		return this._parent.inputsTo(this._id);
+	}
+
+	getAvailableOutputs() {
+		let availableOutputs = [];
+
+		for (let child of this._children) {
+			let child_outputs = child.outputsFrom();
+
+			for (let child_output of child_outputs) {
+				availableOutputs.push(child_output);
+			}
+		}
+
+		return availableOutputs;
+	}
+
+	addInputBinding(input_name, provider_node, provider_input_name) {
+		this._parent.addBinding({
+			consumer: {
+				node: this,
+				property: input_name
+			},
+			provider: {
+				node: provider_node,
+				property: provider_input_name
+			}
+		});
+	}
+
+	addOutputBinding(output_name, provider_node, provider_output_name) {
+		this.addBinding({
+			consumer: {
+				node: this,
+				property: output_name
+			},
+			provider: {
+				node: provider_node,
+				property: provider_output_name
 			}
 		});
 	}
 
 	addBinding(binding) {
-		if (binding.consumer.id == this.id)
-			binding.consumer.id = "this";
-
-		if (binding.provider.id == this.id)
-			binding.provider.id = "this";
-
-		const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
+		const existing_binding = this.getBinding(binding.consumer.node.id, binding.consumer.property);
 
 		if(existing_binding !== undefined)
 			this._bindings.delete(existing_binding);
@@ -179,8 +212,8 @@ export default class GraphNode extends EventTarget {
 		this._bindings.add(binding);
 
 		// Sets the type of the provider's input to the type of the consumer's it's bound to.
-		const consumer_node = this.getNodeForId(binding.consumer.id);
-		const provider_node = this.getNodeForId(binding.provider.id);
+		const consumer_node = this.getNodeForId(binding.consumer.node.id);
+		const provider_node = this.getNodeForId(binding.provider.node.id);
 
 		const consumer_property = consumer_node.getPropertyForName(binding.consumer.property);
 		const provider_property = provider_node.getPropertyForName(binding.provider.property);
@@ -203,27 +236,31 @@ export default class GraphNode extends EventTarget {
 	 */
 	getBinding(consumer_id, consumer_property) {
 		for(let binding of this._bindings) {
-			if(consumer_id === binding.consumer.id &&
+			if(consumer_id === binding.consumer.node.id &&
 				consumer_property === binding.consumer.property)
 				return binding;
 		}
 		return undefined;
 	}
 
+	getBindings() {
+		let this_bindings = this.bindingsFor(this._id);
+
+		if (this._parent)
+			return this_bindings.concat(this._parent.bindingsFor(this._id));
+		
+		return this_bindings;
+	}
+
 	bindingsFor(id) {
-		return Array.from(this._bindings).map(binding => {
-			if (binding.consumer.id == "this")
-				binding.consumer.id = this._id;
-
-			if (binding.provider.id == "this")
-				binding.provider.id = this._id;
-
-			return binding;
-		}).filter(binding => id === binding.consumer.id || id === binding.provider.id);
+		return Array.from(this._bindings).filter(binding => {
+			return (id === binding.consumer.node.id 
+					|| id === binding.provider.node.id);
+		});
 	}
 
 	getNodeForId(id) {
-		if(id === 'this')
+		if(id === 'this' || id == this._id)
 			return this;
 
 		for(let child of this._children)
