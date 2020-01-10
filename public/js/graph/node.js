@@ -213,15 +213,6 @@ export default class GraphNode extends EventTarget {
 
 		this._bindings.add(binding);
 
-		// Sets the type of the provider's input to the type of the consumer's it's bound to.
-		const consumer_node = this.getNodeForId(binding.consumer.node.id);
-		const provider_node = this.getNodeForId(binding.provider.node.id);
-
-		const consumer_property = consumer_node.getPropertyForName(binding.consumer.property);
-		const provider_property = provider_node.getPropertyForName(binding.provider.property);
-
-		provider_property.type = consumer_property.type;
-
 		this.dispatchEvent(new Event('update-bindings'));
 	}
 
