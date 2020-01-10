@@ -121,7 +121,7 @@ export default class GraphNode extends EventTarget {
 
 		for (let binding of this._bindings)
 			if (binding.provider.id == child.id || binding.consumer.node.id == child.id)
-				this._bindings.delete(binding);
+				this.removeBinding(binding);
 
 		this.dispatchEvent(new Event('update-children'));
 	}
