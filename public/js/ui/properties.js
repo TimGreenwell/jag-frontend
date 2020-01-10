@@ -99,7 +99,7 @@ export default class NodeProperties extends EventTarget {
 							binding.provider.property == previous_binding[1])
 						{
 							if (!this._node.removeBinding(binding)) {
-								let res = this._node.parent.removeBinding(binding);
+								this._node.parent.removeBinding(binding);
 							}
 						}
 					}
@@ -154,7 +154,9 @@ export default class NodeProperties extends EventTarget {
 
 				previous_value = value;
 			});
+
 			output_el.appendChild(select_el);
+
 			this._output_elements.set(id, select_el);
 		}
 
