@@ -84,15 +84,34 @@ export default class NodeProperties extends EventTarget {
 		// only creates select element if option is defined
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
+
+			let previous_value = select_el.selectedOptions[0].value;
+
 			select_el.addEventListener('change', e => {
 				const value = e.target.selectedOptions[0].value;
+				
+				if (previous_value != 'not bound') {
+					const previous_binding = previous_value.split(':');
+					const current_bindings = this._node.getBindings();
 
-				if (value == 'not bound')
-					return;
+					for (let binding of current_bindings) {
+						if (binding.provider.node.id == previous_binding[0] &&
+							binding.provider.property == previous_binding[1])
+						{
+							if (!this._node.removeBinding(binding)) {
+								let res = this._node.parent.removeBinding(binding);
+							}
+						}
+					}
+				}
 
-				const provider = value.split(':');
+				if (value != 'not bound') {
+					const provider = value.split(':');
+					this._node.addInputBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
+				}
 
-				this._node.addInputBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
+				previous_value = value;
+
 			});
 			input_el.appendChild(select_el);
 			this._input_elements.set(id, select_el);
@@ -107,16 +126,33 @@ export default class NodeProperties extends EventTarget {
 		// only creates select element if option is defined
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
+
+			let previous_value = select_el.selectedOptions[0].value;
+			
 			select_el.addEventListener('change', e => {
 				const value = e.target.selectedOptions[0].value;
+				
+				if (previous_value != 'not bound') {
+					const previous_binding = previous_value.split(':');
+					const current_bindings = this._node.getBindings();
 
-				// TODO: destroy previous binding, if it exists, when 'not bound' selected
-				if (value == 'not bound')
-					return;
+					for (let binding of current_bindings) {
+						if (binding.provider.node.id == previous_binding[0] &&
+							binding.provider.property == previous_binding[1])
+						{
+							if (!this._node.removeBinding(binding)) {
+								let res = this._node.parent.removeBinding(binding);
+							}
+						}
+					}
+				}
 
-				const provider = value.split(':');
+				if (value != 'not bound') {
+					const provider = value.split(':');
+					this._node.addOutputBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
+				}
 
-				this._node.addOutputBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
+				previous_value = value;
 			});
 			output_el.appendChild(select_el);
 			this._output_elements.set(id, select_el);
