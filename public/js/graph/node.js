@@ -261,7 +261,11 @@ export default class GraphNode extends EventTarget {
 			}
 		}
 
-		return binding;
+		return bindings_for;
+	}
+
+	removeBinding(binding) {
+		return this._bindings.delete(binding);
 	}
 
 	getNodeForId(id) {
