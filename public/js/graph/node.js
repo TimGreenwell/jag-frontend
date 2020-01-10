@@ -253,10 +253,15 @@ export default class GraphNode extends EventTarget {
 	}
 
 	bindingsFor(id) {
-		return Array.from(this._bindings).filter(binding => {
-			return (id === binding.consumer.node.id 
-					|| id === binding.provider.node.id);
-		});
+		let bindings_for = [];
+
+		for (let binding of this._bindings) {
+			if (id == binding.consumer.node.id || id == binding.provider.node.id) {
+				bindings_for.push(binding);
+			}
+		}
+
+		return binding;
 	}
 
 	getNodeForId(id) {
