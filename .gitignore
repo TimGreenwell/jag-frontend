@@ -2,3 +2,4 @@
 node_modules
 dist
 ssl
+static-jags.json

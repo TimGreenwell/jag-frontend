@@ -1,10 +1,17 @@
-'use strict';
+/**
+ * @file Graphical node representation of a JAG.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.41
+ */
+
 
 const SNAP_SIZE = 5.0;
 
-import GraphNode from '../graph/node.js';
+import JAG from '../models/jag.js';
 
-export default class NodeElement extends EventTarget {
+customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(node) {
 		super();
@@ -17,29 +24,24 @@ export default class NodeElement extends EventTarget {
 		this._initHandlers();
 	}
 
-	_initUI() {
-		this._root_el = document.createElement('div');
-		this._root_el.className = 'node';
-		this._root_el.setAttribute('tabindex', '-1');
+	init() {
+		this.setAttribute('tabindex', '-1');
 
-		this._header_el = document.createElement('header');
-		this._root_el.appendChild(this._header_el);
+		this._$header = document.createElement('header');
+		this._$header_name = document.createElement('h1');
+		this._$header_name.className = 'node-name';
+		this._$header.appendChild(this._$header_name);
 
-		this._header_name = document.createElement('h1');
-		this._header_name.className = 'node-name';
-		this._header_el.appendChild(this._header_name);
+		this._$connector = document.createElement('div');
+		this._$connector.className = 'connector';
 
-		this._connector_el = document.createElement('div');
-		this._connector_el.className = 'connector';
-		this._root_el.appendChild(this._connector_el);
+		this.appendChild(this._$header);
+		this.appendChild(this._$connector);
 
 		this.setTranslation(100, 100);
+
 		this._applyName();
 		this._applyOperator();
-	}
-
-	get element() {
-		return this._root_el;
 	}
 
 	get model() {
@@ -47,22 +49,22 @@ export default class NodeElement extends EventTarget {
 	}
 
 	_applyName() {
-		this._header_name.innerHTML = this._model.name;
-		this._refresh();
+		this._$header_name.innerHTML = this._model.name;
 	}
 
 	_applyOperator() {
 		let op = '';
-		if(this._model.operator == GraphNode.OPERATOR.AND)
+		if(this._model.operator == JAG.OPERATOR.AND)
 			op = 'and';
-		else if(this._model.operator == GraphNode.OPERATOR.OR)
+		else if(this._model.operator == JAG.OPERATOR.OR)
 			op = 'or';
 
-		this._connector_el.innerHTML = op;
+		this._$connector.innerHTML = op;
+		// @TODO: move this to styling;
 		if(op == '')
-			this._connector_el.style.display = 'none';
+			this._$connector.style.display = 'none';
 		else
-			this._connector_el.style.display = 'block';
+			this._$connector.style.display = 'block';
 
 		this._snap();
 	}
@@ -83,13 +85,13 @@ export default class NodeElement extends EventTarget {
 	}
 
 	addOnEdgeInitializedListener(listener) {
-		this._connector_el.addEventListener('mousedown', e => {
+		this._$connector.addEventListener('mousedown', e => {
 			listener(e, this);
 		});
 	}
 
 	addOnEdgeFinalizedListener(listener) {
-		this._root_el.addEventListener('mouseup', e => {
+		this.addEventListener('mouseup', e => {
 			listener(e, this);
 		});
 	}
@@ -116,9 +118,9 @@ export default class NodeElement extends EventTarget {
 		this._is_selected = is_selected;
 
 		if(is_selected)
-			this._root_el.classList.add('selected-node');
+			this.classList.add('selected-node');
 		else
-			this._root_el.classList.remove('selected-node');
+			this.classList.remove('selected-node');
 	}
 
 	_initHandlers() {
@@ -137,25 +139,25 @@ export default class NodeElement extends EventTarget {
 			this.translate(e.movementX, e.movementY, e.shiftKey);
 		}).bind(this);
 
-		this._header_el.addEventListener('mousedown', (e) => {
+		this._$header.addEventListener('mousedown', (e) => {
 			this._center_offset = {
-				x: this._header_el.clientWidth / 2.0 - e.offsetX,
-				y: this._header_el.clientHeight / 2.0 - e.offsetY
+				x: this._$header.clientWidth / 2.0 - e.offsetX,
+				y: this._$header.clientHeight / 2.0 - e.offsetY
 			};
 
 			this._is_moving = true;
-			this._header_el.className = 'moving';
-			this._root_el.parentNode.addEventListener('mousemove', drag);
+			this._$header.className = 'moving';
+			this.parentNode.addEventListener('mousemove', drag);
 		});
 
-		this._header_el.addEventListener('mouseup', (e) => {
+		this._$header.addEventListener('mouseup', (e) => {
 			this._is_moving = false;
-			this._header_el.className = '';
+			this._$header.className = '';
 			this._snap();
-			this._root_el.parentNode.removeEventListener('mousemove', drag);
+			this.parentNode.removeEventListener('mousemove', drag);
 		});
 
-		this._header_name.addEventListener('transitionend', () => {
+		this._$header.addEventListener('transitionend', () => {
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
 
@@ -187,12 +189,11 @@ export default class NodeElement extends EventTarget {
 		this._translation.x = x;
 		this._translation.y = y;
 
-		if(!this._root_el.parentNode)
-			return;
+		if(!this.parentNode) return;
 
 		const [left, top] = this._computeTrueTopLeft();
 
-		this._root_el.style.transform = `translate(${left}px,${top}px)`;
+		this.style.transform = `translate(${left}px,${top}px)`;
 
 		const [h_center_x, h_center_y] = this._computeNodeInputAttachment();
 
@@ -212,10 +213,10 @@ export default class NodeElement extends EventTarget {
 	}
 
 	_adjustPosition(x,y) {
-		const pw = this._root_el.parentNode.clientWidth;
-		const ph = this._root_el.parentNode.clientHeight;
-		const nw = this._root_el.clientWidth;
-		const nh = this._root_el.clientHeight;
+		const pw = this.parentNode.clientWidth;
+		const ph = this.parentNode.clientHeight;
+		const nw = this.clientWidth;
+		const nh = this.clientHeight;
 
 		const adjusted_x = Math.min(Math.max(x, 0), pw - nw);
 		const adjusted_y = Math.min(Math.max(y, 0), ph - nh);
@@ -230,23 +231,26 @@ export default class NodeElement extends EventTarget {
 	}
 
 	_computeTrueTopLeft() {
-		const left = Math.round(this._translation.x - this._root_el.clientWidth / 2.0);
-		const top = Math.round(this._translation.y - this._root_el.clientHeight / 2.0);
+		const left = Math.round(this._translation.x - this.clientWidth / 2.0);
+		const top = Math.round(this._translation.y - this.clientHeight / 2.0);
 
 		return this._adjustPosition(left, top);
 	}
 
 	_computeNodeInputAttachment() {
-		const x = this._translation.x - this._header_el.clientWidth / 2.0;
+		const x = this._translation.x - this._$header.clientWidth / 2.0;
 		const y = this._translation.y;
 
 		return [x, y];
 	}
 
 	_computeNodeOutputAttachment() {
-		const x = this._translation.x + this._root_el.clientWidth / 2.0;
+		const x = this._translation.x + this.clientWidth / 2.0;
 		const y = this._translation.y;
 
 		return [x, y];
 	}
-}
+});
+
+export default customElements.get('jag-node');
+

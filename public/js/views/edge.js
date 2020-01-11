@@ -1,11 +1,19 @@
-import GraphNode from "./graph/node.js";
+/**
+ * @file Graphical edge representation of a JAG.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.07
+ */
+
+import JAG from '../models/jag.js';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
-export default class KPLEdge extends EventTarget {
+export default class Edge extends EventTarget {
+
 	constructor(parent) {
 		super();
-		console.log('Creating new KPLEdge');
 		this.init(parent);
 	}
 
@@ -34,7 +42,7 @@ export default class KPLEdge extends EventTarget {
 
 	_updateStrokeDash(e) {
 		if (this._node_origin) {
-			if (this._node_origin.model.operator == GraphNode.OPERATOR.OR) {
+			if (this._node_origin.model.operator == JAG.OPERATOR.OR) {
 				this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
 			} else {
 				this._edge_el.removeAttributeNS(null, 'stroke-dasharray');

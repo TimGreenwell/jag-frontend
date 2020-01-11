@@ -3,50 +3,9 @@
 <head>
 	<meta charset='UTF-8'/>
 	<title>JAG Authoring Tool</title>
-	<base href='/'>
-	<link rel='stylesheet' type='text/css' href='css/screen.css'>
-	<script type="module" src='js/jag-at.js'></script>
+	<link rel='stylesheet' type='text/css' href='/css/screen.css'>
+	<script type="module" src='/js/jag-at.js'></script>
 </head>
-<body unselectable='on'>
-	<side id='library'>
-		<header>
-			<input type='text' class='library-search' placeholder='search...' />
-		</header>
-		<div>
-			<ol class='library-list'></ol>
-		</div>
-	</side>
-	<div id='playground'></div>
-	<side id='properties'></side>
-	<side id='ide'>
-		<div id='ide-toolbar'>
-			<div id='connect' class='ide-button'>
-				<div class="button-icon"></div>
-				<div class="button-progress"></div>
-			</div>
-			<div id='upload' class='ide-button'>
-				<div class="button-icon"></div>
-				<div class="button-progress"></div>
-			</div>
-			<div id='run' class='ide-button'>
-				<div class="button-icon"></div>
-				<div class="button-progress"></div>
-			</div>
-			<div id='ide-feedback'></div>
-		</div>
-		<div>
-			<h1>Inputs</h1>
-			<ul id='ide-inputs'>
-			<li>
-				<label>Actor</label>
-				<select id='behavior-actor'></select>
-			</li>
-			<li>
-				<ul id='behavior-inputs'>
-				</ul>
-			</ul>
-		</div>
-	</side>
-</body>
+<body unselectable='on'></body>
 </html>
 

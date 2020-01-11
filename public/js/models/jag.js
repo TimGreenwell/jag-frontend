@@ -1,14 +1,21 @@
-'use strict';
+/**
+ * @file JAG model.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.2
+ */
 
 import {UUIDv4} from '../lib/uuid.js';
 
-export default class GraphNode extends EventTarget {
-	constructor({urn, name, execution = GraphNode.EXECUTION.NONE, operator = GraphNode.OPERATOR.NONE, desc = ''} = {}) {
+export default class JAG extends EventTarget {
+
+	constructor(urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '') {
 		super();
 		this._id = UUIDv4();
 		this._urn = urn;
 		this._name = name;
-		this._desc = desc;
+		this._description = description;
 		this._execution = execution;
 		this._operator = operator;
 		this._inputs = new Array();
@@ -63,11 +70,11 @@ export default class GraphNode extends EventTarget {
 	}
 
 	set description(description) {
-		this._desc = description;
+		this._descripition = description;
 	}
 
 	get description() {
-		return this._desc;
+		return this._description;
 	}
 
 	get inputs() {
@@ -268,7 +275,7 @@ export default class GraphNode extends EventTarget {
 		for(let child of this._children)
 			if (child.id == id)
 				return child;
-		
+
 		return undefined;
 	}
 
@@ -287,35 +294,37 @@ export default class GraphNode extends EventTarget {
 	}
 
 	getOrderForId(id) {
-		if (this._execution == GraphNode.EXECUTION.PARALLEL) return 0;
+		if (this._execution == JAG.EXECUTION.PARALLEL) return 0;
 
 		for (let i = 0; i < this._children.length; ++i) {
 			if (this._children[i].id === id) {
 				return i + 1;
 			}
 		}
-		
+
 		return 0;
 	}
 
-	static fromJSON(json_node) {
-		const node = new GraphNode({
-			urn: json_node.urn,
-			name: json_node.name,
-			execution: json_node.execution,
-			operator: json_node.operator,
-			desc: json_node.description
-		});
+	static fromJSON(jag_description) {
+		const {
+			urn,
+			name,
+			execution,
+			operator,
+			description,
+			inputs,
+			outputs,
+		} = jag_description;
 
-		json_node.inputs.forEach(node.addInput.bind(node));
-		json_node.outputs.forEach(node.addOutput.bind(node));
+		const jag = new JAG(urn, name, execution, operator, description);
 
-		if(json_node.type === 'goal') {
-			// json_node.children.forEach(node.addChild.bind(node));
-			// json_node.bindings.forEach(node.addBinding.bind(node));
-		}
+		if(inputs)
+			inputs.forEach(input => jag.addInput(input));
 
-		return node;
+		if(outputs)
+			outputs.forEach(output => jag.addOutput(output));
+
+		return jag;
 	}
 
 	toJSON() {
@@ -357,13 +366,13 @@ export default class GraphNode extends EventTarget {
 	}
 }
 
-GraphNode.EXECUTION = {
+JAG.EXECUTION = {
 	NONE: 'node.execution.none',
 	SEQUENTIAL: 'node.execution.sequential',
 	PARALLEL: 'node.execution.parallel'
 }
 
-GraphNode.OPERATOR = {
+JAG.OPERATOR = {
 	NONE: 'node.operator.none',
 	AND: 'node.operator.and',
 	OR: 'node.operator.or'

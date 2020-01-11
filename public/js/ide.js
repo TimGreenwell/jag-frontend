@@ -1,14 +1,20 @@
-'use strict';
+/**
+ * @file JAG Core communication panel.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.17
+ */
 
-export default class IDE extends EventTarget {
-	constructor(ide_container) {
+customElements.define('jag-ide', class extends HTMLElement {
+
+	constructor() {
 		super();
-		this._container = ide_container;
 		this._variables = new Map();
-		this._inputs = this._container.querySelector('#behavior-inputs');
-		this._actor = this._container.querySelector('#behavior-actor');
+		//this._inputs = this._container.querySelector('#behavior-inputs');
+		//this._actor = this._container.querySelector('#behavior-actor');
 		this._instance_inputs = new Map();
-		this._init();
+		//this._init();
 	}
 
 	handleConnection(event) {
@@ -203,5 +209,7 @@ export default class IDE extends EventTarget {
 			this._actor.add(opt_el);
 		});
 	}
-}
+});
+
+export default customElements.get('jag-ide');
 

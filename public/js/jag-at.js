@@ -1,23 +1,28 @@
-import Library from './library.js';
+/**
+ * @file Authoring tool.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.27
+ */
+
 import Playground from './playground.js';
 import IDE from './ide.js';
-import Properties from './ui/properties.js';
+import Library from './views/library.js';
+import Properties from './views/properties.js';
 import GraphService from './net/graph-service.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
 	const body = document.querySelector('body');
 
-	const playground_container = document.querySelector('#playground');
-	const playground = new Playground(playground_container);
+	const library = new Library();
+	const playground = new Playground();
+	const properties = new Properties();
+	const ide = new IDE();
 
-	const ide_container = document.querySelector('#ide');
-	const ide = new IDE(ide_container);
-
-	const properties_container = document.querySelector('#properties');
-	const properties = new Properties(properties_container);
-
-	const library_container = document.querySelector('#library');
-	const library = new Library(library_container);
+	body.appendChild(library)
+	body.appendChild(playground)
+	body.appendChild(properties)
 
 	const graph_service = new GraphService();
 
@@ -29,67 +34,23 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		library.handleResourceUpdate(e.detail);
 	});
 
-	graph_service.addEventListener('inputs', (e) => {
-		ide.handleInputs(e.detail);
-	});
-
-	graph_service.addEventListener('connection', (e) => {
-		ide.handleConnection(e);
-	});
-
-	graph_service.addEventListener('error', (e) => {
-		ide.handleError(e.detail);
-	});
-
-	graph_service.addEventListener('info', (e) => {
-		ide.handleInfo(e.detail);
-	});
-
 	playground.addEventListener('selection', (e) => {
 		properties.handleSelectionUpdate(e.detail);
-		ide.handleSelectionUpdate(e.detail);
-	});
-
-	ide.addEventListener('connect', (e) => {
-		graph_service.connect();
-	});
-
-	ide.addEventListener('upload', (e) => {
-		const json = playground.getSelectedAsJSON();
-		if(json == undefined) {
-			ide.handleError({
-				data: 'No graph selected.'
-			});
-
-			ide.stop();
-		} else {
-			graph_service.uploadGraph(json);
-		}
-	});
-
-	ide.addEventListener('run', (e) => {
-		const urn = playground.getSelectedURN();
-		if(urn == undefined) {
-			ide.handleError({
-				data: 'No graph selected.'
-			});
-
-			ide.stop();
-		} else {
-			graph_service.runGraph(urn, e.detail);
-		}
+		//ide.handleSelectionUpdate(e.detail);
 	});
 
 	loadStaticLibrary(library);
 });
 
-function loadStaticLibrary(library) {
-	library.addItem({
-		urn: '',
-		name: 'Empty',
-		description: 'Empty node that can be used to create new behaviors.',
-		inputs: [],
-		outputs: []
-	});
+async function loadStaticLibrary(library) {
+	library.addItem({name: 'New', description: 'Empty node that can be used to create new behaviors.'});
+
+	const response = await fetch('/static-jags.json');
+	if(!response.ok) return;
+
+	const static_library = await response.json();
+
+	for(let item of static_library)
+		library.addItem(item);
 }
 

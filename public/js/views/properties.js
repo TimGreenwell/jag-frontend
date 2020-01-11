@@ -1,12 +1,18 @@
-'use strict';
+/**
+ * @file Node properties panel.
+ *
+ * @author cwilber
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.17
+ */
 
-import GraphNode from '../graph/node.js';
+import JAG from '../models/jag.js';
 
-export default class NodeProperties extends EventTarget {
+customElements.define('jag-properties', class extends HTMLElement {
 
-	constructor(propreties_container) {
+	constructor() {
 		super();
-		this._container = propreties_container;
 		this._node = undefined;
 		this._input_elements = new Map();
 		this._output_elements = new Map();
@@ -48,7 +54,7 @@ export default class NodeProperties extends EventTarget {
 		const name = window.prompt('Input name');
 		if(name === null)
 			return;
-		
+
 		const type = window.prompt('Input type');
 		if (type == null)
 			return;
@@ -65,7 +71,7 @@ export default class NodeProperties extends EventTarget {
 		const name = window.prompt('Output name');
 		if(name === null)
 			return;
-		
+
 		const type = window.prompt('Output type');
 		if (type == null)
 			return;
@@ -176,6 +182,26 @@ export default class NodeProperties extends EventTarget {
 			})
 		});
 
+		if (this._node.model.parent.execution == JAG.EXECUTION.SEQUENTIAL)
+		{
+			const index = this._node.model.parent.getOrderForId(this._node.model.id);
+
+			this._node.model.parent.children.forEach(sibling => {
+				if(sibling === this._node.model)
+					return;
+
+				if(this._node.model.parent.getOrderForId(sibling.id) > index)
+					return;
+
+				sibling.outputs.forEach((output) => {
+					options.push({
+						text: `${sibling.name}:${output.name}`,
+						value: `${sibling.id}:${output.name}`
+					});
+				});
+			});
+		}
+
 		return options;
 	}
 
@@ -243,13 +269,13 @@ export default class NodeProperties extends EventTarget {
 
 		const execution_el = createPropertyElement('execution-property', 'Execution');
 		this._execution = createSelect('execution-property', [{
-			value: GraphNode.EXECUTION.NONE,
+			value: JAG.EXECUTION.NONE,
 			text: 'None'
 		},{
-			value: GraphNode.EXECUTION.SEQUENTIAL,
+			value: JAG.EXECUTION.SEQUENTIAL,
 			text: 'Sequential'
 		},{
-			value: GraphNode.EXECUTION.PARALLEL,
+			value: JAG.EXECUTION.PARALLEL,
 			text: 'Parallel'
 		}]);
 
@@ -257,13 +283,13 @@ export default class NodeProperties extends EventTarget {
 
 		const operator_el = createPropertyElement('operator-property', 'Operator');
 		this._operator  = createSelect('operator-property', [{
-			value: GraphNode.OPERATOR.NONE,
+			value: JAG.OPERATOR.NONE,
 			text: 'None'
 		},{
-			value: GraphNode.OPERATOR.AND,
+			value: JAG.OPERATOR.AND,
 			text: 'And'
 		},{
-			value: GraphNode.OPERATOR.OR,
+			value: JAG.OPERATOR.OR,
 			text: 'Or'
 		}]);
 
@@ -298,14 +324,14 @@ export default class NodeProperties extends EventTarget {
 
 		this._enableProperties(false);
 
-		this._container.appendChild(urn_el);
-		this._container.appendChild(name_el);
-		this._container.appendChild(desc_el);
-		this._container.appendChild(execution_el);
-		this._container.appendChild(operator_el);
-		this._container.appendChild(inputs_el);
-		this._container.appendChild(outputs_el);
-		this._container.appendChild(export_el);
+		this.appendChild(urn_el);
+		this.appendChild(name_el);
+		this.appendChild(desc_el);
+		this.appendChild(execution_el);
+		this.appendChild(operator_el);
+		this.appendChild(inputs_el);
+		this.appendChild(outputs_el);
+		this.appendChild(export_el);
 	}
 
 	_initHandlers() {
@@ -345,8 +371,8 @@ export default class NodeProperties extends EventTarget {
 		this._urn.value = '';
 		this._name.value = '';
 		this._desc.value = '';
-		this._execution.value = GraphNode.EXECUTION.NONE;
-		this._operator.value = GraphNode.OPERATOR.NONE;
+		this._execution.value = JAG.EXECUTION.NONE;
+		this._operator.value = JAG.OPERATOR.NONE;
 
 		this._clearIO();
 	}
@@ -374,7 +400,9 @@ export default class NodeProperties extends EventTarget {
 		this._output_elements.disabled = !enabled;
 		this._export.disabled = !enabled;
 	}
-}
+});
+
+export default customElements.get('jag-properties');
 
 function createPropertyElement(id, name) {
 	const element = document.createElement('div');
@@ -414,3 +442,4 @@ function createSelect(id, options) {
 
 	return input;
 }
+

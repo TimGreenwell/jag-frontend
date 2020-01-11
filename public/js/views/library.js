@@ -1,18 +1,24 @@
-'use strict';
+/**
+ * @file Authoring tool.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.21
+ */
 
-export default class Library extends EventTarget {
-	constructor(library_container) {
+customElements.define('jag-library', class extends HTMLElement {
+
+	constructor() {
 		super();
-		this._container = library_container;
-		this._items = [];
-		this._list = library_container.querySelector('.library-list');
-		this._search = library_container.querySelector('.library-search');
 
+		this._items = [];
+
+		this._initUI();
 		this._initListeners();
 	}
 
 	addItem(definition, idx = -1) {
-		const id = definition.urn;
+		const id = definition.urn || '';
 		const name = definition.name;
 		const description = definition.description || '';
 
@@ -48,7 +54,7 @@ export default class Library extends EventTarget {
 			}
 		});
 
-		this._list.appendChild(li);
+		this._$list.appendChild(li);
 	}
 
 	handleResourceUpdate(message) {
@@ -61,8 +67,23 @@ export default class Library extends EventTarget {
 		});
 	}
 
+	_initUI() {
+		const $header = document.createElement('header');
+		const $search = document.createElement('input');
+		const $list = document.createElement('ol');
+
+		$search.classList.add('library-search');
+		$list.classList.add('library-list');
+
+		this.appendChild($search);
+		this.appendChild($list);
+
+		this._$list = $list;
+		this._$search = $search;
+	}
+
 	_initListeners() {
-		this._search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
 	}
 
 	_filterFromSearchInput(e) {
@@ -99,5 +120,7 @@ export default class Library extends EventTarget {
 
 		return undefined;
 	}
-}
+});
+
+export default customElements.get('jag-library');
 

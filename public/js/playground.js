@@ -1,22 +1,27 @@
-'use strict';
+/**
+ * @file Playground - Visual area for authoring JAGs.
+ *
+ * @author mvignati
+ * @copyright Copyright © 2019 IHMC, all rights reserved.
+ * @version 0.29
+ */
 
-import GraphNode from './graph/node.js';
-import NodeElement from './ui/node.js';
-import KPLEdge from './kpl-edge.js';
+import JAG from './models/jag.js';
+import JAGNode from './views/jag-node.js';
+import Edge from './views/edge.js';
 
-export default class Playground extends EventTarget {
+customElements.define('jag-playground', class extends HTMLElement {
 
-	constructor(playground_container) {
+	constructor() {
 		super();
-		this._container = playground_container;
 		this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		this._edges_container.setAttribute('version', '1.1');
 		this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-		this._container.appendChild(this._edges_container);
+
+		this.appendChild(this._edges_container);
 
 		this._nodes_container = document.createElement('div');
-		this._nodes_container.style.pointerEvents = "none";
-		this._container.appendChild(this._nodes_container);
+		this.appendChild(this._nodes_container);
 
 		this._nodes = [];
 		this._selected = new Set();
@@ -27,16 +32,16 @@ export default class Playground extends EventTarget {
 
 	initGlobalEvents() {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
-		this._container.addEventListener('mousedown', (e) => {
+		this.addEventListener('mousedown', (e) => {
 			this.deselectAll();
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 		});
 
-		this._container.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
-		this._container.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
-		this._container.addEventListener('dragenter', this.onPreImport.bind(this));
-		this._container.addEventListener('dragover', this.cancelDefault.bind(this));
-		this._container.addEventListener('drop', this.onImport.bind(this));
+		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
+		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
+		this.addEventListener('dragenter', this.onPreImport.bind(this));
+		this.addEventListener('dragover', this.cancelDefault.bind(this));
+		this.addEventListener('drop', this.onImport.bind(this));
 	}
 
 	getSelectedAsJSON() {
@@ -54,10 +59,10 @@ export default class Playground extends EventTarget {
 	}
 
 	addNode(node_definition) {
-		const node_model = GraphNode.fromJSON(node_definition);
-		const node = new NodeElement(node_model);
+		const node_model = JAG.fromJSON(node_definition);
+		const node = new JAGNode(node_model);
 
-		node.element.addEventListener('mousedown', (e) => {
+		node.addEventListener('mousedown', (e) => {
 			// If meta isn't pressed clear previous selection
 			if(!e.metaKey) {
 				this._selected.forEach(local_node => {
@@ -73,10 +78,10 @@ export default class Playground extends EventTarget {
 			e.stopPropagation();
 		});
 
-		node.element.addEventListener('keydown', this.onKeyDown.bind(this));
+		node.addEventListener('keydown', this.onKeyDown.bind(this));
 
 		this._nodes.push(node);
-		this._nodes_container.appendChild(node.element);
+		this._nodes_container.appendChild(node);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
 		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
@@ -90,11 +95,11 @@ export default class Playground extends EventTarget {
 
 	deleteSelected() {
 		for(let n of this._selected) {
-			if (n instanceof NodeElement) {
+			if (n instanceof JAGNode) {
 				n.removeAllEdges();
 				this._selected.delete(n);
-				this._nodes_container.removeChild(n.element);
-			} else if (n instanceof KPLEdge) {
+				this._nodes_container.removeChild(n);
+			} else if (n instanceof Edge) {
 				n.destroy();
 			}
 		}
@@ -103,15 +108,14 @@ export default class Playground extends EventTarget {
 	clearPlayground() {
 		for(let node of this._nodes) {
 			node.removeAllEdges();
-			this._nodes_container.removeChild(node.element)
+			this._nodes_container.removeChild(node)
 		}
 		this._nodes = [];
 	}
 
 	fromClientToPlaygroundCoordinates(x, y) {
-		const playground = this._container;
-		const px = x - playground.offsetLeft;
-		const py = y - playground.offsetTop;
+		const px = x - this.offsetLeft;
+		const py = y - this.offsetTop;
 		return [px, py];
 	}
 
@@ -119,14 +123,14 @@ export default class Playground extends EventTarget {
 		if(item.top) {
 			this._addNodeRecursive(item);
 		} else {
-			const ch = this._container.clientHeight;
+			const ch = this.clientHeight;
 			const node = this.addNode(item);
-			node.setTranslation(10 + node.element.clientWidth / 2.0 ,ch/2);
+			node.setTranslation(10 + node.clientWidth / 2.0 ,ch/2);
 		}
 	}
 
 	_createEdge(origin) {
-		const edge = new KPLEdge(this._edges_container);
+		const edge = new Edge(this._edges_container);
 		edge.setNodeOrigin(origin);
 		return edge;
 	}
@@ -207,7 +211,7 @@ export default class Playground extends EventTarget {
 				node.operator = sub_item.connector.operator;
 				node.execution = sub_item.connector.execution;
 			}
-			node.setTranslation(x + node.element.clientWidth / 2.0 ,y);
+			node.setTranslation(x + node.clientWidth / 2.0 ,y);
 
 			if(!sub_item.children)
 				return node;
@@ -215,10 +219,10 @@ export default class Playground extends EventTarget {
 			const preferred_size = this._getNodePreferredHeight(sub_item, definition_set);
 
 			// assume all children have same height as the parent.
-			const node_height = node.element.clientHeight + margin;
+			const node_height = node.clientHeight + margin;
 			const preferred_height = preferred_size * node_height;
 
-			const x_offset = x + node.element.clientWidth + margin;
+			const x_offset = x + node.clientWidth + margin;
 			let y_offset = y - preferred_height / 2;
 
 			sub_item.children.forEach((child) => {
@@ -236,7 +240,7 @@ export default class Playground extends EventTarget {
 			return node;
 		}
 
-		const ch = this._container.clientHeight;
+		const ch = this.clientHeight;
 		recursive_add(item.top, 10, ch/2);
 	}
 
@@ -292,5 +296,6 @@ export default class Playground extends EventTarget {
 			if(def.urn == urn) return def;
 		return undefined;
 	}
-}
+});
 
+export default customElements.get('jag-playground');
