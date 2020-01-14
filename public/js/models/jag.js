@@ -143,7 +143,7 @@ export default class JAG extends EventTarget {
 			};
 		});
 
-		if (this._execution == GraphNode.EXECUTION.SEQUENTIAL)
+		if (this._execution == JAG.EXECUTION.SEQUENTIAL)
 		{
 			for (let i = 0; i < this._children.length; ++i) {
 				if (this._children[i].id == id)
