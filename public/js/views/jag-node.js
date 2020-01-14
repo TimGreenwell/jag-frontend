@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.41
+ * @version 0.45
  */
 
 
@@ -24,49 +24,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._initHandlers();
 	}
 
-	init() {
-		this.setAttribute('tabindex', '-1');
-
-		this._$header = document.createElement('header');
-		this._$header_name = document.createElement('h1');
-		this._$header_name.className = 'node-name';
-		this._$header.appendChild(this._$header_name);
-
-		this._$connector = document.createElement('div');
-		this._$connector.className = 'connector';
-
-		this.appendChild(this._$header);
-		this.appendChild(this._$connector);
-
-		this.setTranslation(100, 100);
-
-		this._applyName();
-		this._applyOperator();
-	}
-
 	get model() {
 		return this._model;
-	}
-
-	_applyName() {
-		this._$header_name.innerHTML = this._model.name;
-	}
-
-	_applyOperator() {
-		let op = '';
-		if(this._model.operator == JAG.OPERATOR.AND)
-			op = 'and';
-		else if(this._model.operator == JAG.OPERATOR.OR)
-			op = 'or';
-
-		this._$connector.innerHTML = op;
-		// @TODO: move this to styling;
-		if(op == '')
-			this._$connector.style.display = 'none';
-		else
-			this._$connector.style.display = 'block';
-
-		this._snap();
 	}
 
 	addInEdge(edge) {
@@ -123,6 +82,26 @@ customElements.define('jag-node', class extends HTMLElement {
 			this.classList.remove('selected-node');
 	}
 
+	_initUI() {
+		this.setAttribute('tabindex', '-1');
+
+		this._$header = document.createElement('header');
+		this._$header_name = document.createElement('h1');
+		this._$header_name.className = 'node-name';
+		this._$header.appendChild(this._$header_name);
+
+		this._$connector = document.createElement('div');
+		this._$connector.className = 'connector';
+
+		this.appendChild(this._$header);
+		this.appendChild(this._$connector);
+
+		this.setTranslation(100, 100);
+
+		this._applyName();
+		this._applyOperator();
+	}
+
 	_initHandlers() {
 		const drag = (e => {
 			if(!this._is_moving)
@@ -166,15 +145,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._model.addEventListener('update-name', this._applyName.bind(this));
 	}
 
-	_animationRefresh() {
-		this._refresh();
-		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
-	}
-
-	_refresh() {
-		this.setTranslation(this._translation.x, this._translation.y);
-	}
-
 	translate(dx, dy, recursive = false) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 
@@ -210,6 +180,36 @@ customElements.define('jag-node', class extends HTMLElement {
 				edge.setOrigin(c_center_x, c_center_y);
 			});
 		}
+	}
+
+	_applyName() {
+		this._$header_name.innerHTML = this._model.name;
+	}
+
+	_applyOperator() {
+		let op = '';
+		if(this._model.operator == JAG.OPERATOR.AND)
+			op = 'and';
+		else if(this._model.operator == JAG.OPERATOR.OR)
+			op = 'or';
+
+		this._$connector.innerHTML = op;
+		// @TODO: move this to styling;
+		if(op == '')
+			this._$connector.style.display = 'none';
+		else
+			this._$connector.style.display = 'block';
+
+		this._snap();
+	}
+
+	_animationRefresh() {
+		this._refresh();
+		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
+	}
+
+	_refresh() {
+		this.setTranslation(this._translation.x, this._translation.y);
 	}
 
 	_adjustPosition(x,y) {
@@ -250,6 +250,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		return [x, y];
 	}
+
 });
 
 export default customElements.get('jag-node');
