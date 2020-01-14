@@ -182,26 +182,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 			})
 		});
 
-		if (this._node.model.parent.execution == JAG.EXECUTION.SEQUENTIAL)
-		{
-			const index = this._node.model.parent.getOrderForId(this._node.model.id);
-
-			this._node.model.parent.children.forEach(sibling => {
-				if(sibling === this._node.model)
-					return;
-
-				if(this._node.model.parent.getOrderForId(sibling.id) > index)
-					return;
-
-				sibling.outputs.forEach((output) => {
-					options.push({
-						text: `${sibling.name}:${output.name}`,
-						value: `${sibling.id}:${output.name}`
-					});
-				});
-			});
-		}
-
 		return options;
 	}
 
