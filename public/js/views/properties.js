@@ -91,13 +91,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
 
-			let previous_value = select_el.selectedOptions[0].value;
+			select_el.onfocus = function (e) {
+				this._previous_value = this.value;
+			}.bind(select_el);
 
-			select_el.addEventListener('change', e => {
+			select_el.addEventListener('change', function (e) {
 				const value = e.target.selectedOptions[0].value;
 				
-				if (previous_value != 'not bound') {
-					const previous_binding = previous_value.split(':');
+				if (select_el._previous_value != 'not bound') {
+					const previous_binding = select_el._previous_value.split(':');
 					const current_bindings = this._node.getBindings();
 
 					for (let binding of current_bindings) {
@@ -116,9 +118,9 @@ customElements.define('jag-properties', class extends HTMLElement {
 					this._node.addInputBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
 				}
 
-				previous_value = value;
+				select_el._previous_value = value;
 
-			});
+			}.bind(this));
 			input_el.appendChild(select_el);
 			this._input_elements.set(id, select_el);
 		}
@@ -132,14 +134,16 @@ customElements.define('jag-properties', class extends HTMLElement {
 		// only creates select element if option is defined
 		if(options != undefined) {
 			const select_el = createSelect(id, options);
-
-			let previous_value = select_el.selectedOptions[0].value;
 			
-			select_el.addEventListener('change', e => {
+			select_el.onfocus = function (e) {
+				this._previous_value = this.value;
+			}.bind(select_el);
+
+			select_el.addEventListener('change', function (e) {
 				const value = e.target.selectedOptions[0].value;
 				
-				if (previous_value != 'not bound') {
-					const previous_binding = previous_value.split(':');
+				if (select_el._previous_value != 'not bound') {
+					const previous_binding = select_el._previous_value.split(':');
 					const current_bindings = this._node.getBindings();
 
 					for (let binding of current_bindings) {
@@ -158,8 +162,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 					this._node.addOutputBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
 				}
 
-				previous_value = value;
-			});
+				select_el._previous_value = value;
+			}.bind(this));
 
 			output_el.appendChild(select_el);
 
