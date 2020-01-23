@@ -6,7 +6,7 @@
  * @version 0.2
  */
 
-import {UUIDv4} from '../lib/uuid.js';
+import {UUIDv4} from '../utils/uuid.js';
 
 export default class JAG extends EventTarget {
 
