@@ -10,7 +10,7 @@ import Playground from './playground.js';
 import IDE from './ide.js';
 import Library from './views/library.js';
 import Properties from './views/properties.js';
-import GraphService from './net/graph-service.js';
+import GraphService from './services/graph-service.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
 	const body = document.querySelector('body');
