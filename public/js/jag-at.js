@@ -11,6 +11,7 @@ import IDE from './ide.js';
 import Library from './views/library.js';
 import Properties from './views/properties.js';
 import GraphService from './services/graph-service.js';
+import JAGService from './services/jag.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
 	const body = document.querySelector('body');
@@ -51,6 +52,15 @@ async function loadStaticLibrary(library) {
 	const static_library = await response.json();
 
 	for(let item of static_library)
-		library.addItem(item);
+	{
+		// Store the item in the local database.
+		JAGService.store(item);
+
+		// Retrieve the instance of the definition and store in the cache.
+		const model = JAGService.get(item.urn);
+
+		// Add the instance of the definition to the library for events to bubble up.
+		library.addItem(model);
+	}
 }
 
