@@ -7,7 +7,7 @@
 
 'use strict';
 
-import { UUIDv4 }  from '../goblin/crypto/uuid.js'
+import { UUIDv4 } from '../utils/uuid.js'
 
 import AgentModel from './agent.js'
 import JAGNodeModel from './jag-node.js'

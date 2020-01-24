@@ -7,7 +7,6 @@
 
 'use strict';
 
-import { UUIDv4 } from '../goblin/crypto/uuid.js';
 import JAGService from '../services/jag.js'
 
 export default class JAGModel {
