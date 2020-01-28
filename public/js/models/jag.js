@@ -46,6 +46,7 @@ export default class JAG extends EventTarget {
 
 	set urn(urn) {
 		this._urn = urn;
+		this.dispatchEvent(new Event('update-urn'));
 	}
 
 	get urn() {
@@ -81,6 +82,7 @@ export default class JAG extends EventTarget {
 
 	set description(description) {
 		this._descripition = description;
+		this.dispatchEvent(new Event('update-description'));
 	}
 
 	get description() {
