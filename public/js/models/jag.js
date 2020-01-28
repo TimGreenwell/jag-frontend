@@ -10,19 +10,29 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class JAG extends EventTarget {
 
-	constructor(urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '') {
+	constructor({ urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '', id = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
 		super();
-		this._id = UUIDv4();
+
+		// Generate a UUID if one is not provided, i.e. we are creating a new instance of a JAG.
+		// TODO: Move UUID to graphical node
+		this._id = id ? id : UUIDv4();
+
+		// All string properties can be copied.
 		this._urn = urn;
 		this._name = name;
 		this._description = description;
 		this._execution = execution;
 		this._operator = operator;
-		this._inputs = new Array();
-		this._outputs = new Array();
-		this._children = new Array();
-		this._bindings = new Set();
 
+		// Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
+		this._inputs = inputs ? [...inputs] : new Array();
+		this._outputs = outputs ? [...outputs] : new Array();
+		this._children = children ? [...children] : new Array();
+
+		// Copy bindings for the instance if provided, else create a new set.
+		this._bindings = new Set(bindings);
+
+		// Leave the parent undefined; if generating as a child of an existing JAG, the parent will be set during construction of the whole graph.
 		this._parent = undefined;
 	}
 
@@ -306,25 +316,7 @@ export default class JAG extends EventTarget {
 	}
 
 	static fromJSON(jag_description) {
-		const {
-			urn,
-			name,
-			execution,
-			operator,
-			description,
-			inputs,
-			outputs,
-		} = jag_description;
-
-		const jag = new JAG(urn, name, execution, operator, description);
-
-		if(inputs)
-			inputs.forEach(input => jag.addInput(input));
-
-		if(outputs)
-			outputs.forEach(output => jag.addOutput(output));
-
-		return jag;
+		return new JAG(jag_description);
 	}
 
 	toJSON() {
