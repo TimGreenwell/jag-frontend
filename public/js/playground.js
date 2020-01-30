@@ -208,10 +208,13 @@ customElements.define('jag-playground', class extends HTMLElement {
 
 		const recursive_add = (sub_item, x, y) => {
 			const node = this.addNode(sub_item);
-			if(sub_item.type === 'node.type.plan') {
+			
+			// TODO: Review if this is needed
+			/*if(sub_item.type === 'node.type.plan') {
 				node.operator = sub_item.connector.operator;
 				node.execution = sub_item.connector.execution;
-			}
+			}*/
+			
 			node.setTranslation(x + node.clientWidth / 2.0 ,y);
 
 			if(!sub_item.children)
