@@ -17,10 +17,10 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._initListeners();
 	}
 
-	addItem(definition, idx = -1) {
-		const id = definition.urn || '';
-		const name = definition.name;
-		const description = definition.description || '';
+	addItem(model, idx = -1) {
+		const id = model.urn || '';
+		const name = model.name;
+		const description = model.description || '';
 
 		const li = document.createElement('li');
 		li.id = id;
@@ -35,22 +35,22 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._items.push({
 			element: li,
 			search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${description.toLowerCase()}`,
-			definition: definition
+			model: model
 		});
 
 		li.addEventListener('click', (event) => {
 			if(event.shiftKey) {
-				const all_definitions = this._getChildDefinitions(definition, new Set());
+				const all_models = this._getChildModels(model, new Set());
 				this.dispatchEvent(new CustomEvent('item-selected', {
 					detail: {
-						top: definition,
-						definition_set: all_definitions
+						top: model,
+						model_set: all_models
 					}
 				}));
 			}
 			else
 			{
-				this.dispatchEvent(new CustomEvent('item-selected', { detail: definition }));
+				this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
 			}
 		});
 
@@ -96,16 +96,15 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	_getChildDefinitions(definition, set) {
-		if(!definition.children)
+	_getChildModels(model, set) {
+		if(!model.children)
 			return set;
 
+		model.children.forEach((child_details) => {
+			const child = this._getDefinitionForURN(child_details.urn);
 
-		definition.children.forEach((child_urn) => {
-			const child = this._getDefinitionForURN(child_urn);
-
-			set.add(child);
-			set = this._getChildDefinitions(child, set);
+			set.add({ id: child_details.id, model: child });
+			set = this._getChildModels(child, set);
 		});
 
 		return set;
@@ -114,8 +113,8 @@ customElements.define('jag-library', class extends HTMLElement {
 	_getDefinitionForURN(urn) {
 		for(const item of this._items)
 		{
-			if(item.definition.urn == urn)
-				return item.definition;
+			if(item.model.urn == urn)
+				return item.model;
 		}
 
 		return undefined;
