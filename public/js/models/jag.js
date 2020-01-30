@@ -36,10 +36,12 @@ export default class JAG extends EventTarget {
 		this._parent = undefined;
 	}
 
+	// TODO: Remove ID setter
 	set id(id) {
 		this._id = id;
 	}
 
+	// TODO: Remove ID getter
 	get id() {
 		return this._id;
 	}
@@ -337,9 +339,9 @@ export default class JAG extends EventTarget {
 			bindings: []
 		};
 
-		this._children.forEach((child, id) => {
+		this._children.forEach((child) => {
 			json.children.push({
-				urn: child.urn,
+				urn: child.model.urn,
 				id: child.id
 			});
 		});
