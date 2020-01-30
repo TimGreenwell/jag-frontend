@@ -87,19 +87,24 @@ export default class Edge extends EventTarget {
 
 	setNodeOrigin(node) {
 		this._node_origin = node;
-		this._node_origin.prepareOutEdge(this);
+		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
 		this._updateStrokeDash(null);
 	}
 
 	setNodeEnd(node) {
 		this._node_end = node;
-		this._node_end.addInEdge(this);
+		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to model
 
 		this._node_origin.model.addEventListener('update-children', this._boundUpdateOrder);
 		this._node_origin.model.addEventListener('update-execution', this._boundUpdateOrder);
 		this._node_origin.model.addEventListener('update-operator', this._boundUpdateStrokeDash);
 
-		this._node_origin.completeOutEdge(this);
+		this._node_origin.completeOutEdge(this); // Note: this does multiple things:
+		// - Adds edge to graphical node's 'outs'
+		// - Invokes _node_origin#addChild(_node_end), which:
+		//   - Adds _node_end model to _node_origin model's children
+		//   - Sets _node_end model's parent to _node_origin model
+		//   - Dispatches update event
 	}
 
 	setOrigin(x, y) {

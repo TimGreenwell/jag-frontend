@@ -177,6 +177,9 @@ customElements.define('jag-playground', class extends HTMLElement {
 		})
 	}
 
+	// TODO: implement #cancelEdge(node) using functionality of #onEdgeCanceled
+
+	// TODO: after implementing #cancelEdge(node), remove functionality and replace with invoking cancelEdge(node)
 	onEdgeCanceled(e, node) {
 		if(!this._is_edge_being_created)
 			return;

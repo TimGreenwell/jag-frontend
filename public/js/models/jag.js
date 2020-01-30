@@ -14,7 +14,7 @@ export default class JAG extends EventTarget {
 		super();
 
 		// Generate a UUID if one is not provided, i.e. we are creating a new instance of a JAG.
-		// TODO: Move UUID to graphical node
+		// TODO: Remove UUID as inherent property of model
 		this._id = id ? id : UUIDv4();
 
 		// All string properties can be copied.
@@ -127,11 +127,13 @@ export default class JAG extends EventTarget {
 	}
 
 	addChild(child) {
+		// TODO: push as object with {id: UUIDv4(), model: child}
 		this._children.push(child);
 		child.parent = this;
 		this.dispatchEvent(new Event('update-children'));
 	}
 
+	// TODO: require UUID string and child pair to remove properly
 	removeChild(child) {
 		for (let index in this._children) {
 			if (this._children[index].id == child.id) {
@@ -165,6 +167,7 @@ export default class JAG extends EventTarget {
 
 				let child_outputs = this._children[i].outputsFrom();
 
+				// TODO: add child id to child_output for bindings
 				for (let child_output of child_outputs)
 					availableInputs.push(child_output);
 			}
@@ -200,7 +203,10 @@ export default class JAG extends EventTarget {
 		return availableOutputs;
 	}
 
+	// TODO: combine #addInputBinding and #addOutputBinding into one function to call
+	
 	addInputBinding(input_name, provider_node, provider_input_name) {
+		// TODO: add node id to consumer/provider
 		this._parent.addBinding({
 			consumer: {
 				node: this,
@@ -214,6 +220,7 @@ export default class JAG extends EventTarget {
 	}
 
 	addOutputBinding(output_name, provider_node, provider_output_name) {
+		// TODO: add node id to consumer/provider
 		this.addBinding({
 			consumer: {
 				node: this,

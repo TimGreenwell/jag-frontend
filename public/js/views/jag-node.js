@@ -62,6 +62,8 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	completeOutEdge(edge) {
 		this._outs.add(edge);
+
+		// TODO: prompt user to commit edge + dispatch update; else, call this.parent.cancelEdge (to be implemented: playground#cancelEdge)
 		this._model.addChild(edge.getNodeEnd().model);
 	}
 
