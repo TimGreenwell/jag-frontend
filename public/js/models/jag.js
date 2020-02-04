@@ -10,12 +10,8 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class JAG extends EventTarget {
 
-	constructor({ urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '', id = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
+	constructor({ urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
 		super();
-
-		// Generate a UUID if one is not provided, i.e. we are creating a new instance of a JAG.
-		// TODO: Remove UUID as inherent property of model
-		this._id = id ? id : UUIDv4();
 
 		// All string properties can be copied.
 		this._urn = urn;
@@ -34,16 +30,6 @@ export default class JAG extends EventTarget {
 
 		// Leave the parent undefined; if generating as a child of an existing JAG, the parent will be set during construction of the whole graph.
 		this._parent = undefined;
-	}
-
-	// TODO: Remove ID setter
-	set id(id) {
-		this._id = id;
-	}
-
-	// TODO: Remove ID getter
-	get id() {
-		return this._id;
 	}
 
 	set urn(urn) {
@@ -127,13 +113,15 @@ export default class JAG extends EventTarget {
 	}
 
 	addChild(child) {
-		// TODO: push as object with {id: UUIDv4(), model: child}
-		this._children.push(child);
+		this._children.push({
+			id: UUIDv4(),
+			model: child
+		});
+
 		child.parent = this;
 		this.dispatchEvent(new Event('update-children'));
 	}
 
-	// TODO: require UUID string and child pair to remove properly
 	removeChild(child) {
 		for (let index in this._children) {
 			if (this._children[index].id == child.id) {
@@ -143,7 +131,7 @@ export default class JAG extends EventTarget {
 		}
 
 		for (let binding of this._bindings)
-			if (binding.provider.node.id == child.id || binding.consumer.node.id == child.id)
+			if (binding.provider.id == child.id || binding.consumer.id == child.id)
 				this.removeBinding(binding);
 		
 		child.parent = undefined;
@@ -151,10 +139,11 @@ export default class JAG extends EventTarget {
 		this.dispatchEvent(new Event('update-children'));
 	}
 
-	inputsTo(id) {
+	inputsTo(model) {
 		let availableInputs = this._inputs.map((input) => {
 			return {
-				node: this,
+				id: 'this',
+				model: this,
 				property: input.name
 			};
 		});
@@ -162,14 +151,15 @@ export default class JAG extends EventTarget {
 		if (this._execution == JAG.EXECUTION.SEQUENTIAL)
 		{
 			for (let i = 0; i < this._children.length; ++i) {
-				if (this._children[i].id == id)
+				if (this._children[i].model == model)
 					break;
 
-				let child_outputs = this._children[i].outputsFrom();
+				let child_outputs = this._children[i].model.outputsFrom();
 
-				// TODO: add child id to child_output for bindings
-				for (let child_output of child_outputs)
+				for (let child_output of child_outputs) {
+					child_output.id = this._children[i].id;
 					availableInputs.push(child_output);
+				}
 			}
 		}
 
@@ -179,23 +169,24 @@ export default class JAG extends EventTarget {
 	outputsFrom() {
 		return this._outputs.map((output) => {
 			return {
-				node: this,
+				model: this,
 				property: output.name
 			};
 		})
 	}
 
 	getAvailableInputs() {
-		return this._parent.inputsTo(this._id);
+		return this._parent.inputsTo(this);
 	}
 
 	getAvailableOutputs() {
 		let availableOutputs = [];
 
 		for (let child of this._children) {
-			let child_outputs = child.outputsFrom();
+			let child_outputs = child.model.outputsFrom();
 
 			for (let child_output of child_outputs) {
+				child_output.id = child.id;
 				availableOutputs.push(child_output);
 			}
 		}
@@ -203,38 +194,41 @@ export default class JAG extends EventTarget {
 		return availableOutputs;
 	}
 
-	// TODO: combine #addInputBinding and #addOutputBinding into one function to call
-	
-	addInputBinding(input_name, provider_node, provider_input_name) {
-		// TODO: add node id to consumer/provider
+	createBinding(property_name, provider_node, provider_property_name) {
 		this._parent.addBinding({
 			consumer: {
-				node: this,
-				property: input_name
+				model: this,
+				property: property_name
 			},
 			provider: {
-				node: provider_node,
-				property: provider_input_name
-			}
-		});
-	}
-
-	addOutputBinding(output_name, provider_node, provider_output_name) {
-		// TODO: add node id to consumer/provider
-		this.addBinding({
-			consumer: {
-				node: this,
-				property: output_name
-			},
-			provider: {
-				node: provider_node,
-				property: provider_output_name
+				model: provider_node,
+				property: provider_property_name
 			}
 		});
 	}
 
 	addBinding(binding) {
-		const existing_binding = this.getBinding(binding.consumer.node.id, binding.consumer.property);
+		if (binding.provider.model == this) {
+			binding.provider.id = 'this';
+		} else {
+			for (let child of this._children) {
+				if (binding.provider.model == child.model) {
+					binding.provider.id = child.id;
+				}
+			}
+		}
+
+		if (binding.consumer.model == this) {
+			binding.consumer.id = 'this';
+		} else {
+			for (let child of this._children) {
+				if (binding.consumer.model == child.model) {
+					binding.consumer.id = child.id;
+				}
+			}
+		}
+
+		const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
 
 		if(existing_binding !== undefined)
 			this._bindings.delete(existing_binding);
@@ -257,7 +251,7 @@ export default class JAG extends EventTarget {
 	 */
 	getBinding(consumer_id, consumer_property) {
 		for(let binding of this._bindings) {
-			if(consumer_id === binding.consumer.node.id &&
+			if(consumer_id === binding.consumer.id &&
 				consumer_property === binding.consumer.property)
 				return binding;
 		}
@@ -265,19 +259,19 @@ export default class JAG extends EventTarget {
 	}
 
 	getBindings() {
-		let this_bindings = this.bindingsFor(this._id);
+		let this_bindings = this.bindingsFor(this);
 
 		if (this._parent)
-			return this_bindings.concat(this._parent.bindingsFor(this._id));
+			return this_bindings.concat(this._parent.bindingsFor(this));
 		
 		return this_bindings;
 	}
 
-	bindingsFor(id) {
+	bindingsFor(model) {
 		let bindings_for = [];
 
 		for (let binding of this._bindings) {
-			if (id == binding.consumer.node.id || id == binding.provider.node.id) {
+			if (model == binding.consumer.model || model == binding.provider.model) {
 				bindings_for.push(binding);
 			}
 		}
@@ -290,7 +284,7 @@ export default class JAG extends EventTarget {
 	}
 
 	getNodeForId(id) {
-		if(id === 'this' || id == this._id)
+		if(id === 'this')// || id == this._id)
 			return this;
 
 		for(let child of this._children)

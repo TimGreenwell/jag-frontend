@@ -166,26 +166,31 @@ customElements.define('jag-playground', class extends HTMLElement {
 		if(!this._is_edge_being_created)
 			return;
 
-		this._is_edge_being_created = false;
-		this._created_edge.setNodeEnd(node);
-		this._created_edge.addEventListener('selection', (e) => {
-			if (e.detail.selected) {
-				this._selected.add(e.target);
-			} else {
-				this._selected.delete(e.target);
-			}
-		})
+		if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
+			this._is_edge_being_created = false;
+			this._created_edge.setNodeEnd(node);
+			this._created_edge.addEventListener('selection', (e) => {
+				if (e.detail.selected) {
+					this._selected.add(e.target);
+				} else {
+					this._selected.delete(e.target);
+				}
+			});
+		} else {
+			this.cancelEdge();
+		}
 	}
 
-	// TODO: implement #cancelEdge(node) using functionality of #onEdgeCanceled
-
-	// TODO: after implementing #cancelEdge(node), remove functionality and replace with invoking cancelEdge(node)
-	onEdgeCanceled(e, node) {
+	cancelEdge() {
 		if(!this._is_edge_being_created)
 			return;
 		this._created_edge.destroy();
 		this._created_edge = undefined;
 		this._is_edge_being_created = false;
+	}
+
+	onEdgeCanceled(e, node) {
+		this.cancelEdge();
 	}
 
 	onPreImport(e) {
@@ -203,7 +208,6 @@ customElements.define('jag-playground', class extends HTMLElement {
 	cancelDefault(e) {
 		e.preventDefault();
 	}
-
 
 	_addNodeRecursive(item) {
 		const margin = 10;
