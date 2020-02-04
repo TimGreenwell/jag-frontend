@@ -103,7 +103,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 					const current_bindings = this._node.getBindings();
 
 					for (let binding of current_bindings) {
-						if (binding.provider.node.id == previous_binding[0] &&
+						if (binding.provider.id == previous_binding[0] &&
 							binding.provider.property == previous_binding[1])
 						{
 							if (!this._node.removeBinding(binding)) {
@@ -115,7 +115,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				if (value != 'not bound') {
 					const provider = value.split(':');
-					this._node.addInputBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
+					this._node.createBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
 				}
 
 				select_el._previous_value = value;
@@ -159,7 +159,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				if (value != 'not bound') {
 					const provider = value.split(':');
-					this._node.addOutputBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
+					this._node.createBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
 				}
 
 				select_el._previous_value = value;
@@ -181,8 +181,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		this._node.getAvailableInputs().forEach((input) => {
 			options.push({
-				text: `${input.node.name}:${input.property}`,
-				value: `${input.node.id}:${input.property}`
+				text: `${input.model.name}:${input.property}`,
+				value: `${input.id}:${input.property}`
 			})
 		});
 
@@ -197,8 +197,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		this._node.getAvailableOutputs().forEach((output) => {
 			options.push({
-				text: `${output.node.name}:${output.property}`,
-				value: `${output.node.id}:${output.property}`
+				text: `${output.model.name}:${output.property}`,
+				value: `${output.id}:${output.property}`
 			})
 		});
 
@@ -213,28 +213,28 @@ customElements.define('jag-properties', class extends HTMLElement {
 			input_options = this.findInputOptions();
 
 		for (let input of this._node.inputs) {
-			const input_id = `${this._node.id}-${input.name}-inputs-property`;
+			const input_id = `${input.name}-inputs-property`;
 			this.addInputElement(input_id, input, input_options);
 		}
 
 		const output_options = this.findOutputOptions();
 		
 		for (let output of this._node.outputs) {
-			const output_id = `${this._node.id}-${output.name}-outputs-property`;
+			const output_id = `${output.name}-outputs-property`;
 			this.addOutputElement(output_id, output, output_options);
 		}
 
 		for (let binding of this._node.getBindings()) {
-			if(this._node.id != binding.consumer.node.id)
+			if(this._node.id != binding.consumer.id)
 				return;
 
-			let id_base = `${binding.consumer.node.id}-${binding.consumer.property}`;
+			let id_base = `${binding.consumer.id}-${binding.consumer.property}`;
 
 			let select = this._input_elements.get(`${id_base}-inputs-property`);
 			if (select == undefined)
 				select = this._output_elements.get(`${id_base}-outputs-property`);
 
-			select.value = `${binding.provider.node.id}:${binding.provider.property}`;
+			select.value = `${binding.provider.id}:${binding.provider.property}`;
 		}
 	}
 
