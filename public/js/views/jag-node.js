@@ -20,6 +20,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._outs = new Set();
 		this._ins = new Set();
 
+		this._boundUpdateHandler = this._updateHandler.bind(this);
+
 		this._initUI();
 		this._initHandlers();
 	}
@@ -62,13 +64,13 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	completeOutEdge(edge) {
 		this._outs.add(edge);
-		this._model.addChild(edge.getNodeEnd().model);
+		return this._model.addChild(edge.getNodeEnd().model);
 	}
 
-	removeOutEdge(edge) {
+	removeOutEdge(edge, id) {
 		this._outs.delete(edge);
 		if (edge.getNodeEnd()) {
-			this._model.removeChild(edge.getNodeEnd().model);
+			this._model.removeChild({ id: id, model: edge.getNodeEnd().model });
 		}
 	}
 
@@ -142,10 +144,18 @@ customElements.define('jag-node', class extends HTMLElement {
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
 
-		this._model.addEventListener('update-operator', this._applyOperator.bind(this));
-
-		this._model.addEventListener('update-name', this._applyName.bind(this));
+		this._model.addEventListener('update', this._boundUpdateHandler);
 	}
+
+	_updateHandler(e) {
+		const property = e.detail.property;
+
+		if (property == "operator") {
+			this._applyOperator();
+		} else if (property == "name") {
+			this._applyName();
+		}
+	} 
 
 	translate(dx, dy, recursive = false) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);

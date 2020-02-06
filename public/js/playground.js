@@ -60,7 +60,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	addNode(node_definition) {
-		const node_model = JAG.fromJSON(node_definition);
+		const node_model = node_definition;
 		const node = new JAGNode(node_model);
 
 		node.addEventListener('mousedown', (e) => {
