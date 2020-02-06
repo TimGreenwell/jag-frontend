@@ -211,7 +211,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 
 	_addNodeRecursive(item) {
 		const margin = 10;
-		const definition_set = item.definition_set;
+		const model_set = item.model_set;
 
 		const recursive_add = (sub_item, x, y) => {
 			const node = this.addNode(sub_item);
@@ -227,7 +227,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 			if(!sub_item.children)
 				return node;
 
-			const preferred_size = this._getNodePreferredHeight(sub_item, definition_set);
+			const preferred_size = this._getNodePreferredHeight(sub_item, model_set);
 
 			// assume all children have same height as the parent.
 			const node_height = node.clientHeight + margin;
@@ -237,9 +237,9 @@ customElements.define('jag-playground', class extends HTMLElement {
 			let y_offset = y - preferred_height / 2;
 
 			sub_item.children.forEach((child) => {
-				const def = this._getDefinitionFromURN(child, definition_set);
+				const def = this._getModelFromURN(child, model_set);
 				if(def) {
-					const local_preferred_size = this._getNodePreferredHeight(def, definition_set);
+					const local_preferred_size = this._getNodePreferredHeight(def, model_set);
 					y_offset += (local_preferred_size * node_height) / 2;
 					const sub_node = recursive_add(def, x_offset, y_offset);
 					y_offset += (local_preferred_size * node_height) / 2;
@@ -255,13 +255,13 @@ customElements.define('jag-playground', class extends HTMLElement {
 		recursive_add(item.top, 10, ch/2);
 	}
 
-	_getNodePreferredHeight(item, definition_set) {
+	_getNodePreferredHeight(item, model_set) {
 		if(!item.children || item.children.size === 0)
 			return 1;
 
 		return item.children.reduce((cut_set_size, child) => {
-			const def = this._getDefinitionFromURN(child, definition_set);
-			return cut_set_size + (def ? this._getNodePreferredHeight(def, definition_set) : 0);
+			const def = this._getModelFromURN(child, model_set);
+			return cut_set_size + (def ? this._getNodePreferredHeight(def, model_set) : 0);
 		}, 0);
 	}
 
@@ -302,9 +302,9 @@ customElements.define('jag-playground', class extends HTMLElement {
 		});
 	}
 
-	_getDefinitionFromURN(urn, definition_set) {
-		for(const def of definition_set)
-			if(def.urn == urn) return def;
+	_getModelFromURN(urn, model_set) {
+		for(const model of model_set)
+			if(model.urn == urn) return model;
 		return undefined;
 	}
 });

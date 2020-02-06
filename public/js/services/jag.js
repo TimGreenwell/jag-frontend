@@ -17,9 +17,8 @@ export default class JAGService {
 	}
 
 	static store(model) {
-		model.addEventListener('update', JAGService._updateHandler);
-
 		if (!JAGService.CACHE.has(model.urn)) {
+			model.addEventListener('update', JAGService._updateHandler);
 			JAGService.CACHE.set(model.urn, model);
 		}
 
@@ -70,6 +69,7 @@ export default class JAGService {
 			return undefined;
 
 		const model = JAG.fromJSON(json);
+		model.addEventListener('update', JAGService._updateHandler);
 		JAGService.CACHE.set(urn, model);
 
 		return model;

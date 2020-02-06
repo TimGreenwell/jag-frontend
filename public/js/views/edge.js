@@ -43,7 +43,7 @@ export default class Edge extends EventTarget {
 		parent.addEventListener('click', this._boundHandleSelection);
 	}
 
-	_boundUpdateHandler(e) {
+	_updateHandler(e) {
 		const property = e.detail.property;
 
 		if (property == "children") {
@@ -117,6 +117,8 @@ export default class Edge extends EventTarget {
 		//   - Adds _node_end model to _node_origin model's children
 		//   - Sets _node_end model's parent to _node_origin model
 		//   - Dispatches update event
+
+		this._updateOrder();
 	}
 
 	setOrigin(x, y) {
@@ -154,7 +156,7 @@ export default class Edge extends EventTarget {
 	}
 
 	_updateOrder(e) {
-		let order = this._node_origin.model.getOrderForId(this._node_end.model.id);
+		let order = this._node_origin.model.getOrderForId(this._childId);
 		this._text_el.innerHTML = order == 0 ? '' : order;
 	}
 

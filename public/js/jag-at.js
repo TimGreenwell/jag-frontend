@@ -53,7 +53,7 @@ async function loadLibrary(library) {
 async function loadStaticLibrary(library) {
 	await initializeStorage();
 
-	library.addItem({name: 'New', description: 'Empty node that can be used to create new behaviors.'});
+	library.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
 
 	const response = await fetch('/static-jags.json');
 	if(!response.ok) return;
