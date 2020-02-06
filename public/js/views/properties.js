@@ -24,10 +24,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 	handleSelectionUpdate(selection) {
 		if (this._node)
 		{
-			this._node.removeEventListener('update-input', this._boundIOUpdate);
-			this._node.removeEventListener('update-output', this._boundIOUpdate);
-			this._node.removeEventListener('update-children', this._boundIOUpdate);
-			this._node.removeEventListener('update-parent', this._boundIOUpdate);
+			this._node.removeEventListener('update', this._boundIOUpdate);
 		}
 
 		this._clearProperties();
@@ -43,10 +40,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			this._desc.value = node.description;
 
 			this._updateIO();
-			this._node.addEventListener('update-input', this._boundIOUpdate);
-			this._node.addEventListener('update-output', this._boundIOUpdate);
-			this._node.addEventListener('update-children', this._boundIOUpdate);
-			this._node.addEventListener('update-parent', this._boundIOUpdate);
+			this._node.addEventListener('update', this._boundIOUpdate);
 		}
 	}
 

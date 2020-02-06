@@ -7,8 +7,8 @@
 
 'use strict';
 
-import JAGModel from '../models/jag-ia.js';
-import IndexedDBStorage from '../utils/indexed-db.js';
+import JAG from '../models/jag.js';
+import IndexedDBUtils from '../utils/indexed-db.js';
 
 export default class JAGService {
 
@@ -17,10 +17,9 @@ export default class JAGService {
 	}
 
 	static store(model) {
-		//@TODO: check what happen if the jag already exists
-		JAGService.CACHE.set(model.urn, model);
+		model.addEventListener('update', JAGService._updateHandler);
 
-		return IndexedDBStorage.store(
+		return IndexedDBUtils.store(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
 			model.toJSON(),
@@ -29,7 +28,7 @@ export default class JAGService {
 	}
 
 	static async getAllAvailable() {
-		const cursor = await IndexedDBStorage.getKeys(
+		const cursor = await IndexedDBUtils.getKeys(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name
 		);
@@ -43,7 +42,7 @@ export default class JAGService {
 			return true;
 		}
 
-		const json = await IndexedDBStorage.get(
+		const json = await IndexedDBUtils.get(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
 			urn
@@ -57,7 +56,7 @@ export default class JAGService {
 			return JAGService.CACHE.get(urn);
 		}
 
-		const json = await IndexedDBStorage.get(
+		const json = await IndexedDBUtils.get(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
 			urn
@@ -66,12 +65,15 @@ export default class JAGService {
 		if(json === undefined)
 			return undefined;
 
-		const model = JAGModel.fromJSON(json);
+		const model = JAG.fromJSON(json);
 		JAGService.CACHE.set(urn, model);
 
 		return model;
 	}
 
+	static async _updateHandler(e) {
+		JAGService.store(JAGService.CACHE.get(urn));
+	}
 }
 
 JAGService.CACHE = new Map();
@@ -88,4 +90,3 @@ JAGService.JAG_STORE = {
 		}
 	]
 };
-

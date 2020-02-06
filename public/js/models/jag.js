@@ -34,7 +34,7 @@ export default class JAG extends EventTarget {
 
 	set urn(urn) {
 		this._urn = urn;
-		this.dispatchEvent(new Event('update-urn'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "urn" } }));
 	}
 
 	get urn() {
@@ -43,7 +43,7 @@ export default class JAG extends EventTarget {
 
 	set name(name) {
 		this._name = name;
-		this.dispatchEvent(new Event('update-name'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "name" } }));
 	}
 
 	get name() {
@@ -52,7 +52,7 @@ export default class JAG extends EventTarget {
 
 	set execution(type) {
 		this._execution = type;
-		this.dispatchEvent(new Event('update-execution'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "execution" } }));
 	}
 
 	get execution() {
@@ -61,7 +61,7 @@ export default class JAG extends EventTarget {
 
 	set operator(type) {
 		this._operator = type;
-		this.dispatchEvent(new Event('update-operator'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "operator" } }));
 	}
 
 	get operator() {
@@ -70,7 +70,7 @@ export default class JAG extends EventTarget {
 
 	set description(description) {
 		this._descripition = description;
-		this.dispatchEvent(new Event('update-description'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description" } }));
 	}
 
 	get description() {
@@ -99,27 +99,31 @@ export default class JAG extends EventTarget {
 
 	set parent(node) {
 		this._parent = node;
-		this.dispatchEvent(new Event('update-parent'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "parent" } }));
 	}
 
 	addInput(input) {
 		this._inputs.push(input);
-		this.dispatchEvent(new Event('update-input'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "update" } }));
 	}
 
 	addOutput(output) {
 		this._outputs.push(output);
-		this.dispatchEvent(new Event('update-output'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "output" } }));
 	}
 
 	addChild(child) {
+		const id = UUIDv4();
+		
 		this._children.push({
-			id: UUIDv4(),
+			id: id,
 			model: child
 		});
 
 		child.parent = this;
-		this.dispatchEvent(new Event('update-children'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+
+		return id;
 	}
 
 	removeChild(child) {
@@ -136,7 +140,7 @@ export default class JAG extends EventTarget {
 		
 		child.parent = undefined;
 
-		this.dispatchEvent(new Event('update-children'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
 	}
 
 	inputsTo(model) {
@@ -235,7 +239,7 @@ export default class JAG extends EventTarget {
 
 		this._bindings.add(binding);
 
-		this.dispatchEvent(new Event('update-bindings'));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings" } }));
 	}
 
 	/**

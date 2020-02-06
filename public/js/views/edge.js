@@ -34,10 +34,25 @@ export default class Edge extends EventTarget {
 		this._parent = parent;
 		parent.appendChild(this._group);
 
+		this._childId = undefined;
+
+		this._boundUpdateHandler = this._updateHandler.bind(this);
 		this._boundUpdateOrder = this._updateOrder.bind(this);
 		this._boundHandleSelection = this._handleSelection.bind(this);
 		this._boundUpdateStrokeDash = this._updateStrokeDash.bind(this);
 		parent.addEventListener('click', this._boundHandleSelection);
+	}
+
+	_boundUpdateHandler(e) {
+		const property = e.detail.property;
+
+		if (property == "children") {
+			this._updateOrder();
+		} else if (property == "execution") {
+			this._updateOrder();
+		} else if (property == "operator") {
+			this._updateStrokeDash();
+		}
 	}
 
 	_updateStrokeDash(e) {
@@ -68,10 +83,9 @@ export default class Edge extends EventTarget {
 		this._parent.removeEventListener('click', this._boundHandleSelection);
 
 		if(this._node_origin != undefined) {
-			this._node_origin.model.removeEventListener('update-children', this._boundUpdateOrder);
-			this._node_origin.model.removeEventListener('update-execution', this._boundUpdateOrder);
-			this._node_origin.model.removeEventListener('update-operator', this._boundUpdateStrokeDash);
-			this._node_origin.removeOutEdge(this);
+			this._node_origin.model.removeEventListener('update', this._boundUpdateHandler);
+			this._node_origin.removeOutEdge(this, this._childId);
+			this._childId = undefined;
 		}
 		if(this._node_end != undefined)
 			this._node_end.removeInEdge(this);
@@ -95,11 +109,9 @@ export default class Edge extends EventTarget {
 		this._node_end = node;
 		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to model
 
-		this._node_origin.model.addEventListener('update-children', this._boundUpdateOrder);
-		this._node_origin.model.addEventListener('update-execution', this._boundUpdateOrder);
-		this._node_origin.model.addEventListener('update-operator', this._boundUpdateStrokeDash);
+		this._node_origin.model.addEventListener('update', this._boundUpdateHandler);
 
-		this._node_origin.completeOutEdge(this); // Note: this does multiple things:
+		this._childId = this._node_origin.completeOutEdge(this); // Note: this does multiple things:
 		// - Adds edge to graphical node's 'outs'
 		// - Invokes _node_origin#addChild(_node_end), which:
 		//   - Adds _node_end model to _node_origin model's children
