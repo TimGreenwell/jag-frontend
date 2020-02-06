@@ -6,6 +6,8 @@
  * @version 0.21
  */
 
+ import JAGService from '../services/jag.js';
+
 customElements.define('jag-library', class extends HTMLElement {
 
 	constructor() {
@@ -65,6 +67,15 @@ customElements.define('jag-library', class extends HTMLElement {
 		message.data.forEach((resource) => {
 			this.addItem(resource);
 		});
+	}
+
+	async loadFromDB() {
+		let allAvailable = await JAGService.getAllAvailable();
+
+		for (let key of allAvailable) {
+			let model = await JAGService.get(key);
+			this.addItem(model);
+		}
 	}
 
 	_initUI() {

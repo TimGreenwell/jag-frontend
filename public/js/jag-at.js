@@ -42,8 +42,13 @@ document.addEventListener('DOMContentLoaded', (e) => {
 		//ide.handleSelectionUpdate(e.detail);
 	});
 
-	loadStaticLibrary(library);
+	loadLibrary(library);
 });
+
+async function loadLibrary(library) {
+	await loadStaticLibrary(library);
+	library.loadFromDB();
+}
 
 async function loadStaticLibrary(library) {
 	await initializeStorage();
@@ -57,14 +62,16 @@ async function loadStaticLibrary(library) {
 
 	for(let item of static_library)
 	{
-		// Store the item in the local database.
-		await JAGService.store(JAG.fromJSON(item));
+		let store = true;
 
-		// Retrieve the instance of the definition and store in the cache.
-		const model = await JAGService.get(item.urn);
+		if (JAGService.has(item.urn)) {
+			store = window.confirm("There exists a saved copy of static JAG for " + item.urn + ". Continue loading from static file (and overwrite saved copy)?");
+		}
 
-		// Add the instance of the definition to the library for events to bubble up.
-		library.addItem(model);
+		if (store) {
+			// Store the item in the local database.
+			await JAGService.store(JAG.fromJSON(item));
+		}
 	}
 }
 

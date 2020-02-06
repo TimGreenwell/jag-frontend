@@ -19,6 +19,10 @@ export default class JAGService {
 	static store(model) {
 		model.addEventListener('update', JAGService._updateHandler);
 
+		if (!JAGService.CACHE.has(model.urn)) {
+			JAGService.CACHE.set(model.urn, model);
+		}
+
 		return IndexedDBUtils.store(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
@@ -72,7 +76,7 @@ export default class JAGService {
 	}
 
 	static async _updateHandler(e) {
-		JAGService.store(JAGService.CACHE.get(urn));
+		JAGService.store(JAGService.CACHE.get(e.detail.urn));
 	}
 }
 

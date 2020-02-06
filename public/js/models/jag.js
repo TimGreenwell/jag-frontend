@@ -10,15 +10,15 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class JAG extends EventTarget {
 
-	constructor({ urn, name, execution = JAG.EXECUTION.NONE, operator = JAG.OPERATOR.NONE, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
+	constructor({ urn, name, connector = { execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE }, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
 		super();
 
 		// All string properties can be copied.
 		this._urn = urn;
 		this._name = name;
 		this._description = description;
-		this._execution = execution;
-		this._operator = operator;
+		this._execution = connector.execution;
+		this._operator = connector.operator;
 
 		// Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
 		this._inputs = inputs ? [...inputs] : new Array();
@@ -69,7 +69,7 @@ export default class JAG extends EventTarget {
 	}
 
 	set description(description) {
-		this._descripition = description;
+		this._description = description;
 		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description" } }));
 	}
 
@@ -114,7 +114,7 @@ export default class JAG extends EventTarget {
 
 	addChild(child) {
 		const id = UUIDv4();
-		
+
 		this._children.push({
 			id: id,
 			model: child
@@ -332,7 +332,7 @@ export default class JAG extends EventTarget {
 		const json = {
 			urn: this._urn,
 			name: this._name,
-			description: this._desc,
+			description: this._description,
 			type: 'node.type.plan',
 			connector: {
 				execution: this._execution,
