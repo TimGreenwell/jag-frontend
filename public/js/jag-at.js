@@ -12,6 +12,8 @@ import Library from './views/library.js';
 import Properties from './views/properties.js';
 import GraphService from './services/graph-service.js';
 import JAGService from './services/jag.js';
+import JAG from './models/jag.js';
+import IndexedDBUtils from './utils/indexed-db.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
 	const body = document.querySelector('body');
@@ -44,6 +46,8 @@ document.addEventListener('DOMContentLoaded', (e) => {
 });
 
 async function loadStaticLibrary(library) {
+	await initializeStorage();
+
 	library.addItem({name: 'New', description: 'Empty node that can be used to create new behaviors.'});
 
 	const response = await fetch('/static-jags.json');
@@ -54,13 +58,23 @@ async function loadStaticLibrary(library) {
 	for(let item of static_library)
 	{
 		// Store the item in the local database.
-		JAGService.store(item);
+		await JAGService.store(JAG.fromJSON(item));
 
 		// Retrieve the instance of the definition and store in the cache.
-		const model = JAGService.get(item.urn);
+		const model = await JAGService.get(item.urn);
 
 		// Add the instance of the definition to the library for events to bubble up.
 		library.addItem(model);
 	}
 }
 
+async function initializeStorage()
+{
+	const db = await IndexedDBUtils.initStorage(
+		"somethingthatmakessenselikejags",
+		1,
+		[JAGService.JAG_STORE]
+	);
+
+	JAGService.DB_INSTANCE = db;
+}
