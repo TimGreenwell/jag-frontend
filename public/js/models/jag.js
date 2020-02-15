@@ -32,11 +32,6 @@ export default class JAG extends EventTarget {
 		this._parent = undefined;
 	}
 
-	set urn(urn) {
-		this._urn = urn;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "urn" } }));
-	}
-
 	get urn() {
 		return this._urn;
 	}
@@ -104,7 +99,7 @@ export default class JAG extends EventTarget {
 
 	addInput(input) {
 		this._inputs.push(input);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "update" } }));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "input" } }));
 	}
 
 	addOutput(output) {
@@ -112,16 +107,18 @@ export default class JAG extends EventTarget {
 		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "output" } }));
 	}
 
-	addChild(child) {
-		const id = UUIDv4();
-
-		this._children.push({
-			id: id,
-			model: child
-		});
-
+	addChild(child, id = undefined) {
 		child.parent = this;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+
+		if (id == undefined) {
+			this._children.push({
+				id: id = UUIDv4(),
+				urn: child.urn,
+				model: child
+			});
+
+			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+		}
 
 		return id;
 	}
@@ -187,11 +184,13 @@ export default class JAG extends EventTarget {
 		let availableOutputs = [];
 
 		for (let child of this._children) {
-			let child_outputs = child.model.outputsFrom();
+			if (child.model) {
+				let child_outputs = child.model.outputsFrom();
 
-			for (let child_output of child_outputs) {
-				child_output.id = child.id;
-				availableOutputs.push(child_output);
+				for (let child_output of child_outputs) {
+					child_output.id = child.id;
+					availableOutputs.push(child_output);
+				}
 			}
 		}
 
@@ -346,7 +345,7 @@ export default class JAG extends EventTarget {
 
 		this._children.forEach((child) => {
 			json.children.push({
-				urn: child.model.urn,
+				urn: child.urn,
 				id: child.id
 			});
 		});
@@ -364,6 +363,10 @@ export default class JAG extends EventTarget {
 		});
 
 		return json;
+	}
+
+	copied(urn) {
+		this.dispatchEvent(new CustomEvent('copy', {"detail": { "urn": urn }}));
 	}
 }
 

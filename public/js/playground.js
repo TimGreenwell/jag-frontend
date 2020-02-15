@@ -27,6 +27,8 @@ customElements.define('jag-playground', class extends HTMLElement {
 		this._selected = new Set();
 		this._is_edge_being_created = false;
 
+		this._boundHandleEdgeSelected = this._handleEdgeSelected.bind(this);
+
 		this.initGlobalEvents();
 	}
 
@@ -65,7 +67,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 
 		node.addEventListener('mousedown', (e) => {
 			// If meta isn't pressed clear previous selection
-			if(!e.metaKey) {
+			if(!e.shiftKey) {
 				this._selected.forEach(local_node => {
 					if(local_node != node)
 						local_node.setSelected(false);
@@ -98,19 +100,23 @@ customElements.define('jag-playground', class extends HTMLElement {
 		for(let n of this._selected) {
 			if (n instanceof JAGNode) {
 				n.removeAllEdges();
-				this._selected.delete(n);
 				this._nodes_container.removeChild(n);
 			} else if (n instanceof Edge) {
-				n.destroy();
+				n.delete();
 			}
+
+			this._selected.delete(n);
 		}
 	}
 
 	clearPlayground() {
-		for(let node of this._nodes) {
+		for (let node of this._nodes) {
 			node.removeAllEdges();
-			this._nodes_container.removeChild(node)
+
+			if (this._nodes_container.contains(node))
+				this._nodes_container.removeChild(node);
 		}
+
 		this._nodes = [];
 	}
 
@@ -130,15 +136,16 @@ customElements.define('jag-playground', class extends HTMLElement {
 		}
 	}
 
-	_createEdge(origin) {
+	_createEdge(origin, id = undefined) {
 		const edge = new Edge(this._edges_container);
 		edge.setNodeOrigin(origin);
+		if (id) edge.setChildId(id);
 		return edge;
 	}
 
 	onKeyDown(e) {
-		if(e.key == 'Delete') {
-			if(e.ctrlKey) {
+		if (e.key == 'Delete') {
+			if (e.ctrlKey) {
 				this.clearPlayground();
 			} else {
 				this.deleteSelected();
@@ -169,13 +176,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 		if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
 			this._is_edge_being_created = false;
 			this._created_edge.setNodeEnd(node);
-			this._created_edge.addEventListener('selection', (e) => {
-				if (e.detail.selected) {
-					this._selected.add(e.target);
-				} else {
-					this._selected.delete(e.target);
-				}
-			});
+			this._created_edge.addEventListener('selection', this._boundHandleEdgeSelected);
 		} else {
 			this.cancelEdge();
 		}
@@ -210,17 +211,11 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	_addNodeRecursive(item) {
-		const margin = 10;
+		const margin = 50;
 		const model_set = item.model_set;
 
 		const recursive_add = (sub_item, x, y) => {
 			const node = this.addNode(sub_item);
-			
-			// TODO: Review if this is needed
-			/*if(sub_item.type === 'node.type.plan') {
-				node.operator = sub_item.connector.operator;
-				node.execution = sub_item.connector.execution;
-			}*/
 			
 			node.setTranslation(x + node.clientWidth / 2.0 ,y);
 
@@ -237,14 +232,17 @@ customElements.define('jag-playground', class extends HTMLElement {
 			let y_offset = y - preferred_height / 2;
 
 			sub_item.children.forEach((child) => {
-				const def = this._getModelFromURN(child, model_set);
-				if(def) {
+				const def = model_set.get(child.urn);
+				if (def) {
 					const local_preferred_size = this._getNodePreferredHeight(def, model_set);
 					y_offset += (local_preferred_size * node_height) / 2;
 					const sub_node = recursive_add(def, x_offset, y_offset);
 					y_offset += (local_preferred_size * node_height) / 2;
-					let edge = this._createEdge(node);
+					let edge = this._createEdge(node, child.id);
 					edge.setNodeEnd(sub_node);
+					edge.addEventListener('selection', this._boundHandleEdgeSelected);
+				} else {
+					// TODO: Handle when child model is undefined for URN
 				}
 			});
 
@@ -256,11 +254,11 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	_getNodePreferredHeight(item, model_set) {
-		if(!item.children || item.children.size === 0)
+		if (!item.children || item.children.length === 0)
 			return 1;
 
 		return item.children.reduce((cut_set_size, child) => {
-			const def = this._getModelFromURN(child, model_set);
+			const def = model_set.get(child.urn);
 			return cut_set_size + (def ? this._getNodePreferredHeight(def, model_set) : 0);
 		}, 0);
 	}
@@ -298,14 +296,15 @@ customElements.define('jag-playground', class extends HTMLElement {
 			this._generateSubGoals(node, subgoal.item);
 
 			x_start += 175;
-
 		});
 	}
 
-	_getModelFromURN(urn, model_set) {
-		for(const model of model_set)
-			if(model.urn == urn) return model;
-		return undefined;
+	_handleEdgeSelected(e)  {
+		if (e.detail.selected) {
+			this._selected.add(e.target);
+		} else {
+			this._selected.delete(e.target);
+		}
 	}
 });
 

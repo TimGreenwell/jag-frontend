@@ -8,12 +8,13 @@
  */
 
 import JAG from '../models/jag.js';
+import JAGService from '../services/jag.js';
 
 customElements.define('jag-properties', class extends HTMLElement {
 
 	constructor() {
 		super();
-		this._node = undefined;
+		this._model = undefined;
 		this._input_elements = new Map();
 		this._output_elements = new Map();
 		this._initUI();
@@ -22,25 +23,28 @@ customElements.define('jag-properties', class extends HTMLElement {
 	}
 
 	handleSelectionUpdate(selection) {
-		if (this._node)
+		if (this._model)
 		{
-			this._node.removeEventListener('update', this._boundIOUpdate);
+			this._model.removeEventListener('update', this._boundIOUpdate);
 		}
 
 		this._clearProperties();
 		this._enableProperties(selection.size != 0);
 
 		if(selection.size == 1) {
-			const node = selection.values().next().value.model;
+			const node = selection.values().next().value;
+			const model = node.model;
+
 			this._node = node;
-			this._urn.value = node.urn;
-			this._name.value = node.name;
-			this._execution.value = node.execution || 'none';
-			this._operator.value = node.operator || 'none';
-			this._desc.value = node.description;
+			this._model = model;
+			this._urn.value = model.urn;
+			this._name.value = model.name;
+			this._execution.value = model.execution || 'none';
+			this._operator.value = model.operator || 'none';
+			this._desc.value = model.description;
 
 			this._updateIO();
-			this._node.addEventListener('update', this._boundIOUpdate);
+			this._model.addEventListener('update', this._boundIOUpdate);
 		}
 	}
 
@@ -58,7 +62,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			type: type
 		};
 		
-		this._node.addInput(input);
+		this._model.addInput(input);
 	}
 
 	addOutput(e) {
@@ -75,7 +79,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			type: type
 		};
 
-		this._node.addOutput(output);
+		this._model.addOutput(output);
 	}
 
 	addInputElement(id, input, options) {
@@ -94,14 +98,14 @@ customElements.define('jag-properties', class extends HTMLElement {
 				
 				if (select_el._previous_value != 'not bound') {
 					const previous_binding = select_el._previous_value.split(':');
-					const current_bindings = this._node.getBindings();
+					const current_bindings = this._model.getBindings();
 
 					for (let binding of current_bindings) {
 						if (binding.provider.id == previous_binding[0] &&
 							binding.provider.property == previous_binding[1])
 						{
-							if (!this._node.removeBinding(binding)) {
-								this._node.parent.removeBinding(binding);
+							if (!this._model.removeBinding(binding)) {
+								this._model.parent.removeBinding(binding);
 							}
 						}
 					}
@@ -109,7 +113,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				if (value != 'not bound') {
 					const provider = value.split(':');
-					this._node.createBinding(input.name, this._node.parent.getNodeForId(provider[0]), provider[1]);
+					this._model.createBinding(input.name, this._model.parent.getNodeForId(provider[0]), provider[1]);
 				}
 
 				select_el._previous_value = value;
@@ -138,14 +142,14 @@ customElements.define('jag-properties', class extends HTMLElement {
 				
 				if (select_el._previous_value != 'not bound') {
 					const previous_binding = select_el._previous_value.split(':');
-					const current_bindings = this._node.getBindings();
+					const current_bindings = this._model.getBindings();
 
 					for (let binding of current_bindings) {
 						if (binding.provider.node.id == previous_binding[0] &&
 							binding.provider.property == previous_binding[1])
 						{
-							if (!this._node.removeBinding(binding)) {
-								let res = this._node.parent.removeBinding(binding);
+							if (!this._model.removeBinding(binding)) {
+								let res = this._model.parent.removeBinding(binding);
 							}
 						}
 					}
@@ -153,7 +157,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				if (value != 'not bound') {
 					const provider = value.split(':');
-					this._node.createBinding(output.name, this._node.getNodeForId(provider[0]), provider[1]);
+					this._model.createBinding(output.name, this._model.getNodeForId(provider[0]), provider[1]);
 				}
 
 				select_el._previous_value = value;
@@ -173,7 +177,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value:'not bound'
 		}];
 
-		this._node.getAvailableInputs().forEach((input) => {
+		this._model.getAvailableInputs().forEach((input) => {
 			options.push({
 				text: `${input.model.name}:${input.property}`,
 				value: `${input.id}:${input.property}`
@@ -189,7 +193,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value:'not bound'
 		}];
 
-		this._node.getAvailableOutputs().forEach((output) => {
+		this._model.getAvailableOutputs().forEach((output) => {
 			options.push({
 				text: `${output.model.name}:${output.property}`,
 				value: `${output.id}:${output.property}`
@@ -203,23 +207,23 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._clearIO();
 
 		let input_options = undefined;
-		if(this._node.parent)
+		if(this._model.parent)
 			input_options = this.findInputOptions();
 
-		for (let input of this._node.inputs) {
+		for (let input of this._model.inputs) {
 			const input_id = `${input.name}-inputs-property`;
 			this.addInputElement(input_id, input, input_options);
 		}
 
 		const output_options = this.findOutputOptions();
 		
-		for (let output of this._node.outputs) {
+		for (let output of this._model.outputs) {
 			const output_id = `${output.name}-outputs-property`;
 			this.addOutputElement(output_id, output, output_options);
 		}
 
-		for (let binding of this._node.getBindings()) {
-			if(this._node.id != binding.consumer.id)
+		for (let binding of this._model.getBindings()) {
+			if(this._model.id != binding.consumer.id)
 				return;
 
 			let id_base = `${binding.consumer.id}-${binding.consumer.property}`;
@@ -312,29 +316,74 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this.appendChild(export_el);
 	}
 
+	async _updateURN(urn) {
+		if (this._urn.value != this._model.urn) {
+			let update = false;
+
+			if (window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)")) {
+				if (await JAGService.has(this._urn.value)) {
+					update = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
+				} else {
+					update = true;
+				}
+			}
+
+			if (update) {
+				// Copy model with new URN.
+				let schema = this._model.toJSON();
+				schema.urn = urn;
+				let model = new JAG(schema);
+
+				// Update model references.
+				let old_model = this._model;
+				this._node.model = model;
+				this._model = model;
+
+				// Remove unsaved box shadow on URN property input.
+				this._urn.style.boxShadow = "none";
+
+				// Store the new model.
+				await JAGService.store(model);
+
+				// Notify listeners of copied model.
+				old_model.copied(urn);
+			}
+		}
+	}
+
 	_initHandlers() {
 		this._urn.addEventListener('keyup', e => {
-			this._node.urn = this._urn.value;
+			if (this._urn.value != this._model.urn) {
+				this._urn.style.boxShadow = "3px 3px orange";
+			} else {
+				this._urn.style.boxShadow = "none";
+			}
+		});
+
+		this._urn.addEventListener('keypress', e => {
+			if (e.key == "Enter") {
+				this._updateURN(this._urn.value);
+			}
 		});
 
 		this._name.addEventListener('keyup', e => {
-			this._node.name = this._name.value;
+			this._model.name = this._name.value;
 		});
 
 		this._desc.addEventListener('keyup', e => {
-			this._node.description = this._desc.value;
+			this._model.description = this._desc.value;
 		});
 
 		this._execution.addEventListener('change', e => {
-			this._node.execution = this._execution.value;
+			this._model.execution = this._execution.value;
 		});
 
 		this._operator.addEventListener('change', e => {
-			this._node.operator = this._operator.value;
+			this._model.operator = this._operator.value;
 		});
 
 		this._export.addEventListener('click', e => {
-			const node = this._node;
+			const node = this._model;
 
 			const json = JSON.stringify(node.toJSON());
 			const a = document.createElement('a');
@@ -351,6 +400,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._desc.value = '';
 		this._execution.value = JAG.EXECUTION.NONE;
 		this._operator.value = JAG.OPERATOR.NONE;
+
+		this._urn.style.boxShadow = "none";
 
 		this._clearIO();
 	}

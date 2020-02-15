@@ -12,7 +12,6 @@ import Library from './views/library.js';
 import Properties from './views/properties.js';
 import GraphService from './services/graph-service.js';
 import JAGService from './services/jag.js';
-import JAG from './models/jag.js';
 import IndexedDBUtils from './utils/indexed-db.js';
 
 document.addEventListener('DOMContentLoaded', (e) => {
@@ -46,33 +45,9 @@ document.addEventListener('DOMContentLoaded', (e) => {
 });
 
 async function loadLibrary(library) {
-	await loadStaticLibrary(library);
-	library.loadFromDB();
-}
-
-async function loadStaticLibrary(library) {
 	await initializeStorage();
-
-	library.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
-
-	const response = await fetch('/static-jags.json');
-	if(!response.ok) return;
-
-	const static_library = await response.json();
-
-	for(let item of static_library)
-	{
-		let store = true;
-
-		if (JAGService.has(item.urn)) {
-			store = window.confirm("There exists a saved copy of static JAG for " + item.urn + ". Continue loading from static file (and overwrite saved copy)?");
-		}
-
-		if (store) {
-			// Store the item in the local database.
-			await JAGService.store(JAG.fromJSON(item));
-		}
-	}
+	await JAGService.loadFromFile('/static-jags.json');
+	library.loadFromDB();
 }
 
 async function initializeStorage()

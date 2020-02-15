@@ -20,6 +20,7 @@ export default class JAGService {
 		if (!JAGService.CACHE.has(model.urn)) {
 			model.addEventListener('update', JAGService._updateHandler);
 			JAGService.CACHE.set(model.urn, model);
+			JAGService.resolve(model);
 		}
 
 		return IndexedDBUtils.store(
@@ -36,12 +37,22 @@ export default class JAGService {
 			JAGService.JAG_STORE.name
 		);
 
-		return cursor;
+		let keys = new Set();
+
+		for (let key of cursor) {
+			keys.add(key);
+		}
+
+		for (let key of JAGService.STATIC.keys()) {
+			keys.add(key);
+		}
+
+		return keys;
 	}
 
-	// @TODO: change that to only query for key existence.
+	// TODO: change that to only query for key existence.
 	static async has(urn) {
-		if(JAGService.CACHE.has(urn)) {
+		if (JAGService.CACHE.has(urn)) {
 			return true;
 		}
 
@@ -51,36 +62,131 @@ export default class JAGService {
 			urn
 		);
 
-		return json !== undefined;
+		if (json !== undefined) {
+			return true;
+		}
+
+		return JAGService.STATIC.has(urn);
 	}
 
 	static async get(urn) {
-		if(JAGService.CACHE.has(urn)) {
+		// If the cache contains a model for this URN,
+		if (JAGService.CACHE.has(urn)) {
+			// Return the model in the cache.
 			return JAGService.CACHE.get(urn);
 		}
 
-		const json = await IndexedDBUtils.get(
+		// Else, attempt to retrieve a definition for this URN from IndexedDB.
+		let json = await IndexedDBUtils.get(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
 			urn
 		);
 
-		if(json === undefined)
-			return undefined;
+		// If a definition does not exist,
+		if (json === undefined) {
+			// If the static library does not contain a definition,
+			if (!JAGService.STATIC.has(urn)) {
+				// No definition exists; return undefined.
+				return undefined;
+			}
 
+			// Else, retrieve the definition from the static library.
+			json = JAGService.STATIC.get(urn);
+		}
+
+		// Create a new model from the definition.
 		const model = JAG.fromJSON(json);
+
+		// Resolve the tree of children for this model.
+		await JAGService.resolve(model);
+
+		// Attach an update listener to this model.
 		model.addEventListener('update', JAGService._updateHandler);
+
+		// Store the model in the cache.
 		JAGService.CACHE.set(urn, model);
 
+		// Return the model.
 		return model;
 	}
 
+	static async resolve(model) {
+		// For each child of this model,
+		for (let child of model.children) {
+			// If child does not have model set,
+			if (child.model === undefined) {
+				// Check if model is set for URN.
+				let check = await JAGService.has(child.urn);
+
+				// If definition for child URN exists,
+				if (check) {
+					// Set the child model.
+					child.model = await JAGService.get(child.urn);
+				// Else,
+				} else {
+					// If other models are also seeking this child URN,
+					if (JAGService.MISSING.has(child.urn)) {
+						// Add this model to the list.
+						let missing_list = JAGService.MISSING.get(child.urn);
+						missing_list.push(model);
+					// Else,
+					} else {
+						// Create a new list of models seeking this child URN.
+						JAGService.MISSING.set(child.urn, [model]);
+					}
+				}
+			}
+		}
+
+		// If other models have been seeking this model URN,
+		if (JAGService.MISSING.has(model.urn)) {
+			// Retrieve the list of models seeking this model URN.
+			let missing_list = JAGService.MISSING.get(model.urn);
+
+			// Remove this URN from the missing list.
+			JAGService.MISSING.delete(model.urn);
+
+			// For each model in the list,
+			for (let seeking_model of missing_list) {
+				// For each child of the model,
+				for (let child of seeking_model.children) {
+					// If the child URN matches this model,
+					if (child.urn == model.urn) {
+						// Set the child's model to this model.
+						child.model = model;
+					}
+				}
+			}
+		}
+	}
+
 	static async _updateHandler(e) {
-		JAGService.store(JAGService.CACHE.get(e.detail.urn));
+		await JAGService.store(JAGService.CACHE.get(e.detail.urn));
+	}
+	
+	static async loadFromFile(path) {
+		const response = await fetch(path);
+
+		if (!response.ok) {
+			window.alert("Failed to load static file '" + path + "'.");
+			return;
+		}
+
+		const static_library = await response.json();
+
+		for (let item of static_library)
+		{
+			JAGService.STATIC.set(item.urn, item);
+		}
 	}
 }
 
 JAGService.CACHE = new Map();
+
+JAGService.STATIC = new Map();
+
+JAGService.MISSING = new Map();
 
 JAGService.JAG_STORE = {
 	name: 'jag',

@@ -6,6 +6,7 @@
  * @version 0.21
  */
 
+ import JAG from '../models/jag.js';
  import JAGService from '../services/jag.js';
 
 customElements.define('jag-library', class extends HTMLElement {
@@ -17,6 +18,8 @@ customElements.define('jag-library', class extends HTMLElement {
 
 		this._initUI();
 		this._initListeners();
+
+		this.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
 	}
 
 	addItem(model, idx = -1) {
@@ -42,7 +45,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 		li.addEventListener('click', (event) => {
 			if(event.shiftKey) {
-				const all_models = this._getChildModels(model, new Set());
+				const all_models = this._getChildModels(model, new Map());
 				this.dispatchEvent(new CustomEvent('item-selected', {
 					detail: {
 						top: model,
@@ -57,6 +60,8 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 
 		this._$list.appendChild(li);
+
+		model.addEventListener('copy', this._createItem.bind(this));
 	}
 
 	handleResourceUpdate(message) {
@@ -107,28 +112,31 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	_getChildModels(model, set) {
+	_getChildModels(model, map) {
 		if(!model.children)
-			return set;
+			return map;
 
 		model.children.forEach((child_details) => {
 			const child = this._getDefinitionForURN(child_details.urn);
-
-			set.add({ id: child_details.id, model: child });
-			set = this._getChildModels(child, set);
+			map.set(child_details.urn, child);
+			if (child) map = this._getChildModels(child, map);
 		});
 
-		return set;
+		return map;
 	}
 
 	_getDefinitionForURN(urn) {
-		for(const item of this._items)
-		{
-			if(item.model.urn == urn)
+		for (const item of this._items) {
+			if (item.model.urn == urn) {
 				return item.model;
+			}
 		}
 
 		return undefined;
+	}
+
+	async _createItem(e) {
+		this.addItem(await JAGService.get(e.detail.urn));
 	}
 });
 

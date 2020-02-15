@@ -10,6 +10,7 @@
 const SNAP_SIZE = 5.0;
 
 import JAG from '../models/jag.js';
+import JAGService from '../services/jag.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
@@ -24,6 +25,16 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._initUI();
 		this._initHandlers();
+	}
+
+	// TODO: Find a better way to deal with changing URN so model is a private property
+	set model(node) {
+		this._model.removeEventListener('update', this._boundUpdateHandler);
+		this._model = node;
+		this._model.addEventListener('update', this._boundUpdateHandler);
+
+		this._applyName();
+		this._applyOperator();
 	}
 
 	get model() {
@@ -62,13 +73,16 @@ customElements.define('jag-node', class extends HTMLElement {
 		edge.setOrigin(c_center_x, c_center_y);
 	}
 
-	completeOutEdge(edge) {
+	completeOutEdge(edge, id = undefined) {
 		this._outs.add(edge);
-		return this._model.addChild(edge.getNodeEnd().model);
+		return this._model.addChild(edge.getNodeEnd().model, id);
 	}
 
 	removeOutEdge(edge, id) {
 		this._outs.delete(edge);
+	}
+
+	removeChild(edge, id) {
 		if (edge.getNodeEnd()) {
 			this._model.removeChild({ id: id, model: edge.getNodeEnd().model });
 		}
@@ -154,6 +168,8 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._applyOperator();
 		} else if (property == "name") {
 			this._applyName();
+		} else if (property == "urn") {
+
 		}
 	} 
 
