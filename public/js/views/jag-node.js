@@ -19,7 +19,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._model = node;
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
-		this._ins = new Set();
+		this._in = undefined;
 
 		this._boundUpdateHandler = this._updateHandler.bind(this);
 
@@ -42,17 +42,28 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	addInEdge(edge) {
-		let [h_center_x, h_center_y] = this._computeNodeInputAttachment();
-		edge.setEnd(h_center_x, h_center_y);
-		this._ins.add(edge);
+		if (this._in == undefined) {
+			let [h_center_x, h_center_y] = this._computeNodeInputAttachment();
+			edge.setEnd(h_center_x, h_center_y);
+			this._in = edge;
+		} else {
+			throw new Error("Cannot have multiple edges in to a node!");
+		}
 	}
 
 	removeInEdge(edge) {
-		this._ins.delete(edge);
+		if (this._in == edge) {
+			this._in = undefined;
+		} else {
+			throw new Error("Attempting to remove unknown in edge from node!");
+		}
 	}
 
 	removeAllEdges() {
-		this._ins.forEach(edge => edge.destroy());
+		if (this._in) {
+			this._in.destroy();
+		}
+
 		this._outs.forEach(edge => edge.destroy());
 	}
 
@@ -171,7 +182,31 @@ customElements.define('jag-node', class extends HTMLElement {
 		} else if (property == "urn") {
 
 		}
-	} 
+	}
+
+	createBinding(property_name, provider_id, provider_property_name) {
+		const provider_node = this._model.getNodeForId(provider_id);
+
+		if (provider_node) {
+			this._model.addBinding({
+				consumer: {
+					model: this._model,
+					property: property_name
+				},
+				provider: {
+					model: provider_node.model,
+					property: provider_property_name
+				}
+			});
+		} else {
+			if (this._in) {
+				const parent = this._in.getNodeOrigin();
+				parent.createBinding(property_name, provider_id, provider_property_name);
+			} else {
+				throw new Error("Attempting to create binding with unreachable provider!");
+			}
+		}
+	}
 
 	translate(dx, dy, recursive = false) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
@@ -195,15 +230,13 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		const [h_center_x, h_center_y] = this._computeNodeInputAttachment();
 
-		if(this._ins != undefined) {
-			this._ins.forEach((edge) => {
-				edge.setEnd(h_center_x, h_center_y);
-			});
+		if (this._in != undefined) {
+			this._in.setEnd(h_center_x, h_center_y);
 		}
 
 		const [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 
-		if(this._outs != undefined) {
+		if (this._outs != undefined) {
 			this._outs.forEach((edge) => {
 				edge.setOrigin(c_center_x, c_center_y);
 			});

@@ -232,18 +232,14 @@ customElements.define('jag-playground', class extends HTMLElement {
 			let y_offset = y - preferred_height / 2;
 
 			sub_item.children.forEach((child) => {
-				const def = model_set.get(child.urn);
-				if (def) {
-					const local_preferred_size = this._getNodePreferredHeight(def, model_set);
-					y_offset += (local_preferred_size * node_height) / 2;
-					const sub_node = recursive_add(def, x_offset, y_offset);
-					y_offset += (local_preferred_size * node_height) / 2;
-					let edge = this._createEdge(node, child.id);
-					edge.setNodeEnd(sub_node);
-					edge.addEventListener('selection', this._boundHandleEdgeSelected);
-				} else {
-					// TODO: Handle when child model is undefined for URN
-				}
+				const def = model_set.get(child.urn) || JAG.UNDEFINED(child.urn);
+				const local_preferred_size = this._getNodePreferredHeight(def, model_set);
+				y_offset += (local_preferred_size * node_height) / 2;
+				const sub_node = recursive_add(def, x_offset, y_offset);
+				y_offset += (local_preferred_size * node_height) / 2;
+				let edge = this._createEdge(node, child.id);
+				edge.setNodeEnd(sub_node);
+				edge.addEventListener('selection', this._boundHandleEdgeSelected);
 			});
 
 			return node;

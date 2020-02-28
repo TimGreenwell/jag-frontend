@@ -31,21 +31,24 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._clearProperties();
 		this._enableProperties(selection.size != 0);
 
-		if(selection.size == 1) {
-			const node = selection.values().next().value;
-			const model = node.model;
+		if (selection.size == 1) {
+			this._node = selection.values().next().value;
+			this._model = this._node.model;
 
-			this._node = node;
-			this._model = model;
-			this._urn.value = model.urn;
-			this._name.value = model.name;
-			this._execution.value = model.execution || 'none';
-			this._operator.value = model.operator || 'none';
-			this._desc.value = model.description;
-
+			this._updateProperties();
 			this._updateIO();
 			this._model.addEventListener('update', this._boundIOUpdate);
 		}
+	}
+
+	_updateProperties() {
+		this._urn.value = this._model.urn;
+		this._name.value =  this._model.name;
+		this._execution.value =  this._model.execution || 'none';
+		this._operator.value =  this._model.operator || 'none';
+		this._desc.value =  this._model.description;
+
+		this._enableProperties(this._model.editable);
 	}
 
 	addInput(e) {
@@ -82,122 +85,77 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._model.addOutput(output);
 	}
 
-	addInputElement(id, input, options) {
-		const input_el = createPropertyElement(id, input.name);
-
-		// only creates select element if option is defined
-		if(options != undefined) {
-			const select_el = createSelect(id, options);
-
-			select_el.onfocus = function (e) {
-				this._previous_value = this.value;
-			}.bind(select_el);
-
-			select_el.addEventListener('change', function (e) {
-				const value = e.target.selectedOptions[0].value;
-				
-				if (select_el._previous_value != 'not bound') {
-					const previous_binding = select_el._previous_value.split(':');
-					const current_bindings = this._model.getBindings();
-
-					for (let binding of current_bindings) {
-						if (binding.provider.id == previous_binding[0] &&
-							binding.provider.property == previous_binding[1])
-						{
-							if (!this._model.removeBinding(binding)) {
-								this._model.parent.removeBinding(binding);
-							}
-						}
-					}
-				}
-
-				if (value != 'not bound') {
-					const provider = value.split(':');
-					this._model.createBinding(input.name, this._model.parent.getNodeForId(provider[0]), provider[1]);
-				}
-
-				select_el._previous_value = value;
-
-			}.bind(this));
-			input_el.appendChild(select_el);
-			this._input_elements.set(id, select_el);
-		}
+	addInputElement(id, input) {
+		const input_el = createPropertyElement(id, input);
 
 		this._inputs.appendChild(input_el);
 	}
 
-	addOutputElement(id, output, options) {
-		const output_el = createPropertyElement(id, output.name);
-
-		// only creates select element if option is defined
-		if(options != undefined) {
-			const select_el = createSelect(id, options);
-			
-			select_el.onfocus = function (e) {
-				this._previous_value = this.value;
-			}.bind(select_el);
-
-			select_el.addEventListener('change', function (e) {
-				const value = e.target.selectedOptions[0].value;
-				
-				if (select_el._previous_value != 'not bound') {
-					const previous_binding = select_el._previous_value.split(':');
-					const current_bindings = this._model.getBindings();
-
-					for (let binding of current_bindings) {
-						if (binding.provider.node.id == previous_binding[0] &&
-							binding.provider.property == previous_binding[1])
-						{
-							if (!this._model.removeBinding(binding)) {
-								let res = this._model.parent.removeBinding(binding);
-							}
-						}
-					}
-				}
-
-				if (value != 'not bound') {
-					const provider = value.split(':');
-					this._model.createBinding(output.name, this._model.getNodeForId(provider[0]), provider[1]);
-				}
-
-				select_el._previous_value = value;
-			}.bind(this));
-
-			output_el.appendChild(select_el);
-
-			this._output_elements.set(id, select_el);
-		}
+	addOutputElement(id, output) {
+		const output_el = createPropertyElement(id, output);
 
 		this._outputs.appendChild(output_el);
 	}
 
-	findInputOptions() {
-		const options = [{
-			text:'not bound',
-			value:'not bound'
-		}];
+	addBindingInputs(options) {
+		const select_el = createSelect('binding-inputs', options);
 
+		select_el.onfocus = function (e) {
+			this._previous_value = this.value;
+		}.bind(select_el);
+
+		return select_el;
+	}
+
+	addBindingOutputs(options) {
+		const select_el = createSelect('binding-outputs', options);
+		
+		select_el.onfocus = function (e) {
+			this._previous_value = this.value;
+		}.bind(select_el);
+
+		return select_el;
+	}
+
+	findInputOptions() {
+		const options = [];
+
+		// We can "input" a value into any of this node's children's inputs.
 		this._model.getAvailableInputs().forEach((input) => {
 			options.push({
 				text: `${input.model.name}:${input.property}`,
 				value: `${input.id}:${input.property}`
-			})
+			});
+		});
+
+		// We can also "input" a value to this node's outputs.
+		this._model.outputs.forEach((output) => {
+			options.push({
+				text: `this:${output.name}`,
+				value: `this:${output.name}`
+			});
 		});
 
 		return options;
 	}
 
 	findOutputOptions() {
-		const options = [{
-			text:'not bound',
-			value:'not bound'
-		}];
+		const options = [];
 
+		// We can "output" a value from this node's inputs.
+		this._model.inputs.forEach((input) => {
+			options.push({
+				text: `this:${input.name}`,
+				value: `this:${input.name}`
+			});
+		});
+
+		// We can also "output" a value from this node's children's outputs.
 		this._model.getAvailableOutputs().forEach((output) => {
 			options.push({
 				text: `${output.model.name}:${output.property}`,
 				value: `${output.id}:${output.property}`
-			})
+			});
 		});
 
 		return options;
@@ -206,33 +164,143 @@ customElements.define('jag-properties', class extends HTMLElement {
 	_updateIO() {
 		this._clearIO();
 
-		let input_options = undefined;
-		if(this._model.parent)
-			input_options = this.findInputOptions();
-
+		// Create node input panel
 		for (let input of this._model.inputs) {
 			const input_id = `${input.name}-inputs-property`;
-			this.addInputElement(input_id, input, input_options);
+			this.addInputElement(input_id, input.name);
 		}
 
-		const output_options = this.findOutputOptions();
-		
+		// Create node output panel
 		for (let output of this._model.outputs) {
 			const output_id = `${output.name}-outputs-property`;
-			this.addOutputElement(output_id, output, output_options);
+			this.addOutputElement(output_id, output.name);
 		}
 
-		for (let binding of this._model.getBindings()) {
-			if(this._model.id != binding.consumer.id)
-				return;
+		// Create binding panel
+		let output_options = this.findOutputOptions();
+		let input_options = this.findInputOptions();
 
-			let id_base = `${binding.consumer.id}-${binding.consumer.property}`;
+		if (output_options.length > 0 && input_options.length > 0)
+		{
+			// Create input and output select elements
+			let output_select_el = this.addBindingOutputs(output_options);
+			let input_select_el = this.addBindingInputs(input_options);
 
-			let select = this._input_elements.get(`${id_base}-inputs-property`);
-			if (select == undefined)
-				select = this._output_elements.get(`${id_base}-outputs-property`);
+			// Create new binding panel
+			let newBindingPanel = document.createElement("div");
+			newBindingPanel.appendChild(output_select_el);
+			newBindingPanel.appendChild(input_select_el);
 
-			select.value = `${binding.provider.id}:${binding.provider.property}`;
+			let newButton = document.createElement("button");
+			newButton.id = "new-binding";
+			newButton.innerHTML = "Bind";
+			newButton.addEventListener('click', function (e) {
+				const output_option = output_select_el.selectedOptions[0];
+				const input_option = input_select_el.selectedOptions[0];
+
+				if (output_option && input_option) {
+					const provider = output_option.value.split(":");
+					const consumer = input_option.value.split(":");
+
+					this._model.addBinding({
+						consumer: {
+							id: consumer[0],
+							property: consumer[1]
+						},
+						provider: {
+							id: provider[0],
+							property: provider[1]
+						}
+					});
+
+					output_select_el.value = undefined;
+					input_select_el.value = undefined;
+				}
+			}.bind(this));
+
+			newBindingPanel.appendChild(newButton);
+
+			this._bindings.appendChild(newBindingPanel);
+
+			// Add handler for change in output select element
+			output_select_el.addEventListener('change', function (e) {
+				const output_option = e.target.selectedOptions[0];
+
+				if (output_option) {
+					const provider = output_option.value.split(':');
+
+					if (provider[0] != 'this') {
+						// TODO: Check if type matches selected output type (probably need to get output type first)
+						let valid_for_output = new Set(this._model.outputs.map((output) => `this:${output.name}`));
+
+						if (this._model.execution == JAG.EXECUTION.SEQUENTIAL) {
+							const order = this._model.getOrderForId(provider[0]);
+
+							for (let child of this._model.children) {
+								if (child.model) {
+									if (this._model.getOrderForId(child.id) > order) {
+										for (let input of child.model.inputs) {
+											// TODO: Check if type matches selected output type (probably need to get output type first)
+											valid_for_output.add(`${child.id}:${input.name}`);
+										}
+									}
+								}
+							}
+						}
+
+						toggleSelectValues(input_select_el, valid_for_output);
+					}
+				}
+
+				this._previous_value = output_option.value;
+
+			}.bind(this));
+
+			input_select_el.addEventListener('change', function (e) {
+				const input_option = e.target.selectedOptions[0];
+
+				if (input_option) {
+					const consumer = input_option.value.split(':');
+					
+					// TODO: Check if types match selected output type (probably as a .filter before .map)
+					let valid_for_input = new Set(this._model.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
+					toggleSelectValues(output_select_el, valid_for_input);
+				}
+			}.bind(this));
+		}
+
+		for (let binding of this._model.bindings) {
+			let binding_box = createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
+
+			let output_label = document.createElement("input");
+			output_label.disabled = true;
+
+			if (binding.provider.id == 'this') {
+				output_label.value = `this:${binding.provider.property}`;
+			} else {
+				const provider_node = this._model.getNodeForId(binding.provider.id);
+				output_label.value = `${provider_node.model.name}:${binding.provider.property}`;
+			}
+			
+			binding_box.appendChild(output_label);
+
+			let arrow = document.createElement("span");
+			arrow.innerHTML = "&#x2192;";
+			binding_box.appendChild(arrow);
+
+			let input_label = document.createElement("input");
+			input_label.disabled = true;
+
+			if (binding.consumer.id == 'this') {
+				input_label.value = `this:${binding.consumer.property}`;
+			} else {
+				const consumer_node = this._model.getNodeForId(binding.consumer.id);
+				input_label.value = `${consumer_node.model.name}:${binding.consumer.property}`;
+			}
+
+			binding_box.appendChild(input_label);
+
+			this._bindings.appendChild(binding_box);
 		}
 	}
 
@@ -277,6 +345,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		operator_el.appendChild(this._operator);
 
+		// Create inputs area
 		const inputs_el = createPropertyElement('inputs-property', 'Inputs');
 
 		const input_add = document.createElement('span');
@@ -288,6 +357,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._inputs = createEmptyInputContainer('inputs-property');
 		inputs_el.appendChild(this._inputs);
 
+		// Create outputs area
 		const outputs_el = createPropertyElement('outputs-property', 'Outputs');
 
 		const output_add = document.createElement('span');
@@ -299,6 +369,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._outputs = createEmptyInputContainer('outputs-property');
 		outputs_el.appendChild(this._outputs);
 
+		// Create bindings area
+		const bindings_el = createPropertyElement('bindings-property', 'Bindings');
+		
+		this._bindings = createEmptyInputContainer('bindings-property');
+		bindings_el.appendChild(this._bindings);
+
+		// Create export area
 		const export_el = createEmptyInputContainer('export');
 		this._export = document.createElement('button');
 		this._export.innerHTML = 'export';
@@ -313,6 +390,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this.appendChild(operator_el);
 		this.appendChild(inputs_el);
 		this.appendChild(outputs_el);
+		this.appendChild(bindings_el);
 		this.appendChild(export_el);
 	}
 
@@ -416,6 +494,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 		while(this._outputs.firstChild) {
 			this._outputs.removeChild(this._outputs.firstChild);
 		}
+
+		while (this._bindings.firstChild) {
+			this._bindings.removeChild(this._bindings.firstChild);
+		}
 	}
 
 	_enableProperties(enabled) {
@@ -458,7 +540,7 @@ function createTextInput(id) {
 	return input;
 }
 
-function createSelect(id, options) {
+function createSelect(id, options, selected = undefined) {
 	const input = document.createElement('select');
 	input.setAttribute('id', id);
 
@@ -469,6 +551,23 @@ function createSelect(id, options) {
 		input.add(opt_el);
 	});
 
+	if (selected) {
+		input.value = selected;
+	} else {
+		input.value = undefined;
+	}
+
 	return input;
 }
 
+function toggleSelectValues(select_el, valid_values) {
+	const selected_option = select_el.selectedOptions[0];
+
+	for (let option of select_el.options) {
+		option.disabled = !valid_values.has(option.value);
+	}
+
+	if (selected_option) {
+		select_el.value = selected_option.value;
+	}
+}

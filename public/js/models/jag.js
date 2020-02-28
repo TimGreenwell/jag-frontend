@@ -10,7 +10,7 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class JAG extends EventTarget {
 
-	constructor({ urn, name, connector = { execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE }, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
+	constructor({ urn, name, connector = { execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE }, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined, editable = true }) {
 		super();
 
 		// All string properties can be copied.
@@ -19,6 +19,7 @@ export default class JAG extends EventTarget {
 		this._description = description;
 		this._execution = connector.execution;
 		this._operator = connector.operator;
+		this._editable = editable;
 
 		// Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
 		this._inputs = inputs ? [...inputs] : new Array();
@@ -27,9 +28,6 @@ export default class JAG extends EventTarget {
 
 		// Copy bindings for the instance if provided, else create a new set.
 		this._bindings = new Set(bindings);
-
-		// Leave the parent undefined; if generating as a child of an existing JAG, the parent will be set during construction of the whole graph.
-		this._parent = undefined;
 	}
 
 	get urn() {
@@ -37,8 +35,14 @@ export default class JAG extends EventTarget {
 	}
 
 	set name(name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "name" } }));
+		if (this._name != name) {
+			if (this._editable) {
+				this._name = name;
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "name" } }));
+			} else {
+				throw new Error("Cannot edit name of an uneditable node!");
+			}
+		}
 	}
 
 	get name() {
@@ -46,8 +50,14 @@ export default class JAG extends EventTarget {
 	}
 
 	set execution(type) {
-		this._execution = type;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "execution" } }));
+		if (this._execution != type) {
+			if (this._editable) {
+				this._execution = type;
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "execution" } }));
+			} else {
+				throw new Error("Cannot edit operator of an uneditable node!");
+			}
+		}
 	}
 
 	get execution() {
@@ -55,8 +65,14 @@ export default class JAG extends EventTarget {
 	}
 
 	set operator(type) {
-		this._operator = type;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "operator" } }));
+		if (this._operator != type) {
+			if (this._editable) {
+				this._operator = type;
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "operator" } }));
+			} else {
+				throw new Error("Cannot edit operator of an uneditable node!");
+			}
+		}
 	}
 
 	get operator() {
@@ -64,8 +80,14 @@ export default class JAG extends EventTarget {
 	}
 
 	set description(description) {
-		this._description = description;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description" } }));
+		if (this._description != description) {
+			if (this._editable) {
+				this._description = description;
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description" } }));
+			} else {
+				throw new Error("Cannot edit description of an uneditable node!");
+			}
+		}
 	}
 
 	get description() {
@@ -73,93 +95,115 @@ export default class JAG extends EventTarget {
 	}
 
 	get inputs() {
-		return this._inputs;
+		return [...this._inputs];
 	}
 
 	get outputs() {
-		return this._outputs;
+		return [...this._outputs];
 	}
 
 	get children() {
-		return this._children;
+		return [...this._children];
 	}
 
 	get bindings() {
-		return this._bindings;
+		return [...this._bindings];
 	}
 
-	get parent() {
-		return this._parent;
+	set editable(editable) {
+		if (window.confirm("Warning: enabling editing on this node will allow any modifications to its properties. If this node is missing a definition, this will create collisions when an existing definition is found. Are you sure you want to enable editing?")) {
+			this._editable = editable;
+		}
 	}
 
-	set parent(node) {
-		this._parent = node;
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "parent" } }));
+	get editable() {
+		return this._editable;
 	}
 
 	addInput(input) {
-		this._inputs.push(input);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "input" } }));
+		if (this._editable) {
+			this._inputs.push(input);
+			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "input" } }));
+		} else {
+			throw new Error("Cannot edit inputs of an uneditable node!");
+		}
 	}
 
 	addOutput(output) {
-		this._outputs.push(output);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "output" } }));
+		if (this._editable) {
+			this._outputs.push(output);
+			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "output" } }));
+		} else {
+			throw new Error("Cannot edit outputs of an uneditable node!");
+		}
 	}
 
 	addChild(child, id = undefined) {
-		child.parent = this;
-
-		if (id == undefined) {
-			this._children.push({
-				id: id = UUIDv4(),
-				urn: child.urn,
-				model: child
-			});
-
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+		if (this._editable) {
+			child.parent = this;
+	
+			if (id == undefined) {
+				this._children.push({
+					id: id = UUIDv4(),
+					urn: child.urn,
+					model: child
+				});
+	
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+			}
+	
+			return id;
+		} else {
+			throw new Error("Cannot edit children of an uneditable node!");
 		}
-
-		return id;
 	}
 
 	removeChild(child) {
-		for (let index in this._children) {
-			if (this._children[index].id == child.id) {
-				this._children.splice(index, 1);
-				break;
+		if (this._editable) {
+			for (let index in this._children) {
+				if (this._children[index].id == child.id) {
+					this._children.splice(index, 1);
+					break;
+				}
 			}
+	
+			for (let binding of this._bindings)
+				if (binding.provider.id == child.id || binding.consumer.id == child.id)
+					this.removeBinding(binding);
+			
+			child.parent = undefined;
+	
+			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
+		} else {
+			throw new Error("Cannot edit children of an uneditable node!");
 		}
-
-		for (let binding of this._bindings)
-			if (binding.provider.id == child.id || binding.consumer.id == child.id)
-				this.removeBinding(binding);
-		
-		child.parent = undefined;
-
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children" } }));
 	}
 
-	inputsTo(model) {
+	inputsTo(id) {
 		let availableInputs = this._inputs.map((input) => {
 			return {
 				id: 'this',
 				model: this,
-				property: input.name
+				property: input.name,
+				type: input.type
 			};
 		});
 
 		if (this._execution == JAG.EXECUTION.SEQUENTIAL)
 		{
-			for (let i = 0; i < this._children.length; ++i) {
-				if (this._children[i].model == model)
+			for (let child of this._children) {
+				if (child.id == id)
 					break;
 
-				let child_outputs = this._children[i].model.outputsFrom();
+				let child_outputs = child.model.outputs;
 
 				for (let child_output of child_outputs) {
-					child_output.id = this._children[i].id;
-					availableInputs.push(child_output);
+					availableInputs.push({
+						id: child.id,
+						model: child.model,
+						property: child_output.name,
+						type: child_output.type
+					});
 				}
 			}
 		}
@@ -167,17 +211,25 @@ export default class JAG extends EventTarget {
 		return availableInputs;
 	}
 
-	outputsFrom() {
-		return this._outputs.map((output) => {
-			return {
-				model: this,
-				property: output.name
-			};
-		})
-	}
-
 	getAvailableInputs() {
-		return this._parent.inputsTo(this);
+		let availableInputs = [];
+
+		for (let child of this._children) {
+			if (child.model) {
+				let child_inputs = child.model.inputs;
+
+				for (let child_input of child_inputs) {
+					availableInputs.push({
+						id: child.id,
+						model: child.model,
+						property: child_input.name,
+						type: child_input.type
+					});
+				}
+			}
+		}
+
+		return availableInputs;
 	}
 
 	getAvailableOutputs() {
@@ -185,11 +237,15 @@ export default class JAG extends EventTarget {
 
 		for (let child of this._children) {
 			if (child.model) {
-				let child_outputs = child.model.outputsFrom();
+				let child_outputs = child.model.outputs;
 
 				for (let child_output of child_outputs) {
-					child_output.id = child.id;
-					availableOutputs.push(child_output);
+					availableOutputs.push({
+						id: child.id,
+						model: child.model,
+						property: child_output.name,
+						type: child_output.type
+					});
 				}
 			}
 		}
@@ -197,48 +253,45 @@ export default class JAG extends EventTarget {
 		return availableOutputs;
 	}
 
-	createBinding(property_name, provider_node, provider_property_name) {
-		this._parent.addBinding({
-			consumer: {
-				model: this,
-				property: property_name
-			},
-			provider: {
-				model: provider_node,
-				property: provider_property_name
-			}
-		});
-	}
-
 	addBinding(binding) {
-		if (binding.provider.model == this) {
-			binding.provider.id = 'this';
-		} else {
-			for (let child of this._children) {
-				if (binding.provider.model == child.model) {
-					binding.provider.id = child.id;
+		if (this._editable) {
+			if (binding.provider.id == undefined) {
+				if (binding.provider.model == this) {
+					binding.provider.id = 'this';
+				} else {
+					for (let child of this._children) {
+						if (binding.provider.model == child.model) {
+							binding.provider.id = child.id;
+							break;
+						}
+					}
 				}
 			}
-		}
-
-		if (binding.consumer.model == this) {
-			binding.consumer.id = 'this';
-		} else {
-			for (let child of this._children) {
-				if (binding.consumer.model == child.model) {
-					binding.consumer.id = child.id;
+	
+			if (binding.consumer.id == undefined) {
+				if (binding.consumer.model == this) {
+					binding.consumer.id = 'this';
+				} else {
+					for (let child of this._children) {
+						if (binding.consumer.model == child.model) {
+							binding.consumer.id = child.id;
+							break;
+						}
+					}
 				}
 			}
+	
+			const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
+	
+			if(existing_binding !== undefined)
+				this._bindings.delete(existing_binding);
+	
+			this._bindings.add(binding);
+	
+			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings" } }));
+		} else {
+			throw new Error("Cannot edit bindings of an uneditable node!");
 		}
-
-		const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
-
-		if(existing_binding !== undefined)
-			this._bindings.delete(existing_binding);
-
-		this._bindings.add(binding);
-
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings" } }));
 	}
 
 	/**
@@ -261,36 +314,19 @@ export default class JAG extends EventTarget {
 		return undefined;
 	}
 
-	getBindings() {
-		let this_bindings = this.bindingsFor(this);
-
-		if (this._parent)
-			return this_bindings.concat(this._parent.bindingsFor(this));
-		
-		return this_bindings;
-	}
-
-	bindingsFor(model) {
-		let bindings_for = [];
-
-		for (let binding of this._bindings) {
-			if (model == binding.consumer.model || model == binding.provider.model) {
-				bindings_for.push(binding);
-			}
-		}
-
-		return bindings_for;
-	}
-
 	removeBinding(binding) {
-		return this._bindings.delete(binding);
+		if (this._editable) {
+			return this._bindings.delete(binding);
+		} else {
+			throw new Error("Cannot edit bindings of an uneditable node!");
+		}
 	}
 
 	getNodeForId(id) {
-		if(id === 'this')// || id == this._id)
+		if (id === 'this')// || id == this._id)
 			return this;
 
-		for(let child of this._children)
+		for (let child of this._children)
 			if (child.id == id)
 				return child;
 
@@ -359,7 +395,16 @@ export default class JAG extends EventTarget {
 		});
 
 		this._bindings.forEach(binding => {
-			json.bindings.push(binding);
+			json.bindings.push({
+				consumer: {
+					id: binding.consumer.id,
+					property: binding.consumer.property
+				},
+				provider: {
+					id: binding.provider.id,
+					property: binding.provider.property
+				}
+			});
 		});
 
 		return json;
@@ -382,3 +427,9 @@ JAG.OPERATOR = {
 	OR: 'node.operator.or'
 }
 
+JAG.UNDEFINED = (urn) => new JAG({
+	urn: urn,
+	name: "Undefined",
+	description: "Node definition not found.",
+	editable: false
+});
