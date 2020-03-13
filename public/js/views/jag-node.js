@@ -184,30 +184,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
-	createBinding(property_name, provider_id, provider_property_name) {
-		const provider_node = this._model.getNodeForId(provider_id);
-
-		if (provider_node) {
-			this._model.addBinding({
-				consumer: {
-					model: this._model,
-					property: property_name
-				},
-				provider: {
-					model: provider_node.model,
-					property: provider_property_name
-				}
-			});
-		} else {
-			if (this._in) {
-				const parent = this._in.getNodeOrigin();
-				parent.createBinding(property_name, provider_id, provider_property_name);
-			} else {
-				throw new Error("Attempting to create binding with unreachable provider!");
-			}
-		}
-	}
-
 	translate(dx, dy, recursive = false) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 

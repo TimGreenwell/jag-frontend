@@ -17,10 +17,6 @@ export default class JAGService {
 	}
 
 	static store(model) {
-		if (!model.editable) {
-			throw new Error("Cannot save changes to an uneditable JAG!");
-		}
-
 		if (!JAGService.CACHE.has(model.urn)) {
 			model.addEventListener('update', JAGService._updateHandler);
 			JAGService.CACHE.set(model.urn, model);

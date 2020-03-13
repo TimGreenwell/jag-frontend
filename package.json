@@ -4,13 +4,16 @@
   "description": "",
   "main": "",
   "dependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-jsdoc": "^22.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.0"
   },
   "devDependencies": {},
   "scripts": {
     "start": "node bin/app.js",
-    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;"
+    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;",
+    "docs": "jsdoc --destination ./docs/ --recurse public/*"
   },
   "repository": {
     "type": "git",

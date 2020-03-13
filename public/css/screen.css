@@ -127,6 +127,25 @@ jag-properties div > span.io-add {
 	float: right;
 }
 
+jag-properties div > span {
+	font-size: 12pt;
+}
+
+jag-properties div > span.remove {
+	cursor: pointer;
+	float: right;
+}
+
+jag-properties div > span.binding.arrow, jag-properties div > span.binding.equals {
+	display: inline-block;
+	width: 10%;
+	text-align: center;
+}
+
+jag-properties div > input.binding, jag-properties div > .annotation.descriptor input {
+	width: 40%;
+}
+
 /* IDE */
 side#ide {
 	height: var(--ide-height);
