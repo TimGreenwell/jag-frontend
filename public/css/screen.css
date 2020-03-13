@@ -148,7 +148,7 @@ jag-properties div > input.binding, jag-properties .annotation.descriptor input 
 	width: 40%;
 }
 
-jag-properties div:not(.descriptor) > input.annotation {
+jag-properties #bindings-property select, jag-properties div:not(.descriptor) > input.annotation {
 	width: 45%;
 }
 

@@ -229,7 +229,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 			// Create new binding panel
 			let newBindingPanel = document.createElement("div");
+
+			let arrow_el = document.createElement("span");
+			arrow_el.innerHTML = "&#x2192;";
+			arrow_el.className = "binding arrow";
+
 			newBindingPanel.appendChild(output_select_el);
+			newBindingPanel.appendChild(arrow_el);
 			newBindingPanel.appendChild(input_select_el);
 
 			let newButton = document.createElement("button");
