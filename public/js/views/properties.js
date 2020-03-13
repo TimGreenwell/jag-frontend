@@ -374,103 +374,105 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_updateAnnotations() {
 		this._clearAnnotations();
-
-		let newAnnotationPanel = document.createElement("div");
-
-		const select_el = createSelect('annotation-nodes', this._model.children.map((child) => {
-			let label = child.id;
-			if (child.id != 'this' && child.model) {
-				label = child.model.name;
-				const order = this._model.getOrderForId(child.id);
-				if (order != 0) {
-					label += ` (${order})`;
-				}
-			}
-
-			return { text: label, value: child.id };
-		}));
-
-		let name_el = document.createElement("input");
-		name_el.className = "annotation name";
-		name_el.disabled = true;
-
-		let equals_el = document.createElement("span");
-		equals_el.className = "annotation equals";
-		equals_el.textContent = "=";
 		
-		let value_el = document.createElement("input");
-		value_el.className = "annotation value";
-		value_el.disabled = true;
-		
-		select_el.onchange = function (e) {
-			name_el.disabled = false;
-			value_el.disabled = false;
-		}.bind(this);
+		if (this._model.children.length > 0) {
+			let newAnnotationPanel = document.createElement("div");
 
-		let newButton = document.createElement("button");
-		newButton.id = "new-annotation";
-		newButton.innerHTML = "Annotate";
-		newButton.addEventListener("click", function (e) {
-			this._model.addAnnotation(select_el.value, name_el.value, value_el.value);
-		}.bind(this));
-
-		newAnnotationPanel.appendChild(select_el);
-		newAnnotationPanel.appendChild(name_el);
-		newAnnotationPanel.appendChild(equals_el);
-		newAnnotationPanel.appendChild(value_el);
-		newAnnotationPanel.appendChild(newButton);
-
-		this._annotations.appendChild(newAnnotationPanel);
-
-		for (const child of this._model.children) {
-			if (child.annotations && child.annotations.size > 0) {
-				let child_annotations_label = document.createElement("p");
-				child_annotations_label.className = "annotation node";
-
-				if (child.model) {
-					child_annotations_label.textContent = child.model.name;
-				} else {
-					child_annotations_label.textContent = child.id;
+			const select_el = createSelect('annotation-nodes', this._model.children.map((child) => {
+				let label = child.id;
+				if (child.id != 'this' && child.model) {
+					label = child.model.name;
+					const order = this._model.getOrderForId(child.id);
+					if (order != 0) {
+						label += ` (${order})`;
+					}
 				}
 
-				this._annotations.appendChild(child_annotations_label);
+				return { text: label, value: child.id };
+			}));
 
-				for (let annotation of child.annotations) {
-					let annotation_box = createEmptyInputContainer(`annotation-${annotation[0]}`);
-					annotation_box.className = "annotation descriptor";
+			let name_el = document.createElement("input");
+			name_el.className = "annotation name";
+			name_el.disabled = true;
 
-					let annotation_name = document.createElement("input");
-					annotation_name.disabled = true;
-					annotation_name.value = annotation[0];
+			let equals_el = document.createElement("span");
+			equals_el.className = "annotation equals";
+			equals_el.textContent = "=";
+			
+			let value_el = document.createElement("input");
+			value_el.className = "annotation value";
+			value_el.disabled = true;
+			
+			select_el.onchange = function (e) {
+				name_el.disabled = false;
+				value_el.disabled = false;
+			}.bind(this);
 
-					annotation_name.className = "annotation name";
-					
-					annotation_box.appendChild(annotation_name);
+			let newButton = document.createElement("button");
+			newButton.id = "new-annotation";
+			newButton.innerHTML = "Annotate";
+			newButton.addEventListener("click", function (e) {
+				this._model.addAnnotation(select_el.value, name_el.value, value_el.value);
+			}.bind(this));
 
-					let equals = document.createElement("span");
-					equals.innerHTML = "=";
-					equals.className = "annotation equals";
-					annotation_box.appendChild(equals);
+			newAnnotationPanel.appendChild(select_el);
+			newAnnotationPanel.appendChild(name_el);
+			newAnnotationPanel.appendChild(equals_el);
+			newAnnotationPanel.appendChild(value_el);
+			newAnnotationPanel.appendChild(newButton);
 
-					let annotation_value = document.createElement("input");
-					annotation_value.disabled = true;
-					annotation_value.value = annotation[1];
+			this._annotations.appendChild(newAnnotationPanel);
 
-					annotation_value.className = "annotation value";
+			for (const child of this._model.children) {
+				if (child.annotations && child.annotations.size > 0) {
+					let child_annotations_label = document.createElement("p");
+					child_annotations_label.className = "annotation node";
 
-					annotation_box.appendChild(annotation_value);
+					if (child.model) {
+						child_annotations_label.textContent = child.model.name;
+					} else {
+						child_annotations_label.textContent = child.id;
+					}
 
-					const remove = document.createElement('span');
-					remove.innerHTML = "-";
-					remove.className = "annotation remove";
+					this._annotations.appendChild(child_annotations_label);
 
-					remove.addEventListener('click', function (e) {
-						this._model.removeAnnotation(child.id, annotation[0]);
-					}.bind(this));
+					for (let annotation of child.annotations) {
+						let annotation_box = createEmptyInputContainer(`annotation-${annotation[0]}`);
+						annotation_box.className = "annotation descriptor";
 
-					annotation_box.appendChild(remove);
+						let annotation_name = document.createElement("input");
+						annotation_name.disabled = true;
+						annotation_name.value = annotation[0];
 
-					this._annotations.appendChild(annotation_box);
+						annotation_name.className = "annotation name";
+						
+						annotation_box.appendChild(annotation_name);
+
+						let equals = document.createElement("span");
+						equals.innerHTML = "=";
+						equals.className = "annotation equals";
+						annotation_box.appendChild(equals);
+
+						let annotation_value = document.createElement("input");
+						annotation_value.disabled = true;
+						annotation_value.value = annotation[1];
+
+						annotation_value.className = "annotation value";
+
+						annotation_box.appendChild(annotation_value);
+
+						const remove = document.createElement('span');
+						remove.innerHTML = "-";
+						remove.className = "annotation remove";
+
+						remove.addEventListener('click', function (e) {
+							this._model.removeAnnotation(child.id, annotation[0]);
+						}.bind(this));
+
+						annotation_box.appendChild(remove);
+
+						this._annotations.appendChild(annotation_box);
+					}
 				}
 			}
 		}
