@@ -61,6 +61,18 @@ export default class JAG extends EventTarget {
 		this._outputs = outputs ? [...outputs] : new Array();
 		this._children = children ? [...children] : new Array();
 
+		for (let child of this._children) {
+			if (child.annotations) {
+				const annotations = new Map();
+
+				for (let annotation in child.annotations) {
+					annotations.set(annotation, child[annotation]);
+				}
+
+				child.annotations = annotations;
+			}
+		}
+
 		// Copy bindings for the instance if provided, else create a new set.
 		this._bindings = new Set(bindings);
 	}
