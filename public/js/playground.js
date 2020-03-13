@@ -36,6 +36,10 @@ class Playground extends HTMLElement {
 		this._popupHighlights = [];
 
 		this._boundHandleEdgeSelected = this._handleEdgeSelected.bind(this);
+		this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
+		this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
+		this._boundDragView = this.dragView.bind(this);
+		this._boundStopDragView = this.stopDragView.bind(this);
 
 		this.initGlobalEvents();
 	}
@@ -59,6 +63,21 @@ class Playground extends HTMLElement {
 
 		return { type: type, display: _p, actions: actions };
 	}
+	
+	dragView(e) {
+		const dx = e.clientX - this._initialMouse.x;
+		const dy = e.clientY - this._initialMouse.y;
+
+		for (let node of this._nodes) {
+			node.translate(dx, dy);
+		}
+
+		this._initialMouse = { x: e.clientX, y: e.clientY };
+	}
+
+	stopDragView(e) {
+		this.removeEventListener('mousemove', this._boundDragView);
+	}
 
 	initGlobalEvents() {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -67,14 +86,15 @@ class Playground extends HTMLElement {
 			if (!e.shiftKey) this.deselectAll();
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }));
+			this._initialMouse = { x: e.clientX, y: e.clientY };
+			this.addEventListener('mousemove', this._boundDragView);
+			this.addEventListener('mouseup', this._boundStopDragView);
 		});
 
 		this.addEventListener('mousemove', (e) => {
 			this._edges_container.dispatchEvent(new MouseEvent('mousemove', { clientX: e.clientX, clientY: e.clientY }));
 		});
-
-		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));
-		this.addEventListener('mouseup', this.onEdgeCanceled.bind(this));
+		
 		this.addEventListener('dragenter', this.onPreImport.bind(this));
 		this.addEventListener('dragover', this.cancelDefault.bind(this));
 		this.addEventListener('drop', this.onImport.bind(this));
@@ -338,6 +358,11 @@ class Playground extends HTMLElement {
 	}
 
 	onEdgeInitialized(e, node) {
+		this.removeEventListener('mousemove', this._boundDragView);
+		this.removeEventListener('mouseup', this._boundStopDragView);
+		this.addEventListener('mousemove', this._boundOnEdgeUpdated);
+		this.addEventListener('mouseup', this._boundOnEdgeCanceled);
+
 		this._created_edge = this._createEdge(node);
 		this._is_edge_being_created = true;
 
@@ -369,6 +394,10 @@ class Playground extends HTMLElement {
 	cancelEdge() {
 		if(!this._is_edge_being_created)
 			return;
+
+		this.removeEventListener('mousemove', this._boundOnEdgeUpdated);
+		this.removeEventListener('mouseup', this._boundOnEdgeCanceled);
+
 		this._created_edge.destroy();
 		this._created_edge = undefined;
 		this._is_edge_being_created = false;

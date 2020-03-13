@@ -291,6 +291,7 @@ jag-playground {
 	position: relative;
 	flex-grow: 1;
 	box-shadow: 0 0 0 1px darkgrey;
+	cursor: grab;
 }
 
 jag-playground > div, jag-playground > svg {
@@ -480,4 +481,8 @@ jag-playground .popup-notice-highlight {
 
 jag-playground .popup-action {
 	margin: 10px;
+}
+
+jag-properties, jag-library {
+	z-index: 100;
 }

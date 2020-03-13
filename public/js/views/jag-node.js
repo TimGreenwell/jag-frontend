@@ -394,14 +394,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_adjustPosition(x,y) {
-		const pw = this.parentNode.clientWidth;
-		const ph = this.parentNode.clientHeight;
-		const nw = this.clientWidth;
-		const nh = this.clientHeight;
-
-		const adjusted_x = Math.min(Math.max(x, 0), pw - nw);
-		const adjusted_y = Math.min(Math.max(y, 0), ph - nh);
-		return [adjusted_x, adjusted_y];
+		return [x, y];
 	}
 
 	_snap() {
