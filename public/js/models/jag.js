@@ -410,6 +410,23 @@ export default class JAG extends EventTarget {
 		}
 	}
 
+	/**
+	 * Marks the child with the given ID as iterable with the given value.
+	 * 
+	 * @param {String} id UUID of the child to mark.
+	 * @param {boolean} value True or false whether or not the child is iterable.
+	 */
+	setIterable(id, value) {
+		for (const child of this._children) {
+			if (child.id == id) {
+				if (child.iterable == value) return;
+				child.iterable = value;
+				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations" } }));
+				return;
+			}
+		}
+	}
+
 	getOrderForId(id) {
 		if (this._execution == JAG.EXECUTION.PARALLEL) return 0;
 
@@ -454,6 +471,10 @@ export default class JAG extends EventTarget {
 				for (let annotation of child.annotations) {
 					descriptor.annotations[annotation[0]] = annotation[1];
 				}
+			}
+
+			if (child.iterable) {
+				descriptor.iterable = true;
 			}
 
 			json.children.push(descriptor);

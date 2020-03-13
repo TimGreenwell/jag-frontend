@@ -63,13 +63,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._enableProperties(true);
 	}
 
-	addInput(e) {
+	_addInput(e) {
 		const name = window.prompt('Input name');
 		if(name === null)
 			return;
 
 		const type = window.prompt('Input type');
-		if (type == null)
+		if (type === null)
 			return;
 
 		const input = {
@@ -80,13 +80,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._model.addInput(input);
 	}
 
-	addOutput(e) {
+	_addOutput(e) {
 		const name = window.prompt('Output name');
 		if(name === null)
 			return;
 
 		const type = window.prompt('Output type');
-		if (type == null)
+		if (type === null)
 			return;
 
 		const output = {
@@ -97,19 +97,31 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._model.addOutput(output);
 	}
 
-	addInputElement(id, input) {
+	_addAnnotation(id) {
+		const name = window.prompt('Annotation name');
+		if (name === null)
+			return;
+		
+		const value = window.prompt('Annotation value');
+		if (value === null)
+			return;
+		
+		this._model.addAnnotation(id, name, value);
+	}
+
+	_addInputElement(id, input) {
 		const input_el = createPropertyElement(id, input);
 
 		this._inputs.appendChild(input_el);
 	}
 
-	addOutputElement(id, output) {
+	_addOutputElement(id, output) {
 		const output_el = createPropertyElement(id, output);
 
 		this._outputs.appendChild(output_el);
 	}
 
-	createBindingInputs(options) {
+	_createBindingInputs(options) {
 		const select_el = createSelect('binding-inputs', options.map(node => {
 			let label = node.id;
 			if (node.id != 'this') {
@@ -138,7 +150,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		return select_el;
 	}
 
-	createBindingOutputs(options) {
+	_createBindingOutputs(options) {
 		const select_el = createSelect('binding-outputs', options.map(node => {
 
 			let label = node.id;
@@ -168,7 +180,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		return select_el;
 	}
 
-	findInputOptions() {
+	_findInputOptions() {
 		// We can "input" a value into any of this node's children's inputs.
 		const options = this._model.getAvailableInputs();
 
@@ -184,7 +196,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		return options;
 	}
 
-	findOutputOptions() {
+	_findOutputOptions() {
 		const options = [];
 
 		// We can "output" a value from this node's inputs.
@@ -208,24 +220,24 @@ customElements.define('jag-properties', class extends HTMLElement {
 		// Create node input panel
 		for (let input of this._model.inputs) {
 			const input_id = `${input.name}-inputs-property`;
-			this.addInputElement(input_id, input.name);
+			this._addInputElement(input_id, input.name);
 		}
 
 		// Create node output panel
 		for (let output of this._model.outputs) {
 			const output_id = `${output.name}-outputs-property`;
-			this.addOutputElement(output_id, output.name);
+			this._addOutputElement(output_id, output.name);
 		}
 
 		// Create binding panel
-		let output_options = this.findOutputOptions();
-		let input_options = this.findInputOptions();
+		let output_options = this._findOutputOptions();
+		let input_options = this._findInputOptions();
 
 		if (output_options.length > 0 && input_options.length > 0)
 		{
 			// Create input and output select elements
-			let output_select_el = this.createBindingOutputs(output_options);
-			let input_select_el = this.createBindingInputs(input_options);
+			let output_select_el = this._createBindingOutputs(output_options);
+			let input_select_el = this._createBindingInputs(input_options);
 
 			// Create new binding panel
 			let newBindingPanel = document.createElement("div");
@@ -376,104 +388,85 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._clearAnnotations();
 		
 		if (this._model.children.length > 0) {
-			let newAnnotationPanel = document.createElement("div");
-
-			const select_el = createSelect('annotation-nodes', this._model.children.map((child) => {
-				let label = child.id;
-				if (child.id != 'this' && child.model) {
-					label = child.model.name;
-					const order = this._model.getOrderForId(child.id);
-					if (order != 0) {
-						label += ` (${order})`;
-					}
-				}
-
-				return { text: label, value: child.id };
-			}));
-
-			let name_el = document.createElement("input");
-			name_el.className = "annotation name";
-			name_el.disabled = true;
-
-			let equals_el = document.createElement("span");
-			equals_el.className = "annotation equals";
-			equals_el.textContent = "=";
-			
-			let value_el = document.createElement("input");
-			value_el.className = "annotation value";
-			value_el.disabled = true;
-			
-			select_el.onchange = function (e) {
-				name_el.disabled = false;
-				value_el.disabled = false;
-			}.bind(this);
-
-			let newButton = document.createElement("button");
-			newButton.id = "new-annotation";
-			newButton.innerHTML = "Annotate";
-			newButton.addEventListener("click", function (e) {
-				this._model.addAnnotation(select_el.value, name_el.value, value_el.value);
-			}.bind(this));
-
-			newAnnotationPanel.appendChild(select_el);
-			newAnnotationPanel.appendChild(name_el);
-			newAnnotationPanel.appendChild(equals_el);
-			newAnnotationPanel.appendChild(value_el);
-			newAnnotationPanel.appendChild(newButton);
-
-			this._annotations.appendChild(newAnnotationPanel);
-
 			for (const child of this._model.children) {
-				if (child.annotations && child.annotations.size > 0) {
-					let child_annotations_label = document.createElement("p");
-					child_annotations_label.className = "annotation node";
+				let child_name = child.id;
+				if (child.model) child_name = child.model.name;
 
-					if (child.model) {
-						child_annotations_label.textContent = child.model.name;
-					} else {
-						child_annotations_label.textContent = child.id;
-					}
+				let child_annotations = createPropertyElement(`annotations-${child.id}`, child_name);
+				child_annotations.className = "annotation node";
 
-					this._annotations.appendChild(child_annotations_label);
+				const annotation_add = document.createElement('span');
+				annotation_add.innerHTML = '+';
+				annotation_add.className = 'io-add';
 
-					for (let annotation of child.annotations) {
-						let annotation_box = createEmptyInputContainer(`annotation-${annotation[0]}`);
-						annotation_box.className = "annotation descriptor";
+				annotation_add.addEventListener('click', function (e) {
+					this._addAnnotation(child.id);
+				}.bind(this));
 
-						let annotation_name = document.createElement("input");
-						annotation_name.disabled = true;
-						annotation_name.value = annotation[0];
+				child_annotations.appendChild(annotation_add);
 
-						annotation_name.className = "annotation name";
-						
-						annotation_box.appendChild(annotation_name);
+				const iterable_box = document.createElement("div");
 
-						let equals = document.createElement("span");
-						equals.innerHTML = "=";
-						equals.className = "annotation equals";
-						annotation_box.appendChild(equals);
+				const iterable_checkbox = document.createElement("input");
+				iterable_checkbox.setAttribute('id', `${child.id}-iterable`);
+				iterable_checkbox.type = "checkbox";
+				
+				iterable_checkbox.addEventListener('change', function (e) {
+					this._model.setIterable(child.id, true);
+				}.bind(this));
 
-						let annotation_value = document.createElement("input");
-						annotation_value.disabled = true;
-						annotation_value.value = annotation[1];
+				iterable_box.appendChild(iterable_checkbox);
 
-						annotation_value.className = "annotation value";
+				const iterable_label = document.createElement("label");
+				iterable_label.for = `${child.id}-iterable`;
+				iterable_label.textContent = 'Iterable';
+				iterable_box.appendChild(iterable_label);
 
-						annotation_box.appendChild(annotation_value);
-
-						const remove = document.createElement('span');
-						remove.innerHTML = "-";
-						remove.className = "annotation remove";
-
-						remove.addEventListener('click', function (e) {
-							this._model.removeAnnotation(child.id, annotation[0]);
-						}.bind(this));
-
-						annotation_box.appendChild(remove);
-
-						this._annotations.appendChild(annotation_box);
-					}
+				if (child.iterable) {
+					iterable_checkbox.checked = true;
 				}
+
+				child_annotations.appendChild(iterable_box);
+
+				for (let annotation of child.annotations) {
+					let annotation_box = createEmptyInputContainer(`annotation-${child.id}-${annotation[0]}`);
+					annotation_box.className = "annotation descriptor";
+
+					let annotation_name = document.createElement("input");
+					annotation_name.disabled = true;
+					annotation_name.value = annotation[0];
+
+					annotation_name.className = "annotation name";
+					
+					annotation_box.appendChild(annotation_name);
+
+					let equals = document.createElement("span");
+					equals.innerHTML = "=";
+					equals.className = "annotation equals";
+					annotation_box.appendChild(equals);
+
+					let annotation_value = document.createElement("input");
+					annotation_value.disabled = true;
+					annotation_value.value = annotation[1];
+
+					annotation_value.className = "annotation value";
+
+					annotation_box.appendChild(annotation_value);
+
+					const remove = document.createElement('span');
+					remove.innerHTML = "-";
+					remove.className = "annotation remove";
+
+					remove.addEventListener('click', function (e) {
+						this._model.removeAnnotation(child.id, annotation[0]);
+					}.bind(this));
+
+					annotation_box.appendChild(remove);
+
+					child_annotations.appendChild(annotation_box);
+				}
+
+				this._annotations.appendChild(child_annotations);
 			}
 		}
 	}
@@ -525,7 +518,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		const input_add = document.createElement('span');
 		input_add.innerHTML = '+';
 		input_add.className = 'io-add';
-		input_add.addEventListener('click', this.addInput.bind(this));
+		input_add.addEventListener('click', this._addInput.bind(this));
 		inputs_el.appendChild(input_add);
 
 		this._inputs = createEmptyInputContainer('inputs-property');
@@ -537,7 +530,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		const output_add = document.createElement('span');
 		output_add.innerHTML = '+';
 		output_add.className = 'io-add';
-		output_add.addEventListener('click', this.addOutput.bind(this));
+		output_add.addEventListener('click', this._addOutput.bind(this));
 		outputs_el.appendChild(output_add);
 
 		this._outputs = createEmptyInputContainer('outputs-property');

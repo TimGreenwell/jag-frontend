@@ -152,6 +152,10 @@ jag-properties #bindings-property select, jag-properties div:not(.descriptor) > 
 	width: 45%;
 }
 
+jag-properties #annotations-property input[type="checkbox"] {
+	margin-right: 10px;
+}
+
 /* IDE */
 side#ide {
 	height: var(--ide-height);
