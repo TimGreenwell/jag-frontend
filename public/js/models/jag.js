@@ -66,7 +66,7 @@ export default class JAG extends EventTarget {
 				const annotations = new Map();
 
 				for (let annotation in child.annotations) {
-					annotations.set(annotation, child[annotation]);
+					annotations.set(annotation, child.annotations[annotation]);
 				}
 
 				child.annotations = annotations;
