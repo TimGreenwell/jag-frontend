@@ -387,6 +387,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 		let name_el = document.createElement("input");
 		name_el.className = "annotation name";
 		name_el.disabled = true;
+
+		let equals_el = document.createElement("span");
+		equals_el.className = "annotation equals";
+		equals_el.textContent = "=";
 		
 		let value_el = document.createElement("input");
 		value_el.className = "annotation value";
@@ -406,6 +410,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		newAnnotationPanel.appendChild(select_el);
 		newAnnotationPanel.appendChild(name_el);
+		newAnnotationPanel.appendChild(equals_el);
 		newAnnotationPanel.appendChild(value_el);
 		newAnnotationPanel.appendChild(newButton);
 
@@ -425,7 +430,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 				this._annotations.appendChild(child_annotations_label);
 
 				for (let annotation of child.annotations) {
-					let annotation_box = createEmptyInputContainer(`annotation-${annotation}`);
+					let annotation_box = createEmptyInputContainer(`annotation-${annotation[0]}`);
 					annotation_box.className = "annotation descriptor";
 
 					let annotation_name = document.createElement("input");

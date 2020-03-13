@@ -112,6 +112,8 @@ jag-library p {
 /* Properties panel */
 jag-properties {
 	width: 20%;
+	height: 100%;
+	overflow-y: scroll;
 }
 
 jag-properties div {
@@ -136,14 +138,18 @@ jag-properties div > span.remove {
 	float: right;
 }
 
-jag-properties div > span.binding.arrow, jag-properties div > span.binding.equals {
+jag-properties div > span.binding.arrow, jag-properties div > span.annotation.equals {
 	display: inline-block;
 	width: 10%;
 	text-align: center;
 }
 
-jag-properties div > input.binding, jag-properties div > .annotation.descriptor input {
+jag-properties div > input.binding, jag-properties .annotation.descriptor input {
 	width: 40%;
+}
+
+jag-properties div:not(.descriptor) > input.annotation {
+	width: 45%;
 }
 
 /* IDE */
