@@ -9,8 +9,19 @@
 
 import JAG from '../models/jag.js';
 import IndexedDBUtils from '../utils/indexed-db.js';
+import UndefinedJAG from '../models/undefined.js';
 
-export default class JAGService {
+export default class JAGService extends EventTarget {
+
+	static async initialize() {
+		const db = await IndexedDBUtils.initStorage(
+			"somethingthatmakessenselikejags",
+			1,
+			[JAGService.JAG_STORE]
+		);
+
+		JAGService.DB_INSTANCE = db;
+	}
 
 	static get storageDefinition() {
 		return JAGService.JAG_STORE;
@@ -21,6 +32,11 @@ export default class JAGService {
 			model.addEventListener('update', JAGService._updateHandler);
 			JAGService.CACHE.set(model.urn, model);
 			JAGService.resolve(model);
+		}
+
+		if (JAGService.UNDEFINED.has(model.urn)) {
+			JAGService.UNDEFINED.get(model.urn).defined(model);
+			JAGService.UNDEFINED.delete(model.urn);
 		}
 
 		return IndexedDBUtils.store(
@@ -44,6 +60,10 @@ export default class JAGService {
 		}
 
 		for (let key of JAGService.STATIC.keys()) {
+			keys.add(key);
+		}
+
+		for (let key of JAGService.UNDEFINED.keys()) {
 			keys.add(key);
 		}
 
@@ -87,8 +107,13 @@ export default class JAGService {
 		if (json === undefined) {
 			// If the static library does not contain a definition,
 			if (!JAGService.STATIC.has(urn)) {
-				// No definition exists; return undefined.
-				return undefined;
+				// If the undefined list does not contain a definition,
+				if (!JAGService.UNDEFINED.has(urn)) {
+					// Point this URN in the undefined list to a new undefined node.
+					JAGService.UNDEFINED.set(urn, new UndefinedJAG(urn));
+				}
+
+				return JAGService.UNDEFINED.get(urn);
 			}
 
 			// Else, retrieve the definition from the static library.
@@ -134,6 +159,9 @@ export default class JAGService {
 					} else {
 						// Create a new list of models seeking this child URN.
 						JAGService.MISSING.set(child.urn, [model]);
+
+						// Set the URN to an undefined JAG.
+						JAGService.UNDEFINED.set(child.urn, new UndefinedJAG(child.urn));
 					}
 				}
 			}
@@ -158,6 +186,15 @@ export default class JAGService {
 					}
 				}
 			}
+
+			// Retrieve the UndefinedJAG in place of the previously missing model.
+			let undefinedJAG = JAGService.UNDEFINED.get(model.urn);
+
+			// Remove this URN from the undefined list.
+			JAGService.UNDEFINED.delete(model.urn);
+
+			// Notify listeners that the model has been defined.
+			undefinedJAG.defined(model);
 		}
 	}
 
@@ -187,6 +224,8 @@ JAGService.CACHE = new Map();
 JAGService.STATIC = new Map();
 
 JAGService.MISSING = new Map();
+
+JAGService.UNDEFINED = new Map();
 
 JAGService.JAG_STORE = {
 	name: 'jag',

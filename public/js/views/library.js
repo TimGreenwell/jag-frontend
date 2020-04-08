@@ -8,6 +8,7 @@
 
  import JAG from '../models/jag.js';
  import JAGService from '../services/jag.js';
+ import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
@@ -20,48 +21,77 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._initListeners();
 
 		this.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
+		this._default = this._items[0];
+
+		this.loadFromDB();
+	}
+
+	clearItems() {
+		for (let item of this._items) {
+			this._$list.removeChild(item.element);
+		}
+
+		this._$list.appendChild(this._default.element);
+		this._items = [this._default];
 	}
 
 	addItem(model, idx = -1) {
-		const id = model.urn || '';
-		const name = model.name;
-		const description = model.description || '';
+		if (model instanceof JAG) {
+			const id = model.urn || '';
+			const name = model.name;
+			const description = model.description || '';
 
-		const li = document.createElement('li');
-		li.id = id;
-		const h3 = document.createElement('h3');
-		h3.innerHTML = name;
-		const p = document.createElement('p');
-		p.innerHTML = description;
+			const li = document.createElement('li');
+			li.id = id;
+			const h3 = document.createElement('h3');
+			h3.innerHTML = name;
+			const p = document.createElement('p');
+			p.innerHTML = description;
 
-		li.appendChild(h3);
-		li.appendChild(p);
+			li.appendChild(h3);
+			li.appendChild(p);
 
-		this._items.push({
-			element: li,
-			search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${description.toLowerCase()}`,
-			model: model
-		});
+			this._items.push({
+				element: li,
+				search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${description.toLowerCase()}`,
+				model: model
+			});
 
-		li.addEventListener('click', (event) => {
-			if(event.shiftKey) {
-				const all_models = this._getChildModels(model, new Map());
-				this.dispatchEvent(new CustomEvent('item-selected', {
-					detail: {
-						top: model,
-						model_set: all_models
-					}
-				}));
-			}
-			else
-			{
-				this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
-			}
-		});
+			model.addEventListener('update', (event) => {
+				if (event.detail.property == 'name') {
+					h3.innerHTML = model.name;
+				} else if (event.detail.property == 'description') {
+					p.innerHTML = model.description;
+				}
+			});
 
-		this._$list.appendChild(li);
+			li.addEventListener('click', (event) => {
+				if(event.shiftKey) {
+					this._getChildModels(model, new Map()).then(function (all_models) {
+						this.dispatchEvent(new CustomEvent('item-selected', {
+							detail: {
+								top: model,
+								model_set: all_models
+							}
+						}))
+					}.bind(this));
+				}
+				else
+				{
+					this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
+				}
+			});
 
-		model.addEventListener('copy', this._createItem.bind(this));
+			this._$list.appendChild(li);
+
+			model.addEventListener('copy', this._createItem.bind(this));
+		} else if (model instanceof UndefinedJAG) {
+			this._items.push({
+				model: model
+			});
+
+			model.addEventListener('define', this._defineItem.bind(this));
+		}
 	}
 
 	handleResourceUpdate(message) {
@@ -75,6 +105,8 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
+		this.clearItems();
+
 		let allAvailable = await JAGService.getAllAvailable();
 
 		for (let key of allAvailable) {
@@ -106,37 +138,55 @@ customElements.define('jag-library', class extends HTMLElement {
 		const search_text = e.srcElement.value.toLowerCase();
 
 		this._items.forEach((item) => {
-			item.element.style.display = 'block';
-			if(!item.search_content.includes(search_text))
-				item.element.style.display = 'none';
+			if (item.element) {
+				item.element.style.display = 'block';
+				if(!item.search_content.includes(search_text))
+					item.element.style.display = 'none';
+			}
 		});
 	}
 
-	_getChildModels(model, map) {
+	async _getChildModels(model, map) {
 		if(!model.children)
 			return map;
 
-		model.children.forEach((child_details) => {
-			const child = this._getDefinitionForURN(child_details.urn);
+		for (let child_details of model.children) {
+			const child = await this._getDefinitionForURN(child_details.urn);
 			map.set(child_details.urn, child);
-			if (child) map = this._getChildModels(child, map);
-		});
+			map = this._getChildModels(child, map);
+		}
 
 		return map;
 	}
 
-	_getDefinitionForURN(urn) {
+	async _getDefinitionForURN(urn) {
+		// Attempt to retrieve JAG for this URN from locally available items.
 		for (const item of this._items) {
 			if (item.model.urn == urn) {
 				return item.model;
 			}
 		}
 
-		return undefined;
+		// Not found; update available JAGs in the library to pull newly defined (and Undefined) JAGs.
+		await this.loadFromDB();
+
+		// Call this function again for this URN. There will be a defined or undefined JAG available for this URN.
+		return this._getDefinitionForURN(urn);
 	}
 
 	async _createItem(e) {
 		this.addItem(await JAGService.get(e.detail.urn));
+	}
+
+	async _defineItem(e) {
+		for (let idx in this._items) {
+			if (this._items[idx].model.urn == e.detail.urn) {
+				this._items.splice(idx, 1);
+				break;
+			}
+		}
+
+		this.addItem(e.detail.model);
 	}
 });
 

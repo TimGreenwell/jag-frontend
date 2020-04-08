@@ -10,28 +10,41 @@
 const SNAP_SIZE = 5.0;
 
 import JAG from '../models/jag.js';
-import JAGService from '../services/jag.js';
+import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
-	constructor(node) {
+	constructor(model) {
 		super();
-		this._model = node;
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
 
 		this._boundUpdateHandler = this._updateHandler.bind(this);
+		this._boundDefineModel = this._defineModel.bind(this);
 
 		this._initUI();
 		this._initHandlers();
+		this.model = model;
 	}
 
 	// TODO: Find a better way to deal with changing URN so model is a private property
-	set model(node) {
-		this._model.removeEventListener('update', this._boundUpdateHandler);
-		this._model = node;
-		this._model.addEventListener('update', this._boundUpdateHandler);
+	set model(model) {
+		if (this._model) {
+			if (this._model instanceof UndefinedJAG) {
+				this._model.removeEventListener('define', this._boundDefineModel);
+			} else {
+				this._model.removeEventListener('update', this._boundUpdateHandler);
+			}
+		}
+
+		this._model = model;
+
+		if (this._model instanceof UndefinedJAG) {
+			this._model.addEventListener('define', this._boundDefineModel);
+		} else {
+			this._model.addEventListener('update', this._boundUpdateHandler);
+		}
 
 		this._applyName();
 		this._applyOperator();
@@ -126,9 +139,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.appendChild(this._$connector);
 
 		this.setTranslation(100, 100);
-
-		this._applyName();
-		this._applyOperator();
 	}
 
 	_initHandlers() {
@@ -168,8 +178,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$header.addEventListener('transitionend', () => {
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
-
-		this._model.addEventListener('update', this._boundUpdateHandler);
 	}
 
 	_updateHandler(e) {
@@ -179,9 +187,11 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._applyOperator();
 		} else if (property == "name") {
 			this._applyName();
-		} else if (property == "urn") {
-
 		}
+	}
+
+	_defineModel(e) {
+		this.model = e.detail.model;
 	}
 
 	translate(dx, dy, recursive = false) {

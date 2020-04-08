@@ -9,6 +9,7 @@
 
 import JAG from '../models/jag.js';
 import JAGService from '../services/jag.js';
+import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-properties', class extends HTMLElement {
 
@@ -31,12 +32,24 @@ customElements.define('jag-properties', class extends HTMLElement {
 				this._updateAnnotations();
 			}
 		}.bind(this);
+
+		this._boundDefine = function (e) {
+			const model = e.detail.model;
+
+			this._model = model;
+
+			this._updateProperties();
+		}.bind(this);
 	}
 
 	handleSelectionUpdate(selection) {
 		if (this._model)
 		{
-			this._model.removeEventListener('update', this._boundUpdate);
+			if (this._model instanceof UndefinedJAG) {
+				this._model.removeEventListener('define', this._boundDefine);
+			} else {
+				this._model.removeEventListener('update', this._boundUpdate);
+			}
 		}
 
 		this._clearProperties();
@@ -47,9 +60,12 @@ customElements.define('jag-properties', class extends HTMLElement {
 			this._model = this._node.model;
 
 			this._updateProperties();
-			this._updateIO();
-			this._updateAnnotations();
-			this._model.addEventListener('update', this._boundUpdate);
+
+			if (this._model instanceof UndefinedJAG) {
+				this._model.addEventListener('define', this._boundDefine);
+			} else {
+				this._model.addEventListener('update', this._boundUpdate);
+			}
 		}
 	}
 
@@ -60,7 +76,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._operator.value =  this._model.operator || 'none';
 		this._desc.value =  this._model.description;
 
-		this._enableProperties(true);
+		if (this._model instanceof UndefinedJAG) {
+			this._enableProperties(false);
+		} else {
+			this._enableProperties(true);
+			this._updateIO();
+			this._updateAnnotations();
+		}
 	}
 
 	_addInput(e) {
