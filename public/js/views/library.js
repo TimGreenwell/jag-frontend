@@ -16,6 +16,7 @@ customElements.define('jag-library', class extends HTMLElement {
 		super();
 
 		this._items = [];
+		this._defined = new Set();
 
 		this._initUI();
 		this._initListeners();
@@ -33,64 +34,70 @@ customElements.define('jag-library', class extends HTMLElement {
 
 		this._$list.appendChild(this._default.element);
 		this._items = [this._default];
+		this._defined.clear();
+		this._defined.add(this._default.urn);
 	}
 
 	addItem(model, idx = -1) {
-		if (model instanceof JAG) {
-			const id = model.urn || '';
-			const name = model.name;
-			const description = model.description || '';
+		if (!this._defined.has(model.urn)) {
+			if (model instanceof JAG) {
+				const id = model.urn || '';
+				const name = model.name;
+				const description = model.description || '';
 
-			const li = document.createElement('li');
-			li.id = id;
-			const h3 = document.createElement('h3');
-			h3.innerHTML = name;
-			const p = document.createElement('p');
-			p.innerHTML = description;
+				const li = document.createElement('li');
+				li.id = id;
+				const h3 = document.createElement('h3');
+				h3.innerHTML = name;
+				const p = document.createElement('p');
+				p.innerHTML = description;
 
-			li.appendChild(h3);
-			li.appendChild(p);
+				li.appendChild(h3);
+				li.appendChild(p);
 
-			this._items.push({
-				element: li,
-				search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${description.toLowerCase()}`,
-				model: model
-			});
+				this._items.push({
+					element: li,
+					search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${description.toLowerCase()}`,
+					model: model
+				});
 
-			model.addEventListener('update', (event) => {
-				if (event.detail.property == 'name') {
-					h3.innerHTML = model.name;
-				} else if (event.detail.property == 'description') {
-					p.innerHTML = model.description;
-				}
-			});
+				model.addEventListener('update', (event) => {
+					if (event.detail.property == 'name') {
+						h3.innerHTML = model.name;
+					} else if (event.detail.property == 'description') {
+						p.innerHTML = model.description;
+					}
+				});
 
-			li.addEventListener('click', (event) => {
-				if(event.shiftKey) {
-					this._getChildModels(model, new Map()).then(function (all_models) {
-						this.dispatchEvent(new CustomEvent('item-selected', {
-							detail: {
-								top: model,
-								model_set: all_models
-							}
-						}))
-					}.bind(this));
-				}
-				else
-				{
-					this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
-				}
-			});
+				li.addEventListener('click', (event) => {
+					if(event.shiftKey) {
+						this._getChildModels(model, new Map()).then(function (all_models) {
+							this.dispatchEvent(new CustomEvent('item-selected', {
+								detail: {
+									top: model,
+									model_set: all_models
+								}
+							}))
+						}.bind(this));
+					}
+					else
+					{
+						this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
+					}
+				});
 
-			this._$list.appendChild(li);
+				this._$list.appendChild(li);
 
-			model.addEventListener('copy', this._createItem.bind(this));
-		} else if (model instanceof UndefinedJAG) {
-			this._items.push({
-				model: model
-			});
+				this._defined.add(model.urn);
 
-			model.addEventListener('define', this._defineItem.bind(this));
+				model.addEventListener('copy', this._createItem.bind(this));
+			} else if (model instanceof UndefinedJAG) {
+				this._items.push({
+					model: model
+				});
+
+				model.addEventListener('define', this._defineItem.bind(this));
+			}
 		}
 	}
 
