@@ -428,42 +428,44 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				child_annotations.appendChild(iterable_box);
 
-				for (let annotation of child.annotations) {
-					let annotation_box = createEmptyInputContainer(`annotation-${child.id}-${annotation[0]}`);
-					annotation_box.className = "annotation descriptor";
+				if (child.annotations) {
+					for (let annotation of child.annotations) {
+						let annotation_box = createEmptyInputContainer(`annotation-${child.id}-${annotation[0]}`);
+						annotation_box.className = "annotation descriptor";
 
-					let annotation_name = document.createElement("input");
-					annotation_name.disabled = true;
-					annotation_name.value = annotation[0];
+						let annotation_name = document.createElement("input");
+						annotation_name.disabled = true;
+						annotation_name.value = annotation[0];
 
-					annotation_name.className = "annotation name";
-					
-					annotation_box.appendChild(annotation_name);
+						annotation_name.className = "annotation name";
+						
+						annotation_box.appendChild(annotation_name);
 
-					let equals = document.createElement("span");
-					equals.innerHTML = "=";
-					equals.className = "annotation equals";
-					annotation_box.appendChild(equals);
+						let equals = document.createElement("span");
+						equals.innerHTML = "=";
+						equals.className = "annotation equals";
+						annotation_box.appendChild(equals);
 
-					let annotation_value = document.createElement("input");
-					annotation_value.disabled = true;
-					annotation_value.value = annotation[1];
+						let annotation_value = document.createElement("input");
+						annotation_value.disabled = true;
+						annotation_value.value = annotation[1];
 
-					annotation_value.className = "annotation value";
+						annotation_value.className = "annotation value";
 
-					annotation_box.appendChild(annotation_value);
+						annotation_box.appendChild(annotation_value);
 
-					const remove = document.createElement('span');
-					remove.innerHTML = "-";
-					remove.className = "annotation remove";
+						const remove = document.createElement('span');
+						remove.innerHTML = "-";
+						remove.className = "annotation remove";
 
-					remove.addEventListener('click', function (e) {
-						this._model.removeAnnotation(child.id, annotation[0]);
-					}.bind(this));
+						remove.addEventListener('click', function (e) {
+							this._model.removeAnnotation(child.id, annotation[0]);
+						}.bind(this));
 
-					annotation_box.appendChild(remove);
+						annotation_box.appendChild(remove);
 
-					child_annotations.appendChild(annotation_box);
+						child_annotations.appendChild(annotation_box);
+					}
 				}
 
 				this._annotations.appendChild(child_annotations);
@@ -605,11 +607,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_initHandlers() {
 		this._urn.addEventListener('keyup', e => {
-			if (this._urn.value != this._model.urn) {
-				this._urn.style.boxShadow = "3px 3px orange";
-			} else {
-				this._urn.style.boxShadow = "none";
-			}
+			this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
 		});
 
 		this._urn.addEventListener('keypress', e => {
