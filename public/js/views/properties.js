@@ -50,21 +50,28 @@ customElements.define('jag-properties', class extends HTMLElement {
 			} else {
 				this._model.removeEventListener('update', this._boundUpdate);
 			}
+
+			this._node = undefined;
+			this._model = undefined;
 		}
 
 		this._clearProperties();
 		this._enableProperties(selection.size != 0);
 
 		if (selection.size == 1) {
-			this._node = selection.values().next().value;
-			this._model = this._node.model;
+			const firstValue = selection.values().next().value;
 
-			this._updateProperties();
+			if (firstValue instanceof JAG || firstValue instanceof UndefinedJAG) {
+				this._node = firstValue;
+				this._model = this._node.model;
 
-			if (this._model instanceof UndefinedJAG) {
-				this._model.addEventListener('define', this._boundDefine);
-			} else {
-				this._model.addEventListener('update', this._boundUpdate);
+				this._updateProperties();
+
+				if (this._model instanceof UndefinedJAG) {
+					this._model.addEventListener('define', this._boundDefine);
+				} else {
+					this._model.addEventListener('update', this._boundUpdate);
+				}
 			}
 		}
 	}
