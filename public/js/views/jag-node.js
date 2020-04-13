@@ -26,6 +26,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._initUI();
 		this._initHandlers();
 		this.model = model;
+		this.visible = true;
 		this.expanded = expanded;
 	}
 
@@ -60,26 +61,20 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		for (const edge of this._outs) {
 			const child = edge.getNodeEnd();
-			edge.visible = expanded;
-			child.visible = expanded;
+			edge.visible = expanded && this.visible;
+			child.visible = expanded && this.visible;
 		}
 
 		if (expanded) {
 			this._$expand.innerHTML = "<";
-
-			if (this._outs.size > 0) {
-				this._$expand.style.visibility = "visible";
-			} else {
-				this._$expand.style.visibility = "hidden";
-			}
 		} else {
 			this._$expand.innerHTML = ">";
+		}
 
-			if (this._outs.size > 0) {
-				this._$expand.style.visibility = "visible";
-			} else {
-				this._$expand.style.visibility = "hidden";
-			}
+		if (this._outs.size > 0 && this.visible) {
+			this._$expand.style.visibility = "visible";
+		} else {
+			this._$expand.style.visibility = "hidden";
 		}
 	}
 
