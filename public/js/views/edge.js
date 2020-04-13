@@ -72,11 +72,19 @@ export default class Edge extends EventTarget {
 	}
 
 	_createAnnotation(key, value) {
-		const _tspan = document.createElementNS(XMLNS, "tspan");
-		_tspan.setAttributeNS(null, 'x', this._list_el.getAttributeNS(null, 'x'));
-		_tspan.setAttributeNS(null, 'dy', "1.1em");
-		_tspan.innerHTML = `${key}: ${value}`;
-		return _tspan;
+		const _tspan_key = document.createElementNS(XMLNS, "tspan");
+		_tspan_key.setAttribute('class', 'annotation-key');
+		_tspan_key.setAttributeNS(null, 'x', this._list_el.getAttributeNS(null, 'x'));
+		_tspan_key.setAttributeNS(null, 'dy', "1.1em");
+		_tspan_key.innerHTML = `${key}`;
+		this._list_el.appendChild(_tspan_key);
+
+		const _tspan_value = document.createElementNS(XMLNS, "tspan");
+		_tspan_value.setAttribute('class', 'annotation-value');
+		_tspan_value.setAttributeNS(null, 'dx', _tspan_key.clientWidth);
+		_tspan_value.setAttributeNS(null, 'dy', 0);
+		_tspan_value.innerHTML = `: ${value}`;
+		this._list_el.appendChild(_tspan_value);
 	}
 
 	_updateAnnotations(id, annotations, iterable) {
@@ -84,7 +92,7 @@ export default class Edge extends EventTarget {
 			this._clearAnnotations();
 
 			if (iterable) {
-				this._list_el.appendChild(this._createAnnotation("iterable", true));
+				this._createAnnotation("iterable", true);
 				this._anno_el.style.visibility = "visible";
 			}
 
@@ -92,7 +100,7 @@ export default class Edge extends EventTarget {
 				if (!iterable) this._anno_el.style.visibility = "visible";
 
 				for (let annotation of annotations.keys()) {
-					this._list_el.appendChild(this._createAnnotation(annotation, annotations.get(annotation)));
+					this._createAnnotation(annotation, annotations.get(annotation));
 				}
 			} else if (!iterable) {
 				this._anno_el.style.visibility = "hidden";
@@ -248,8 +256,8 @@ export default class Edge extends EventTarget {
 		this._list_el.setAttributeNS(null, 'x', mx + 20);
 		this._list_el.setAttributeNS(null, 'y', my - 8);
 
-		for (let annotation of this._list_el.children) {
-			annotation.setAttributeNS(null, 'x', mx + 20);
+		for (let key in this._list_el.children) {
+			if (key % 2 == 0) this._list_el.children[key].setAttributeNS(null, 'x', mx + 20);
 		}
 	}
 

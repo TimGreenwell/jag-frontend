@@ -421,3 +421,7 @@ jag-playground svg text.annotation-label {
 	fill: orange;
 	font-weight: bold;
 }
+
+jag-playground svg tspan.annotation-key {
+	fill: blue;
+}
