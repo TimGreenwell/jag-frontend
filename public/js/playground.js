@@ -64,7 +64,7 @@ class Playground extends HTMLElement {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
 
 		this.addEventListener('mousedown', (e) => {
-			this.deselectAll();
+			if (!e.shiftKey) this.deselectAll();
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }));
 		});
