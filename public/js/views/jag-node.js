@@ -168,16 +168,27 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
-	setSelected(is_selected) {
+	setSelected(is_selected, recursive = undefined) {
 		if(is_selected != this._is_selected)
 			this._animationRefresh();
 
 		this._is_selected = is_selected;
 
-		if(is_selected)
+		if (is_selected) {
 			this.classList.add('selected-node');
-		else
+
+			if (recursive) {
+				for (const out_edge of this._outs) {
+					const sub_node = out_edge.getNodeEnd();
+					recursive.add(sub_node);
+					recursive = sub_node.setSelected(true, recursive);
+				}
+			}
+		} else {
 			this.classList.remove('selected-node');
+		}
+
+		return recursive;
 	}
 
 	getParentEdge() {

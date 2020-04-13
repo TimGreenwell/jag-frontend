@@ -109,7 +109,15 @@ class Playground extends HTMLElement {
 			}
 
 			this._selected.add(node);
-			node.setSelected(true);
+
+			if (e.ctrlKey) {
+				const all_selected = node.setSelected(true, new Set());
+				for (const sub_node of all_selected)
+					this._selected.add(sub_node);
+			} else {
+				node.setSelected(true);
+			}
+
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 			e.stopPropagation();
 		});
