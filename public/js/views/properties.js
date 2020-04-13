@@ -434,7 +434,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 				iterable_checkbox.type = "checkbox";
 				
 				iterable_checkbox.addEventListener('change', function (e) {
-					this._model.setIterable(child.id, true);
+					this._model.setIterable(child.id, iterable_checkbox.checked);
 				}.bind(this));
 
 				iterable_box.appendChild(iterable_checkbox);
