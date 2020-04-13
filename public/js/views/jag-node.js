@@ -168,6 +168,24 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
+	getParent() {
+		if (this._in) {
+			return this._in.getNodeOrigin();
+		}
+
+		return undefined;
+	}
+
+	getChildren() {
+		const all_children = new Set();
+
+		for (const out_edge of this._outs) {
+			all_children.add(out_edge.getNodeEnd());
+		}
+
+		return all_children;
+	}
+
 	setSelected(is_selected, recursive = undefined) {
 		if(is_selected != this._is_selected)
 			this._animationRefresh();
