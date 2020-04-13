@@ -136,7 +136,7 @@ export default class Edge extends EventTarget {
 		if (this._containsPoint(e.clientX, e.clientY)) {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
-		} else {
+		} else if (!e.shiftKey) {
 			this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
 		}

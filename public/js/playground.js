@@ -66,7 +66,7 @@ class Playground extends HTMLElement {
 		this.addEventListener('mousedown', (e) => {
 			this.deselectAll();
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
-			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY }));
+			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }));
 		});
 
 		this.addEventListener('mousemove', (e) => {
