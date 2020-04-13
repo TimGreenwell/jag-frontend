@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
 				playground.handleItemSelected(e.detail);
 			});
 
+			library.addEventListener('refresh', (e) => {
+				playground.handleRefresh(e.detail);
+			});
+
 			graph_service.addEventListener('resources', (e) => {
 				library.handleResourceUpdate(e.detail);
 			});

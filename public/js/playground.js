@@ -127,15 +127,26 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	handleItemSelected(item) {
-		this._addNodeRecursive(item);
+		this._addNode(item);
+	}
 
-		// if(item.top) {
-		// 	this._addNodeRecursive(item);
-		// } else {
-		// 	const ch = this.clientHeight;
-		// 	const node = this.addNode(item);
-		// 	node.setTranslation(10 + node.clientWidth / 2.0 ,ch/2);
-		// }
+	handleRefresh(item) {
+		const margin = 50;
+
+		for (let node of this._nodes) {
+			if (node.model === item.model) {
+				let expanded = true;
+				const parent = node.getParent();
+
+				if (parent !== undefined) {
+					expanded = parent.expanded;
+				}
+
+				const [x, y] = node.getPosition();
+
+				this._addNodeRecursive(item.model, item.model_set, expanded, margin, x, y, node);
+			}
+		}
 	}
 
 	_createEdge(origin, id = undefined) {
@@ -212,43 +223,42 @@ customElements.define('jag-playground', class extends HTMLElement {
 		e.preventDefault();
 	}
 
-	_addNodeRecursive(item) {
-		const margin = 50;
-		const model_set = item.model_set;
+	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, parent = undefined) {
+		const node = parent || this.addNode(sub_item, expanded);
+		
+		if (parent == undefined) 
+			node.setTranslation(x + node.clientWidth / 2.0, y);
 
-		const recursive_add = (sub_item, x, y) => {
-			const node = this.addNode(sub_item, item.expanded);
-			
-			node.setTranslation(x + node.clientWidth / 2.0 ,y);
-
-			if(!sub_item.children)
-				return node;
-
-			const preferred_size = this._getNodePreferredHeight(sub_item, model_set);
-
-			// assume all children have same height as the parent.
-			const node_height = node.clientHeight + margin;
-			const preferred_height = preferred_size * node_height;
-
-			const x_offset = x + node.clientWidth + margin;
-			let y_offset = y - preferred_height / 2;
-
-			sub_item.children.forEach((child) => {
-				const def = model_set.get(child.urn);
-				const local_preferred_size = this._getNodePreferredHeight(def, model_set);
-				y_offset += (local_preferred_size * node_height) / 2;
-				const sub_node = recursive_add(def, x_offset, y_offset);
-				y_offset += (local_preferred_size * node_height) / 2;
-				let edge = this._createEdge(node, child.id);
-				edge.setNodeEnd(sub_node);
-				edge.addEventListener('selection', this._boundHandleEdgeSelected);
-			});
-
+		if (!sub_item.children)
 			return node;
-		}
 
+		const preferred_size = this._getNodePreferredHeight(sub_item, model_set);
+
+		// assume all children have same height as the parent.
+		const node_height = node.clientHeight + margin;
+		const preferred_height = preferred_size * node_height;
+
+		const x_offset = x + node.clientWidth + margin;
+		let y_offset = y - preferred_height / 2;
+
+		sub_item.children.forEach((child) => {
+			const def = model_set.get(child.urn);
+			const local_preferred_size = this._getNodePreferredHeight(def, model_set);
+			y_offset += (local_preferred_size * node_height) / 2;
+			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset);
+			y_offset += (local_preferred_size * node_height) / 2;
+			let edge = this._createEdge(node, child.id);
+			edge.setNodeEnd(sub_node);
+			edge.addEventListener('selection', this._boundHandleEdgeSelected);
+		});
+
+		return node;
+	}
+
+	_addNode(item) {
+		const margin = 50;
 		const ch = this.clientHeight;
-		recursive_add(item.model, 10, ch/2);
+		this._addNodeRecursive(item.model, item.model_set, item.expanded, margin, 10, ch/2);
 	}
 
 	_getNodePreferredHeight(item, model_set) {

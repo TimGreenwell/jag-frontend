@@ -180,6 +180,17 @@ customElements.define('jag-library', class extends HTMLElement {
 		this.addItem(await JAGService.get(e.detail.urn));
 	}
 
+	async _refreshItem(model) {
+		this._getChildModels(model, new Map()).then(function (all_models) {
+			this.dispatchEvent(new CustomEvent('refresh', {
+				detail: {
+					model: model,
+					model_set: all_models
+				}
+			}))
+		}.bind(this));
+	}
+
 	async _defineItem(e) {
 		for (let idx in this._items) {
 			if (this._items[idx].model.urn == e.detail.urn) {
@@ -188,7 +199,11 @@ customElements.define('jag-library', class extends HTMLElement {
 			}
 		}
 
-		this.addItem(e.detail.model);
+		const model = e.detail.model;
+
+		this.addItem(model);
+
+		this._refreshItem(model);
 	}
 });
 

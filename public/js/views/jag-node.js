@@ -183,6 +183,12 @@ customElements.define('jag-node', class extends HTMLElement {
 			this.classList.remove('selected-node');
 	}
 
+	getParent() {
+		if (this._in !== undefined) {
+			return this._in.getNodeOrigin();
+		}
+	}
+
 	_initUI() {
 		this.setAttribute('tabindex', '-1');
 
@@ -287,7 +293,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		if(!this.parentNode) return;
 
-		const [left, top] = this._computeTrueTopLeft();
+		const [left, top] = this.getPosition();
 
 		this.style.transform = `translate(${left}px,${top}px)`;
 
@@ -354,7 +360,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		// return [adj_x, adj_y];
 	}
 
-	_computeTrueTopLeft() {
+	getPosition() {
 		const left = Math.round(this._translation.x - this.clientWidth / 2.0);
 		const top = Math.round(this._translation.y - this.clientHeight / 2.0);
 
