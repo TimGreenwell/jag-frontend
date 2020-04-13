@@ -34,10 +34,16 @@ customElements.define('jag-playground', class extends HTMLElement {
 
 	initGlobalEvents() {
 		document.addEventListener('keydown', this.onKeyDown.bind(this));
+
 		this.addEventListener('mousedown', (e) => {
 			this.deselectAll();
 			this.dispatchEvent(new CustomEvent('selection', { detail: this._selected }));
 			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY }));
+		});
+
+		// TODO: remove this
+		this.addEventListener('mousemove', (e) => {
+			this._edges_container.dispatchEvent(new MouseEvent('mousemove', { clientX: e.clientX, clientY: e.clientY }));
 		});
 
 		this.addEventListener('mousemove', this.onEdgeUpdated.bind(this));

@@ -28,8 +28,15 @@ export default class Edge extends EventTarget {
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
 		this._text_el = document.createElementNS(XMLNS, 'text');
 		this._text_el.setAttribute('class', 'sequential-label');
+		this._anno_el = document.createElementNS(XMLNS, 'text');
+		this._anno_el.setAttribute('class', 'annotation-label');
+		this._anno_el.innerHTML = "@";
+		this._list_el = document.createElementNS(XMLNS, 'text');
+		this._list_el.setAttribute('class', 'annotations-list');
 		this._group.appendChild(this._edge_el);
 		this._group.appendChild(this._text_el);
+		this._group.appendChild(this._anno_el);
+		this._group.appendChild(this._list_el);
 
 		this._parent = parent;
 		parent.appendChild(this._group);
@@ -38,36 +45,86 @@ export default class Edge extends EventTarget {
 
 		this._boundUpdateHandler = this._updateHandler.bind(this);
 		this._boundHandleSelection = this._handleSelection.bind(this);
+		this._boundHandleHover = this._handleHover.bind(this);
 		parent.addEventListener('click', this._boundHandleSelection);
+		parent.addEventListener('mousemove', this._boundHandleHover);
 	}
 
 	_updateHandler(e) {
 		const property = e.detail.property;
+		const data = e.detail.extra;
 
 		if (property == "children") {
-			this._updateOrder();
+			this._updateOrder(data.children, data.execution);
 		} else if (property == "execution") {
-			this._updateOrder();
+			this._updateOrder(data.children, data.execution);
 		} else if (property == "operator") {
-			this._updateStrokeDash();
+			this._updateStrokeDash(data.operator);
+		} else if (property == "annotations") {
+			this._updateAnnotations(data.id, data.annotations, data.iterable);
 		}
 	}
 
-	_updateStrokeDash(e) {
-		if (this._node_origin) {
-			if (this._node_origin.model.operator == JAG.OPERATOR.OR) {
-				this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
-			} else {
-				this._edge_el.removeAttributeNS(null, 'stroke-dasharray');
+	_clearAnnotations() {
+		while (this._list_el.firstChild) {
+			this._list_el.removeChild(this._list_el.firstChild);
+		}
+	}
+
+	_createAnnotation(key, value) {
+		const _tspan = document.createElementNS(XMLNS, "tspan");
+		_tspan.setAttributeNS(null, 'x', this._list_el.getAttributeNS(null, 'x'));
+		_tspan.setAttributeNS(null, 'dy', "1.1em");
+		_tspan.innerHTML = `${key}: ${value}`;
+		return _tspan;
+	}
+
+	_updateAnnotations(id, annotations, iterable) {
+		if (this._childId == id) {
+			this._clearAnnotations();
+
+			if (iterable) {
+				this._list_el.appendChild(this._createAnnotation("iterable", true));
+				this._anno_el.style.visibility = "visible";
+			}
+
+			if (annotations != undefined && annotations.size > 0) {
+				if (!iterable) this._anno_el.style.visibility = "visible";
+
+				for (let annotation of annotations.keys()) {
+					this._list_el.appendChild(this._createAnnotation(annotation, annotations.get(annotation)));
+				}
+			} else if (!iterable) {
+				this._anno_el.style.visibility = "hidden";
 			}
 		}
 	}
 
-	_handleSelection(e) {
+	_updateStrokeDash(operator) {
+		if (operator == JAG.OPERATOR.OR) {
+			this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
+		} else {
+			this._edge_el.removeAttributeNS(null, 'stroke-dasharray');
+		}
+	}
+
+	_containsPoint(x, y) {
 		let rect = this._group.getBoundingClientRect();
 
-		if ((e.clientX > rect.left && e.clientX < rect.right)
-			&& (e.clientY > rect.top && e.clientY < rect.bottom)) {
+		return (x > rect.left && x < rect.right)
+			&& (y > rect.top && y < rect.bottom);
+	}
+
+	_handleHover(e) {
+		if (this._containsPoint(e.clientX, e.clientY)) {
+			this._list_el.style.visibility = "visible";
+		} else {
+			this._list_el.style.visibility = "hidden";
+		}
+	}
+
+	_handleSelection(e) {
+		if (this._containsPoint(e.clientX, e.clientY)) {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
 		} else {
@@ -119,7 +176,6 @@ export default class Edge extends EventTarget {
 	setNodeOrigin(node) {
 		this._node_origin = node;
 		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
-		this._updateStrokeDash(null);
 	}
 
 	setChildId(id) {
@@ -130,7 +186,9 @@ export default class Edge extends EventTarget {
 		this._node_end = node;
 		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to model
 
-		this._node_origin.model.addEventListener('update', this._boundUpdateHandler);
+		const origin_model = this._node_origin.model;
+
+		origin_model.addEventListener('update', this._boundUpdateHandler);
 
 		this._childId = this._node_origin.completeOutEdge(this, this._childId); // Note: this does multiple things:
 		// - Adds edge to graphical node's 'outs'
@@ -139,7 +197,18 @@ export default class Edge extends EventTarget {
 		//   - Sets _node_end model's parent to _node_origin model
 		//   - Dispatches update event
 
-		this._updateOrder();
+		this._updateOrder(origin_model.children, origin_model.execution);
+		this._updateStrokeDash(origin_model.operator);
+
+		const child = origin_model.children.reduce((prev, curr) => {
+			if (curr.id == this._childId) {
+				return curr;
+			}
+
+			return prev;
+		});
+
+		this._updateAnnotations(this._childId, child.annotations, child.iterable);
 	}
 
 	setOrigin(x, y) {
@@ -172,12 +241,26 @@ export default class Edge extends EventTarget {
 		this._data = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
 
 		this._edge_el.setAttributeNS(null, 'd', this._data);
-		this._text_el.setAttributeNS(null, 'x', mx);
-		this._text_el.setAttributeNS(null, 'y', my);
+		this._text_el.setAttributeNS(null, 'x', mx - 5);
+		this._text_el.setAttributeNS(null, 'y', my - 5);
+		this._anno_el.setAttributeNS(null, 'x', mx + 5);
+		this._anno_el.setAttributeNS(null, 'y', my + 5);
+		this._list_el.setAttributeNS(null, 'x', mx + 20);
+		this._list_el.setAttributeNS(null, 'y', my - 8);
+
+		for (let annotation of this._list_el.children) {
+			annotation.setAttributeNS(null, 'x', mx + 20);
+		}
 	}
 
-	_updateOrder(e) {
-		let order = this._node_origin.model.getOrderForId(this._childId);
+	_updateOrder(children, execution) {
+		let order = 0;
+
+		if (execution == JAG.EXECUTION.SEQUENTIAL) {
+			const ordered = children.map(child => child.id);
+			order = ordered.indexOf(this._childId) + 1;
+		}
+
 		this._text_el.innerHTML = order == 0 ? '' : order;
 	}
 

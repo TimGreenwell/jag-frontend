@@ -416,3 +416,8 @@ jag-playground svg text.sequential-label {
 	font-family: sans-serif;
 	font-size: 8pt;
 }
+
+jag-playground svg text.annotation-label {
+	fill: orange;
+	font-weight: bold;
+}
