@@ -358,7 +358,7 @@ jag-playground jag-node div.connector {
 	text-align: center;
 }
 
-jag-playground jag-node div.expansion, jag-playground jag-node div.contraction {
+jag-playground jag-node div.expand {
 	font-size: 0.75em;
 	cursor: pointer;
 	border: 1px solid var(--main-fg);
