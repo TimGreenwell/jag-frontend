@@ -68,12 +68,12 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._$expand.style.visibility = "hidden";
 
 			if (this._outs.size > 0) {
-				this._$contract.style.visibility = "visible";
+				this._$collapse.style.visibility = "visible";
 			} else {
-				this._$contract.style.visibility = "hidden";
+				this._$collapse.style.visibility = "hidden";
 			}
 		} else {
-			this._$contract.style.visibility = "hidden";
+			this._$collapse.style.visibility = "hidden";
 
 			if (this._outs.size > 0) {
 				this._$expand.style.visibility = "visible";
@@ -102,7 +102,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		} else {
 			this.style.visibility = "hidden";
 			this._$expand.style.visibility = "hidden";
-			this._$contract.style.visibility = "hidden";
+			this._$collapse.style.visibility = "hidden";
 		}
 	}
 
@@ -207,14 +207,14 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$expand.className = 'expansion';
 		this._$expand.innerHTML = '>';
 
-		this._$contract = document.createElement('div');
-		this._$contract.className = 'contraction';
-		this._$contract.innerHTML = '<';
+		this._$collapse = document.createElement('div');
+		this._$collapse.className = 'contraction';
+		this._$collapse.innerHTML = '<';
 
 		this.appendChild(this._$header);
 		this.appendChild(this._$connector);
 		this.appendChild(this._$expand);
-		this.appendChild(this._$contract);
+		this.appendChild(this._$collapse);
 
 		this.setTranslation(100, 100);
 	}
@@ -261,7 +261,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			this.expanded = true;
 		});
 
-		this._$contract.addEventListener('click', () => {
+		this._$collapse.addEventListener('click', () => {
 			this.expanded = false;
 		});
 	}
