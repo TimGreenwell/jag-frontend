@@ -160,7 +160,7 @@ customElements.define('jag-library', class extends HTMLElement {
 		for (let child_details of model.children) {
 			const child = await this._getDefinitionForURN(child_details.urn);
 			map.set(child_details.urn, child);
-			map = this._getChildModels(child, map);
+			map = await this._getChildModels(child, map);
 		}
 
 		return map;
