@@ -221,7 +221,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_initHandlers() {
 		const drag = (e => {
-			if(!this._is_moving)
+			if (!this._is_moving)
 				return;
 
 			const playground = e.currentTarget;
@@ -283,9 +283,9 @@ customElements.define('jag-node', class extends HTMLElement {
 	translate(dx, dy, recursive = false) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 
-		if(this._outs != undefined && recursive) {
+		if(this._outs != undefined && (recursive || !this.expanded)) {
 			this._outs.forEach((edge) => {
-				edge._node_end.translate(dx, dy, recursive);
+				edge._node_end.translate(dx, dy, recursive || !this.expanded);
 			});
 		}
 	}
