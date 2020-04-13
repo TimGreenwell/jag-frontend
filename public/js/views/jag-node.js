@@ -156,7 +156,10 @@ customElements.define('jag-node', class extends HTMLElement {
 	completeOutEdge(edge, id = undefined) {
 		this._outs.add(edge);
 
-		this.expanded = true;
+		// If this is a new child, expand this node;
+		// Else refresh this node's expanded tree.
+		if (id === undefined) this.expanded = true;
+		else this.expanded = this.expanded;
 		
 		return this._model.addChild(edge.getNodeEnd().model, id);
 	}
