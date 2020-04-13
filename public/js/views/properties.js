@@ -56,12 +56,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		}
 
 		this._clearProperties();
-		this._enableProperties(selection.size != 0);
 
 		if (selection.size == 1) {
 			const firstValue = selection.values().next().value;
 
-			if (firstValue instanceof JAG || firstValue instanceof UndefinedJAG) {
+			if (firstValue._model) {
+				this._enableProperties(true);
+
 				this._node = firstValue;
 				this._model = this._node.model;
 
