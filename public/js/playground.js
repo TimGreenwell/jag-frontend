@@ -41,7 +41,6 @@ customElements.define('jag-playground', class extends HTMLElement {
 			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY }));
 		});
 
-		// TODO: remove this
 		this.addEventListener('mousemove', (e) => {
 			this._edges_container.dispatchEvent(new MouseEvent('mousemove', { clientX: e.clientX, clientY: e.clientY }));
 		});
