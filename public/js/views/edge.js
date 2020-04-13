@@ -76,6 +76,18 @@ export default class Edge extends EventTarget {
 		}
 	}
 
+	set visible(visible) {
+		this._visible = visible;
+
+		if (visible) {
+			this._edge_el.style.visibility = "visible";
+			this._text_el.style.visibility = "visible";
+		} else {
+			this._edge_el.style.visibility = "hidden";
+			this._text_el.style.visibility = "hidden";
+		}
+	}
+
 	delete() {
 		if (window.confirm("Are you sure you want to remove this node as a child?")) {
 			this._node_origin.removeChild(this, this._childId);
@@ -96,11 +108,11 @@ export default class Edge extends EventTarget {
 			this._node_end.removeInEdge(this);
 	}
 
-	getNodeOrigin(node) {
+	getNodeOrigin() {
 		return this._node_origin;
 	}
 
-	getNodeEnd(node) {
+	getNodeEnd() {
 		return this._node_end;
 	}
 

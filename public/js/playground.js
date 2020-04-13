@@ -61,9 +61,9 @@ customElements.define('jag-playground', class extends HTMLElement {
 		return this._selected.values().next().value.model.urn;
 	}
 
-	addNode(node_definition) {
+	addNode(node_definition, expanded) {
 		const node_model = node_definition;
-		const node = new JAGNode(node_model);
+		const node = new JAGNode(node_model, expanded);
 
 		node.addEventListener('mousedown', (e) => {
 			// If meta isn't pressed clear previous selection
@@ -127,13 +127,15 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	handleItemSelected(item) {
-		if(item.top) {
-			this._addNodeRecursive(item);
-		} else {
-			const ch = this.clientHeight;
-			const node = this.addNode(item);
-			node.setTranslation(10 + node.clientWidth / 2.0 ,ch/2);
-		}
+		this._addNodeRecursive(item);
+
+		// if(item.top) {
+		// 	this._addNodeRecursive(item);
+		// } else {
+		// 	const ch = this.clientHeight;
+		// 	const node = this.addNode(item);
+		// 	node.setTranslation(10 + node.clientWidth / 2.0 ,ch/2);
+		// }
 	}
 
 	_createEdge(origin, id = undefined) {
@@ -215,7 +217,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 		const model_set = item.model_set;
 
 		const recursive_add = (sub_item, x, y) => {
-			const node = this.addNode(sub_item);
+			const node = this.addNode(sub_item, item.expanded);
 			
 			node.setTranslation(x + node.clientWidth / 2.0 ,y);
 
@@ -246,7 +248,7 @@ customElements.define('jag-playground', class extends HTMLElement {
 		}
 
 		const ch = this.clientHeight;
-		recursive_add(item.top, 10, ch/2);
+		recursive_add(item.model, 10, ch/2);
 	}
 
 	_getNodePreferredHeight(item, model_set) {

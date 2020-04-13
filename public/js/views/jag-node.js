@@ -14,7 +14,7 @@ import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
-	constructor(model) {
+	constructor(model, expanded) {
 		super();
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
@@ -26,6 +26,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._initUI();
 		this._initHandlers();
 		this.model = model;
+		this.expanded = expanded;
 	}
 
 	// TODO: Find a better way to deal with changing URN so model is a private property
@@ -52,6 +53,61 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	get model() {
 		return this._model;
+	}
+
+	set expanded(expanded) {
+		this._expanded = expanded;
+
+		for (const edge of this._outs) {
+			const child = edge.getNodeEnd();
+			edge.visible = expanded;
+			child.visible = expanded;
+		}
+
+		if (expanded) {
+			this._$expand.style.visibility = "hidden";
+
+			if (this._outs.size > 0) {
+				this._$contract.style.visibility = "visible";
+			} else {
+				this._$contract.style.visibility = "hidden";
+			}
+		} else {
+			this._$contract.style.visibility = "hidden";
+
+			if (this._outs.size > 0) {
+				this._$expand.style.visibility = "visible";
+			} else {
+				this._$expand.style.visibility = "hidden";
+			}
+		}
+	}
+
+	get expanded() {
+		return this._expanded;
+	}
+
+	set visible(visible) {
+		this._visible = visible;
+
+		for (const edge of this._outs) {
+			const child = edge.getNodeEnd();
+			edge.visible = visible;
+			child.visible = visible;
+		}
+
+		if (visible) {
+			this.style.visibility = "visible";
+			this.expanded = this.expanded;
+		} else {
+			this.style.visibility = "hidden";
+			this._$expand.style.visibility = "hidden";
+			this._$contract.style.visibility = "hidden";
+		}
+	}
+
+	get visible() {
+		return this._visible;
 	}
 
 	addInEdge(edge) {
@@ -99,6 +155,9 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	completeOutEdge(edge, id = undefined) {
 		this._outs.add(edge);
+
+		this.expanded = true;
+		
 		return this._model.addChild(edge.getNodeEnd().model, id);
 	}
 
@@ -135,8 +194,18 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$connector = document.createElement('div');
 		this._$connector.className = 'connector';
 
+		this._$expand = document.createElement('div');
+		this._$expand.className = 'expansion';
+		this._$expand.innerHTML = '>';
+
+		this._$contract = document.createElement('div');
+		this._$contract.className = 'contraction';
+		this._$contract.innerHTML = '<';
+
 		this.appendChild(this._$header);
 		this.appendChild(this._$connector);
+		this.appendChild(this._$expand);
+		this.appendChild(this._$contract);
 
 		this.setTranslation(100, 100);
 	}
@@ -177,6 +246,14 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._$header.addEventListener('transitionend', () => {
 			window.cancelAnimationFrame(this._animation_frame_id);
+		});
+
+		this._$expand.addEventListener('click', () => {
+			this.expanded = true;
+		});
+
+		this._$contract.addEventListener('click', () => {
+			this.expanded = false;
 		});
 	}
 

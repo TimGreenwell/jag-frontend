@@ -351,8 +351,31 @@ jag-playground jag-node div.connector {
 	line-height: 1em;
 	align-self: center;
 	box-sizing: border-box;
+	position: absolute;
+	right: -2em;
+	top: 0em;
+	width: 2em;
+	text-align: center;
 }
 
+jag-playground jag-node div.expansion, jag-playground jag-node div.contraction {
+	font-size: 0.75em;
+	cursor: pointer;
+	border: 1px solid var(--main-fg);
+	border-left: none;
+	padding: 0.25em;
+	line-height: 0.75em;
+	align-self: center;
+	box-sizing: border-box;
+	position: absolute;
+	right: -1.5em;
+	bottom: 0em;
+	width: 1.5em;
+	text-align: center;
+	background-color: orange;
+	color: black;
+	font-weight: bold;
+}
 
 jag-playground jag-node div.node-io {
 	display: none;

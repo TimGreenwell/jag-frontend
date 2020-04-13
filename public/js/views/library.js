@@ -70,20 +70,15 @@ customElements.define('jag-library', class extends HTMLElement {
 				});
 
 				li.addEventListener('click', (event) => {
-					if(event.shiftKey) {
-						this._getChildModels(model, new Map()).then(function (all_models) {
-							this.dispatchEvent(new CustomEvent('item-selected', {
-								detail: {
-									top: model,
-									model_set: all_models
-								}
-							}))
-						}.bind(this));
-					}
-					else
-					{
-						this.dispatchEvent(new CustomEvent('item-selected', { detail: model }));
-					}
+					this._getChildModels(model, new Map()).then(function (all_models) {
+						this.dispatchEvent(new CustomEvent('item-selected', {
+							detail: {
+								model: model,
+								model_set: all_models,
+								expanded: event.shiftKey
+							}
+						}))
+					}.bind(this));
 				});
 
 				this._$list.appendChild(li);
