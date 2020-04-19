@@ -34,11 +34,6 @@ export default class JAGService extends EventTarget {
 			JAGService.resolve(model);
 		}
 
-		if (JAGService.UNDEFINED.has(model.urn)) {
-			JAGService.UNDEFINED.get(model.urn).defined(model);
-			JAGService.UNDEFINED.delete(model.urn);
-		}
-
 		return IndexedDBUtils.store(
 			JAGService.DB_INSTANCE,
 			JAGService.JAG_STORE.name,
