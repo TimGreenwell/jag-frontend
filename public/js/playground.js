@@ -32,6 +32,15 @@ class Playground extends HTMLElement {
 		this._content.style.visibility = "hidden";
 		this.appendChild(this._content);
 
+		this._cardinals = {
+			left: this._createCardinal("left", 1, 0),
+			right: this._createCardinal("right", -1, 0),
+			up: this._createCardinal("up", 0, 1),
+			down: this._createCardinal("down", 0, -1)
+		};
+
+		this._showCardinals({left: false, right: false, up: false, down: false});
+
 		this._popups = [];
 		this._popupHighlights = [];
 
@@ -42,6 +51,67 @@ class Playground extends HTMLElement {
 		this._boundStopDragView = this.stopDragView.bind(this);
 
 		this.initGlobalEvents();
+	}
+
+	_createCardinal(type, dx, dy) {
+		const cardinal = document.createElement("div");
+		cardinal.classList.add("cardinal");
+		cardinal.classList.add(type);
+
+		this.appendChild(cardinal);
+
+		cardinal.addEventListener('mouseenter', () => {
+			const hoverInterval = setInterval(function () {
+				this._dragView(dx * Playground.DEFAULT_CARDINAL_MULTIPLIER, dy * Playground.DEFAULT_CARDINAL_MULTIPLIER);
+			}.bind(this), 10);
+
+			cardinal.addEventListener('mouseleave', () => {
+				clearInterval(hoverInterval);
+			});
+		});
+
+		return cardinal;
+	}
+
+	_checkBounds(nodes = this._nodes) {
+		const bounds = this.getBoundingClientRect();
+		let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
+		let showLeft, showRight, showUp, showDown;
+
+		for (const node of nodes) {
+			if (node.visible) {
+				const {x, y, width, height} = node.getBoundingClientRect();
+
+				if (x < minX) showLeft = true;
+				if (x + width > maxX) showRight = true;
+				if (y < minY) showUp = true;
+				if (y + height > maxY) showDown = true;
+			}
+		}
+
+		if (nodes == this._nodes) {
+			this._showCardinals({
+				left: showLeft || false,
+				right: showRight || false,
+				up: showUp || false,
+				down: showDown || false
+			});
+		} else {
+			this._showCardinals({
+				left: showLeft,
+				right: showRight,
+				up: showUp,
+				down: showDown
+			});
+		}
+	}
+
+	_showCardinals(toggle = {left, right, up, down}) {
+		for (const [key, value] of Object.entries(toggle)) {
+			if (value == true || value == false) {
+				this._cardinals[key].classList.toggle("visible", value);
+			}
+		}
 	}
 
 	static _createPopup(type, name, description, actions) {
@@ -63,14 +133,20 @@ class Playground extends HTMLElement {
 
 		return { type: type, display: _p, actions: actions };
 	}
+
+	_dragView(dx, dy) {
+		for (let node of this._nodes) {
+			node.translate(dx, dy, false);
+		}
+
+		this._checkBounds();
+	}
 	
 	dragView(e) {
 		const dx = e.clientX - this._initialMouse.x;
 		const dy = e.clientY - this._initialMouse.y;
 
-		for (let node of this._nodes) {
-			node.translate(dx, dy, false);
-		}
+		this._dragView(dx, dy);
 
 		this._initialMouse = { x: e.clientX, y: e.clientY };
 	}
@@ -143,6 +219,18 @@ class Playground extends HTMLElement {
 		});
 
 		node.addEventListener('keydown', this.onKeyDown.bind(this));
+
+		node.addEventListener('drag', () => {
+			this._checkBounds();
+		});
+
+		node.addEventListener('toggle-visible', (e) => {
+			if (e.detail) {
+				this._checkBounds(node.getTree());
+			} else {
+				this._checkBounds();
+			}
+		});
 
 		this._nodes.add(node);
 		this._nodes_container.appendChild(node);
@@ -486,7 +574,8 @@ class Playground extends HTMLElement {
 	_addNode(item) {
 		const margin = 50;
 		const ch = this.clientHeight;
-		this._addNodeRecursive(item.model, item.model_set, item.expanded, margin, 10, ch/2);
+		const node = this._addNodeRecursive(item.model, item.model_set, item.expanded, margin, 10, ch/2);
+		this._checkBounds(node.getTree());
 	}
 
 	_getNodePreferredHeight(item, model_set) {
@@ -568,6 +657,8 @@ Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.
 	}},
 	{ text: "No", color: "white", bgColor: "black" }
 ]);
+
+Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;
 
 customElements.define('jag-playground', Playground);
 

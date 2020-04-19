@@ -98,6 +98,8 @@ customElements.define('jag-node', class extends HTMLElement {
 			this.style.visibility = "hidden";
 			this._$expand.style.visibility = "hidden";
 		}
+
+		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: visible }));
 	}
 
 	get visible() {
@@ -274,15 +276,9 @@ customElements.define('jag-node', class extends HTMLElement {
 			if (!this._is_moving)
 				return;
 
-			const playground = e.currentTarget;
-
-			const mx = e.clientX - playground.offsetLeft;
-			const my = e.clientY - playground.offsetTop;
-
-			let center_x = mx + this._center_offset.x;
-			let center_y = my + this._center_offset.y;
-
 			this.translate(e.movementX, e.movementY, e.shiftKey ? true : undefined);
+
+			this.dispatchEvent(new CustomEvent('drag', { detail: { x: e.movementX, y: e.movementY, shiftKey: e.shiftKey }}));
 		}).bind(this);
 
 		this._$header.addEventListener('mousedown', (e) => {
