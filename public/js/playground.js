@@ -23,7 +23,7 @@ class Playground extends HTMLElement {
 		this._nodes_container = document.createElement('div');
 		this.appendChild(this._nodes_container);
 
-		this._nodes = [];
+		this._nodes = new Set();
 		this._selected = new Set();
 		this._is_edge_being_created = false;
 
@@ -116,7 +116,7 @@ class Playground extends HTMLElement {
 
 		node.addEventListener('keydown', this.onKeyDown.bind(this));
 
-		this._nodes.push(node);
+		this._nodes.add(node);
 		this._nodes_container.appendChild(node);
 
 		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
@@ -153,6 +153,7 @@ class Playground extends HTMLElement {
 					this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function () { return n; }, [n]);
 				} else {
 					n.removeAllEdges();
+					this._nodes.delete(n);
 					this._nodes_container.removeChild(n);
 				}
 
@@ -166,12 +167,10 @@ class Playground extends HTMLElement {
 	clearPlayground() {
 		for (let node of this._nodes) {
 			node.removeAllEdges();
-
-			if (this._nodes_container.contains(node))
-				this._nodes_container.removeChild(node);
+			this._nodes_container.removeChild(node);
 		}
 
-		this._nodes = [];
+		this._nodes.clear();
 	}
 
 	fromClientToPlaygroundCoordinates(x, y) {
@@ -377,6 +376,7 @@ class Playground extends HTMLElement {
 		if (parent) {
 			for (const child of parent.getChildren()) {
 				child.removeAllEdges();
+				this._nodes.delete(child);
 				this._nodes_container.removeChild(child);
 			}
 		}
