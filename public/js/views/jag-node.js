@@ -326,10 +326,10 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.model = e.detail.model;
 	}
 
-	translate(dx, dy, recursive = false) {
+	translate(dx, dy, recursive = undefined) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 
-		if(this._outs != undefined && (recursive || !this.expanded)) {
+		if(this._outs != undefined && (recursive || (recursive == undefined && !this.expanded))) {
 			this._outs.forEach((edge) => {
 				edge._node_end.translate(dx, dy, recursive || !this.expanded);
 			});

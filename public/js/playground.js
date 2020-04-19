@@ -69,7 +69,7 @@ class Playground extends HTMLElement {
 		const dy = e.clientY - this._initialMouse.y;
 
 		for (let node of this._nodes) {
-			node.translate(dx, dy);
+			node.translate(dx, dy, false);
 		}
 
 		this._initialMouse = { x: e.clientX, y: e.clientY };
