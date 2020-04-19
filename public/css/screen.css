@@ -292,6 +292,7 @@ jag-playground {
 	flex-grow: 1;
 	box-shadow: 0 0 0 1px darkgrey;
 	cursor: grab;
+	overflow: hidden;
 }
 
 jag-playground > div, jag-playground > svg {
