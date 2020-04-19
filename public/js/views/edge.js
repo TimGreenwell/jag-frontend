@@ -15,6 +15,7 @@ export default class Edge extends EventTarget {
 	constructor(parent) {
 		super();
 		this.init(parent);
+		this.visible = true;
 	}
 
 	init(parent) {
@@ -125,7 +126,7 @@ export default class Edge extends EventTarget {
 	}
 
 	_handleHover(e) {
-		if (this._containsPoint(e.clientX, e.clientY)) {
+		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
 			this._list_el.style.visibility = "visible";
 		} else {
 			this._list_el.style.visibility = "hidden";
@@ -133,7 +134,7 @@ export default class Edge extends EventTarget {
 	}
 
 	_handleSelection(e) {
-		if (this._containsPoint(e.clientX, e.clientY)) {
+		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
 		} else if (!e.shiftKey) {
