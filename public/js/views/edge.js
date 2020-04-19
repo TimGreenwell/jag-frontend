@@ -153,13 +153,6 @@ export default class Edge extends EventTarget {
 		}
 	}
 
-	delete() {
-		if (window.confirm("Are you sure you want to remove this node as a child?")) {
-			this._node_origin.removeChild(this, this._childId);
-			this.destroy();
-		}
-	}
-
 	destroy() {
 		this._parent.removeChild(this._group);
 		this._parent.removeEventListener('click', this._boundHandleSelection);
