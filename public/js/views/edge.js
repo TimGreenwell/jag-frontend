@@ -31,6 +31,7 @@ export default class Edge extends EventTarget {
 		this._anno_el = document.createElementNS(XMLNS, 'text');
 		this._anno_el.setAttribute('class', 'annotation-label');
 		this._anno_el.innerHTML = "@";
+		this._anno_el.style.visibility = "hidden";
 		this._list_el = document.createElementNS(XMLNS, 'text');
 		this._list_el.setAttribute('class', 'annotations-list');
 		this._group.appendChild(this._edge_el);
