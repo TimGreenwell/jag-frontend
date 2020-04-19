@@ -373,18 +373,9 @@ class Playground extends HTMLElement {
 	}
 
 	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, parent = undefined) {
-		if (parent) {
-			for (const child of parent.getChildren()) {
-				child.removeAllEdges();
-				this._nodes.delete(child);
-				this._nodes_container.removeChild(child);
-			}
-		}
-
 		const node = parent || this.addNode(sub_item, expanded);
 		
-		if (parent == undefined) 
-			node.setTranslation(x + node.clientWidth / 2.0, y);
+		node.setTranslation(x + node.clientWidth / 2.0, y);
 
 		if (!sub_item.children)
 			return node;
@@ -398,16 +389,47 @@ class Playground extends HTMLElement {
 		const x_offset = x + node.clientWidth + margin;
 		let y_offset = y - preferred_height / 2;
 
+		const existing_children = new Map();
+		for (const child_edge of node.getChildEdges()) {
+			existing_children.set(child_edge.getChildId(), child_edge.getNodeEnd());
+		}
+
 		sub_item.children.forEach((child) => {
 			const def = model_set.get(child.urn);
 			const local_preferred_size = this._getNodePreferredHeight(def, model_set);
 			y_offset += (local_preferred_size * node_height) / 2;
-			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset);
-			y_offset += (local_preferred_size * node_height) / 2;
-			let edge = this._createEdge(node, child.id);
-			edge.setNodeEnd(sub_node);
-			edge.addEventListener('selection', this._boundHandleEdgeSelected);
+
+			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset, existing_children.get(child.id));
+
+			if (existing_children.has(child.id)) {
+				existing_children.get(child.id).expanded = true;
+			} else {
+				y_offset += (local_preferred_size * node_height) / 2;
+				let edge = this._createEdge(node, child.id);
+				edge.setNodeEnd(sub_node);
+				edge.addEventListener('selection', this._boundHandleEdgeSelected);
+			}
 		});
+
+		for (const [id, child] of existing_children.entries()) {
+			let actual = false;
+
+			for (const actual_child of sub_item.children) {
+				if (actual_child.id == id) {
+					actual = true;
+					break;
+				}
+			}
+
+			if (!actual) {
+				const tree = child.getTree();
+				for (const node of tree) {
+					node.removeAllEdges();
+					this._nodes.delete(node);
+					this._nodes_container.removeChild(node);
+				}
+			}
+		}
 
 		return node;
 	}

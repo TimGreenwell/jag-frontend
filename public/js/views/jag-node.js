@@ -192,6 +192,10 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
+	getChildEdges() {
+		return this._outs;
+	}
+
 	getChildren() {
 		const all_children = new Set();
 
@@ -200,6 +204,16 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 
 		return all_children;
+	}
+
+	getTree(tree = new Set()) {
+		tree.add(this);
+
+		for (const out_edge of this._outs) {
+			out_edge.getNodeEnd().getTree(tree);
+		}
+
+		return tree;
 	}
 
 	_initUI() {
