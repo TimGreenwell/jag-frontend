@@ -156,9 +156,13 @@ class Playground extends HTMLElement {
 			if (n instanceof JAGNode) {
 				const parent = n.getParent();
 
-				if (parent && !this._selected.has(parent)) {
-					const {x, y, width} = n.getBoundingClientRect();
-					this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function () { return n; }, [n]);
+				if (parent) {
+					if (this._selected.has(parent)) {
+						this._selected.delete(n);
+					} else {
+						const {x, y, width} = n.getBoundingClientRect();
+						this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function () { return n; }, [n]);
+					}
 				} else {
 					n.removeAllEdges();
 					this._nodes.delete(n);
@@ -231,6 +235,7 @@ class Playground extends HTMLElement {
 
 			if (content.actions) {
 				for (const {text, color, bgColor, action} of content.actions) {
+					const boundAction = action ? action.bind(this) : undefined;
 					const actionBtn = document.createElement('button');
 					actionBtn.className = "popup-action";
 					actionBtn.innerText = text;
@@ -239,11 +244,11 @@ class Playground extends HTMLElement {
 					if (bgColor) actionBtn.style.backgroundColor = bgColor;
 
 					actionBtn.onclick = function () {
-						if (action) {
+						if (boundAction) {
 							if (callback) {
-								action(callback());
+								boundAction(callback());
 							} else {
-								action();
+								boundAction();
 							}
 						} else {
 							callback();
@@ -408,11 +413,9 @@ class Playground extends HTMLElement {
 			y_offset += (local_preferred_size * node_height) / 2;
 
 			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset, existing_children.get(child.id));
+			y_offset += (local_preferred_size * node_height) / 2;
 
-			if (existing_children.has(child.id)) {
-				existing_children.get(child.id).expanded = true;
-			} else {
-				y_offset += (local_preferred_size * node_height) / 2;
+			if (!existing_children.has(child.id)) {
 				let edge = this._createEdge(node, child.id);
 				edge.setNodeEnd(sub_node);
 				edge.addEventListener('selection', this._boundHandleEdgeSelected);
@@ -511,11 +514,22 @@ Playground.POPUP_TYPES = {
 
 Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
 	{ text: "Yes", color: "black", bgColor: "red", action: function (node) {
+		this.deselectAll();
+
 		const edge = node.getParentEdge();
 		const id = edge.getChildId();
 		const parent = node.getParent();
 
+		const tree = node.getTree();
+
 		parent.removeChild(edge, id);
+		this._selected.add(node);
+
+		for (const node of tree) {
+			this._selected.add(node);
+		}
+
+		this.deleteSelected();
 	}},
 	{ text: "No", color: "white", bgColor: "black" }
 ]);
