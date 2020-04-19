@@ -48,6 +48,8 @@ class Playground extends HTMLElement {
 
 		this._showCardinals(this._canMoveView);
 
+		this._zoomFactor = 1.00;
+
 		this._popups = [];
 		this._popupHighlights = [];
 
@@ -128,6 +130,14 @@ class Playground extends HTMLElement {
 		}
 
 		return this._canMoveView;
+	}
+
+	_zoomView(factor) {
+		this._zoomFactor = factor;
+		const transform = `scale(${factor})`;
+		this._edges_container.style.transform = transform;
+		this._nodes_container.style.transform = transform;
+		this._checkBounds();
 	}
 
 	static _createPopup(type, name, description, actions) {
@@ -474,6 +484,10 @@ class Playground extends HTMLElement {
 			if (this._canMoveView.down) {
 				this._dragView(0, -1 * Playground.DEFAULT_ARROW_MULTIPLIER);
 			}
+		} else if (e.key == 'PageUp') {
+			this._zoomView(this._zoomFactor / Playground.DEFAULT_ZOOM_MULTIPLIER);
+		} else if (e.key == 'PageDown') {
+			this._zoomView(this._zoomFactor * Playground.DEFAULT_ZOOM_MULTIPLIER);
 		}
 	}
 
@@ -693,6 +707,8 @@ Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.
 Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;
 
 Playground.DEFAULT_ARROW_MULTIPLIER = 10;
+
+Playground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 
 customElements.define('jag-playground', Playground);
 

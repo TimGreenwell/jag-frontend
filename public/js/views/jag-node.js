@@ -276,7 +276,9 @@ customElements.define('jag-node', class extends HTMLElement {
 			if (!this._is_moving)
 				return;
 
-			this.translate(e.movementX, e.movementY, e.shiftKey ? true : undefined);
+			const scaleFactor = this.offsetWidth / this.getBoundingClientRect().width;
+
+			this.translate(e.movementX * scaleFactor, e.movementY * scaleFactor, e.shiftKey ? true : undefined);
 
 			this.dispatchEvent(new CustomEvent('drag', { detail: { x: e.movementX, y: e.movementY, shiftKey: e.shiftKey }}));
 		}).bind(this);
