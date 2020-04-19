@@ -282,7 +282,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			let center_x = mx + this._center_offset.x;
 			let center_y = my + this._center_offset.y;
 
-			this.translate(e.movementX, e.movementY, e.shiftKey);
+			this.translate(e.movementX, e.movementY, e.shiftKey ? true : undefined);
 		}).bind(this);
 
 		this._$header.addEventListener('mousedown', (e) => {
