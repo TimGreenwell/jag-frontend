@@ -289,14 +289,18 @@ customElements.define('jag-node', class extends HTMLElement {
 
 			this._is_moving = true;
 			this._$header.className = 'moving';
-			this.parentNode.addEventListener('mousemove', drag);
+			this.addEventListener('mousemove', drag);
+		});
+
+		this._$header.addEventListener('mouseleave', () => {
+			this.removeEventListener('mousemove', drag);
 		});
 
 		this._$header.addEventListener('mouseup', (e) => {
 			this._is_moving = false;
 			this._$header.className = '';
 			this._snap();
-			this.parentNode.removeEventListener('mousemove', drag);
+			this.removeEventListener('mousemove', drag);
 		});
 
 		this._$header.addEventListener('transitionend', () => {
