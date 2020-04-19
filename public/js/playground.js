@@ -146,8 +146,7 @@ class Playground extends HTMLElement {
 				if (!this._selected.has(child)) {
 					if (!this._selected.has(parent)) {
 						const child = e.getNodeEnd();
-						const {x, y, width} = child.getBoundingClientRect();
-						this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function() { return child; }, [child]);
+						this.popup(Playground.NOTICE_REMOVE_CHILD, child, function() { return child; }, [child]);
 					} else {
 						e.destroy();
 					}
@@ -163,8 +162,7 @@ class Playground extends HTMLElement {
 					if (this._selected.has(parent)) {
 						this._selected.delete(n);
 					} else {
-						const {x, y, width} = n.getBoundingClientRect();
-						this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function () { return n; }, [n]);
+						this.popup(Playground.NOTICE_REMOVE_CHILD, n, function () { return n; }, [n]);
 					}
 				} else {
 					n.removeAllEdges();
@@ -214,14 +212,23 @@ class Playground extends HTMLElement {
 
 			if (!this._popups) this._popups = [];
 
-			const {content, wx, wy, callback, highlights} = this._activePopup;
+			const {content, trackEl, callback, highlights} = this._activePopup;
+			const loc = trackEl.getBoundingClientRect();
+			const ix = loc.x, iy = loc.y, width = loc.width;
 
 			this._content.innerHTML = "";
 			this._content.appendChild(content.display);
 
 			const {x, y} = this._nodes_container.getBoundingClientRect();
-			this._content.style.left = (wx - x - 100) + "px";
-			this._content.style.top = (wy - y - 160) + "px";
+			this._content.style.left = (ix - x + (width / 2) - 100) + "px";
+			this._content.style.top = (iy - y - 160) + "px";
+
+			trackEl.addEventListener('change-position', (e) => {
+				const newLoc = trackEl.getBoundingClientRect();
+				const nx = newLoc.x, ny = newLoc.y;
+				this._content.style.left = (nx - x + (width / 2) - 100) + "px";
+				this._content.style.top = (ny - y - 160) + "px";
+			});
 
 			this._popupHighlights = highlights;
 
@@ -281,11 +288,10 @@ class Playground extends HTMLElement {
 		}
 	}
 
-	popup(content, x, y, callback, highlights = []) {
+	popup(content, trackEl, callback, highlights = []) {
 		this._popups.push({
 			content: content,
-			wx: x,
-			wy: y,
+			trackEl: trackEl,
 			callback: callback,
 			highlights: highlights
 		});

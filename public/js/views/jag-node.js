@@ -359,6 +359,8 @@ customElements.define('jag-node', class extends HTMLElement {
 				edge.setOrigin(c_center_x, c_center_y);
 			});
 		}
+
+		this.dispatchEvent(new CustomEvent('change-position', { detail: { x: x, y: y }}));
 	}
 
 	_applyName() {
