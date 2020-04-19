@@ -190,6 +190,10 @@ export default class Edge extends EventTarget {
 		this._childId = id;
 	}
 
+	getChildId() {
+		return this._childId;
+	}
+
 	setNodeEnd(node) {
 		this._node_end = node;
 		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to model

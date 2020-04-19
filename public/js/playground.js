@@ -10,7 +10,7 @@ import JAG from './models/jag.js';
 import JAGNode from './views/jag-node.js';
 import Edge from './views/edge.js';
 
-customElements.define('jag-playground', class extends HTMLElement {
+class Playground extends HTMLElement {
 
 	constructor() {
 		super();
@@ -27,9 +27,37 @@ customElements.define('jag-playground', class extends HTMLElement {
 		this._selected = new Set();
 		this._is_edge_being_created = false;
 
+		this._content = document.createElement('div');
+		this._content.className = "popup-box";
+		this._content.style.visibility = "hidden";
+		this.appendChild(this._content);
+
+		this._popups = [];
+		this._popupHighlights = [];
+
 		this._boundHandleEdgeSelected = this._handleEdgeSelected.bind(this);
 
 		this.initGlobalEvents();
+	}
+
+	static _createPopup(type, name, description, actions) {
+		const _p = document.createElement("p");
+		_p.classList.add("popup-content");
+		_p.classList.add(type);
+
+		const _name = document.createElement("span");
+		_name.className = "popup-name";
+		_name.innerText = name;
+
+		const _description = document.createElement("span");
+		_description.className = "popup-description";
+		_description.innerText = description;
+
+		_p.append(_name, _description);
+
+		_p.setAttributeNS(null, 'popup-type', type);
+
+		return { type: type, display: _p, actions: actions };
 	}
 
 	initGlobalEvents() {
@@ -102,16 +130,37 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	deleteSelected() {
-		for(let n of this._selected) {
-			if (n instanceof JAGNode) {
-				n.removeAllEdges();
-				this._nodes_container.removeChild(n);
-			} else if (n instanceof Edge) {
-				n.delete();
-			}
+		for (let e of this._selected) {
+			if (e instanceof Edge) {
+				const parent = e.getNodeOrigin();
 
-			this._selected.delete(n);
+				if (!this._selected.has(parent)) {
+					const child = e.getNodeEnd();
+					const {x, y, width} = child.getBoundingClientRect();
+					this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function() { return child; }, [child]);
+				} else {
+					e.destroy();
+				}
+			}
 		}
+
+		for (let n of this._selected) {
+			if (n instanceof JAGNode) {
+				const parent = n.getParent();
+
+				if (parent && !this._selected.has(parent)) {
+					const {x, y, width} = n.getBoundingClientRect();
+					this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function () { return n; }, [n]);
+				} else {
+					n.removeAllEdges();
+					this._nodes_container.removeChild(n);
+				}
+
+				n.setSelected(false);
+			}
+		}
+
+		this._selected.clear();
 	}
 
 	clearPlayground() {
@@ -133,6 +182,102 @@ customElements.define('jag-playground', class extends HTMLElement {
 
 	handleItemSelected(item) {
 		this._addNode(item);
+	}
+
+	_displayNextPopup() {
+		if (this._popupCallback) {
+			this._popupCallback();
+		}
+
+		for (let highlight of this._popupHighlights) {
+			highlight.classList.remove(`${this._activePopup.content.type}-highlight`);
+		}
+
+		this._popupHighlights = [];
+
+		if (this._popups.length > 0) {
+			this._activePopup = this._popups.splice(0, 1)[0];
+
+			if (!this._popups) this._popups = [];
+
+			const {content, wx, wy, callback, highlights} = this._activePopup;
+
+			this._content.innerHTML = "";
+			this._content.appendChild(content.display);
+
+			const {x, y} = this._nodes_container.getBoundingClientRect();
+			this._content.style.left = (wx - x - 100) + "px";
+			this._content.style.top = (wy - y - 160) + "px";
+
+			this._popupHighlights = highlights;
+
+			for (let highlight of highlights) {
+				highlight.classList.add(`${content.type}-highlight`);
+			}
+
+			if (!this._popupInterval && !content.actions) {
+				this._popupInterval = setInterval(this._displayNextPopup.bind(this), 4000);
+			} else if (this._popupInterval && content.actions) {
+				clearInterval(this._popupInterval);
+				this._popupInterval = undefined;
+			}
+
+			if (content.actions) {
+				for (const {text, color, bgColor, action} of content.actions) {
+					const actionBtn = document.createElement('button');
+					actionBtn.className = "popup-action";
+					actionBtn.innerText = text;
+
+					if (color) actionBtn.style.color = color;
+					if (bgColor) actionBtn.style.backgroundColor = bgColor;
+
+					actionBtn.onclick = function () {
+						if (action) {
+							if (callback) {
+								action(callback());
+							} else {
+								action();
+							}
+						} else {
+							callback();
+						}
+
+						this._displayNextPopup();
+					}.bind(this);
+
+					this._content.appendChild(actionBtn);
+				}
+			} else if (callback) {
+				this._popupCallback = callback;
+			}
+
+			this._content.style.visibility = "visible";
+		} else {
+			if (this._popupInterval) {
+				clearInterval(this._popupInterval);
+				this._popupInterval = undefined;
+			}
+
+			this._popupCallback = undefined;
+
+			this._activePopup = undefined;
+
+			this._content.style.visibility = "hidden";
+		}
+	}
+
+	popup(content, x, y, callback, highlights = []) {
+		this._popups.push({
+			content: content,
+			wx: x,
+			wy: y,
+			callback: callback,
+			highlights: highlights
+		});
+
+		if (!this._popupInterval && !this._activePopup) {
+			this._displayNextPopup();
+		}
 	}
 
 	handleRefresh(item) {
@@ -229,6 +374,13 @@ customElements.define('jag-playground', class extends HTMLElement {
 	}
 
 	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, parent = undefined) {
+		if (parent) {
+			for (const child of parent.getChildren()) {
+				child.removeAllEdges();
+				this._nodes_container.removeChild(child);
+			}
+		}
+
 		const node = parent || this.addNode(sub_item, expanded);
 		
 		if (parent == undefined) 
@@ -319,6 +471,25 @@ customElements.define('jag-playground', class extends HTMLElement {
 			this._selected.delete(e.target);
 		}
 	}
-});
+}
+
+Playground.POPUP_TYPES = {
+	WARNING: 'popup-warning',
+	NOTICE: 'popup-notice',
+	INFO: 'popup-info'
+};
+
+Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
+	{ text: "Yes", color: "black", bgColor: "red", action: function (node) {
+		const edge = node.getParentEdge();
+		const id = edge.getChildId();
+		const parent = node.getParent();
+
+		parent.removeChild(edge, id);
+	}},
+	{ text: "No", color: "white", bgColor: "black" }
+]);
+
+customElements.define('jag-playground', Playground);
 
 export default customElements.get('jag-playground');

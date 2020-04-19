@@ -425,3 +425,59 @@ jag-playground svg text.annotation-label {
 jag-playground svg tspan.annotation-key {
 	fill: blue;
 }
+
+jag-playground .popup-box {
+	background-color: rgba(0, 0, 0, 0.75);
+	border: 3px solid black;
+	border-radius: 6px;
+	position: absolute;
+	width: 200px;
+	height: 150px;
+	color: white;
+	z-index: 10;
+}
+
+jag-playground .popup-content {
+	padding: 10px;
+}
+
+jag-playground .popup-warning:before {
+	content: "Warning: ";
+}
+
+jag-playground .popup-notice:before {
+	content: "Notice: ";
+}
+
+jag-playground div.popup-box span {
+	display: inline-block;
+}
+
+jag-playground .popup-name {
+	font-weight: bold;
+	margin: 10px 0 10px 0;
+}
+
+jag-playground .popup-warning span.popup-name {
+	color: red;
+}
+
+jag-playground .popup-notice span.popup-name {
+	color: orange;
+}
+
+jag-playground .popup-description {
+	color: white;
+}
+
+jag-playground .popup-warning-highlight {
+	box-shadow: 0 3px 20px rgba(255, 0, 0, 0.33);
+}
+
+jag-playground .popup-notice-highlight {
+	box-shadow: 0 3px 20px rgba(255, 150, 0, 0.33);
+}
+
+jag-playground .popup-action {
+	margin: 10px;
+}

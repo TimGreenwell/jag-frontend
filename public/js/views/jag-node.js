@@ -180,10 +180,26 @@ customElements.define('jag-node', class extends HTMLElement {
 			this.classList.remove('selected-node');
 	}
 
+	getParentEdge() {
+		if (this._in !== undefined) {
+			return this._in;
+		}
+	}
+
 	getParent() {
 		if (this._in !== undefined) {
 			return this._in.getNodeOrigin();
 		}
+	}
+
+	getChildren() {
+		const all_children = new Set();
+
+		for (const out_edge of this._outs) {
+			all_children.add(out_edge.getNodeEnd());
+		}
+
+		return all_children;
 	}
 
 	_initUI() {
