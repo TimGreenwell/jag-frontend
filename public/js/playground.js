@@ -309,6 +309,8 @@ class Playground extends HTMLElement {
 		}
 
 		this._selected.clear();
+
+		this._checkBounds();
 	}
 
 	clearPlayground() {
@@ -318,6 +320,8 @@ class Playground extends HTMLElement {
 		}
 
 		this._nodes.clear();
+
+		this._checkBounds();
 	}
 
 	fromClientToPlaygroundCoordinates(x, y) {
