@@ -39,7 +39,14 @@ class Playground extends HTMLElement {
 			down: this._createCardinal("down", 0, -1)
 		};
 
-		this._showCardinals({left: false, right: false, up: false, down: false});
+		this._canMoveView = {
+			left: false,
+			right: false,
+			up: false,
+			down: false
+		};
+
+		this._showCardinals(this._canMoveView);
 
 		this._popups = [];
 		this._popupHighlights = [];
@@ -90,28 +97,37 @@ class Playground extends HTMLElement {
 		}
 
 		if (nodes == this._nodes) {
-			this._showCardinals({
+			return this._showCardinals({
 				left: showLeft || false,
 				right: showRight || false,
 				up: showUp || false,
 				down: showDown || false
 			});
-		} else {
-			this._showCardinals({
-				left: showLeft,
-				right: showRight,
-				up: showUp,
-				down: showDown
-			});
 		}
+
+		return this._showCardinals({
+			left: showLeft,
+			right: showRight,
+			up: showUp,
+			down: showDown
+		});
 	}
 
 	_showCardinals(toggle = {left, right, up, down}) {
+		this._canMoveView = {
+			left: toggle.left != undefined ? toggle.left : this._canMoveView.left,
+			right: toggle.right != undefined ? toggle.right : this._canMoveView.right,
+			up: toggle.up != undefined ? toggle.up : this._canMoveView.up,
+			down: toggle.down != undefined ? toggle.down : this._canMoveView.down
+		};
+
 		for (const [key, value] of Object.entries(toggle)) {
 			if (value == true || value == false) {
 				this._cardinals[key].classList.toggle("visible", value);
 			}
 		}
+
+		return this._canMoveView;
 	}
 
 	static _createPopup(type, name, description, actions) {
@@ -442,6 +458,22 @@ class Playground extends HTMLElement {
 			} else {
 				this.deleteSelected();
 			}
+		} else if (e.key == 'ArrowLeft') {
+			if (this._canMoveView.left) {
+				this._dragView(1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
+			}
+		} else if (e.key == 'ArrowRight') {
+			if (this._canMoveView.right) {
+				this._dragView(-1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
+			}
+		} else if (e.key == 'ArrowUp') {
+			if (this._canMoveView.up) {
+				this._dragView(0, 1 * Playground.DEFAULT_ARROW_MULTIPLIER);
+			}
+		} else if (e.key == 'ArrowDown') {
+			if (this._canMoveView.down) {
+				this._dragView(0, -1 * Playground.DEFAULT_ARROW_MULTIPLIER);
+			}
 		}
 	}
 
@@ -659,6 +691,8 @@ Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.
 ]);
 
 Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;
+
+Playground.DEFAULT_ARROW_MULTIPLIER = 10;
 
 customElements.define('jag-playground', Playground);
 
