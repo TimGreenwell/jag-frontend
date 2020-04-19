@@ -141,13 +141,16 @@ class Playground extends HTMLElement {
 		for (let e of this._selected) {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
+				const child = e.getNodeEnd();
 
-				if (!this._selected.has(parent)) {
-					const child = e.getNodeEnd();
-					const {x, y, width} = child.getBoundingClientRect();
-					this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function() { return child; }, [child]);
-				} else {
-					e.destroy();
+				if (!this._selected.has(child)) {
+					if (!this._selected.has(parent)) {
+						const child = e.getNodeEnd();
+						const {x, y, width} = child.getBoundingClientRect();
+						this.popup(Playground.NOTICE_REMOVE_CHILD, x + (width / 2), y, function() { return child; }, [child]);
+					} else {
+						e.destroy();
+					}
 				}
 			}
 		}
@@ -514,22 +517,19 @@ Playground.POPUP_TYPES = {
 
 Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
 	{ text: "Yes", color: "black", bgColor: "red", action: function (node) {
-		this.deselectAll();
-
 		const edge = node.getParentEdge();
 		const id = edge.getChildId();
 		const parent = node.getParent();
 
+		parent.removeChild(edge, id);
+
 		const tree = node.getTree();
 
-		parent.removeChild(edge, id);
-		this._selected.add(node);
-
 		for (const node of tree) {
-			this._selected.add(node);
+			node.removeAllEdges();
+			this._nodes.delete(node);
+			this._nodes_container.removeChild(node);
 		}
-
-		this.deleteSelected();
 	}},
 	{ text: "No", color: "white", bgColor: "black" }
 ]);
