@@ -165,6 +165,8 @@ customElements.define('jag-node', class extends HTMLElement {
 	removeChild(edge, id) {
 		if (edge.getNodeEnd()) {
 			this._model.removeChild({ id: id, model: edge.getNodeEnd().model });
+			this._outs.delete(edge);
+			edge.destroy();
 		}
 	}
 
