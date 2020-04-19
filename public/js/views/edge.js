@@ -33,8 +33,10 @@ export default class Edge extends EventTarget {
 		this._anno_el.setAttribute('class', 'annotation-label');
 		this._anno_el.innerHTML = "@";
 		this._anno_el.style.visibility = "hidden";
+		this._anno_visibility = "hidden";
 		this._list_el = document.createElementNS(XMLNS, 'text');
 		this._list_el.setAttribute('class', 'annotations-list');
+		this._list_el.style.visibility = "hidden";
 		this._group.appendChild(this._edge_el);
 		this._group.appendChild(this._text_el);
 		this._group.appendChild(this._anno_el);
@@ -95,6 +97,7 @@ export default class Edge extends EventTarget {
 
 			if (iterable) {
 				this._createAnnotation("iterable", true);
+				this._anno_visibility = "visible";
 				this._anno_el.style.visibility = "visible";
 			}
 
@@ -105,6 +108,7 @@ export default class Edge extends EventTarget {
 					this._createAnnotation(annotation, annotations.get(annotation));
 				}
 			} else if (!iterable) {
+				this._anno_visibility = "hidden";
 				this._anno_el.style.visibility = "hidden";
 			}
 		}
@@ -149,9 +153,11 @@ export default class Edge extends EventTarget {
 		if (visible) {
 			this._edge_el.style.visibility = "visible";
 			this._text_el.style.visibility = "visible";
+			this._anno_el.style.visibility = this._anno_visibility;
 		} else {
 			this._edge_el.style.visibility = "hidden";
 			this._text_el.style.visibility = "hidden";
+			this._anno_el.style.visibility = "hidden";
 		}
 	}
 
