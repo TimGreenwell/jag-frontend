@@ -61,11 +61,15 @@ customElements.define('jag-library', class extends HTMLElement {
 					model: model
 				});
 
-				model.addEventListener('update', (event) => {
-					if (event.detail.property == 'name') {
+				model.addEventListener('update', (e) => {
+					const {property, extra} = e.detail;
+
+					if (property == 'name') {
 						h3.innerHTML = model.name;
-					} else if (event.detail.property == 'description') {
+					} else if (property == 'description') {
 						p.innerHTML = model.description;
+					} else if (property == "children") {
+						this._refreshItem(model);
 					}
 				});
 
