@@ -15,7 +15,7 @@ export default class JAGService extends EventTarget {
 
 	static async initialize() {
 		const db = await IndexedDBUtils.initStorage(
-			"somethingthatmakessenselikejags",
+			"jags",
 			1,
 			[JAGService.JAG_STORE]
 		);
