@@ -279,8 +279,13 @@ customElements.define('jag-node', class extends HTMLElement {
 			const scaleFactor = this.offsetWidth / this.getBoundingClientRect().width;
 
 			this.translate(e.movementX * scaleFactor, e.movementY * scaleFactor, e.shiftKey ? true : undefined);
+		}).bind(this);
 
-			this.dispatchEvent(new CustomEvent('drag', { detail: { x: e.movementX, y: e.movementY, shiftKey: e.shiftKey }}));
+		const stopDrag = (() => {
+			this._is_moving = false;
+			this._$header.className = '';
+			this._snap();
+			this.dispatchEvent(new CustomEvent('drag'));
 		}).bind(this);
 
 		this._$header.addEventListener('mousedown', (e) => {
@@ -291,17 +296,29 @@ customElements.define('jag-node', class extends HTMLElement {
 
 			this._is_moving = true;
 			this._$header.className = 'moving';
-			this.addEventListener('mousemove', drag);
+
+			this._$header.addEventListener('mousemove', () => {
+				e.stopPropagation();
+				drag(e);
+			});
+			
+			this.parentNode.addEventListener('mousemove', drag);
+
+			this._$header.addEventListener('mouseup', () => { 
+				stopDrag();
+				this.removeEventListener('mousemove', drag);
+				this.parentNode.removeEventListener('mousemove', drag);
+			});
+
+			this.parentNode.addEventListener('mouseup', () => { 
+				stopDrag();
+				this.removeEventListener('mousemove', drag);
+				this.parentNode.removeEventListener('mousemove', drag);
+			});
 		});
 
 		this._$header.addEventListener('mouseleave', () => {
 			this.removeEventListener('mousemove', drag);
-		});
-
-		this._$header.addEventListener('mouseup', (e) => {
-			this._is_moving = false;
-			this._$header.className = '';
-			this._snap();
 			this.removeEventListener('mousemove', drag);
 		});
 
