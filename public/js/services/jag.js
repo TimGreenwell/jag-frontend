@@ -2,7 +2,7 @@
  * @fileOverview JAG service.
  *
  * @author mvignati
- * @version 2.50
+ * @version 2.51
  */
 
 'use strict';
@@ -55,9 +55,17 @@ export default class JAGService extends EventTarget {
 	static store(model) {
 		JAGService._localStore(model);
 
-        // If a ServiceWorker link is available, request to store this model.
+        // If a ServiceWorker link is available,
         if (JAGService.LINK) {
-            JAGService.LINK.postMessage({ type: 'STORE', data: { model: model.toJSON() } });
+			// If JAG is a member of the static library,
+			if (JAGService.STATIC.has(model.urn)) {
+				// Log that the JAG will not be stored.
+				console.log(`JAG for ${model.urn} will not be stored as it is a member of the static library.`);
+			// Else,
+			} else {
+				// Send the model to the ServiceWorker to store.
+				JAGService.LINK.postMessage({ type: 'STORE', data: { model: model.toJSON() } });
+			}
         } else {
 			console.log("Cannot store model upstream: ServiceWorker not available.");
 		}
@@ -80,13 +88,13 @@ export default class JAGService extends EventTarget {
 	static async has(urn, callback) {
 		if (JAGService.CACHE.has(urn)) {
 			callback(true);
-			return;
+		} else if (JAGService.STATIC.has(urn)) {
+			callback(true);
+		} else {
+			JAGService.await('check', urn, false, (exists) => {
+				callback(exists);
+			});
 		}
-
-		JAGService.await('check', urn, false, (exists) => {
-			if (exists) callback(true);
-			else callback(JAGService.STATIC.has(urn));
-		});
 	}
 
 	static async get(urn, callback) {
@@ -94,38 +102,34 @@ export default class JAGService extends EventTarget {
 		if (JAGService.CACHE.has(urn)) {
 			// Fire the callback with the cached model.
 			callback(JAGService.CACHE.get(urn));
+		} else if (JAGService.STATIC.has(urn)) {
+			// Fire the callback with the static model.
+			callback(JAGService.STATIC.get(urn));
 		} else {
 			const handler = (model) => {
 				// If a definition does not exist,
 				if (model === undefined) {
-					// If the static library does not contain a definition,
-					if (!JAGService.STATIC.has(urn)) {
-						// If the undefined list does not contain a definition,
-						if (!JAGService.UNDEFINED.has(urn)) {
-							// Point this URN in the undefined list to a new undefined node.
-							JAGService.UNDEFINED.set(urn, new UndefinedJAG(urn));
-						}
-
-						// Fire the callback with the UndefinedJAG model and stop.
-						callback(JAGService.UNDEFINED.get(urn));
-						return;
+					// If the undefined list does not contain a definition,
+					if (!JAGService.UNDEFINED.has(urn)) {
+						// Point this URN in the undefined list to a new undefined node.
+						JAGService.UNDEFINED.set(urn, new UndefinedJAG(urn));
 					}
 
-					// Else, retrieve the definition from the static library.
-					model = JAGService.STATIC.get(urn);
+					// Fire the callback with the UndefinedJAG model and stop.
+					callback(JAGService.UNDEFINED.get(urn));
+				} else {
+					// Resolve the tree of children for this model.
+					JAGService.resolve(model, () => {
+						// Attach an update listener to this model.
+						model.addEventListener('update', JAGService._updateHandler);
+
+						// Store the model in the cache.
+						JAGService.CACHE.set(urn, model);
+
+						// Fire the callback with the model.
+						callback(model);
+					});
 				}
-
-				// Resolve the tree of children for this model.
-				JAGService.resolve(model, () => {
-					// Attach an update listener to this model.
-					model.addEventListener('update', JAGService._updateHandler);
-
-					// Store the model in the cache.
-					JAGService.CACHE.set(urn, model);
-
-					// Fire the callback with the model.
-					callback(model);
-				});
 			};
 
 			// Await an upstream model for this URN with the above handler.
@@ -406,7 +410,11 @@ export default class JAGService extends EventTarget {
 
 		for (let item of static_library)
 		{
-			JAGService.STATIC.set(item.urn, item);
+			JAGService.STATIC.set(item.urn, new JAG(item));
+		}
+
+		for (let urn of JAGService.STATIC.keys()) {
+			JAGService.store(JAGService.STATIC.get(urn));
 		}
 	}
 }
