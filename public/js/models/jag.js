@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.26
+ * @version 0.27
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -477,10 +477,6 @@ export default class JAG extends EventTarget {
 		return 0;
 	}
 
-	static fromJSON(jag_description) {
-		return new JAG(jag_description);
-	}
-
 	toJSON() {
 		const json = {
 			urn: this._urn,
@@ -543,10 +539,6 @@ export default class JAG extends EventTarget {
 		});
 
 		return json;
-	}
-
-	copied(urn) {
-		this.dispatchEvent(new CustomEvent('copy', {"detail": { "urn": urn }}));
 	}
 }
 

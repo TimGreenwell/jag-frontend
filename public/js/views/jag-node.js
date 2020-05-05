@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.71
+ * @version 0.77
  */
 
 
@@ -22,6 +22,12 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._boundUpdateHandler = this._updateHandler.bind(this);
 		this._boundDefineModel = this._defineModel.bind(this);
+		this._boundDrag = this._drag.bind(this);
+		this._boundMouseUp = this._mouseUp.bind(this);
+		this._boundNodeDrag = ((e) => {
+			e.stopPropagation();
+			this._drag(e);
+		});
 
 		this._initUI();
 		this._initHandlers();
@@ -337,23 +343,25 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.setTranslation(100, 100);
 	}
 
+	_drag(e) {
+		if (!this._is_moving)
+			return;
+
+		const scaleFactor = this.offsetWidth / this.getBoundingClientRect().width;
+
+		this.translate(e.movementX * scaleFactor, e.movementY * scaleFactor, e.shiftKey ? true : undefined);
+	}
+
+	_mouseUp() {
+		this._is_moving = false;
+		this._$header.className = '';
+		this._snap();
+		this.dispatchEvent(new CustomEvent('drag'));
+		this.removeEventListener('mousemove', this._boundNodeDrag);
+		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+	}
+
 	_initHandlers() {
-		const drag = (e => {
-			if (!this._is_moving)
-				return;
-
-			const scaleFactor = this.offsetWidth / this.getBoundingClientRect().width;
-
-			this.translate(e.movementX * scaleFactor, e.movementY * scaleFactor, e.shiftKey ? true : undefined);
-		}).bind(this);
-
-		const stopDrag = (() => {
-			this._is_moving = false;
-			this._$header.className = '';
-			this._snap();
-			this.dispatchEvent(new CustomEvent('drag'));
-		}).bind(this);
-
 		this._$header.addEventListener('mousedown', (e) => {
 			this._center_offset = {
 				x: this._$header.clientWidth / 2.0 - e.offsetX,
@@ -363,29 +371,13 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._is_moving = true;
 			this._$header.className = 'moving';
 
-			this._$header.addEventListener('mousemove', () => {
-				e.stopPropagation();
-				drag(e);
-			});
+			this._$header.addEventListener('mousemove', this._boundNodeDrag);
 			
-			this.parentNode.addEventListener('mousemove', drag);
+			this.parentNode.addEventListener('mousemove', this._boundDrag);
 
-			this._$header.addEventListener('mouseup', () => { 
-				stopDrag();
-				this.removeEventListener('mousemove', drag);
-				this.parentNode.removeEventListener('mousemove', drag);
-			});
+			this._$header.addEventListener('mouseup', this._boundMouseUp);
 
-			this.parentNode.addEventListener('mouseup', () => { 
-				stopDrag();
-				this.removeEventListener('mousemove', drag);
-				this.parentNode.removeEventListener('mousemove', drag);
-			});
-		});
-
-		this._$header.addEventListener('mouseleave', () => {
-			this.removeEventListener('mousemove', drag);
-			this.removeEventListener('mousemove', drag);
+			this.parentNode.addEventListener('mouseup', this._boundMouseUp);
 		});
 
 		this._$header.addEventListener('transitionend', () => {
@@ -395,6 +387,11 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$expand.addEventListener('click', () => {
 			this.expanded = !this.expanded;
 		});
+	}
+
+	detachHandlers() {
+		this.parentNode.removeEventListener('mouseup', this._boundMouseUp);
+		this.parentNode.removeEventListener('mousemove', this._boundDrag);
 	}
 
 	_updateHandler(e) {

@@ -3,10 +3,9 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.65
+ * @version 0.66
  */
 
-import JAG from './models/jag.js';
 import JAGNode from './views/jag-node.js';
 import Edge from './views/edge.js';
 
@@ -296,16 +295,13 @@ class Playground extends HTMLElement {
 			if (n instanceof JAGNode) {
 				const parent = n.getParent();
 
-				if (parent) {
-					if (this._selected.has(parent)) {
-						this._selected.delete(n);
-					} else {
-						this.popup(Playground.NOTICE_REMOVE_CHILD, n, function () { return n; }, [n]);
-					}
-				} else {
+				if (!parent || (parent && this._selected.has(parent))) {
 					n.removeAllEdges();
+					n.detachHandlers();
 					this._nodes.delete(n);
 					this._nodes_container.removeChild(n);
+				} else {
+					this.popup(Playground.NOTICE_REMOVE_CHILD, n, function () { return n; }, [n]);
 				}
 
 				n.setSelected(false);

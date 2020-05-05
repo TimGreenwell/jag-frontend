@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.48
+ * @version 0.49
  */
 
 import JAG from '../models/jag.js';
@@ -671,32 +671,32 @@ customElements.define('jag-properties', class extends HTMLElement {
 			let update = false;
 
 			if (window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)")) {
-				if (await JAGService.has(this._urn.value)) {
-					update = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
-				} else {
-					update = true;
-				}
-			}
+				JAGService.has(this._urn.value, (exists) => {
+					if (exists) {
+						update = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
+					} else {
+						update = true;
+					}
 
-			if (update) {
-				// Copy model with new URN.
-				let schema = this._model.toJSON();
-				schema.urn = urn;
-				let model = new JAG(schema);
-
-				// Update model references.
-				let old_model = this._model;
-				this._node.model = model;
-				this._model = model;
+					if (update) {
+						// Copy model with new URN.
+						let schema = this._model.toJSON();
+						schema.urn = urn;
+						let model = new JAG(schema);
 
 				// Remove unsaved box shadow on URN property input.
 				this._urn.classList.toggle("edited", false);
+						// Update model references.
+						this._node.model = model;
+						this._model = model;
 
-				// Store the new model.
-				await JAGService.store(model);
+						// Remove unsaved box shadow on URN property input.
+						this._urn.style.boxShadow = "none";
 
-				// Notify listeners of copied model.
-				old_model.copied(urn);
+						// Store the new model.
+						JAGService.store(model);
+					}
+				});
 			}
 		}
 	}

@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.26
+ * @version 0.27
  */
 
  import JAG from '../models/jag.js';
@@ -73,6 +73,10 @@ customElements.define('jag-library', class extends HTMLElement {
 					}
 				});
 
+				model.addEventListener('refresh', () => {
+					this._refreshItem(model);
+				});
+
 				li.addEventListener('click', (event) => {
 					this._getChildModels(model, new Map()).then(function (all_models) {
 						this.dispatchEvent(new CustomEvent('item-selected', {
@@ -113,12 +117,13 @@ customElements.define('jag-library', class extends HTMLElement {
 	async loadFromDB() {
 		this.clearItems();
 
-		let allAvailable = await JAGService.getAllAvailable();
-
-		for (let key of allAvailable) {
-			let model = await JAGService.get(key);
-			this.addItem(model);
-		}
+		JAGService.getAllAvailable((allAvailable) => {
+			for (let key of allAvailable) {
+				JAGService.get(key, (model) => {
+					this.addItem(model);
+				});
+			}
+		});
 	}
 
 	_initUI() {
@@ -181,7 +186,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async _createItem(e) {
-		this.addItem(await JAGService.get(e.detail.urn));
+		this.addItem(e.detail.model);
 	}
 
 	async refreshItem(model, refreshed = new Set()) {
