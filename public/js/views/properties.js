@@ -74,6 +74,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 					this._model.addEventListener('update', this._boundUpdate);
 				}
 			}
+		} else {
+			this._enableProperties(false);
 		}
 	}
 
