@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.17
+ * @version 0.18
  */
 
 import JAG from '../models/jag.js';
@@ -624,7 +624,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 				this._model = model;
 
 				// Remove unsaved box shadow on URN property input.
-				this._urn.style.boxShadow = "none";
+				this._urn.classList.toggle("edited", false);
 
 				// Store the new model.
 				await JAGService.store(model);
@@ -681,7 +681,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._execution.value = JAG.EXECUTION.NONE;
 		this._operator.value = JAG.OPERATOR.NONE;
 
-		this._urn.style.boxShadow = "none";
+		this._urn.classList.toggle("edited", false);
 
 		this._clearIO();
 		this._clearAnnotations();

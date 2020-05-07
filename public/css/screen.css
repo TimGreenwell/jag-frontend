@@ -124,6 +124,10 @@ jag-properties div label {
 	width: 8em;
 }
 
+jag-properties input.edited {
+	box-shadow: 0px 3px 5px orange;
+}
+
 jag-properties div > span.io-add {
 	cursor: pointer;
 	float: right;
