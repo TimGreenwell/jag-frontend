@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.2
+ * @version 0.21
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -149,7 +149,7 @@ export default class JAG extends EventTarget {
 	 */
 	addInput(input) {
 		this._inputs.push(input);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "input", "extra": { "inputs": this._inputs } } }));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "inputs", "extra": { "inputs": this._inputs } } }));
 	}
 
 	/**
@@ -160,7 +160,7 @@ export default class JAG extends EventTarget {
 	 */
 	addOutput(output) {
 		this._outputs.push(output);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "output", "extra": { "outputs": this._outputs } } }));
+		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "outputs", "extra": { "outputs": this._outputs } } }));
 	}
 
 	/**
