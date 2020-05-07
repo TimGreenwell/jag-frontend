@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.18
+ * @version 0.25
  */
 
 import JAG from '../models/jag.js';
@@ -90,6 +90,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 			this._enableProperties(true);
 			this._updateIO();
 			this._updateAnnotations();
+		}
+
+		for (const input of this.querySelectorAll("input")) {
+			input.title = input.value;
+			input.onchange = () => input.title = input.value;
 		}
 	}
 
@@ -685,6 +690,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		this._clearIO();
 		this._clearAnnotations();
+
+		for (const input of this.querySelectorAll("input")) {
+			input.title = '';
+		}
 	}
 
 	_clearIO() {
