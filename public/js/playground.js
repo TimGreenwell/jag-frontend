@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.29
+ * @version 0.31
  */
 
 import JAG from './models/jag.js';
@@ -564,7 +564,7 @@ class Playground extends HTMLElement {
 	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, parent = undefined) {
 		const node = parent || this.addNode(sub_item, expanded);
 		
-		node.setTranslation(x + node.clientWidth / 2.0, y);
+		node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
 		if (!sub_item.children)
 			return node;
