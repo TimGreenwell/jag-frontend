@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.66
+ * @version 0.67
  */
 
 import JAGNode from './views/jag-node.js';
@@ -623,6 +623,7 @@ class Playground extends HTMLElement {
 				const tree = child.getTree();
 				for (const node of tree) {
 					node.removeAllEdges();
+					node.detachHandlers();
 					this._nodes.delete(node);
 					this._nodes_container.removeChild(node);
 				}
