@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.27
+ * @version 0.35
  */
 
 import Playground from './playground.js';
@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', (e) => {
 			playground.addEventListener('selection', (e) => {
 				properties.handleSelectionUpdate(e.detail);
 				//ide.handleSelectionUpdate(e.detail);
+			});
+
+			playground.addEventListener('refresh', (e) => {
+				library.refreshItem(e.detail.model, e.detail.refreshed);
 			});
 		});
 	}).catch((error) => {

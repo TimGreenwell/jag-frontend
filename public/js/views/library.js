@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.21
+ * @version 0.26
  */
 
  import JAG from '../models/jag.js';
@@ -62,14 +62,14 @@ customElements.define('jag-library', class extends HTMLElement {
 				});
 
 				model.addEventListener('update', (e) => {
-					const {property, extra} = e.detail;
+					const {property} = e.detail;
 
 					if (property == 'name') {
 						h3.innerHTML = model.name;
 					} else if (property == 'description') {
 						p.innerHTML = model.description;
-					} else if (property == "children") {
-						this._refreshItem(model);
+					} else if (property == 'children') {
+						this.refreshItem(model);
 					}
 				});
 
@@ -184,12 +184,13 @@ customElements.define('jag-library', class extends HTMLElement {
 		this.addItem(await JAGService.get(e.detail.urn));
 	}
 
-	async _refreshItem(model) {
+	async refreshItem(model, refreshed = new Set()) {
 		this._getChildModels(model, new Map()).then(function (all_models) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
 					model: model,
-					model_set: all_models
+					model_set: all_models,
+					refreshed: refreshed
 				}
 			}))
 		}.bind(this));
@@ -207,7 +208,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 		this.addItem(model);
 
-		this._refreshItem(model);
+		this.refreshItem(model);
 	}
 });
 

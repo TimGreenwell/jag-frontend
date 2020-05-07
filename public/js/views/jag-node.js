@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.45
+ * @version 0.56
  */
 
 
@@ -180,6 +180,22 @@ customElements.define('jag-node', class extends HTMLElement {
 		return undefined;
 	}
 
+	getRoot() {
+		if (this._in) {
+			return this._in.getNodeOrigin().getRoot();
+		}
+
+		return this;
+	}
+
+	refresh(alreadyRefreshed = new Set()) {
+		if (this._in) {
+			return this._in.getNodeOrigin().getRootNode();
+		} else {
+			this.dispatchEvent(new CustomEvent('refresh', { detail: { model: this._model, refreshed: alreadyRefreshed } }));
+		}
+	}
+
 	getChildren() {
 		const all_children = new Set();
 
@@ -338,6 +354,8 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._applyOperator();
 		} else if (property == "name") {
 			this._applyName();
+		} else if (property == "children") {
+			this.refresh();
 		}
 	}
 
@@ -404,11 +422,11 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_animationRefresh() {
-		this._refresh();
+		this._resetLocation();
 		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
 	}
 
-	_refresh() {
+	_resetLocation() {
 		this.setTranslation(this._translation.x, this._translation.y);
 	}
 
@@ -419,7 +437,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	_snap() {
 		this._translation.z = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
 		this._translation.y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
-		this._refresh();
+		this._resetLocation();
 		// return [adj_x, adj_y];
 	}
 

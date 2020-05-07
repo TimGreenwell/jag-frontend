@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.31
+ * @version 0.58
  */
 
 import JAG from './models/jag.js';
@@ -258,6 +258,10 @@ class Playground extends HTMLElement {
 			}
 		});
 
+		node.addEventListener('refresh', (e) => {
+			this.dispatchEvent(new CustomEvent('refresh', { detail: e.detail }));
+		});
+
 		this._nodes.add(node);
 		this._nodes_container.appendChild(node);
 
@@ -439,21 +443,26 @@ class Playground extends HTMLElement {
 		}
 	}
 
-	handleRefresh(item) {
+	handleRefresh({ model, model_set, refreshed = new Set() }) {
 		const margin = 50;
 
 		for (let node of this._nodes) {
-			if (node.model === item.model) {
-				let expanded = true;
-				const parent = node.getParent();
+			if (!refreshed.has(node) && node.model === model) {
+				const root = node.getRoot();
 
-				if (parent !== undefined) {
-					expanded = parent.expanded;
+				if (root == node) {
+					const [x, y] = node.getPosition();
+
+					this._addNodeRecursive(model, model_set, true, margin, x, y, node);
+
+					const tree = node.getTree();
+
+					for (const node of tree) {
+						refreshed.add(node);
+					}
+				} else {
+					root.refresh(refreshed);
 				}
-
-				const [x, y] = node.getPosition();
-
-				this._addNodeRecursive(item.model, item.model_set, expanded, margin, x, y, node);
 			}
 		}
 	}
