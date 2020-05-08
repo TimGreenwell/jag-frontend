@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.07
+ * @version 0.15
  */
 
 import JAG from '../models/jag.js';
@@ -187,12 +187,34 @@ export default class Edge extends EventTarget {
 		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
 	}
 
+	getParentURN() {
+		return this._node_origin.getURN();
+	}
+
 	setChildId(id) {
 		this._childId = id;
 	}
 
 	getChildId() {
 		return this._childId;
+	}
+
+	setChildName(name) {
+		this._childName = name;
+		this._node_origin.setChildName(this._childId, name);
+	}
+
+	getChildName() {
+		return this._childName;
+	}
+
+	setChildDescription(description) {
+		this._childDescription = description;
+		this._node_origin.setChildDescription(this._childId, description);
+	}
+
+	getChildDescription() {
+		return this._childDescription;
 	}
 
 	setNodeEnd(node) {

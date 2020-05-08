@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.25
+ * @version 0.38
  */
 
 import JAG from '../models/jag.js';
@@ -61,8 +61,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 			const firstValue = selection.values().next().value;
 
 			if (firstValue._model) {
-				this._enableProperties(true);
-
 				this._node = firstValue;
 				this._model = this._node.model;
 
@@ -81,10 +79,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_updateProperties() {
 		this._urn.value = this._model.urn;
-		this._name.value =  this._model.name;
+		this._name.value =  this._node.getContextualName();
 		this._execution.value =  this._model.execution || 'none';
 		this._operator.value =  this._model.operator || 'none';
-		this._desc.value =  this._model.description;
+		this._desc.value =  this._node.getContextualDescription();
 
 		if (this._model instanceof UndefinedJAG) {
 			this._enableProperties(false);
@@ -511,16 +509,23 @@ customElements.define('jag-properties', class extends HTMLElement {
 	}
 
 	_initUI() {
+		const childOf_el = document.createElement('div');
+		this._childOf = document.createElement('p');
+		this._childOf.id = 'childOf';
+		childOf_el.appendChild(this._childOf);
+
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
 		urn_el.appendChild(this._urn);
 
 		const name_el = createPropertyElement('name-property', 'Name');
 		this._name = createTextInput('name-property');
+		this._name.className = "contextual";
 		name_el.appendChild(this._name);
 
 		const desc_el = createPropertyElement('desc-property', 'Description');
 		this._desc = createTextInput('desc-property');
+		this._desc.className = "contextual";
 		desc_el.appendChild(this._desc);
 
 		const execution_el = createPropertyElement('execution-property', 'Execution');
@@ -595,6 +600,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		this._enableProperties(false);
 
+		this.appendChild(childOf_el);
 		this.appendChild(urn_el);
 		this.appendChild(name_el);
 		this.appendChild(desc_el);
@@ -654,11 +660,19 @@ customElements.define('jag-properties', class extends HTMLElement {
 		});
 
 		this._name.addEventListener('keyup', e => {
-			this._model.name = this._name.value;
+			if (this._node.getParent()) {
+				this._node.setContextualName(this._name.value);
+			} else {
+				this._model.name = this._name.value;
+			}
 		});
 
 		this._desc.addEventListener('keyup', e => {
-			this._model.description = this._desc.value;
+			if (this._node.getParent()) {
+				this._node.setContextualDescription(this._desc.value);
+			} else {
+				this._model.description = this._desc.value;
+			}
 		});
 
 		this._execution.addEventListener('change', e => {
@@ -730,6 +744,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._input_elements.disabled = !enabled;
 		this._output_elements.disabled = !enabled;
 		this._export.disabled = !enabled;
+
+		if (enabled && this._node.getParent()) {
+			this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
+			this.classList.toggle('rootNode', false);
+		} else {
+			this.classList.toggle('rootNode', true);
+		}
 	}
 });
 

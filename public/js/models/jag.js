@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.21
+ * @version 0.26
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -207,6 +207,44 @@ export default class JAG extends EventTarget {
 				this.removeBinding(binding);
 
 		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
+	}
+
+	/**
+	 * Sets the name of the child with the given ID to the given name.
+	 *
+	 * @param {String} id ID of the child whose name will be set.
+	 * @param {String} name Name to set to.
+	 */
+	setChildName(id, name) {
+		for (const child of this._children) {
+			if (child.id == id) {
+				if (child.name != name) {
+					child.name = name;
+					this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
+				}
+
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Sets the description of the child with the given ID to the given description.
+	 *
+	 * @param {String} id ID of the child whose description will be set.
+	 * @param {String} description Description to set to.
+	 */
+	setChildDescription(id, description) {
+		for (const child of this._children) {
+			if (child.id == id) {
+				if (child.description != description) {
+					child.description = description;
+					this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
+				}
+
+				break;
+			}
+		}
 	}
 
 	/**
@@ -464,6 +502,9 @@ export default class JAG extends EventTarget {
 				urn: child.urn,
 				id: child.id
 			};
+
+			if (child.name) descriptor.name = child.name;
+			if (child.description) descriptor.description = child.description;
 
 			if (child.annotations && child.annotations.size > 0) {
 				descriptor.annotations = {};

@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.58
+ * @version 0.65
  */
 
 import JAG from './models/jag.js';
@@ -570,8 +570,12 @@ class Playground extends HTMLElement {
 		e.preventDefault();
 	}
 
-	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, parent = undefined) {
-		const node = parent || this.addNode(sub_item, expanded);
+	_addNodeRecursive(sub_item, model_set, expanded, margin, x, y, existing_node = undefined, context = undefined) {
+		const node = existing_node || this.addNode(sub_item, expanded);
+
+		if (context) {
+			if (context.name) node.setContextualName(context.name);
+		}
 		
 		node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
@@ -597,7 +601,7 @@ class Playground extends HTMLElement {
 			const local_preferred_size = this._getNodePreferredHeight(def, model_set);
 			y_offset += (local_preferred_size * node_height) / 2;
 
-			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset, existing_children.get(child.id));
+			const sub_node = this._addNodeRecursive(def, model_set, true, margin, x_offset, y_offset, existing_children.get(child.id), child);
 			y_offset += (local_preferred_size * node_height) / 2;
 
 			if (!existing_children.has(child.id)) {
@@ -605,6 +609,8 @@ class Playground extends HTMLElement {
 				edge.setNodeEnd(sub_node);
 				edge.addEventListener('selection', this._boundHandleEdgeSelected);
 			}
+
+			if (child.name) sub_node.setContextualName(child.name);
 		});
 
 		for (const [id, child] of existing_children.entries()) {

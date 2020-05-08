@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.56
+ * @version 0.71
  */
 
 
@@ -172,9 +172,21 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
+	getURN() {
+		return this._model.urn;
+	}
+
 	getParent() {
 		if (this._in) {
 			return this._in.getNodeOrigin();
+		}
+
+		return undefined;
+	}
+
+	getParentURN() {
+		if (this._in) {
+			return this._in.getParentURN();
 		}
 
 		return undefined;
@@ -204,6 +216,44 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 
 		return all_children;
+	}
+
+	setContextualName(name) {
+		if (this._in) {
+			this._in.setChildName(name);
+		}
+
+		this._applyName(name);
+	}
+
+	getContextualName() {
+		if (this._in) {
+			return this._in.getChildName() || this._model.name;
+		}
+
+		return this._model.name;
+	}
+
+	setContextualDescription(description) {
+		if (this._in) {
+			this._in.setChildDescription(description);
+		}
+	}
+
+	getContextualDescription() {
+		if (this._in) {
+			return this._in.getChildDescription() || this._model.description;
+		}
+
+		return this._model.description;
+	}
+
+	setChildName(id, name) {
+		this._model.setChildName(id, name);
+	}
+
+	setChildDescription(id, description) {
+		this._model.setChildDescription(id, description);
 	}
 
 	setSelected(is_selected, recursive = undefined) {
@@ -354,6 +404,19 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._applyOperator();
 		} else if (property == "name") {
 			this._applyName();
+		} else if (property == "children-meta") {
+			const meta_map = new Map();
+
+			e.detail.extra.children.forEach((child) => {
+				meta_map.set(child.id, { name: child.name, description: child.description });
+			});
+
+			this._outs.forEach((child_edge) => {
+				const child_meta = meta_map.get(child_edge.getChildId());
+
+				if (child_meta.name) child_edge.setChildName(child_meta.name);
+				if (child_meta.description) child_edge.setChildDescription(child_meta.description);
+			});
 		} else if (property == "children") {
 			this.refresh();
 		}
@@ -400,8 +463,9 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.dispatchEvent(new CustomEvent('change-position', { detail: { x: x, y: y }}));
 	}
 
-	_applyName() {
-		this._$header_name.innerHTML = this._model.name;
+	_applyName(override = undefined) {
+		this._$header_name.innerHTML = override || this.getContextualName();
+		this._snap();
 	}
 
 	_applyOperator() {
