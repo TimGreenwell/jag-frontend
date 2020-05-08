@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.38
+ * @version 0.47
  */
 
 import JAG from '../models/jag.js';
@@ -189,7 +189,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		const select_el = createSelect('binding-outputs', options.map(node => {
 
 			let label = node.id;
-			if (node.id != 'this') {
+			if (node.id != 'this' && node.id != 'any') {
 				label = node.model.name;
 				const order = this._model.getOrderForId(node.id);
 				if (order != 0) {
@@ -245,6 +245,37 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		// We can also "output" a value from this node's children's outputs.
 		this._model.getAvailableOutputs().forEach(node => options.push(node));
+
+		// We can also opt to accept any output with a matching name based on all available outputs.
+		if (this._model.inputs.length > 0 && this._model.children.length > 0) {
+			const output_properties = new Set();
+			const any_outputs = new Set();
+
+			for (const input of this._model.inputs) {
+				output_properties.add(`${input.name}:${input.type}`);
+			}
+
+			for (const child of this._model.children) {
+				child.model.outputs.forEach((child_output) => {
+					const fmt = `${child_output.name}:${child_output.type}`;
+					if (output_properties.has(fmt)) {
+						any_outputs.add(fmt);
+					} else {
+						output_properties.add(fmt);
+					}
+				});
+			}
+
+			if (any_outputs.size > 0) {
+				options.push({
+					id: 'any',
+					outputs: Array.from(any_outputs).map(output => {
+						const output_descriptor = output.split(':');
+						return {name: output_descriptor[0], type: output_descriptor[1]}
+					})
+				});
+			}
+		}
 
 		return options;
 	}
@@ -320,28 +351,54 @@ customElements.define('jag-properties', class extends HTMLElement {
 			output_select_el.addEventListener('change', function (e) {
 				const output_option = e.target.selectedOptions[0];
 
-				let valid_for_output = new Set();
+				let valid_input_values_for_output = new Set();
 
 				if (output_option) {
 					const provider = output_option.value.split(':');
 
+					const this_inputs_names = new Set();
+					this._model.inputs.forEach(input => this_inputs_names.add(input.name));
+
+					// TODO: Check if type matches selected output type (probably need to get output type first)
 					if (provider[0] == 'this') {
 						for (let option of input_select_el.options) {
-							valid_for_output.add(option.value);
+							valid_input_values_for_output.add(option.value);
 						}
 					} else {
 						// TODO: Check if type matches selected output type (probably need to get output type first)
-						this._model.outputs.forEach((output) => valid_for_output.add(`this:${output.name}`));
+						this._model.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
 
 						if (this._model.execution == JAG.EXECUTION.SEQUENTIAL) {
-							const order = this._model.getOrderForId(provider[0]);
+							if (provider[0] == 'any') {
+								const all_cumulative_outputs = new Set();
 
-							for (let child of this._model.children) {
-								if (child.model) {
-									if (this._model.getOrderForId(child.id) > order) {
-										for (let input of child.model.inputs) {
-											// TODO: Check if type matches selected output type (probably need to get output type first)
-											valid_for_output.add(`${child.id}:${input.name}`);
+								this._model.inputs.forEach(input => all_cumulative_outputs.add(input.name));
+
+								const valid_any_outputs_from_children = new Set();
+
+								for (const child of this._model.children) {
+									if (valid_any_outputs_from_children.has(provider[1])) {
+										child.model.inputs.forEach(input => valid_input_values_for_output.add(`${child.id}:${input.name}`));
+									}
+
+									child.model.outputs.forEach(output => {
+										if (all_cumulative_outputs.has(output.name)) {
+											valid_any_outputs_from_children.add(output.name)
+										} else {
+											all_cumulative_outputs.add(output.name);
+										}
+									});
+								}
+							} else {
+								const order = this._model.getOrderForId(provider[0]);
+
+								for (const child of this._model.children) {
+									if (child.model) {
+										if (this._model.getOrderForId(child.id) > order) {
+											for (const input of child.model.inputs) {
+												// TODO: Check if type matches selected output type (probably need to get output type first)
+												valid_input_values_for_output.add(`${child.id}:${input.name}`);
+											}
 										}
 									}
 								}
@@ -349,7 +406,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 						}
 					}
 
-					toggleSelectValues(input_select_el, valid_for_output);
+					toggleSelectValues(input_select_el, valid_input_values_for_output);
 				}
 
 				this._previous_value = output_option.value;
@@ -375,8 +432,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 			let output_label = document.createElement("input");
 			output_label.disabled = true;
 
-			if (binding.provider.id == 'this') {
-				output_label.value = `this:${binding.provider.property}`;
+			if (binding.provider.id == 'this' || binding.provider.id == 'any') {
+				output_label.value = `${binding.provider.id}:${binding.provider.property}`
 			} else {
 				const provider_node = this._model.getCanonicalNode(binding.provider.id);
 				output_label.value = `${provider_node.model.name}:${binding.provider.property}`;
@@ -394,8 +451,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 			let input_label = document.createElement("input");
 			input_label.disabled = true;
 
-			if (binding.consumer.id == 'this') {
-				input_label.value = `this:${binding.consumer.property}`;
+			if (binding.consumer.id == 'this' || binding.consumer.id == 'any') {
+				input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
 			} else {
 				const consumer_node = this._model.getCanonicalNode(binding.consumer.id);
 				input_label.value = `${consumer_node.model.name}:${binding.consumer.property}`;
