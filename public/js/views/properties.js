@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.47
+ * @version 0.48
  */
 
 import JAG from '../models/jag.js';
@@ -252,16 +252,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 			const any_outputs = new Set();
 
 			for (const input of this._model.inputs) {
-				output_properties.add(`${input.name}:${input.type}`);
+				output_properties.add(input.name);
 			}
 
 			for (const child of this._model.children) {
 				child.model.outputs.forEach((child_output) => {
-					const fmt = `${child_output.name}:${child_output.type}`;
-					if (output_properties.has(fmt)) {
-						any_outputs.add(fmt);
+					if (output_properties.has(child_output.name)) {
+						any_outputs.add(child_output);
 					} else {
-						output_properties.add(fmt);
+						output_properties.add(child_output.name);
 					}
 				});
 			}
@@ -269,10 +268,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			if (any_outputs.size > 0) {
 				options.push({
 					id: 'any',
-					outputs: Array.from(any_outputs).map(output => {
-						const output_descriptor = output.split(':');
-						return {name: output_descriptor[0], type: output_descriptor[1]}
-					})
+					outputs: Array.from(any_outputs)
 				});
 			}
 		}
