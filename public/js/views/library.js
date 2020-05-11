@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.27
+ * @version 0.28
  */
 
  import JAG from '../models/jag.js';
@@ -74,7 +74,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				});
 
 				model.addEventListener('refresh', () => {
-					this._refreshItem(model);
+					this.refreshItem(model);
 				});
 
 				li.addEventListener('click', (event) => {
