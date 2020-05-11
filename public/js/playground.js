@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.67
+ * @version 0.69
  */
 
 import JAGNode from './views/jag-node.js';
@@ -571,6 +571,7 @@ class Playground extends HTMLElement {
 
 		if (context) {
 			if (context.name) node.setContextualName(context.name);
+			if (context.description) node.setContextualDescription(context.description);
 		}
 		
 		node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
@@ -607,6 +608,7 @@ class Playground extends HTMLElement {
 			}
 
 			if (child.name) sub_node.setContextualName(child.name);
+			if (child.description) sub_node.setContextualDescription(child.description);
 		});
 
 		for (const [id, child] of existing_children.entries()) {

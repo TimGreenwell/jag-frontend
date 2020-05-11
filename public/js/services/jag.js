@@ -2,7 +2,7 @@
  * @fileOverview JAG service.
  *
  * @author mvignati
- * @version 2.51
+ * @version 2.62
  */
 
 'use strict';
@@ -396,6 +396,22 @@ export default class JAGService extends EventTarget {
 		} else {
 			callback(fallback);
 		}
+	}
+
+	static getDirect(urn) {
+		if (JAGService.CACHE.has(urn)) {
+			return JAGService.CACHE.get(urn);
+		} else if (JAGService.UNDEFINED.has(urn)) {
+			return JAGService.UNDEFINED.get(urn);
+		}
+
+		const model = new UndefinedJAG(urn);
+		JAGService.UNDEFINED.set(urn, model);
+
+		// Await a model for this URN with an empty callback.
+		JAGService.await('model', urn, undefined, () => {});
+
+		return model;
 	}
 	
 	static async loadFromFile(path) {

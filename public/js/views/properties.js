@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.49
+ * @version 0.57
  */
 
 import JAG from '../models/jag.js';
@@ -79,10 +79,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_updateProperties() {
 		this._urn.value = this._model.urn;
-		this._name.value =  this._node.getContextualName();
+		this._name.value = this._node.getContextualName();
 		this._execution.value =  this._model.execution || 'none';
 		this._operator.value =  this._model.operator || 'none';
-		this._desc.value =  this._node.getContextualDescription();
+		this._desc.value = this._node.getContextualDescription();
 
 		if (this._model instanceof UndefinedJAG) {
 			this._enableProperties(false);
@@ -256,13 +256,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 			}
 
 			for (const child of this._model.children) {
-				child.model.outputs.forEach((child_output) => {
-					if (output_properties.has(child_output.name)) {
-						any_outputs.add(child_output);
-					} else {
-						output_properties.add(child_output.name);
-					}
-				});
+				if (child.model) {
+					child.model.outputs.forEach((child_output) => {
+						if (output_properties.has(child_output.name)) {
+							any_outputs.add(child_output);
+						} else {
+							output_properties.add(child_output.name);
+						}
+					});
+				}
 			}
 
 			if (any_outputs.size > 0) {
@@ -432,7 +434,16 @@ customElements.define('jag-properties', class extends HTMLElement {
 				output_label.value = `${binding.provider.id}:${binding.provider.property}`
 			} else {
 				const provider_node = this._model.getCanonicalNode(binding.provider.id);
-				output_label.value = `${provider_node.model.name}:${binding.provider.property}`;
+
+				let provider_name = binding.provider.id;
+
+				if (provider_node.name) {
+					provider_name = provider_node.name;
+				} else if (provider_node.model) {
+					provider_name = provider_node.model.name;
+				}
+
+				output_label.value = `${provider_name}:${binding.provider.property}`;
 			}
 
 			output_label.className = "binding output";
@@ -451,7 +462,16 @@ customElements.define('jag-properties', class extends HTMLElement {
 				input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
 			} else {
 				const consumer_node = this._model.getCanonicalNode(binding.consumer.id);
-				input_label.value = `${consumer_node.model.name}:${binding.consumer.property}`;
+
+				let consumer_name = binding.consumer.id;
+
+				if (consumer_node.name) {
+					consumer_name = consumer_node.name;
+				} else if (consumer_node.model) {
+					consumer_name = consumer_node.model.name;
+				}
+
+				input_label.value = `${consumer_name}:${binding.consumer.property}`;
 			}
 
 			input_label.className = "binding input";
@@ -798,9 +818,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._output_elements.disabled = !enabled;
 		this._export.disabled = !enabled;
 
-		if (enabled && this._node.getParent()) {
+		if ((enabled && this._node.getParent()) || (this._model instanceof UndefinedJAG && this._node.getParent())) {
 			this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
 			this.classList.toggle('rootNode', false);
+			this._name.disabled = false;
+			this._desc.disabled = false;
 		} else {
 			this.classList.toggle('rootNode', true);
 		}

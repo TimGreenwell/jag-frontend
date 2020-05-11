@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.28
+ * @version 0.32
  */
 
  import JAG from '../models/jag.js';
@@ -178,11 +178,13 @@ customElements.define('jag-library', class extends HTMLElement {
 			}
 		}
 
-		// Not found; update available JAGs in the library to pull newly defined (and Undefined) JAGs.
-		await this.loadFromDB();
-
-		// Call this function again for this URN. There will be a defined or undefined JAG available for this URN.
-		return this._getDefinitionForURN(urn);
+		// Make an attempt to get a directly available model from JAGService (such as from cache or
+		// undefined list), else creates a new UndefinedJAG in JAGService and awaits a new model
+		// definition, which will be caught by global handler to update library. Adds the undefined
+		// model to the library for access in above loop later.
+		const model = JAGService.getDirect(urn);
+		this.addItem(model);
+		return model;
 	}
 
 	async _createItem(e) {
