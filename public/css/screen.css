@@ -120,19 +120,40 @@ jag-properties div {
 	padding: 0.75em;
 }
 
-jag-properties #childOf {
-	background-color: blue;
+jag-properties .special {
 	font-weight: bold;
-	color: white;
 	border-radius: 0.5em;
 	padding: 0.5em;
+}
+
+jag-properties #childOf {
+	background-color: blue;
+	color: white;
+}
+
+jag-properties #undefinedJAG {
+	background-color: red;
+	color: white;
+}
+
+jag-properties #leafNode {
+	background-color: green;
+	color: white;
 }
 
 jag-properties:not(.rootNode) input.contextual {
 	box-shadow: 0px 3px 5px blue;
 }
 
-jag-properties.rootNode #childOf {
+jag-properties.rootNode .childOfNotice {
+	display: none;
+}
+
+jag-properties.definedModel .undefinedJAGNotice {
+	display: none;
+}
+
+jag-properties.nonLeafNode .leafNodeNotice {
 	display: none;
 }
 

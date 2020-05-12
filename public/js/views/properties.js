@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.57
+ * @version 0.70
  */
 
 import JAG from '../models/jag.js';
@@ -583,9 +583,27 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_initUI() {
 		const childOf_el = document.createElement('div');
+		childOf_el.className = 'special-wrapper childOfNotice';
 		this._childOf = document.createElement('p');
+		this._childOf.className = 'special childOfNotice';
 		this._childOf.id = 'childOf';
 		childOf_el.appendChild(this._childOf);
+
+		const undefinedJAG_el = document.createElement('div');
+		undefinedJAG_el.className = 'special-wrapper undefinedJAGNotice';
+		this._undefinedJAG = document.createElement('p');
+		this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
+		this._undefinedJAG.className = 'special undefinedJAGNotice';
+		this._undefinedJAG.id = 'undefinedJAG';
+		undefinedJAG_el.appendChild(this._undefinedJAG);
+
+		const leafNode_el = document.createElement('div');
+		leafNode_el.className = 'special-wrapper leafNodeNotice';
+		this._leafNode = document.createElement('p');
+		this._leafNode.innerHTML = 'Possible leaf node: it is a child without a model.';
+		this._leafNode.className = 'special leafNodeNotice';
+		this._leafNode.id = 'leafNode';
+		leafNode_el.appendChild(this._leafNode);
 
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
@@ -674,6 +692,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._enableProperties(false);
 
 		this.appendChild(childOf_el);
+		this.appendChild(undefinedJAG_el);
+		this.appendChild(leafNode_el);
 		this.appendChild(urn_el);
 		this.appendChild(name_el);
 		this.appendChild(desc_el);
@@ -825,6 +845,17 @@ customElements.define('jag-properties', class extends HTMLElement {
 			this._desc.disabled = false;
 		} else {
 			this.classList.toggle('rootNode', true);
+		}
+
+		if (enabled || (!enabled && !this._model)) {
+			this.classList.toggle('definedModel', true);
+			this.classList.toggle('nonLeafNode', true);
+		} else if (this._model instanceof UndefinedJAG) {
+			this.classList.toggle('definedModel', false);
+
+			if (this._node.getParent()) {
+				this.classList.toggle('nonLeafNode', false);
+			}
 		}
 	}
 });
