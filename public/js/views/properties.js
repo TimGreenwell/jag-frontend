@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.77
+ * @version 0.79
  */
 
 import JAG from '../models/jag.js';
@@ -717,33 +717,50 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	async _updateURN(urn) {
 		if (this._urn.value != this._model.urn) {
-			let update = false;
+			let update = undefined;
 
 			if (window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)")) {
 				JAGService.has(this._urn.value, (exists) => {
 					if (exists) {
 						update = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
-					} else {
-						update = true;
 					}
 
-					if (update) {
+					if (!exists || update) {
 						// Copy model with new URN.
 						let schema = this._model.toJSON();
 						schema.urn = urn;
-						let model = new JAG(schema);
 
-				// Remove unsaved box shadow on URN property input.
-				this._urn.classList.toggle("edited", false);
-						// Update model references.
-						this._node.model = model;
-						this._model = model;
+						if (update) {
+							JAGService.get(this._urn.value, (m) => {
+								let model = m;
+
+								if (m instanceof UndefinedJAG) {
+									model = new JAG(schema);
+									m.defined(model);
+								} else {
+									Object.assign(model, schema);
+								}
+
+								// Update model references.
+								this._node.model = model;
+								this._model = model;
+
+								// Store the updated model.
+								JAGService.store(model);
+							});
+						} else {
+							const model = new JAG(schema);
+
+							// Update model references.
+							this._node.model = model;
+							this._model = model;
+
+							// Store the new model.
+							JAGService.store(model);
+						}
 
 						// Remove unsaved box shadow on URN property input.
-						this._urn.style.boxShadow = "none";
-
-						// Store the new model.
-						JAGService.store(model);
+						this._urn.classList.toggle("edited", false);
 					}
 				});
 			}

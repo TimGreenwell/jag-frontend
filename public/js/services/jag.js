@@ -2,7 +2,7 @@
  * @fileOverview JAG service.
  *
  * @author mvignati
- * @version 2.62
+ * @version 2.68
  */
 
 'use strict';
@@ -107,7 +107,7 @@ export default class JAGService extends EventTarget {
 			callback(JAGService.STATIC.get(urn));
 		} else {
 			const handler = (model) => {
-				// If a definition does not exist,
+				// If link is not available for upstream model,
 				if (model === undefined) {
 					// If the undefined list does not contain a definition,
 					if (!JAGService.UNDEFINED.has(urn)) {
@@ -117,6 +117,10 @@ export default class JAGService extends EventTarget {
 
 					// Fire the callback with the UndefinedJAG model and stop.
 					callback(JAGService.UNDEFINED.get(urn));
+				// Else, if no model is available,
+				} else if (model instanceof UndefinedJAG) {
+					callback(model);
+				// Else, if a model is available,
 				} else {
 					// Resolve the tree of children for this model.
 					JAGService.resolve(model, () => {
