@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.70
+ * @version 0.77
  */
 
 import JAG from '../models/jag.js';
@@ -99,37 +99,41 @@ customElements.define('jag-properties', class extends HTMLElement {
 	}
 
 	_addInput(e) {
-		const name = window.prompt('Input name');
-		if(name === null)
-			return;
+		if (this._model && !(this._model instanceof UndefinedJAG)) {
+			const name = window.prompt('Input name');
+			if(name === null)
+				return;
 
-		const type = window.prompt('Input type');
-		if (type === null)
-			return;
+			const type = window.prompt('Input type');
+			if (type === null)
+				return;
 
-		const input = {
-			name: name,
-			type: type
-		};
-		
-		this._model.addInput(input);
+			const input = {
+				name: name,
+				type: type
+			};
+
+			this._model.addInput(input);
+		}
 	}
 
 	_addOutput(e) {
-		const name = window.prompt('Output name');
-		if(name === null)
-			return;
+		if (this._model && !(this._model instanceof UndefinedJAG)) {
+			const name = window.prompt('Output name');
+			if(name === null)
+				return;
 
-		const type = window.prompt('Output type');
-		if (type === null)
-			return;
+			const type = window.prompt('Output type');
+			if (type === null)
+				return;
 
-		const output = {
-			name: name,
-			type: type
-		};
+			const output = {
+				name: name,
+				type: type
+			};
 
-		this._model.addOutput(output);
+			this._model.addOutput(output);
+		}
 	}
 
 	_addAnnotation(id) {
@@ -607,16 +611,17 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
+		this._urn.className = 'directProperty';
 		urn_el.appendChild(this._urn);
 
 		const name_el = createPropertyElement('name-property', 'Name');
 		this._name = createTextInput('name-property');
-		this._name.className = "contextual";
+		this._name.className = "directProperty contextual";
 		name_el.appendChild(this._name);
 
 		const desc_el = createPropertyElement('desc-property', 'Description');
 		this._desc = createTextInput('desc-property');
-		this._desc.className = "contextual";
+		this._desc.className = "directProperty contextual";
 		desc_el.appendChild(this._desc);
 
 		const execution_el = createPropertyElement('execution-property', 'Execution');
@@ -630,7 +635,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value: JAG.EXECUTION.PARALLEL,
 			text: 'Parallel'
 		}]);
-
+		this._execution.className = 'directProperty';
 		execution_el.appendChild(this._execution);
 
 		const operator_el = createPropertyElement('operator-property', 'Operator');
@@ -644,7 +649,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value: JAG.OPERATOR.OR,
 			text: 'Or'
 		}]);
-
+		this._operator.className = 'directProperty';
 		operator_el.appendChild(this._operator);
 
 		// Create inputs area
@@ -657,6 +662,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		inputs_el.appendChild(input_add);
 
 		this._inputs = createEmptyInputContainer('inputs-property');
+		this._inputs.className = 'directProperty';
 		inputs_el.appendChild(this._inputs);
 
 		// Create outputs area
@@ -669,18 +675,21 @@ customElements.define('jag-properties', class extends HTMLElement {
 		outputs_el.appendChild(output_add);
 
 		this._outputs = createEmptyInputContainer('outputs-property');
+		this._outputs.className = 'directProperty';
 		outputs_el.appendChild(this._outputs);
 
 		// Create bindings area
 		const bindings_el = createPropertyElement('bindings-property', 'Bindings');
 		
 		this._bindings = createEmptyInputContainer('bindings-property');
+		this._bindings.className = 'directProperty';
 		bindings_el.appendChild(this._bindings);
 
 		// Create annotation area
 		const annotations_el = createPropertyElement('annotations-property', 'Annotations');
 
 		this._annotations = createEmptyInputContainer('annotations-property');
+		this._annotations.className = 'directProperty';
 		annotations_el.appendChild(this._annotations);
 
 		// Create export area
