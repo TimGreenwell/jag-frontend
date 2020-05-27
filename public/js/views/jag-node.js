@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.77
+ * @version 0.87
  */
 
 
@@ -56,6 +56,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._applyName();
 		this._applyOperator();
+		this._applyExecution();
 	}
 
 	get model() {
@@ -336,9 +337,13 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$expand.className = 'expand';
 		this._$expand.innerHTML = '>';
 
+		this._$concurrency = document.createElement('div');
+		this._$concurrency.className = 'concurrency';
+
 		this.appendChild(this._$header);
 		this.appendChild(this._$connector);
 		this.appendChild(this._$expand);
+		this.appendChild(this._$concurrency);
 
 		this.setTranslation(100, 100);
 	}
@@ -399,6 +404,8 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		if (property == "operator") {
 			this._applyOperator();
+		} else if (property == "execution") {
+			this._applyExecution();
 		} else if (property == "name") {
 			this._applyName();
 		} else if (property == "children-meta") {
@@ -480,6 +487,26 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._$connector.style.display = 'block';
 
 		this._snap();
+	}
+
+	_applyExecution() {
+		this._$concurrency.style.display = 'none';
+
+		if (this._model.execution != JAG.EXECUTION.SEQUENTIAL)
+			return;
+
+		if (!this._model.children || this._model.children.length == 0)
+			return;
+
+		for (const child of this._model.children) {
+			console.log(child);
+			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
+				return;
+			}
+		}
+
+		this._$concurrency.style.display = "block";
+		this._$concurrency.innerHTML = "&#xf0c0;";
 	}
 
 	_animationRefresh() {

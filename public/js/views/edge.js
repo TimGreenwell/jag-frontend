@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.16
+ * @version 0.26
  */
 
 import JAG from '../models/jag.js';
@@ -37,10 +37,13 @@ export default class Edge extends EventTarget {
 		this._list_el = document.createElementNS(XMLNS, 'text');
 		this._list_el.setAttribute('class', 'annotations-list');
 		this._list_el.style.visibility = "hidden";
+		this._part_el = document.createElementNS(XMLNS, 'text');
+		this._part_el.setAttribute('class', 'participation-label');
 		this._group.appendChild(this._edge_el);
 		this._group.appendChild(this._text_el);
 		this._group.appendChild(this._anno_el);
 		this._group.appendChild(this._list_el);
+		this._group.appendChild(this._part_el);
 
 		this._parent = parent;
 		parent.appendChild(this._group);
@@ -66,6 +69,14 @@ export default class Edge extends EventTarget {
 			this._updateStrokeDash(data.operator);
 		} else if (property == "annotations") {
 			this._updateAnnotations(data.id, data.annotations, data.iterable);
+		}
+	}
+
+	_showParticipation(type) {
+		if (type == 'atomic') {
+			this._part_el.innerHTML = "&#xf406;"; //&#xf007;";
+		} else if (type == 'conjunctive') {
+			this._part_el.innerHTML = "&#xf4ce;";
 		}
 	}
 
@@ -107,8 +118,15 @@ export default class Edge extends EventTarget {
 					this._anno_el.style.visibility = "visible";
 				}
 
-				for (let annotation of annotations.keys()) {
-					this._createAnnotation(annotation, annotations.get(annotation));
+				for (const annotation of annotations.keys()) {
+					const value = annotations.get(annotation);
+					this._createAnnotation(annotation, value);
+				}
+
+				if (annotations.has('atomic') && annotations.get('atomic') == 'true') {
+					this._showParticipation('atomic');
+				} else if (annotations.has('conjunctive') && annotations.get('conjunctive') == 'true') {
+					this._showParticipation('conjunctive');
 				}
 			} else if (!iterable) {
 				this._anno_visibility = "hidden";
@@ -285,6 +303,8 @@ export default class Edge extends EventTarget {
 		this._anno_el.setAttributeNS(null, 'y', my + 5);
 		this._list_el.setAttributeNS(null, 'x', mx + 20);
 		this._list_el.setAttributeNS(null, 'y', my - 8);
+		this._part_el.setAttributeNS(null, 'x', ex - 25);
+		this._part_el.setAttributeNS(null, 'y', ey + 5);
 
 		for (let key in this._list_el.children) {
 			if (key % 2 == 0) this._list_el.children[key].setAttributeNS(null, 'x', mx + 20);

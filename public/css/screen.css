@@ -426,6 +426,17 @@ jag-playground jag-node div.expand {
 	font-weight: bold;
 }
 
+jag-playground jag-node div.concurrency {
+	font-size: 12pt;
+	color: green;
+	position: absolute;
+	right: -2.5em;
+	top: 5px;
+	font-family: FontAwesome;
+	background: transparent;
+	box-shadow: none;
+}
+
 jag-playground jag-node div.node-io {
 	display: none;
 	margin: 0 0.25rem 0 0.25rem;
@@ -477,6 +488,13 @@ jag-playground svg text.annotation-label {
 
 jag-playground svg tspan.annotation-key {
 	fill: blue;
+}
+
+jag-playground svg text.participation-label {
+	fill: green;
+	font-size: 12pt;
+	font-weight: 900;
+	font-family: FontAwesome;
 }
 
 jag-playground .popup-box {
