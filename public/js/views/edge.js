@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.26
+ * @version 0.27
  */
 
 import JAG from '../models/jag.js';
@@ -111,6 +111,8 @@ export default class Edge extends EventTarget {
 				this._anno_visibility = "visible";
 				this._anno_el.style.visibility = "visible";
 			}
+
+			this._showParticipation('additive');
 
 			if (annotations != undefined && annotations.size > 0) {
 				if (!iterable) {
