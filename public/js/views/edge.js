@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.61
+ * @version 0.63
  */
 
 import JAG from '../models/jag.js';
@@ -78,14 +78,12 @@ export default class Edge extends EventTarget {
 	_updateParticipation(type) {
 		let icon = '';
 
-		if (!this._node_origin.isAtomic()) {
-			if (type == 'atomic') {
-				icon = "&#xf406;";
-			} else if (type == 'conjunctive') {
-				icon = "&#xf4ce;";
-			} else if (type == 'additive') {
-				icon = "&#xf0c0;";
-			}
+		if (type == 'atomic') {
+			icon = "&#xf406;";
+		} else if (type == 'conjunctive') {
+			icon = "&#xf4ce;";
+		} else if (type == 'additive') {
+			icon = "&#xf0c0;";
 		}
 
 		this._part_el.innerHTML = icon;
