@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.27
+ * @version 0.61
  */
 
 import JAG from '../models/jag.js';
@@ -16,6 +16,7 @@ export default class Edge extends EventTarget {
 		super();
 		this.init(parent);
 		this.visible = true;
+		this._atomic = false;
 	}
 
 	init(parent) {
@@ -70,14 +71,24 @@ export default class Edge extends EventTarget {
 		} else if (property == "annotations") {
 			this._updateAnnotations(data.id, data.annotations, data.iterable);
 		}
+
+		this.updateStroke(this._node_origin.isAtomic());
 	}
 
-	_showParticipation(type) {
-		if (type == 'atomic') {
-			this._part_el.innerHTML = "&#xf406;"; //&#xf007;";
-		} else if (type == 'conjunctive') {
-			this._part_el.innerHTML = "&#xf4ce;";
+	_updateParticipation(type) {
+		let icon = '';
+
+		if (!this._node_origin.isAtomic()) {
+			if (type == 'atomic') {
+				icon = "&#xf406;";
+			} else if (type == 'conjunctive') {
+				icon = "&#xf4ce;";
+			} else if (type == 'additive') {
+				icon = "&#xf0c0;";
+			}
 		}
+
+		this._part_el.innerHTML = icon;
 	}
 
 	_clearAnnotations() {
@@ -112,7 +123,8 @@ export default class Edge extends EventTarget {
 				this._anno_el.style.visibility = "visible";
 			}
 
-			this._showParticipation('additive');
+			this._atomic = false;
+			this._updateParticipation('additive');
 
 			if (annotations != undefined && annotations.size > 0) {
 				if (!iterable) {
@@ -126,14 +138,37 @@ export default class Edge extends EventTarget {
 				}
 
 				if (annotations.has('atomic') && annotations.get('atomic') == 'true') {
-					this._showParticipation('atomic');
+					this._atomic = true;
+					this._updateParticipation('atomic');
 				} else if (annotations.has('conjunctive') && annotations.get('conjunctive') == 'true') {
-					this._showParticipation('conjunctive');
+					this._updateParticipation('conjunctive');
 				}
 			} else if (!iterable) {
 				this._anno_visibility = "hidden";
 				this._anno_el.style.visibility = "hidden";
 			}
+		}
+	}
+
+	updateStroke(atomic) {
+		const toggle = atomic || this._node_origin.isAtomic();
+
+		this._updateStroke(toggle);
+
+		this._part_el.style.visibility = toggle ? 'hidden' : 'visible';
+
+		for (const child_edge of this._node_end.getChildEdges()) {
+			child_edge.updateStroke(atomic);
+		}
+	}
+
+	_updateStroke(atomic) {
+		if (atomic) {
+			this._edge_el.setAttributeNS(null, 'stroke-width', '2');
+			this._edge_el.setAttributeNS(null, 'stroke', 'green');
+		} else {
+			this._edge_el.removeAttributeNS(null, 'stroke-width');
+			this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 		}
 	}
 
@@ -165,9 +200,15 @@ export default class Edge extends EventTarget {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
 		} else if (!e.shiftKey) {
-			this._edge_el.setAttributeNS(null, 'stroke', 'gray');
+			this._updateStroke(this._node_origin.isAtomic());
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
 		}
+	}
+
+	isAtomic() {
+		if (this._atomic) return true;
+
+		return this._node_origin.isAtomic();
 	}
 
 	set visible(visible) {
@@ -208,6 +249,7 @@ export default class Edge extends EventTarget {
 	setNodeOrigin(node) {
 		this._node_origin = node;
 		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
+		this._updateStroke(this._node_origin.isAtomic());
 	}
 
 	getParentURN() {
@@ -267,6 +309,10 @@ export default class Edge extends EventTarget {
 		});
 
 		this._updateAnnotations(this._childId, child.annotations, child.iterable);
+
+		for (const child_edge of this._node_end.getChildEdges()) {
+			child_edge.updateStroke(this._node_end.isAtomic());
+		}
 	}
 
 	setOrigin(x, y) {

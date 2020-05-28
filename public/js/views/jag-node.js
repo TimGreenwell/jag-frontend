@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.87
+ * @version 0.98
  */
 
 
@@ -111,6 +111,12 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	get visible() {
 		return this._visible;
+	}
+
+	isAtomic() {
+		if (this._in) return this._in.isAtomic();
+
+		return false;
 	}
 
 	addInEdge(edge) {
@@ -491,6 +497,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_applyExecution() {
 		this._$concurrency.style.display = 'none';
+		this._$concurrency.innerHTML = '';
 
 		if (this._model.execution != JAG.EXECUTION.SEQUENTIAL)
 			return;
@@ -505,7 +512,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			}
 		}
 
-		this._$concurrency.style.display = "block";
+		this._$concurrency.style.display = 'block';
 		this._$concurrency.innerHTML = "&#xf0c0;";
 	}
 
