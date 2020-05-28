@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.98
+ * @version 1.01
  */
 
 
@@ -114,8 +114,10 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	isAtomic() {
+		// If there are upstream nodes, check for atomicity.
 		if (this._in) return this._in.isAtomic();
 
+		// Else, this is not atomic.
 		return false;
 	}
 
@@ -506,12 +508,12 @@ customElements.define('jag-node', class extends HTMLElement {
 			return;
 
 		for (const child of this._model.children) {
-			console.log(child);
 			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
 				return;
 			}
 		}
 
+		// Sequential nodes whose children are annotated 'no-wait' display a concurrency icon.
 		this._$concurrency.style.display = 'block';
 		this._$concurrency.innerHTML = "&#xf0c0;";
 	}

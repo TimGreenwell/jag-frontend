@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.63
+ * @version 0.68
  */
 
 import JAG from '../models/jag.js';
@@ -72,6 +72,8 @@ export default class Edge extends EventTarget {
 			this._updateAnnotations(data.id, data.annotations, data.iterable);
 		}
 
+		// Since the atomic annotation may have been modified, or a change in
+		// the inheritance tree has occurred, check to update the stroke.
 		this.updateStroke(this._node_origin.isAtomic());
 	}
 
@@ -121,6 +123,7 @@ export default class Edge extends EventTarget {
 				this._anno_el.style.visibility = "visible";
 			}
 
+			// Assume every edge is an additive task.
 			this._atomic = false;
 			this._updateParticipation('additive');
 
@@ -135,6 +138,7 @@ export default class Edge extends EventTarget {
 					this._createAnnotation(annotation, value);
 				}
 
+				// Now apply any participation annotations.
 				if (annotations.has('atomic') && annotations.get('atomic') == 'true') {
 					this._atomic = true;
 					this._updateParticipation('atomic');
@@ -149,21 +153,28 @@ export default class Edge extends EventTarget {
 	}
 
 	updateStroke(atomic) {
+		// The atomic notation for a higher-level node may have changed to false, but
+		// this node's parent may be atomic, so accept the most immediate value.
 		const toggle = atomic || this._node_origin.isAtomic();
 
+		// Update ONLY this edge's stroke.
 		this._updateStroke(toggle);
 
+		// If this edge is atomic, hide participation, else display it.
 		this._part_el.style.visibility = toggle ? 'hidden' : 'visible';
 
+		// Recursively update for all children in this tree.
 		for (const child_edge of this._node_end.getChildEdges()) {
 			child_edge.updateStroke(atomic);
 		}
 	}
 
 	_updateStroke(atomic) {
+		// Atomic edges are slightly thicker and green.
 		if (atomic) {
 			this._edge_el.setAttributeNS(null, 'stroke-width', '2');
 			this._edge_el.setAttributeNS(null, 'stroke', 'green');
+		// Normal edges are the default thickness and gray.
 		} else {
 			this._edge_el.removeAttributeNS(null, 'stroke-width');
 			this._edge_el.setAttributeNS(null, 'stroke', 'gray');
@@ -171,8 +182,10 @@ export default class Edge extends EventTarget {
 	}
 
 	_updateStrokeDash(operator) {
+		// OR edges are dashed.
 		if (operator == JAG.OPERATOR.OR) {
 			this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
+		// AND edges are solid.
 		} else {
 			this._edge_el.removeAttributeNS(null, 'stroke-dasharray');
 		}
@@ -204,8 +217,10 @@ export default class Edge extends EventTarget {
 	}
 
 	isAtomic() {
+		// If this is directly annotated atomic, it is atomic.
 		if (this._atomic) return true;
 
+		// Otherwise, check if upstream is atomic.
 		return this._node_origin.isAtomic();
 	}
 
@@ -247,6 +262,8 @@ export default class Edge extends EventTarget {
 	setNodeOrigin(node) {
 		this._node_origin = node;
 		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
+
+		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
 		this._updateStroke(this._node_origin.isAtomic());
 	}
 
@@ -308,6 +325,9 @@ export default class Edge extends EventTarget {
 
 		this._updateAnnotations(this._childId, child.annotations, child.iterable);
 
+		// Update all child edges of the end node with upstream atomicity.
+		// Note: this does not use this#updateStroke since this edge may not be
+		//       atomic, but is annotated atomic, and so its children should be.
 		for (const child_edge of this._node_end.getChildEdges()) {
 			child_edge.updateStroke(this._node_end.isAtomic());
 		}
