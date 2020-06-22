@@ -7,22 +7,19 @@
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^22.0.0",
     "express": "^4.17.1",
-    "express-session": "^1.17.0",
-    "mocha": "^8.0.1"
+    "express-session": "^1.17.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.3",
-    "@babel/preset-env": "^7.10.3",
-    "@babel/register": "^7.10.3",
+    "chai": "^4.2.0",
     "esm": "^3.2.25",
-    "jsdom": "^16.2.2",
-    "jsdom-global": "^3.0.2"
+    "mocha": "^8.0.1"
   },
   "scripts": {
     "start": "node bin/app.js",
     "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;",
     "docs": "jsdoc --destination ./docs/ --recurse public/*",
-    "test": "mocha -r esm -r @babel/register -r jsdom-global/register"
+    "test": "mocha -r esm -r @babel/register -r jsdom-global/register",
+    "postinstall": "ln node_modules/mocha/mocha.js public/test/mocha.js;ln node_modules/mocha/mocha.css public/test/mocha.css;ln node_modules/chai/chai.js public/test/chai.js"
   },
   "repository": {
     "type": "git",
