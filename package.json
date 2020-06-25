@@ -18,8 +18,8 @@
     "start": "node bin/app.js",
     "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;",
     "docs": "jsdoc --destination ./docs/ --recurse public/*",
-    "test": "mocha -r esm -r @babel/register -r jsdom-global/register",
-    "postinstall": "ln node_modules/mocha/mocha.js public/test/mocha.js;ln node_modules/mocha/mocha.css public/test/mocha.css;ln node_modules/chai/chai.js public/test/chai.js"
+    "test": "mocha -r esm",
+    "postinstall": "mkdir -p public/test/scripts; mkdir -p public/test/styles;ln -s -f node_modules/mocha/mocha.js public/test/scripts/mocha.js;ln -s -f node_modules/mocha/mocha.css public/test/styles/mocha.css;ln -s -f node_modules/chai/chai.js public/test/scripts/chai.js"
   },
   "repository": {
     "type": "git",
