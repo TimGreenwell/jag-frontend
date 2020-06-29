@@ -1,31 +1,28 @@
 {
-  "name": "jag",
-  "version": "2.0.2",
-  "description": "",
-  "main": "",
-  "dependencies": {
-    "eslint": "^6.8.0",
-    "eslint-plugin-jsdoc": "^22.0.0",
-    "express": "^4.17.1",
-    "express-session": "^1.17.0"
-  },
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "esm": "^3.2.25",
-    "mocha": "^8.0.1"
-  },
-  "scripts": {
-    "start": "node bin/app.js",
-    "build": "rm -rf dist/*;cp -R public/css dist/;cp public/index.html dist/index.html;cp -R public/icons dist/;cp public/favicon.ico dist/favicon.ico;cp -R public/js dist/js;echo CHANGE THE BASE REFERENCE BEFORE UPLOADING;",
-    "docs": "jsdoc --destination ./docs/ --recurse public/*",
-    "test": "mocha -r esm",
-    "postinstall": "mkdir -p public/test/scripts; mkdir -p public/test/styles;ln -s -f node_modules/mocha/mocha.js public/test/scripts/mocha.js;ln -s -f node_modules/mocha/mocha.css public/test/styles/mocha.css;ln -s -f node_modules/chai/chai.js public/test/scripts/chai.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "ssh://git@git.ihmc.us:22000/mvignati/joint-activity-graph.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "private": true
+	"name": "jag",
+	"version": "2.0.2",
+	"description": "",
+	"main": "",
+	"dependencies": {
+		"eslint": "^7.3.1",
+		"eslint-plugin-jsdoc": "^28.5.1",
+		"express": "^4.17.1"
+	},
+	"devDependencies": {
+		"esm": "^3.2.25",
+		"mocha": "^8.0.1"
+	},
+	"scripts": {
+		"start": "node ./bin/app.js ./public",
+		"test": "export PORT=8889 && node ./bin/app.js ./test",
+		"docs": "jsdoc --destination ./docs/ --recurse public/*",
+		"postinstall": "mkdir -p test/styles && ln -sFfh ../public/scripts test/src-scripts && ln -sf ../../node_modules/mocha/mocha.js test/scripts/mocha.js && ln -sf ../../node_modules/mocha/mocha.css test/styles/mocha.css"
+	},
+	"repository": {
+		"type": "git",
+		"url": "ssh://git@git.ihmc.us:22000/mvignati/joint-activity-graph.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"private": true
 }

@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.79
+ * @version 0.88
  */
 
 import JAG from '../models/jag.js';
@@ -27,7 +27,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			if (property == "bindings" || property == "children" || property == "inputs" || property == "outputs") {
 				this._updateIO();
 			}
-			
+
 			if (property == "annotations" || property == "children") {
 				this._updateAnnotations();
 			}
@@ -140,11 +140,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 		const name = window.prompt('Annotation name');
 		if (name === null)
 			return;
-		
+
 		const value = window.prompt('Annotation value');
 		if (value === null)
 			return;
-		
+
 		this._model.addAnnotation(id, name, value);
 	}
 
@@ -211,7 +211,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 				})
 			}];
 		}).reduce((c, n) => c.concat(n)));
-		
+
 		select_el.onfocus = function (e) {
 			this._previous_value = this.value;
 		}.bind(select_el);
@@ -420,7 +420,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				if (input_option) {
 					const consumer = input_option.value.split(':');
-					
+
 					// TODO: Check if types match selected output type (probably as a .filter before .map)
 					let valid_for_input = new Set(this._model.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
 					toggleSelectValues(output_select_el, valid_for_input);
@@ -451,7 +451,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			}
 
 			output_label.className = "binding output";
-			
+
 			binding_box.appendChild(output_label);
 
 			let arrow = document.createElement("span");
@@ -498,7 +498,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_updateAnnotations() {
 		this._clearAnnotations();
-		
+
 		if (this._model.children.length > 0) {
 			for (const child of this._model.children) {
 				let child_name = child.id;
@@ -522,7 +522,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 				const iterable_checkbox = document.createElement("input");
 				iterable_checkbox.setAttribute('id', `${child.id}-iterable`);
 				iterable_checkbox.type = "checkbox";
-				
+
 				iterable_checkbox.addEventListener('change', function (e) {
 					this._model.setIterable(child.id, iterable_checkbox.checked);
 				}.bind(this));
@@ -550,7 +550,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 						annotation_name.value = annotation[0];
 
 						annotation_name.className = "annotation name";
-						
+
 						annotation_box.appendChild(annotation_name);
 
 						let equals = document.createElement("span");
@@ -680,7 +680,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		// Create bindings area
 		const bindings_el = createPropertyElement('bindings-property', 'Bindings');
-		
+
 		this._bindings = createEmptyInputContainer('bindings-property');
 		this._bindings.className = 'directProperty';
 		bindings_el.appendChild(this._bindings);
@@ -716,55 +716,41 @@ customElements.define('jag-properties', class extends HTMLElement {
 	}
 
 	async _updateURN(urn) {
-		if (this._urn.value != this._model.urn) {
-			let update = undefined;
+		const idb_service = JAGService.instance('idb-service');
 
-			if (window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)")) {
-				JAGService.has(this._urn.value, (exists) => {
-					if (exists) {
-						update = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
-					}
+		if(this._urn.value == this._model.urn)
+			return;
 
-					if (!exists || update) {
-						// Copy model with new URN.
-						let schema = this._model.toJSON();
-						schema.urn = urn;
+		if(!window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)"))
+			return;
 
-						if (update) {
-							JAGService.get(this._urn.value, (m) => {
-								let model = m;
-
-								if (m instanceof UndefinedJAG) {
-									model = new JAG(schema);
-									m.defined(model);
-								} else {
-									Object.assign(model, schema);
-								}
-
-								// Update model references.
-								this._node.model = model;
-								this._model = model;
-
-								// Store the updated model.
-								JAGService.store(model);
-							});
-						} else {
-							const model = new JAG(schema);
-
-							// Update model references.
-							this._node.model = model;
-							this._model = model;
-
-							// Store the new model.
-							JAGService.store(model);
-						}
-
-						// Remove unsaved box shadow on URN property input.
-						this._urn.classList.toggle("edited", false);
-					}
-				});
+		// Checks if new urn has a model associated to it and asks for permission to overwrite.
+		if(await idb_service.has(this._urn.value)) {
+			// Ask for confirmation
+			const overwrite = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
+			if(!overwrite) {
+				// Reverts the urn to its original value and exits early.
+				this._urn.value = this._model.urn;
+				return;
 			}
 		}
+
+		// If we get there we can create/overwrite
+		// @TODO: replace with clone function (add to JAG model)
+		const description = this._model.toJSON();
+		description.urn = urn;
+		const new_model = JAG.fromJSON(description);
+
+		// Update model references.
+		this._node.model = new_model;
+		this._model = new_model;
+
+		// Store the updated model.
+		// @TODO: switch to update when avail.
+		idb_service.create(new_model);
+
+		// Remove unsaved box shadow on URN property input.
+		this._urn.classList.toggle("edited", false);
 	}
 
 	_initHandlers() {

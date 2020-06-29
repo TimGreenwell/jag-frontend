@@ -3,14 +3,14 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.27
+ * @version 0.29
  */
 
 import {UUIDv4} from '../utils/uuid.js';
 
 /**
  * Joint Activity Graph (JAG) model.
- * 
+ *
  * @class
  * @constructor
  * @public
@@ -27,28 +27,28 @@ export default class JAG extends EventTarget {
 		 * @default undefined
 		 */
 		this._urn = urn;
-		
+
 		/**
 		 * @name JAG#name
 		 * @type {String}
 		 * @default undefined
 		 */
 		this._name = name;
-		
+
 		/**
 		 * @name JAG#description
 		 * @type {String}
 		 * @default ''
 		 */
 		this._description = description;
-		
+
 		/**
 		 * @name JAG#execution
 		 * @type {String}
 		 * @default JAG.EXECUTION.NONE
 		 */
 		this._execution = connector.execution;
-		
+
 		/**
 		 * @name JAG#operator
 		 * @type {String}
@@ -75,6 +75,24 @@ export default class JAG extends EventTarget {
 
 		// Copy bindings for the instance if provided, else create a new set.
 		this._bindings = new Set(bindings);
+	}
+
+	static fromJSON(json) {
+		const {
+			'urn': urn,
+			'name': name,
+			'connector': connector,
+			'description': description,
+			'inputs': inputs,
+			'outputs': outputs,
+			'children': children,
+			'bindings': bindings,
+		} = json;
+
+
+		return new JAG(json);
+		// @TODO: explode the json definition to use the constructor below
+		//return new JAG(urn, name, connector, inputs, outputs, children, bindings);
 	}
 
 	get urn() {
@@ -144,7 +162,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Adds the given input to the inputs of this JAG.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {{name:String,type:String}} input Input to add.
 	 */
 	addInput(input) {
@@ -155,7 +173,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Adds the given output to the outputs of this JAG.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {{name:String,type:String}} output Output to add.
 	 */
 	addOutput(output) {
@@ -169,7 +187,7 @@ export default class JAG extends EventTarget {
 	 * during creation of a graphical edge for the child of an existing JAG; the call
 	 * will be ignored and the given ID will be returned.
 	 * Dispatches an update if ID is undefined.
-	 * 
+	 *
 	 * @param {JAG} child Model to add.
 	 * @param {String} id ID for child, if it exists.
 	 * @returns {String} UUIDv4 string of the child.
@@ -191,7 +209,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Removes the given child from this JAG.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {{id:String,model:JAG}} child Child to remove.
 	 */
 	removeChild(child) {
@@ -250,7 +268,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Gets the ID, JAG, property name and type of all possible inputs to the child with the given ID.
 	 * Includes inputs to this JAG and outputs from sequential children preceding the child with the given ID.
-	 * 
+	 *
 	 * @param {String} id ID of the child for which to seek inputs.
 	 * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Inputs available to the child with the given ID.
 	 */
@@ -269,7 +287,7 @@ export default class JAG extends EventTarget {
 			for (let child of this._children) {
 				if (child.id == id)
 					break;
-				
+
 				if (child.model) {
 					let child_outputs = child.model.outputs;
 
@@ -290,7 +308,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Gets the ID, JAG, property name and type of all inputs of children of this JAG.
-	 * 
+	 *
 	 * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Inputs of children of this JAG.
 	 */
 	getAvailableInputs() {
@@ -313,7 +331,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Gets the ID, JAG, property name and type of all outputs of children of this JAG.
-	 * 
+	 *
 	 * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Outputs of children of this JAG.
 	 */
 	getAvailableOutputs() {
@@ -336,8 +354,8 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Gets the child of this JAG with the given ID.
-	 * 
-	 * @param {String} id 
+	 *
+	 * @param {String} id
 	 * @returns {{id:String,model:JAG}} Child of this JAG with the given ID.
 	 */
 	getCanonicalNode(id) {
@@ -355,7 +373,7 @@ export default class JAG extends EventTarget {
 	 * Adds the given binding to the bindings of this JAG.
 	 * Will remove an existing binding with the same consumer.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding Binding to add.
 	 */
 	addBinding(binding) {
@@ -371,7 +389,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Check if a binding exists for the given consumer ID and property.
-	 * 
+	 *
 	 * @param {String} consumer_id The ID to seek.
 	 * @param {String} consumer_property The property to seek.
 	 * @returns {boolean} Whether or not a binding exists for the given consumer ID and property.
@@ -383,7 +401,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Gets a binding for the given consumer ID and property.
-	 * 
+	 *
 	 * @param {String} consumer_id ID of the consumer for the binding to be returned.
 	 * @param {String} consumer_property Name of the consumer property for the binding to be returned.
 	 * @returns {{provider:{id:String,property:String},consumer:{id:String,property:String}}|undefined} Binding for the given consumer ID and property, or undefined if none exists.
@@ -399,7 +417,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Removes the provided binding from this node.
-	 * 
+	 *
 	 * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding The binding to remove.
 	 */
 	removeBinding(binding) {
@@ -411,7 +429,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Adds the given annotation with name and value to the given child JAG.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {String} id UUID of the child to which to add the annotation.
 	 * @param {String} name Key name for the new annotation.
 	 * @param {String} value Value for the new annotation.
@@ -431,7 +449,7 @@ export default class JAG extends EventTarget {
 	/**
 	 * Removes the annotation with the given name from the child JAG of the given ID.
 	 * Dispatches an update.
-	 * 
+	 *
 	 * @param {String} id UUID of the child from which to remove the annotation.
 	 * @param {String} name Key name for the annotation to delete.
 	 */
@@ -440,7 +458,7 @@ export default class JAG extends EventTarget {
 
 		if (!(child == undefined || child.model == this)) {
 			if (!child.annotations) return;
-			
+
 			if (child.annotations.has(name)) {
 				child.annotations.delete(name);
 				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } }}));
@@ -450,7 +468,7 @@ export default class JAG extends EventTarget {
 
 	/**
 	 * Marks the child with the given ID as iterable with the given value.
-	 * 
+	 *
 	 * @param {String} id UUID of the child to mark.
 	 * @param {boolean} value True or false whether or not the child is iterable.
 	 */

@@ -5,6 +5,6 @@ ssl
 static-jags.json
 docs
 
-public/test/scripts/mocha.js
-public/test/scripts/chai.js
-public/test/styles/mocha.css
+test/scripts/mocha.js
+test/styles/mocha.css
+test/src-scripts

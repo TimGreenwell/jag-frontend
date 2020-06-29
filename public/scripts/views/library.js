@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.32
+ * @version 0.37
  */
 
  import JAG from '../models/jag.js';
@@ -117,13 +117,9 @@ customElements.define('jag-library', class extends HTMLElement {
 	async loadFromDB() {
 		this.clearItems();
 
-		JAGService.getAllAvailable((allAvailable) => {
-			for (let key of allAvailable) {
-				JAGService.get(key, (model) => {
-					this.addItem(model);
-				});
-			}
-		});
+		const idb_service = JAGService.instance('idb-service');
+		const jags = await idb_service.all();
+		jags.forEach(jag => this.addItem(jag));
 	}
 
 	_initUI() {
