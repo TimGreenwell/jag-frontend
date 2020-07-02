@@ -645,7 +645,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._leafNode = document.createElement('p');
 		this._leafNode.innerHTML = 'Possible leaf node: it is a child without a model.';
 		this._leafNode.className = 'special leaf-node-notice';
-		this._leafNode.id = 'leafNode';
+		this._leafNode.id = 'leaf-node';
 		leafNode_el.appendChild(this._leafNode);
 
 		const urn_el = createPropertyElement('urn-property', 'URN');
