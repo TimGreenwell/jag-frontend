@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 1.02
+ * @version 1.05
  */
 
 
@@ -216,11 +216,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	refresh(alreadyRefreshed = new Set()) {
-		if (this._in) {
-			return this._in.getNodeOrigin().getroot-node();
-		} else {
-			this.dispatchEvent(new CustomEvent('refresh', { detail: { model: this._model, refreshed: alreadyRefreshed } }));
-		}
+		this.dispatchEvent(new CustomEvent('refresh', { detail: { model: this._model, refreshed: alreadyRefreshed } }));
 	}
 
 	getChildren() {
