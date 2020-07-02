@@ -629,7 +629,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		childOf_el.className = 'special-wrapper child-of-notice';
 		this._childOf = document.createElement('p');
 		this._childOf.className = 'special child-of-notice';
-		this._childOf.id = 'childOf';
+		this._childOf.id = 'child-of';
 		childOf_el.appendChild(this._childOf);
 
 		const undefinedJAG_el = document.createElement('div');
@@ -637,7 +637,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._undefinedJAG = document.createElement('p');
 		this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
 		this._undefinedJAG.className = 'special undefined-jag-notice';
-		this._undefinedJAG.id = 'undefinedJAG';
+		this._undefinedJAG.id = 'undefined-jag';
 		undefinedJAG_el.appendChild(this._undefinedJAG);
 
 		const leafNode_el = document.createElement('div');

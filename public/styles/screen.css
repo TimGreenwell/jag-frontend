@@ -126,17 +126,17 @@ jag-properties .special {
 	padding: 0.5em;
 }
 
-jag-properties #childOf {
+jag-properties #child-of {
 	background-color: blue;
 	color: white;
 }
 
-jag-properties #undefinedJAG {
+jag-properties #undefined-jag {
 	background-color: red;
 	color: white;
 }
 
-jag-properties #leafNode {
+jag-properties #leaf-node {
 	background-color: green;
 	color: white;
 }
