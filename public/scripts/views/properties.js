@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 1.00
+ * @version 1.02
  */
 
 import JAG from '../models/jag.js';
@@ -626,41 +626,41 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_initUI() {
 		const childOf_el = document.createElement('div');
-		childOf_el.className = 'special-wrapper childOfNotice';
+		childOf_el.className = 'special-wrapper child-of-notice';
 		this._childOf = document.createElement('p');
-		this._childOf.className = 'special childOfNotice';
+		this._childOf.className = 'special child-of-notice';
 		this._childOf.id = 'childOf';
 		childOf_el.appendChild(this._childOf);
 
 		const undefinedJAG_el = document.createElement('div');
-		undefinedJAG_el.className = 'special-wrapper undefinedJAGNotice';
+		undefinedJAG_el.className = 'special-wrapper undefined-jag-notice';
 		this._undefinedJAG = document.createElement('p');
 		this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
-		this._undefinedJAG.className = 'special undefinedJAGNotice';
+		this._undefinedJAG.className = 'special undefined-jag-notice';
 		this._undefinedJAG.id = 'undefinedJAG';
 		undefinedJAG_el.appendChild(this._undefinedJAG);
 
 		const leafNode_el = document.createElement('div');
-		leafNode_el.className = 'special-wrapper leafNodeNotice';
+		leafNode_el.className = 'special-wrapper leaf-node-notice';
 		this._leafNode = document.createElement('p');
 		this._leafNode.innerHTML = 'Possible leaf node: it is a child without a model.';
-		this._leafNode.className = 'special leafNodeNotice';
+		this._leafNode.className = 'special leaf-node-notice';
 		this._leafNode.id = 'leafNode';
 		leafNode_el.appendChild(this._leafNode);
 
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
-		this._urn.className = 'directProperty';
+		this._urn.className = 'direct-property';
 		urn_el.appendChild(this._urn);
 
 		const name_el = createPropertyElement('name-property', 'Name');
 		this._name = createTextInput('name-property');
-		this._name.className = "directProperty";
+		this._name.className = "direct-property contextual";
 		name_el.appendChild(this._name);
 
 		const desc_el = createPropertyElement('desc-property', 'Description');
 		this._desc = createTextInput('desc-property');
-		this._desc.className = "directProperty";
+		this._desc.className = "direct-property contextual";
 		desc_el.appendChild(this._desc);
 
 		const name_ctx_el = createPropertyElement('name-ctx-property', 'Contextual Name');
@@ -684,7 +684,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value: JAG.EXECUTION.PARALLEL,
 			text: 'Parallel'
 		}]);
-		this._execution.className = 'directProperty';
+		this._execution.className = 'direct-property';
 		execution_el.appendChild(this._execution);
 
 		const operator_el = createPropertyElement('operator-property', 'Operator');
@@ -698,7 +698,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			value: JAG.OPERATOR.OR,
 			text: 'Or'
 		}]);
-		this._operator.className = 'directProperty';
+		this._operator.className = 'direct-property';
 		operator_el.appendChild(this._operator);
 
 		// Create inputs area
@@ -711,7 +711,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		inputs_el.appendChild(input_add);
 
 		this._inputs = createEmptyInputContainer('inputs-property');
-		this._inputs.className = 'directProperty';
+		this._inputs.className = 'direct-property';
 		inputs_el.appendChild(this._inputs);
 
 		// Create outputs area
@@ -724,21 +724,21 @@ customElements.define('jag-properties', class extends HTMLElement {
 		outputs_el.appendChild(output_add);
 
 		this._outputs = createEmptyInputContainer('outputs-property');
-		this._outputs.className = 'directProperty';
+		this._outputs.className = 'direct-property';
 		outputs_el.appendChild(this._outputs);
 
 		// Create bindings area
 		const bindings_el = createPropertyElement('bindings-property', 'Bindings');
 
 		this._bindings = createEmptyInputContainer('bindings-property');
-		this._bindings.className = 'directProperty';
+		this._bindings.className = 'direct-property';
 		bindings_el.appendChild(this._bindings);
 
 		// Create annotation area
 		const annotations_el = createPropertyElement('annotations-property', 'Annotations');
 
 		this._annotations = createEmptyInputContainer('annotations-property');
-		this._annotations.className = 'directProperty';
+		this._annotations.className = 'direct-property';
 		annotations_el.appendChild(this._annotations);
 
 		// Create export area
@@ -907,23 +907,23 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		if (this._node && this._node.getParent() != undefined && (enabled || this._model instanceof UndefinedJAG)) {
 			this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
-			this.classList.toggle('rootNode', false);
+			this.classList.toggle('root-node', false);
 			this._name_ctx.disabled = false;
 			this._desc_ctx.disabled = false;
 		} else {
-			this.classList.toggle('rootNode', true);
+			this.classList.toggle('root-node', true);
 			this._name_ctx.disabled = true;
 			this._desc_ctx.disabled = true;
 		}
 
 		if (enabled || (!enabled && !this._model)) {
-			this.classList.toggle('definedModel', true);
-			this.classList.toggle('nonLeafNode', true);
+			this.classList.toggle('defined-model', true);
+			this.classList.toggle('non-leaf-node', true);
 		} else if (this._model instanceof UndefinedJAG) {
-			this.classList.toggle('definedModel', false);
+			this.classList.toggle('defined-model', false);
 
 			if (this._node.getParent()) {
-				this.classList.toggle('nonLeafNode', false);
+				this.classList.toggle('non-leaf-node', false);
 			}
 		}
 	}

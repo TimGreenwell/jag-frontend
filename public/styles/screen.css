@@ -141,23 +141,23 @@ jag-properties #leafNode {
 	color: white;
 }
 
-jag-properties:not(.rootNode) input.contextual {
-	box-shadow: 0px 3px 5px blue;
-}
-
-jag-properties:not(.definedModel) .directProperty {
+jag-properties:not(.defined-model) .direct-property {
 	box-shadow: 0px 0px 5px red;
 }
 
-jag-properties.rootNode .childOfNotice {
+jag-properties:not(.root-node) input.contextual {
+	box-shadow: 0px 3px 5px blue;
+}
+
+jag-properties.root-node .child-of-notice {
 	display: none;
 }
 
-jag-properties.definedModel .undefinedJAGNotice {
+jag-properties.defined-model .undefined-jag-notice {
 	display: none;
 }
 
-jag-properties.nonLeafNode .leafNodeNotice {
+jag-properties.non-leaf-node .leaf-node-notice {
 	display: none;
 }
 
