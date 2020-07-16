@@ -3,14 +3,17 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.38
+ * @version 0.53
  */
 
 export default class RESTUtils {
 
-    static async handleResponse(response, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
+    static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
+        const response = await fetch(url, details);
+
         if (response.status == 200) {
             if (ok_fallback) return ok_fallback;
+
             const result = await response.text();
 
             try {
@@ -33,70 +36,78 @@ export default class RESTUtils {
 
     static async list(endpoint, uri) {
         // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri, {
-            'method': 'GET'
-        });
-        
-        return await RESTUtils.handleResponse(response, 'Error listing JAGs')
+        const url = endpoint + uri;
+
+        const details = {};
+
+        return await RESTUtils.request(url, details, 'Error listing JAGs');
     }
 
     static async check(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
+        const url = endpoint + uri.replace('{urn}', urn);
+
+        const details = {
             'method': 'HEAD'
-        });
-        
-        return await RESTUtils.handleResponse(response, 'Error finding JAG', true, false);
+        };
+
+        return await RESTUtils.request(url, details, 'Error finding JAG', true, false);
     }
 
 	static async create(endpoint, uri, urn, model) {
+        // TODO: safely join URL paths (perhaps Node package?)
+        const url = endpoint + uri.replace('{urn}', urn);
+
         const model_json_string = JSON.stringify(model);
 
-        // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
+        const details = {
             'method': 'POST',
             'body': model_json_string,
             'headers': {
                 'Content-Type': 'application/json'
             }
-        });
+        };
 
-        return await RESTUtils.handleResponse(response, 'Error creating JAG');
+        return await RESTUtils.request(url, details, 'Error creating JAG');
     }
 
     static async get(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
-            'method': 'GET'
-        });
+        const url = endpoint + uri.replace('{urn}', urn);
 
-        return RESTUtils.handleResponse(response, 'Error retrieving JAG');
+        const details = {};
+
+        return await RESTUtils.request(url, details, 'Error retrieving JAG');
     }
 
     static async update(endpoint, uri, urn, model) {
+        // TODO: safely join URL paths (perhaps Node package?)
+        const url = endpoint + uri.replace('{urn}', urn);
+
         // TODO: ensure URN in model matches URN in request
         // TODO: implement PATCH for changing URN?
         const model_json_string = JSON.stringify(model);
 
-        // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
+        const details = {
             'method': 'PUT',
             'body': model_json_string,
             'headers': {
                 'Content-Type': 'application/json'
             }
-        });
+        };
 
-        return await RESTUtils.handleResponse(response, 'Error updating JAG');
+        return await RESTUtils.request(url, details, 'Error updating JAG');
     }
 
     static async delete(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
-            'method': 'DELETE'
-        });
+        const url = endpoint + uri.replace('{urn}', urn);
 
-        return await RESTUtils.handleResponse(response, 'Error deleting JAG');
+        const details = {
+            'method': 'DELETE'
+        };
+
+        return await RESTUtils.request(url, details, 'Error deleting JAG');
     }
 
 }
