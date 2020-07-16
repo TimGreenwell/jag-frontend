@@ -3,125 +3,100 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.21
+ * @version 0.38
  */
 
 export default class RESTUtils {
 
-    static list(endpoint, uri) {
+    static async handleResponse(response, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
+        if (response.status == 200) {
+            if (ok_fallback) return ok_fallback;
+            const result = await response.text();
+
+            try {
+                return JSON.parse(result);
+            } catch {
+                throw new Error(`${error_prefix}: Response was not a valid JSON object.`);
+            }
+        } else if (response.status == 204) {
+            return ok_fallback;
+        } else if (response.status == 404) {
+            if (bad_fallback) return bad_fallback;
+            throw new Error(`${error_prefix}: Resource does not exist at URN.`);
+        } else if (response.status == 409) {
+            if (bad_fallback) return bad_fallback;
+            throw new Error(`${error_prefix}: Resource already exists at URN.`);
+        }
+
+        throw new Error(`${error_prefix}: Unexpected response.`);
+    }
+
+    static async list(endpoint, uri) {
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri, {
+        const response = await fetch(endpoint + uri, {
             'method': 'GET'
-        }).then((response) => function (resolve, reject) {
-            if (response.status == 200 || response.status == 204) {
-                response.text().then((result) => resolve(result));
-            } else {
-                reject(new Error('Unknown error listing JAGs.'));
-            }
         });
+        
+        return await RESTUtils.handleResponse(response, 'Error listing JAGs')
     }
 
-    static check(endpoint, uri, urn) {
+    static async check(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri.replace('{urn}', urn), {
+        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
             'method': 'HEAD'
-        }).then((response) => function (resolve, reject) {
-            // TODO: should we use resolve with true/false and reject on error, or reject if model does not exist?
-            if (response.status == 200) {
-                resolve(true);
-            } else if (response.status == 404) {
-                resolve(false);
-            } else {
-                reject(new Error('Unknown error checking JAG.'));
-            }
         });
+        
+        return await RESTUtils.handleResponse(response, 'Error finding JAG', true, false);
     }
 
-	static create(endpoint, uri, urn, model) {
+	static async create(endpoint, uri, urn, model) {
         const model_json_string = JSON.stringify(model);
 
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri.replace('{urn}', urn), {
+        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
             'method': 'POST',
             'body': model_json_string,
             'headers': {
                 'Content-Type': 'application/json'
             }
-        }).then((response) => function (resolve, reject) {
-            if (response.status == 200 || response.status == 204) {
-                // TODO: require 204 (No Content) response?
-                // TODO: parse or return 200 (OK) response?
-                resolve();
-            } else if (response.status == 409) {
-                reject(new Error(`Error creating JAG: model already exists at URN ${urn}.`));
-            } else {
-                reject(new Error('Unknown error creating JAG.'));
-            }
         });
 
+        return await RESTUtils.handleResponse(response, 'Error creating JAG');
     }
 
-    static get(endpoint, uri, urn) {
+    static async get(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri.replace('{urn}', urn), {
+        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
             'method': 'GET'
-        }).then((response) => function (resolve, reject) {
-            if (response.status == 200) {
-                response.text().then((result) => {
-                    try {
-                        resolve(JSON.parse(result));
-                    } catch {
-                        reject(new Error(`Error retrieving JAG: failed to parse returned model.`));
-                    }
-                });
-            } else if (response.status == 404) {
-                reject(new Error(`Error retrieving JAG: model does not exist at URN ${urn}.`));
-            } else {
-                reject(new Error('Unknown error retrieving JAG.'));
-            }
         });
+
+        return RESTUtils.handleResponse(response, 'Error retrieving JAG');
     }
 
-    static update(endpoint, uri, urn, model) {
+    static async update(endpoint, uri, urn, model) {
         // TODO: ensure URN in model matches URN in request
         // TODO: implement PATCH for changing URN?
         const model_json_string = JSON.stringify(model);
 
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri.replace('{urn}', urn), {
+        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
             'method': 'PUT',
             'body': model_json_string,
             'headers': {
                 'Content-Type': 'application/json'
             }
-        }).then((response) => function (resolve, reject) {
-            if (response.status == 200 || response.status == 204) {
-                // TODO: require 204 (No Content) response?
-                // TODO: parse or return 200 (OK) response?
-                resolve();
-            } else if (response.status == 404) {
-                reject(new Error(`Error updating JAG: model does not exist at URN ${urn}.`));
-            } else {
-                reject(new Error('Unknown error updating JAG.'));
-            }
         });
+
+        return await RESTUtils.handleResponse(response, 'Error updating JAG');
     }
 
-    static delete(endpoint, uri, urn) {
+    static async delete(endpoint, uri, urn) {
         // TODO: safely join URL paths (perhaps Node package?)
-        return fetch(endpoint + uri.replace('{urn}', urn), {
+        const response = await fetch(endpoint + uri.replace('{urn}', urn), {
             'method': 'DELETE'
-        }).then((response) => function (resolve, reject) {
-            if (response.status == 200 || response.status == 204) {
-                // TODO: require 204 (No Content) response?
-                // TODO: parse or return 200 (OK) response?
-                resolve();
-            } else if (response.status == 404) {
-                reject(new Error(`Error deleting JAG: model does not exist at URN ${urn}.`));
-            } else {
-                reject(new Error('Unknown error deleting JAG.'));
-            }
         });
+
+        return await RESTUtils.handleResponse(response, 'Error deleting JAG');
     }
 
 }

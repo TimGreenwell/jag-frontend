@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.14
+ * @version 0.15
  */
 
 import RESTUtils from '../utils/rest.js';
@@ -41,11 +41,11 @@ export default class RESTStorage {
 	}
 
 	async create(description) {
-		return RESTUtils.create(this._endpoint, __REST_PATHS.create, description.urn, description);
+		return await RESTUtils.create(this._endpoint, __REST_PATHS.create, description.urn, description);
     }
 
     async update(description) {
-        return RESTUtils.update(this._endpoint, __REST_PATHS.update, description.urn, description);
+        return await RESTUtils.update(this._endpoint, __REST_PATHS.update, description.urn, description);
     }
 }
 
