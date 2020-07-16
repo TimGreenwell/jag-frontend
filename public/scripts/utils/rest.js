@@ -3,13 +3,15 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.53
+ * @version 0.54
  */
 
 export default class RESTUtils {
 
     static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
-        const response = await fetch(url, details);
+        const response = await fetch(url, details).catch((error_message) => {
+            throw new Error(`${error_prefix}: ${error_message}`);
+        });
 
         if (response.status == 200) {
             if (ok_fallback) return ok_fallback;
