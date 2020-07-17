@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.54
+ * @version 0.55
  */
 
 export default class RESTUtils {
@@ -16,19 +16,22 @@ export default class RESTUtils {
         if (response.status == 200) {
             if (ok_fallback) return ok_fallback;
 
-            const result = await response.text();
-
             try {
-                return JSON.parse(result);
+                return await response.json();
             } catch {
                 throw new Error(`${error_prefix}: Response was not a valid JSON object.`);
             }
-        } else if (response.status == 204) {
+        }
+
+        if (response.status == 204)
             return ok_fallback;
-        } else if (response.status == 404) {
+
+        if (response.status == 404) {
             if (bad_fallback) return bad_fallback;
             throw new Error(`${error_prefix}: Resource does not exist at URN.`);
-        } else if (response.status == 409) {
+        }
+
+        if (response.status == 409) {
             if (bad_fallback) return bad_fallback;
             throw new Error(`${error_prefix}: Resource already exists at URN.`);
         }
