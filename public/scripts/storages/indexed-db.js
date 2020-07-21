@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.18
+ * @version 0.19
  */
 
 import IndexedDBUtils from '../utils/indexed-db.js';
@@ -43,6 +43,10 @@ export default class IndexedDBStorage {
 		return IndexedDBUtils.store(this._db, __JAG_STORE.name, description, description.urn);
 	}
 
+	async update(description) {
+		return IndexedDBUtils.store(this._db, __JAG_STORE.name, description, description.urn);
+	}
+
 }
 
 const __JAG_STORE = {
@@ -55,4 +59,3 @@ const __JAG_STORE = {
 		}
 	]
 };
-

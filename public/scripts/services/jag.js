@@ -1,9 +1,11 @@
 /**
  * @file JAG service.
  *
+ * JAGService listen to update events from the model to commit change to storage.
+ *
  * @author mvignati
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 3.53
+ * @version 3.62
  */
 
 import JAG from '../models/jag.js';
@@ -53,7 +55,7 @@ export default class JAGService {
 	 */
 	async all() {
 		const descriptions = await this._storage.all();
-		return descriptions.map(JAG.fromJSON);
+		return descriptions.map(this._createModel.bind(this));
 	}
 
 	/**
@@ -64,7 +66,7 @@ export default class JAGService {
 
 		if(description === undefined) return null;
 
-		return JAG.fromJSON(description);
+		return this.__createModel(description);
 	}
 
 	/**
@@ -78,7 +80,11 @@ export default class JAGService {
 	 * Creates a new jag with the specified model. This uses the urn property supplied in the model.
 	 */
 	async create(model) {
+		// Service instance creating a model become implicitly responsible for handling updates to that model.
+		// Multiple instances can be attached to a single model instance.
+		model.addEventListener('update', this._handleUpdate.bind(this));
 		const description = model.toJSON();
+
 		await this._storage.create(description);
 	}
 
@@ -87,6 +93,8 @@ export default class JAGService {
 	 * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
 	 */
 	update(model) {
+		const description = model.toJSON();
+		this._storage.update(description);
 	}
 
 	/**
@@ -94,6 +102,28 @@ export default class JAGService {
 	 */
 	remove(urn) {
 
+	}
+
+	/**
+	 * Creates a model from a json description, stores it in cache and attaches the necessary listeners.
+	 */
+	_createModel(description) {
+		const model = JAG.fromJSON(description);
+		// Listen to update events to commit the change in storage.
+		model.addEventListener('update', this._handleUpdate.bind(this));
+
+		// @TODO: store model in cache
+		return model;
+	}
+
+	/**
+	 * Handles model update.
+	 */
+	_handleUpdate(e) {
+		const model = e.target;
+
+		// @TODO: check that we are responsible for this model.
+		this.update(model);
 	}
 
 }
