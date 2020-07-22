@@ -3,12 +3,13 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.37
+ * @version 0.43
  */
 
- import JAG from '../models/jag.js';
- import JAGService from '../services/jag.js';
- import UndefinedJAG from '../models/undefined.js';
+import JAG from '../models/jag.js';
+import JAGService from '../services/jag.js';
+import UndefinedJAG from '../models/undefined.js';
+
 
 customElements.define('jag-library', class extends HTMLElement {
 
@@ -24,7 +25,9 @@ customElements.define('jag-library', class extends HTMLElement {
 		this.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
 		this._default = this._items[0];
 
+		this.clearItems();
 		this.loadFromDB();
+		this.loadFromLocalhost();
 	}
 
 	clearItems() {
@@ -115,10 +118,16 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		this.clearItems();
 
 		const idb_service = JAGService.instance('idb-service');
 		const jags = await idb_service.all();
+		jags.forEach(jag => this.addItem(jag));
+
+	}
+
+	async loadFromLocalhost() {
+		const rest_service = JAGService.instance('local-rest-service');
+		const jags = await rest_service.all();
 		jags.forEach(jag => this.addItem(jag));
 	}
 

@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.46
+ * @version 0.51
  */
 
 import Playground from './playground.js';
@@ -13,6 +13,7 @@ import Properties from './views/properties.js';
 import GraphService from './services/graph-service.js';
 import JAGService from './services/jag.js';
 import IndexedDBStorage from './storages/indexed-db.js';
+import RESTStorage from './storages/rest.js';
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,8 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Initializes local storage
 	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
 	await idb_storage.init();
+
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
 	JAGService.createInstance('idb-service', idb_storage);
+
+	// @TODO: this should be setup by the user (configuration file).
+	// Initializes a rest storage
+	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
+	JAGService.createInstance('local-rest-service', rest_storage);
 
 	const body = document.querySelector('body');
 
