@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.29
+ * @version 0.38
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -89,6 +89,168 @@ export default class JAG extends EventTarget {
 			'bindings': bindings,
 		} = json;
 
+		try {
+			if (!urn)
+				throw new Error(`Must have a URN string of valid format.`);
+
+			if (typeof urn !== "string")
+				throw new Error(`URN must be a string of valid format.`);
+
+			if (!urn.match(/^[a-z0-9:-]+$/))
+				throw new Error('URN must be a valid format.');
+
+			if (!name)
+				throw new Error(`Must have a name string.`);
+
+			if (typeof name !== "string")
+				throw new Error(`Name must be a string.`);
+
+			if (!description)
+				throw new Error(`Must have a description string.`);
+
+			if (typeof description !== "string")
+				throw new Error(`Description must be a string.`);
+
+			if (!connector)
+				throw new Error(`Must have a connector object with execution and operator types.`);
+
+			if (!connector.execution)
+				throw new Error(`Connector must have execution and operator types.`);
+
+			if (typeof connector.execution !== "string")
+				throw new Error(`Connector must have an execution type which is a string.`);
+
+			if (!connector.operator)
+				throw new Error(`Connector must have operator type.`);
+
+			if (typeof connector.operator !== "string")
+				throw new Error(`Connector must have an operator type which is a string.`);
+
+			if (Object.keys(connector).length !== 2)
+				throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
+
+			if (!(inputs instanceof Array))
+				throw new Error(`Expected inputs to be an array of objects.`);
+
+			for (let i = 0; i < inputs.length; ++i) {
+				if (!input)
+					throw new Error(`Input ${i} must be an object with name and type strings.`);
+
+				if (!input.name)
+					throw new Error(`Input ${i} does not have a name.`);
+
+				if (!input.type)
+					throw new Error(`Input ${i} (${input.name}) does not have a type.`);
+
+				if (Object.keys(input).length !== 2)
+					throw new Error(`Input ${i} (${input.name}) contains unknown properties: only accepts name and type strings.`);
+			}
+
+			if (!(outputs instanceof Array))
+				throw new Error(`Expected outputs to be an array of objects.`);
+
+			for (let i = 0; i < outputs.length; ++i) {
+				if (!output)
+					throw new Error(`Output ${i} must be an object with name and type strings.`);
+
+				if (!output.name)
+					throw new Error(`Output ${i} does not have a name.`);
+
+				if (typeof output.name !== "string")
+					throw new Error(`Output ${i} must have a name which is a string.`);
+
+				if (!output.type)
+					throw new Error(`Output ${i} (${output.name}) does not have a type.`);
+
+				if (typeof output.type !== "string")
+					throw new Error(`Output ${i} must have a type which is a string.`);
+
+				if (Object.keys(input).length !== 2)
+					throw new Error(`Output ${i} (${output.name}) contains unknown properties: only accepts name and type strings.`);
+			}
+
+			if (!(children instanceof Array))
+				throw new Error(`Expected children to be an array of objects.`);
+
+			for (let i = 0; i < children.length; ++i) {
+				const child = children[i];
+
+				if (!child)
+					throw new Error(`Child ${i} must be an object with URN, UUID, and optional contextual name and description strings.`)
+
+				if (!child.urn)
+					throw new Error(`Child ${i} does not have a URN specified.`);
+
+				if (!child.id)
+					throw new Error(`Child ${i} does not have a UUID specified.`);
+
+				let ctx_params = 0;
+
+				if (child.name)
+					if (typeof child.name !== "string")
+						throw new Error(`Child ${i} may only have a name which is a string.`);
+					ctx_params++;
+
+				if (child.description)
+					if (typeof child.description !== "string")
+						throw new Error(`Child ${i} may only have a description which is a stirng.`);
+					ctx_params++;
+
+				if (Object.keys(child).length !== 2 + ctx_params)
+					throw new Error(`Child ${i} contains unknown properties: only accepts URN, UUID, and optional contextual name and description strings.`);
+			}
+
+			if (!(bindings instanceof Array))
+				throw new Error(`Expected bindings to be an array of objects.`);
+
+			for (let i = 0; i < bindings.length; ++i) {
+				const binding = bindings[i];
+
+				if (!binding)
+					throw new Error(`Binding ${i} must be an object with provider and consumer UUID and name strings.`);
+
+				if (!binding.consumer)
+					throw new Error(`Binding ${i} must have a consumer with UUID and name strings.`);
+
+				if (!binding.consumer.id)
+					throw new Error(`Binding ${i} must have a UUID string for its consumer.`);
+
+				if (typeof binding.consumer.id !== "string")
+					throw new Error(`Binding ${i} must have a UUID for its consumer which is a string.`);
+
+				if (!binding.consumer.name)
+					throw new Error(`Binding ${i} must have a name string for its consumer.`);
+
+				if (typeof binding.consumer.name !== "string")
+					throw new Error(`Binding ${i} must have a name for its consumer which is a string.`);
+
+				if (Object.keys(binding.consumer).length !== 2)
+					throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and name strings.`);
+
+				if (!binding.provider)
+					throw new Error(`Binding ${i} must have a provider with UUID and name strings.`);
+
+				if (!binding.provider.id)
+					throw new Error(`Binding ${i} must have a UUID string for its provider.`);
+
+				if (typeof binding.provider.id !== "string")
+					throw new Error(`Binding ${i} must have a UUID for its provider which is a string.`);
+
+				if (!binding.provider.name)
+					throw new Error(`Binding ${i} must have a name string for its provider.`);
+
+				if (typeof binding.provider.name !== "string")
+					throw new Error(`Binding ${i} must have a name for its provider which is a string.`);
+
+				if (Object.keys(binding.provider).length !== 2)
+					throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and name strings.`);
+
+				if (Object.keys(binding).length !== 2)
+					throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and name strings.`);
+			}
+		} catch (e) {
+			throw new Error(`Error parsing ${urn}: ${e.message}`);
+		}
 
 		return new JAG(json);
 		// @TODO: explode the json definition to use the constructor below
