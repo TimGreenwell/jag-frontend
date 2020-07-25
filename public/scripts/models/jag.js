@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.38
+ * @version 0.73
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -96,7 +96,7 @@ export default class JAG extends EventTarget {
 			if (typeof urn !== "string")
 				throw new Error(`URN must be a string of valid format.`);
 
-			if (!urn.match(/^[a-z0-9:-]+$/))
+			if (urn.match(/^[a-z0-9:-]+$/) == null)
 				throw new Error('URN must be a valid format.');
 
 			if (!name)
@@ -105,148 +105,226 @@ export default class JAG extends EventTarget {
 			if (typeof name !== "string")
 				throw new Error(`Name must be a string.`);
 
-			if (!description)
-				throw new Error(`Must have a description string.`);
+			if (name.length == 0)
+				throw new Error(`Name must be at least 1 character.`);
 
-			if (typeof description !== "string")
-				throw new Error(`Description must be a string.`);
+			if (description !== undefined)
+				if (typeof description !== "string")
+					throw new Error(`Description must be a string.`);
 
-			if (!connector)
+			if (connector == undefined)
 				throw new Error(`Must have a connector object with execution and operator types.`);
 
-			if (!connector.execution)
+			if (connector.execution == undefined)
 				throw new Error(`Connector must have execution and operator types.`);
 
 			if (typeof connector.execution !== "string")
 				throw new Error(`Connector must have an execution type which is a string.`);
 
-			if (!connector.operator)
+			if (connector.execution.length == 0)
+				throw new Error(`Connector execution type must be at least 1 character.`);
+
+			if (connector.operator == undefined)
 				throw new Error(`Connector must have operator type.`);
 
 			if (typeof connector.operator !== "string")
 				throw new Error(`Connector must have an operator type which is a string.`);
 
+			if (connector.operator.length == 0)
+				throw new Error(`Connector execution type must be at least 1 character.`);
+
 			if (Object.keys(connector).length !== 2)
 				throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
 
-			if (!(inputs instanceof Array))
-				throw new Error(`Expected inputs to be an array of objects.`);
+			if (inputs !== undefined) {
 
-			for (let i = 0; i < inputs.length; ++i) {
-				if (!input)
-					throw new Error(`Input ${i} must be an object with name and type strings.`);
+				if (!(inputs instanceof Array))
+					throw new Error(`Expected inputs to be an array of objects.`);
 
-				if (!input.name)
-					throw new Error(`Input ${i} does not have a name.`);
+				for (let i = 0; i < inputs.length; ++i) {
+					const input = inputs[i];
 
-				if (!input.type)
-					throw new Error(`Input ${i} (${input.name}) does not have a type.`);
+					if (input == undefined)
+						throw new Error(`Input ${i} must be an object with name and type strings.`);
 
-				if (Object.keys(input).length !== 2)
-					throw new Error(`Input ${i} (${input.name}) contains unknown properties: only accepts name and type strings.`);
+					if (input.name == undefined)
+						throw new Error(`Input ${i} does not have a name.`);
+
+					if (typeof input.name !== "string")
+						throw new Error(`Input ${i} must have a name which is a string.`);
+
+					if (input.name.length == 0)
+						throw new Error(`Input ${i} must have a name at least 1 character long.`);
+
+					if (input.type == undefined)
+						throw new Error(`Input ${i} (${input.name}) does not have a type.`);
+
+					if (typeof input.type !== "string")
+						throw new Error(`Input ${i} (${input.name}) must have a type which is a string.`);
+
+					if (input.type.length == 0)
+						throw new Error(`Input ${i} (${input.name}) must have a type at least 1 character long.`);
+
+					if (Object.keys(input).length !== 2)
+						throw new Error(`Input ${i} (${input.name}) contains unknown properties: only accepts name and type strings.`);
+				}
+
 			}
 
-			if (!(outputs instanceof Array))
-				throw new Error(`Expected outputs to be an array of objects.`);
+			if (outputs !== undefined) {
 
-			for (let i = 0; i < outputs.length; ++i) {
-				if (!output)
-					throw new Error(`Output ${i} must be an object with name and type strings.`);
+				if (!(outputs instanceof Array))
+					throw new Error(`Expected outputs to be an array of objects.`);
 
-				if (!output.name)
-					throw new Error(`Output ${i} does not have a name.`);
+				for (let i = 0; i < outputs.length; ++i) {
+					const output = outputs[i];
 
-				if (typeof output.name !== "string")
-					throw new Error(`Output ${i} must have a name which is a string.`);
+					if (output == undefined)
+						throw new Error(`Output ${i} must be an object with name and type strings.`);
 
-				if (!output.type)
-					throw new Error(`Output ${i} (${output.name}) does not have a type.`);
+					if (output.name == undefined)
+						throw new Error(`Output ${i} does not have a name.`);
 
-				if (typeof output.type !== "string")
-					throw new Error(`Output ${i} must have a type which is a string.`);
+					if (typeof output.name !== "string")
+						throw new Error(`Output ${i} must have a name which is a string.`);
 
-				if (Object.keys(input).length !== 2)
-					throw new Error(`Output ${i} (${output.name}) contains unknown properties: only accepts name and type strings.`);
+					if (output.name.length == 0)
+						throw new Error(`Output ${i} must have a name at least 1 character long.`);
+
+					if (output.type == undefined)
+						throw new Error(`Output ${i} (${output.name}) does not have a type.`);
+
+					if (typeof output.type !== "string")
+						throw new Error(`Output ${i} (${output.name}) must have a type which is a string.`);
+
+					if (output.type.length == 0)
+						throw new Error(`Output ${i} (${output.name}) must have a type at least 1 character long.`);
+
+					if (Object.keys(output).length !== 2)
+						throw new Error(`Output ${i} (${output.name}) contains unknown properties: only accepts name and type strings.`);
+				}
+
 			}
 
-			if (!(children instanceof Array))
-				throw new Error(`Expected children to be an array of objects.`);
+			if (children !== undefined) {
 
-			for (let i = 0; i < children.length; ++i) {
-				const child = children[i];
+				if (!(children instanceof Array))
+					throw new Error(`Expected children to be an array of objects.`);
 
-				if (!child)
-					throw new Error(`Child ${i} must be an object with URN, UUID, and optional contextual name and description strings.`)
+				for (let i = 0; i < children.length; ++i) {
+					const child = children[i];
 
-				if (!child.urn)
-					throw new Error(`Child ${i} does not have a URN specified.`);
+					if (child == undefined)
+						throw new Error(`Child ${i} must be an object with URN, UUID, and optional contextual name and description strings.`);
 
-				if (!child.id)
-					throw new Error(`Child ${i} does not have a UUID specified.`);
+					if (child.urn == undefined)
+						throw new Error(`Child ${i} must have a URN string.`);
 
-				let ctx_params = 0;
+					if (typeof child.urn !== "string")
+						throw new Error(`Child ${i} must have a URN which is a string.`);
 
-				if (child.name)
-					if (typeof child.name !== "string")
-						throw new Error(`Child ${i} may only have a name which is a string.`);
-					ctx_params++;
+					if (child.urn.length == 0)
+						throw new Error(`Child ${i} must have a URN string with at least 1 character.`);
 
-				if (child.description)
-					if (typeof child.description !== "string")
-						throw new Error(`Child ${i} may only have a description which is a stirng.`);
-					ctx_params++;
+					if (child.id == undefined)
+						throw new Error(`Child ${i} does not have a UUID specified.`);
 
-				if (Object.keys(child).length !== 2 + ctx_params)
-					throw new Error(`Child ${i} contains unknown properties: only accepts URN, UUID, and optional contextual name and description strings.`);
+					if (typeof child.id !== "string")
+						throw new Error(`Child ${i} must have a UUID which is a string.`);
+
+					if (!child.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+						throw new Error(`Child ${i} must have an id which is a v4 UUID conforming string.`);
+
+					let ctx_params = 0;
+
+					if (child.name) {
+						if (typeof child.name !== "string")
+							throw new Error(`Child ${i} may only have a name which is a string.`);
+
+						if (child.name.length == 0)
+							throw new Error(`Child ${i} may only have a name string with at least 1 character.`);
+
+						ctx_params++;
+					}
+
+					if (child.description) {
+						if (typeof child.description !== "string")
+							throw new Error(`Child ${i} may only have a description which is a string.`);
+
+						if (child.description.length == 0)
+							throw new Error(`Child ${i} may only have a description string with at least 1 character.`);
+
+						ctx_params++;
+					}
+
+					if (Object.keys(child).length !== 2 + ctx_params)
+						throw new Error(`Child ${i} contains unknown properties: only accepts URN, UUID, and optional contextual name and description strings.`);
+				}
+
 			}
 
-			if (!(bindings instanceof Array))
-				throw new Error(`Expected bindings to be an array of objects.`);
+			if (bindings !== undefined) {
 
-			for (let i = 0; i < bindings.length; ++i) {
-				const binding = bindings[i];
+				if (!(bindings instanceof Array))
+					throw new Error(`Expected bindings to be an array of objects.`);
 
-				if (!binding)
-					throw new Error(`Binding ${i} must be an object with provider and consumer UUID and name strings.`);
+				for (let i = 0; i < bindings.length; ++i) {
+					const binding = bindings[i];
 
-				if (!binding.consumer)
-					throw new Error(`Binding ${i} must have a consumer with UUID and name strings.`);
+					if (binding == undefined)
+						throw new Error(`Binding ${i} must be an object with provider and consumer UUID and name strings.`);
 
-				if (!binding.consumer.id)
-					throw new Error(`Binding ${i} must have a UUID string for its consumer.`);
+					if (binding.consumer == undefined)
+						throw new Error(`Binding ${i} must have a consumer with UUID and name strings.`);
 
-				if (typeof binding.consumer.id !== "string")
-					throw new Error(`Binding ${i} must have a UUID for its consumer which is a string.`);
+					if (binding.consumer.id == undefined)
+						throw new Error(`Binding ${i} must have a UUID string for its consumer.`);
 
-				if (!binding.consumer.name)
-					throw new Error(`Binding ${i} must have a name string for its consumer.`);
+					if (typeof binding.consumer.id !== "string")
+						throw new Error(`Binding ${i} must have a UUID for its consumer which is a string.`);
 
-				if (typeof binding.consumer.name !== "string")
-					throw new Error(`Binding ${i} must have a name for its consumer which is a string.`);
+					if (!binding.consumer.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+						throw new Error(`Binding ${i} must have an id for its consumer which is a v4 UUID conforming string.`);
 
-				if (Object.keys(binding.consumer).length !== 2)
-					throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and name strings.`);
+					if (binding.consumer.name == undefined)
+						throw new Error(`Binding ${i} must have a name string for its consumer.`);
 
-				if (!binding.provider)
-					throw new Error(`Binding ${i} must have a provider with UUID and name strings.`);
+					if (typeof binding.consumer.name !== "string")
+						throw new Error(`Binding ${i} must have a name for its consumer which is a string.`);
 
-				if (!binding.provider.id)
-					throw new Error(`Binding ${i} must have a UUID string for its provider.`);
+					if (binding.consumer.name.length == 0)
+						throw new Error(`Binding ${i} must have a name string for its consumer which is at least 1 character.`);
 
-				if (typeof binding.provider.id !== "string")
-					throw new Error(`Binding ${i} must have a UUID for its provider which is a string.`);
+					if (Object.keys(binding.consumer).length !== 2)
+						throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and name strings.`);
 
-				if (!binding.provider.name)
-					throw new Error(`Binding ${i} must have a name string for its provider.`);
+					if (binding.provider == undefined)
+						throw new Error(`Binding ${i} must have a provider with UUID and name strings.`);
 
-				if (typeof binding.provider.name !== "string")
-					throw new Error(`Binding ${i} must have a name for its provider which is a string.`);
+					if (binding.provider.id == undefined)
+						throw new Error(`Binding ${i} must have a UUID string for its provider.`);
 
-				if (Object.keys(binding.provider).length !== 2)
-					throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and name strings.`);
+					if (typeof binding.provider.id !== "string")
+						throw new Error(`Binding ${i} must have a UUID for its provider which is a string.`);
 
-				if (Object.keys(binding).length !== 2)
-					throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and name strings.`);
+					if (!binding.provider.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+						throw new Error(`Binding ${i} must have an id for its provider which is a v4 UUID conforming string.`);
+
+					if (binding.provider.name == undefined)
+						throw new Error(`Binding ${i} must have a name string for its provider.`);
+
+					if (typeof binding.provider.name !== "string")
+						throw new Error(`Binding ${i} must have a name for its provider which is a string.`);
+
+					if (binding.provider.name.length == 0)
+						throw new Error(`Binding ${i} must have a name string for its provider which is at least 1 character.`);
+
+					if (Object.keys(binding.provider).length !== 2)
+						throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and name strings.`);
+
+					if (Object.keys(binding).length !== 2)
+						throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and name strings.`);
+				}
 			}
 		} catch (e) {
 			throw new Error(`Error parsing ${urn}: ${e.message}`);
