@@ -5,7 +5,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 3.62
+ * @version 3.63
  */
 
 import JAG from '../models/jag.js';
@@ -66,7 +66,7 @@ export default class JAGService {
 
 		if(description === undefined) return null;
 
-		return this.__createModel(description);
+		return this._createModel(description);
 	}
 
 	/**
