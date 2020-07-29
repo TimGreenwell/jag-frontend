@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.53
+ * @version 0.54
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
@@ -70,11 +70,11 @@ function validBinding() {
     return {
         consumer: {
             id: UUIDv4(),
-            name: 'consumer-property'
+            property: 'consumer-property'
         },
         provider: {
             id: UUIDv4(),
-            name: 'provider-property'
+            property: 'provider-property'
         }
     };
 }

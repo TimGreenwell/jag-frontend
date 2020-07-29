@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.73
+ * @version 0.75
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -272,10 +272,10 @@ export default class JAG extends EventTarget {
 					const binding = bindings[i];
 
 					if (binding == undefined)
-						throw new Error(`Binding ${i} must be an object with provider and consumer UUID and name strings.`);
+						throw new Error(`Binding ${i} must be an object with provider and consumer UUID and property strings.`);
 
 					if (binding.consumer == undefined)
-						throw new Error(`Binding ${i} must have a consumer with UUID and name strings.`);
+						throw new Error(`Binding ${i} must have a consumer with UUID and property strings.`);
 
 					if (binding.consumer.id == undefined)
 						throw new Error(`Binding ${i} must have a UUID string for its consumer.`);
@@ -286,20 +286,20 @@ export default class JAG extends EventTarget {
 					if (!binding.consumer.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
 						throw new Error(`Binding ${i} must have an id for its consumer which is a v4 UUID conforming string.`);
 
-					if (binding.consumer.name == undefined)
-						throw new Error(`Binding ${i} must have a name string for its consumer.`);
+					if (binding.consumer.property == undefined)
+						throw new Error(`Binding ${i} must have a property string for its consumer.`);
 
-					if (typeof binding.consumer.name !== "string")
-						throw new Error(`Binding ${i} must have a name for its consumer which is a string.`);
+					if (typeof binding.consumer.property !== "string")
+						throw new Error(`Binding ${i} must have a property for its consumer which is a string.`);
 
-					if (binding.consumer.name.length == 0)
-						throw new Error(`Binding ${i} must have a name string for its consumer which is at least 1 character.`);
+					if (binding.consumer.property.length == 0)
+						throw new Error(`Binding ${i} must have a property string for its consumer which is at least 1 character.`);
 
 					if (Object.keys(binding.consumer).length !== 2)
-						throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and name strings.`);
+						throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and property strings.`);
 
 					if (binding.provider == undefined)
-						throw new Error(`Binding ${i} must have a provider with UUID and name strings.`);
+						throw new Error(`Binding ${i} must have a provider with UUID and property strings.`);
 
 					if (binding.provider.id == undefined)
 						throw new Error(`Binding ${i} must have a UUID string for its provider.`);
@@ -310,20 +310,20 @@ export default class JAG extends EventTarget {
 					if (!binding.provider.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
 						throw new Error(`Binding ${i} must have an id for its provider which is a v4 UUID conforming string.`);
 
-					if (binding.provider.name == undefined)
-						throw new Error(`Binding ${i} must have a name string for its provider.`);
+					if (binding.provider.property == undefined)
+						throw new Error(`Binding ${i} must have a property string for its provider.`);
 
-					if (typeof binding.provider.name !== "string")
-						throw new Error(`Binding ${i} must have a name for its provider which is a string.`);
+					if (typeof binding.provider.property !== "string")
+						throw new Error(`Binding ${i} must have a property for its provider which is a string.`);
 
-					if (binding.provider.name.length == 0)
-						throw new Error(`Binding ${i} must have a name string for its provider which is at least 1 character.`);
+					if (binding.provider.property.length == 0)
+						throw new Error(`Binding ${i} must have a property string for its provider which is at least 1 character.`);
 
 					if (Object.keys(binding.provider).length !== 2)
-						throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and name strings.`);
+						throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and property strings.`);
 
 					if (Object.keys(binding).length !== 2)
-						throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and name strings.`);
+						throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and property strings.`);
 				}
 			}
 		} catch (e) {
