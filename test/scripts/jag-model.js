@@ -3,85 +3,83 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.49
+ * @version 0.51
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
 import { UUIDv4 } from '/src-scripts/utils/uuid.js';
 
-mocha.setup('tdd');
+function validJAG({ description = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined } = {}) {
+    let valid_jag = {
+        'urn': 'urn:ihmc:jagat:test:valid-jag',
+        'name': 'Valid',
+        'connector': {
+            'execution': JAG.EXECUTION.NONE,
+            'operator': JAG.OPERATOR.NONE
+        }
+    };
+
+    if (description)
+        valid_jag['description'] = description;
+
+    if (inputs)
+        valid_jag['inputs'] = inputs;
+
+    if (outputs)
+        valid_jag['outputs'] = outputs;
+
+    if (children)
+        valid_jag['children'] = children;
+
+    if (bindings)
+        valid_jag['bindings'] = bindings;
+
+    return valid_jag;
+}
+
+function validChild(name, description) {
+    let valid_child = {
+        urn: 'urn:ihmc:jagat:test:valid-child',
+        id: UUIDv4()
+    };
+
+    if (name)
+        valid_child.name = name;
+
+    if (description)
+        valid_child.description = description;
+
+    return valid_child;
+}
+
+function validInput() {
+    return {
+        name: 'valid-input',
+        type: 'valid-input-type'
+    };
+}
+
+function validOutput() {
+    return {
+        name: 'valid-output',
+        type: 'valid-output-type'
+    };
+}
+
+function validBinding() {
+    return {
+        consumer: {
+            id: UUIDv4(),
+            name: 'consumer-property'
+        },
+        provider: {
+            id: UUIDv4(),
+            name: 'provider-property'
+        }
+    };
+}
 
 suite('Create a new JAG model', () => {
-
-    function validJAG({ description = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined } = {}) {
-        let valid_jag = {
-            'urn': 'urn:ihmc:jagat:test:valid-jag',
-            'name': 'Valid',
-            'connector': {
-                'execution': JAG.EXECUTION.NONE,
-                'operator': JAG.OPERATOR.NONE
-            }
-        };
-
-        if (description)
-            valid_jag['description'] = description;
-
-        if (inputs)
-            valid_jag['inputs'] = inputs;
-
-        if (outputs)
-            valid_jag['outputs'] = outputs;
-
-        if (children)
-            valid_jag['children'] = children;
-
-        if (bindings)
-            valid_jag['bindings'] = bindings;
-
-        return valid_jag;
-    }
-
-    function validChild(name, description) {
-        let valid_child = {
-            urn: 'urn:ihmc:jagat:test:valid-child',
-            id: UUIDv4()
-        };
-
-        if (name)
-            valid_child.name = name;
-
-        if (description)
-            valid_child.description = description;
-
-        return valid_child;
-    }
-
-    function validInput() {
-        return {
-            name: 'valid-input',
-            type: 'valid-input-type'
-        };
-    }
-
-    function validOutput() {
-        return {
-            name: 'valid-output',
-            type: 'valid-output-type'
-        };
-    }
-
-    function validBinding() {
-        return {
-            consumer: {
-                id: UUIDv4(),
-                name: 'consumer-property'
-            },
-            provider: {
-                id: UUIDv4(),
-                name: 'provider-property'
-            }
-        };
-    }
 
     suite('Successfully create a proper JAG', () => {
         test('Create a proper JAG with only required properties', () => {
@@ -1706,6 +1704,4 @@ suite('Create a new JAG model', () => {
 
     });
 });
-
-mocha.run();
 
