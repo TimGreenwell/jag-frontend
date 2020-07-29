@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.51
+ * @version 0.53
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
@@ -530,7 +530,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with a non-array inputs', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: {
 
@@ -548,7 +548,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with a non-object input', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             0
@@ -566,7 +566,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with an empty input', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             {}
@@ -586,7 +586,7 @@ suite('Create a new JAG model', () => {
             try {
                 input.foo = 'bar';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input
@@ -606,7 +606,7 @@ suite('Create a new JAG model', () => {
             try {
                 delete input_name.name;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_name
@@ -626,7 +626,7 @@ suite('Create a new JAG model', () => {
             try {
                 input_name.name = 0;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_name
@@ -646,7 +646,7 @@ suite('Create a new JAG model', () => {
             try {
                 input_name.name = '';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_name
@@ -666,7 +666,7 @@ suite('Create a new JAG model', () => {
             try {
                 delete input_type.type;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_type
@@ -686,7 +686,7 @@ suite('Create a new JAG model', () => {
             try {
                 input_type.type = 0;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_type
@@ -706,7 +706,7 @@ suite('Create a new JAG model', () => {
             try {
                 input_type.type = '';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             input_type
@@ -733,7 +733,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with a non-array outputs', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: {
 
@@ -751,7 +751,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with a non-object output', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             0
@@ -769,7 +769,7 @@ suite('Create a new JAG model', () => {
 
         test('Create a JAG with an empty output', () => {
             try {
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             {}
@@ -789,7 +789,7 @@ suite('Create a new JAG model', () => {
             try {
                 output.foo = 'bar';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output
@@ -809,7 +809,7 @@ suite('Create a new JAG model', () => {
             try {
                 delete output_name.name;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output_name
@@ -829,7 +829,7 @@ suite('Create a new JAG model', () => {
             try {
                 output_name.name = 0;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output_name
@@ -849,7 +849,7 @@ suite('Create a new JAG model', () => {
             try {
                 output_name.name = '';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output_name
@@ -869,7 +869,7 @@ suite('Create a new JAG model', () => {
             try {
                 delete output_type.type;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output_type
@@ -889,7 +889,7 @@ suite('Create a new JAG model', () => {
             try {
                 output_type.type = 0;
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         inputs: [
                             output_type
@@ -909,7 +909,7 @@ suite('Create a new JAG model', () => {
             try {
                 output_type.type = '';
 
-                JAG.fromJSON(validJSON(
+                JAG.fromJSON(validJAG(
                     {
                         outputs: [
                             output_type
@@ -1354,9 +1354,9 @@ suite('Create a new JAG model', () => {
             throw new Error('Should fail to create JAG with a binding with non-object consumer.');
         });
 
-        test('Create a JAG with a binding with a consumer with no name', () => {
+        test('Create a JAG with a binding with a consumer with no property', () => {
             try {
-                delete binding_consumer_name.consumer.name;
+                delete binding_consumer_name.consumer.property;
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1371,12 +1371,12 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a consumer with no name.');
+            throw new Error('Should fail to create JAG with a binding with a consumer with no property.');
         });
 
-        test('Create a JAG with a binding with a consumer with non-string name', () => {
+        test('Create a JAG with a binding with a consumer with non-string property', () => {
             try {
-                binding_consumer_name.consumer.name = 0;
+                binding_consumer_name.consumer.property = 0;
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1391,12 +1391,12 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a consumer with non-string name.');
+            throw new Error('Should fail to create JAG with a binding with a consumer with non-string property.');
         });
 
-        test('Create a JAG with a binding with a consumer with an empty name', () => {
+        test('Create a JAG with a binding with a consumer with an empty property', () => {
             try {
-                binding_consumer_name.consumer.name = '';
+                binding_consumer_name.consumer.property = '';
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1411,7 +1411,7 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a consumer with an empty name.');
+            throw new Error('Should fail to create JAG with a binding with a consumer with an empty property.');
         });
 
         test('Create a JAG with a binding with a consumer with no id', () => {
@@ -1558,9 +1558,9 @@ suite('Create a new JAG model', () => {
             throw new Error('Should fail to create JAG with a binding with non-object provider.');
         });
 
-        test('Create a JAG with a binding with a provider with no name', () => {
+        test('Create a JAG with a binding with a provider with no property', () => {
             try {
-                delete binding_provider_name.provider.name;
+                delete binding_provider_name.provider.property;
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1575,12 +1575,12 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a provider with no name.');
+            throw new Error('Should fail to create JAG with a binding with a provider with no property.');
         });
 
-        test('Create a JAG with a binding with a provider with non-string name', () => {
+        test('Create a JAG with a binding with a provider with non-string property', () => {
             try {
-                binding_provider_name.provider.name = 0;
+                binding_provider_name.provider.property = 0;
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1595,12 +1595,12 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a provider with non-string name.');
+            throw new Error('Should fail to create JAG with a binding with a provider with non-string property.');
         });
 
-        test('Create a JAG with a binding with a provider with an empty name', () => {
+        test('Create a JAG with a binding with a provider with an empty property', () => {
             try {
-                binding_provider_name.provider.name = '';
+                binding_provider_name.provider.property = '';
 
                 JAG.fromJSON(validJAG(
                     {
@@ -1615,7 +1615,7 @@ suite('Create a new JAG model', () => {
                 return;
             }
 
-            throw new Error('Should fail to create JAG with a binding with a provider with an empty name.');
+            throw new Error('Should fail to create JAG with a binding with a provider with an empty property.');
         });
 
         test('Create a JAG with a binding with a provider with no id', () => {
