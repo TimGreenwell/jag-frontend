@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.54
+ * @version 0.55
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
@@ -66,15 +66,18 @@ function validOutput() {
     };
 }
 
-function validBinding() {
+function validBinding(provider = undefined, consumer = undefined) {
+    const provider_id = provider || UUIDv4();
+    const consumer_id = consumer || UUIDv4();
+
     return {
-        consumer: {
-            id: UUIDv4(),
-            property: 'consumer-property'
-        },
         provider: {
-            id: UUIDv4(),
+            id: provider_id,
             property: 'provider-property'
+        },
+        consumer: {
+            id: consumer_id,
+            property: 'consumer-property'
         }
     };
 }
@@ -209,11 +212,51 @@ suite('Create a new JAG model', () => {
             ));
         });
 
-        test('Create a proper JAG with a binding', () => {
+        test('Create a proper JAG with a UUID binding', () => {
             JAG.fromJSON(validJAG(
                 {
                     bindings: [
                         validBinding()
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with an any-provider binding', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    bindings: [
+                        validBinding('any')
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with an any-consumer binding', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    bindings: [
+                        validBinding(undefined, 'any')
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with a this-provider binding', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    bindings: [
+                        validBinding('this')
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with a this-consumer binding', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    bindings: [
+                        validBinding(undefined, 'this')
                     ]
                 }
             ));

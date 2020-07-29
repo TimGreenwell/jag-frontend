@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.75
+ * @version 0.77
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -283,7 +283,7 @@ export default class JAG extends EventTarget {
 					if (typeof binding.consumer.id !== "string")
 						throw new Error(`Binding ${i} must have a UUID for its consumer which is a string.`);
 
-					if (!binding.consumer.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+					if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
 						throw new Error(`Binding ${i} must have an id for its consumer which is a v4 UUID conforming string.`);
 
 					if (binding.consumer.property == undefined)
@@ -307,7 +307,7 @@ export default class JAG extends EventTarget {
 					if (typeof binding.provider.id !== "string")
 						throw new Error(`Binding ${i} must have a UUID for its provider which is a string.`);
 
-					if (!binding.provider.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+					if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
 						throw new Error(`Binding ${i} must have an id for its provider which is a v4 UUID conforming string.`);
 
 					if (binding.provider.property == undefined)
