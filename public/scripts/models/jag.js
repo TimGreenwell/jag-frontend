@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.77
+ * @version 0.78
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -272,19 +272,19 @@ export default class JAG extends EventTarget {
 					const binding = bindings[i];
 
 					if (binding == undefined)
-						throw new Error(`Binding ${i} must be an object with provider and consumer UUID and property strings.`);
+						throw new Error(`Binding ${i} must be an object with provider and consumer ID and property strings.`);
 
 					if (binding.consumer == undefined)
-						throw new Error(`Binding ${i} must have a consumer with UUID and property strings.`);
+						throw new Error(`Binding ${i} must have a consumer with ID and property strings.`);
 
 					if (binding.consumer.id == undefined)
-						throw new Error(`Binding ${i} must have a UUID string for its consumer.`);
+						throw new Error(`Binding ${i} must have a ID string for its consumer.`);
 
 					if (typeof binding.consumer.id !== "string")
-						throw new Error(`Binding ${i} must have a UUID for its consumer which is a string.`);
+						throw new Error(`Binding ${i} must have a ID for its consumer which is a string.`);
 
 					if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-						throw new Error(`Binding ${i} must have an id for its consumer which is a v4 UUID conforming string.`);
+						throw new Error(`Binding ${i} must have an id for its consumer which is a v4 UUID conforming string, "any" or "this".`);
 
 					if (binding.consumer.property == undefined)
 						throw new Error(`Binding ${i} must have a property string for its consumer.`);
@@ -296,19 +296,19 @@ export default class JAG extends EventTarget {
 						throw new Error(`Binding ${i} must have a property string for its consumer which is at least 1 character.`);
 
 					if (Object.keys(binding.consumer).length !== 2)
-						throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts UUID and property strings.`);
+						throw new Error(`Binding ${i} has a consumer with unknown properties: only accepts ID and property strings.`);
 
 					if (binding.provider == undefined)
-						throw new Error(`Binding ${i} must have a provider with UUID and property strings.`);
+						throw new Error(`Binding ${i} must have a provider with ID and property strings.`);
 
 					if (binding.provider.id == undefined)
-						throw new Error(`Binding ${i} must have a UUID string for its provider.`);
+						throw new Error(`Binding ${i} must have a ID string for its provider.`);
 
 					if (typeof binding.provider.id !== "string")
-						throw new Error(`Binding ${i} must have a UUID for its provider which is a string.`);
+						throw new Error(`Binding ${i} must have a ID for its provider which is a string.`);
 
 					if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-						throw new Error(`Binding ${i} must have an id for its provider which is a v4 UUID conforming string.`);
+						throw new Error(`Binding ${i} must have an id for its provider which is a v4 UUID conforming string, "any" or "this".`);
 
 					if (binding.provider.property == undefined)
 						throw new Error(`Binding ${i} must have a property string for its provider.`);
@@ -320,10 +320,10 @@ export default class JAG extends EventTarget {
 						throw new Error(`Binding ${i} must have a property string for its provider which is at least 1 character.`);
 
 					if (Object.keys(binding.provider).length !== 2)
-						throw new Error(`Binding ${i} has a provider with unknown properties: only accepts UUID and property strings.`);
+						throw new Error(`Binding ${i} has a provider with unknown properties: only accepts ID and property strings.`);
 
 					if (Object.keys(binding).length !== 2)
-						throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with UUID and property strings.`);
+						throw new Error(`Binding ${i} has unknown properties: only accepts provider and consumer with ID and property strings.`);
 				}
 			}
 		} catch (e) {
