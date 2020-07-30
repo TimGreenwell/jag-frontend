@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.88
+ * @version 0.95
  */
 
 import JAG from '../models/jag.js';
@@ -141,9 +141,43 @@ customElements.define('jag-properties', class extends HTMLElement {
 		if (name === null)
 			return;
 
-		const value = window.prompt('Annotation value');
+		let value = window.prompt('Annotation value');
 		if (value === null)
 			return;
+
+		let parsed = false;
+
+		if (value == "true" || value == "false") {
+			const boolean_type = window.confirm('Treat this value as a boolean?');
+			if (boolean_type) value = (value == "true");
+			parsed = boolean_type;
+		} else if (value.match(/^(\+|\-)?[0-9]+(\.[0-9]+)?$/)) {
+
+			if (value.match(/^(\+|\-)?[0-9]+$/)) {
+				const integer_type = window.confirm('Treat this value as an integer?');
+				if (integer_type) value = parseInt(value);
+				parsed = integer_type;
+			}
+
+			if (!parsed) {
+				const float_type = window.confirm('Treat this value as a floating-point number?');
+				if (float_type) value = parseFloat(value);
+				parsed = float_type;
+			}
+		}
+
+		if (!parsed) {
+			const json_type = window.confirm('Treat this value as an abstract JSON structure?');
+
+			if (json_type) {
+				try {
+					value = JSON.parse(value);
+				} catch {
+					window.alert('Failed to parse value: please try again with a valid JSON string.');
+					return;
+				}
+			}
+		}
 
 		this._model.addAnnotation(id, name, value);
 	}
