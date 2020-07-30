@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.60
+ * @version 0.66
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
@@ -12,11 +12,7 @@ import { UUIDv4 } from '/src-scripts/utils/uuid.js';
 function validJAG({ description = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined } = {}) {
     let valid_jag = {
         'urn': 'urn:ihmc:jagat:test:valid-jag',
-        'name': 'Valid',
-        'connector': {
-            'execution': JAG.EXECUTION.NONE,
-            'operator': JAG.OPERATOR.NONE
-        }
+        'name': 'Valid'
     };
 
     if (description)
@@ -37,7 +33,7 @@ function validJAG({ description = undefined, inputs = undefined, outputs = undef
     return valid_jag;
 }
 
-function validChild({ name = undefined, description = undefined, annotations = undefined } = {}) {
+function validChild({ name = undefined, description = undefined, annotations = undefined, iterable = undefined } = {}) {
     let valid_child = {
         urn: 'urn:ihmc:jagat:test:valid-child',
         id: UUIDv4()
@@ -51,6 +47,9 @@ function validChild({ name = undefined, description = undefined, annotations = u
 
     if (annotations)
         valid_child.annotations = annotations;
+
+    if (iterable !== undefined)
+        valid_child.iterable = iterable;
 
     return valid_child;
 }
@@ -171,6 +170,16 @@ suite('Create a new JAG model', () => {
                 {
                     children: [
                         validChild()
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with a child with iterable flag', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    children: [
+                        validChild({ iterable: true })
                     ]
                 }
             ));
@@ -418,20 +427,6 @@ suite('Create a new JAG model', () => {
 
     suite('Fail to create a JAG with improper connector', () => {
         const jag = validJAG();
-
-        test('Create a JAG with no connector', () => {
-            try {
-                delete jag['connector'];
-
-                JAG.fromJSON(jag);
-            } catch {
-                // Success; should have thrown error
-
-                return;
-            }
-
-            throw new Error('Should fail to create JAG with no connector.');
-        });
 
         test('Create a JAG with a non-object connector', () => {
             try {
@@ -1206,6 +1201,26 @@ suite('Create a new JAG model', () => {
             }
 
             throw new Error('Should fail to create JAG with a child with an invalid UUID.');
+        });
+
+        test('Create a JAG with a child with a non-boolean iterable flag', () => {
+            try {
+                const child_iterable = validChild({ iterable: 0 });
+
+                JAG.fromJSON(validJAG(
+                    {
+                        children: [
+                            child_iterable
+                        ]
+                    }
+                ));
+            } catch (e) {
+                // Success; should have thrown error
+                
+                return;
+            }
+
+            throw new Error('Should fail to create JAG with a child with a non-boolean iterable flag.');
         });
 
         test('Create a JAG with a child with a non-string name', () => {

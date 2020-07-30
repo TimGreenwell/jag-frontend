@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.85
+ * @version 0.86
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -237,21 +237,21 @@ export default class JAG extends EventTarget {
 
 					let opt_params = 0;
 
-					if (child.iterable) {
+					if (child.iterable !== undefined) {
 						if (typeof child.iterable !== "boolean")
 							throw new Error(`Child ${i} iterable property must be a boolean.`);
 
 						opt_params++;
 					}
 
-					if (child.annotations) {
+					if (child.annotations !== undefined) {
 						if (child.annotations.constructor != Object)
 							throw new Error(`Child ${i} may only have an annotations which is an object.`);
 
 						opt_params++;
 					}
 
-					if (child.name) {
+					if (child.name !== undefined) {
 						if (typeof child.name !== "string")
 							throw new Error(`Child ${i} may only have a name which is a string.`);
 
@@ -261,7 +261,7 @@ export default class JAG extends EventTarget {
 						opt_params++;
 					}
 
-					if (child.description) {
+					if (child.description !== undefined) {
 						if (typeof child.description !== "string")
 							throw new Error(`Child ${i} may only have a description which is a string.`);
 
