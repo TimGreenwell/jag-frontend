@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.69
+ * @version 0.70
  */
 
 import JAG from '../models/jag.js';
@@ -139,10 +139,10 @@ export default class Edge extends EventTarget {
 				}
 
 				// Now apply any participation annotations.
-				if (annotations.has('atomic') && annotations.get('atomic') == 'true') {
+				if (annotations.has('atomic') && annotations.get('atomic') === true) {
 					this._atomic = true;
 					this._updateParticipation('atomic');
-				} else if (annotations.has('conjunctive') && annotations.get('conjunctive') == 'true') {
+				} else if (annotations.has('conjunctive') && annotations.get('conjunctive') === true) {
 					this._updateParticipation('conjunctive');
 				}
 			} else if (!iterable) {
