@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.55
+ * @version 0.60
  */
 import '/scripts/mocha.js';
 import JAG from '/src-scripts/models/jag.js';
@@ -37,7 +37,7 @@ function validJAG({ description = undefined, inputs = undefined, outputs = undef
     return valid_jag;
 }
 
-function validChild(name, description) {
+function validChild({ name = undefined, description = undefined, annotations = undefined } = {}) {
     let valid_child = {
         urn: 'urn:ihmc:jagat:test:valid-child',
         id: UUIDv4()
@@ -48,6 +48,9 @@ function validChild(name, description) {
 
     if (description)
         valid_child.description = description;
+
+    if (annotations)
+        valid_child.annotations = annotations;
 
     return valid_child;
 }
@@ -66,7 +69,7 @@ function validOutput() {
     };
 }
 
-function validBinding(provider = undefined, consumer = undefined) {
+function validBinding(provider, consumer) {
     const provider_id = provider || UUIDv4();
     const consumer_id = consumer || UUIDv4();
 
@@ -177,7 +180,7 @@ suite('Create a new JAG model', () => {
             JAG.fromJSON(validJAG(
                 {
                     children: [
-                        validChild('Contextual Name')
+                        validChild({ name: 'Contextual Name' })
                     ]
                 }
             ));
@@ -187,7 +190,21 @@ suite('Create a new JAG model', () => {
             JAG.fromJSON(validJAG(
                 {
                     children: [
-                        validChild(undefined, 'Contextual Description')
+                        validChild({ description: 'Contextual Description' })
+                    ]
+                }
+            ));
+        });
+
+        test('Create a proper JAG with a child with optional annotations', () => {
+            JAG.fromJSON(validJAG(
+                {
+                    children: [
+                        validChild({
+                            annotations: {
+                                'key': 'value'
+                            }
+                        })
                     ]
                 }
             ));
@@ -1269,6 +1286,28 @@ suite('Create a new JAG model', () => {
             }
 
             throw new Error('Should fail to create JAG with a child with an empty description.');
+        });
+
+        test('Create a JAG with a child with a non-object annotations', () => {
+            try {
+                const child_annotations = validChild({
+                    annotations: []
+                });
+
+                JAG.fromJSON(validJAG(
+                    {
+                        children: [
+                            child_annotations
+                        ]
+                    }
+                ));
+            } catch {
+                // Success; should have thrown error
+
+                return;
+            }
+
+            throw new Error('Should fail to create JAG with a child with a non-object annotations.');
         });
 
     });

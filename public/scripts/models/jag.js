@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.78
+ * @version 0.83
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -235,7 +235,14 @@ export default class JAG extends EventTarget {
 					if (!child.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
 						throw new Error(`Child ${i} must have an id which is a v4 UUID conforming string.`);
 
-					let ctx_params = 0;
+					let opt_params = 0;
+
+					if (child.annotations) {
+						if (child.annotations.constructor != Object)
+							throw new Error(`Child ${i} may only have an annotations which is an object.`);
+
+						opt_params++;
+					}
 
 					if (child.name) {
 						if (typeof child.name !== "string")
@@ -244,7 +251,7 @@ export default class JAG extends EventTarget {
 						if (child.name.length == 0)
 							throw new Error(`Child ${i} may only have a name string with at least 1 character.`);
 
-						ctx_params++;
+						opt_params++;
 					}
 
 					if (child.description) {
@@ -254,11 +261,11 @@ export default class JAG extends EventTarget {
 						if (child.description.length == 0)
 							throw new Error(`Child ${i} may only have a description string with at least 1 character.`);
 
-						ctx_params++;
+						opt_params++;
 					}
 
-					if (Object.keys(child).length !== 2 + ctx_params)
-						throw new Error(`Child ${i} contains unknown properties: only accepts URN, UUID, and optional contextual name and description strings.`);
+					if (Object.keys(child).length !== 2 + opt_params)
+						throw new Error(`Child ${i} contains unknown properties: only accepts URN, UUID, optional annotations, and optional contextual name and description strings.`);
 				}
 
 			}
