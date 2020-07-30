@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.95
+ * @version 0.98
  */
 
 import JAG from '../models/jag.js';
@@ -594,7 +594,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 						let annotation_value = document.createElement("input");
 						annotation_value.disabled = true;
-						annotation_value.value = annotation[1];
+
+						const value = annotation[1];
+						let value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+						annotation_value.value = value_text;
 
 						annotation_value.className = "annotation value";
 

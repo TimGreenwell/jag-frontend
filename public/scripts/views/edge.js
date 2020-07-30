@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.70
+ * @version 0.79
  */
 
 import JAG from '../models/jag.js';
@@ -105,11 +105,13 @@ export default class Edge extends EventTarget {
 		_tspan_key.innerHTML = `${key}`;
 		this._list_el.appendChild(_tspan_key);
 
+		let value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+
 		const _tspan_value = document.createElementNS(XMLNS, "tspan");
 		_tspan_value.setAttribute('class', 'annotation-value');
 		_tspan_value.setAttributeNS(null, 'dx', _tspan_key.clientWidth);
 		_tspan_value.setAttributeNS(null, 'dy', 0);
-		_tspan_value.innerHTML = `: ${value}`;
+		_tspan_value.innerHTML = `: ${value_text}`;
 		this._list_el.appendChild(_tspan_value);
 	}
 
