@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.83
+ * @version 0.85
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -112,29 +112,29 @@ export default class JAG extends EventTarget {
 				if (typeof description !== "string")
 					throw new Error(`Description must be a string.`);
 
-			if (connector == undefined)
-				throw new Error(`Must have a connector object with execution and operator types.`);
+			if (connector !== undefined)
+			{
+				if (connector.execution == undefined)
+					throw new Error(`Connector must have execution and operator types.`);
 
-			if (connector.execution == undefined)
-				throw new Error(`Connector must have execution and operator types.`);
+				if (typeof connector.execution !== "string")
+					throw new Error(`Connector must have an execution type which is a string.`);
 
-			if (typeof connector.execution !== "string")
-				throw new Error(`Connector must have an execution type which is a string.`);
+				if (connector.execution.length == 0)
+					throw new Error(`Connector execution type must be at least 1 character.`);
 
-			if (connector.execution.length == 0)
-				throw new Error(`Connector execution type must be at least 1 character.`);
+				if (connector.operator == undefined)
+					throw new Error(`Connector must have operator type.`);
 
-			if (connector.operator == undefined)
-				throw new Error(`Connector must have operator type.`);
+				if (typeof connector.operator !== "string")
+					throw new Error(`Connector must have an operator type which is a string.`);
 
-			if (typeof connector.operator !== "string")
-				throw new Error(`Connector must have an operator type which is a string.`);
+				if (connector.operator.length == 0)
+					throw new Error(`Connector execution type must be at least 1 character.`);
 
-			if (connector.operator.length == 0)
-				throw new Error(`Connector execution type must be at least 1 character.`);
-
-			if (Object.keys(connector).length !== 2)
-				throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
+				if (Object.keys(connector).length !== 2)
+					throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
+			}
 
 			if (inputs !== undefined) {
 
@@ -236,6 +236,13 @@ export default class JAG extends EventTarget {
 						throw new Error(`Child ${i} must have an id which is a v4 UUID conforming string.`);
 
 					let opt_params = 0;
+
+					if (child.iterable) {
+						if (typeof child.iterable !== "boolean")
+							throw new Error(`Child ${i} iterable property must be a boolean.`);
+
+						opt_params++;
+					}
 
 					if (child.annotations) {
 						if (child.annotations.constructor != Object)
