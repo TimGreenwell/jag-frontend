@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.68
+ * @version 0.69
  */
 
 import JAG from '../models/jag.js';
@@ -229,10 +229,12 @@ export default class Edge extends EventTarget {
 
 		if (visible) {
 			this._edge_el.style.visibility = "visible";
+			this._part_el.style.visibility = "visible";
 			this._text_el.style.visibility = "visible";
 			this._anno_el.style.visibility = this._anno_visibility;
 		} else {
 			this._edge_el.style.visibility = "hidden";
+			this._part_el.style.visibility = "hidden";
 			this._text_el.style.visibility = "hidden";
 			this._anno_el.style.visibility = "hidden";
 		}
