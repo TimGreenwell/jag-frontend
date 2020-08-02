@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.79
+ * @version 0.84
  */
 
 import JAG from '../models/jag.js';
@@ -132,7 +132,7 @@ export default class Edge extends EventTarget {
 			if (annotations != undefined && annotations.size > 0) {
 				if (!iterable) {
 					this._anno_visibility = "visible";
-					this._anno_el.style.visibility = "visible";
+					this._anno_el.style.visibility = this._visible ? "visible" : "hidden";
 				}
 
 				for (const annotation of annotations.keys()) {
@@ -163,7 +163,7 @@ export default class Edge extends EventTarget {
 		this._updateStroke(toggle);
 
 		// If this edge is atomic, hide participation, else display it.
-		this._part_el.style.visibility = toggle ? 'hidden' : 'visible';
+		this._part_el.style.visibility = !toggle && this._visible ? "visible" : "hidden";
 
 		// Recursively update for all children in this tree.
 		for (const child_edge of this._node_end.getChildEdges()) {
