@@ -2,13 +2,13 @@
  * @fileOverview Analysis service.
  *
  * @author mvignati
- * @version 0.07
+ * @version 0.09
  */
 
 'use strict';
 
 import AnalysisModel from '../models/analysis.js';
-import IndexedDBStorage from '../utils/indexed-db.js';
+import IndexedDBUtils from '../utils/indexed-db.js';
 
 export default class AnalysisService {
 
@@ -19,7 +19,7 @@ export default class AnalysisService {
 	static store(analysis) {
 		AnalysisService.CACHE.set(analysis.id, analysis);
 
-		IndexedDBStorage.store(
+		IndexedDBUtils.store(
 			AnalysisService.DB_INSTANCE,
 			AnalysisService.ANALYSIS_STORE.name,
 			analysis.toJSON(),
@@ -28,7 +28,7 @@ export default class AnalysisService {
 	}
 
 	static async getAllAvailable() {
-		const cursor = await IndexedDBStorage.getKeys(
+		const cursor = await IndexedDBUtils.all(
 			AnalysisService.DB_INSTANCE,
 			AnalysisService.ANALYSIS_STORE.name
 		);
@@ -42,7 +42,7 @@ export default class AnalysisService {
 			return true;
 		}
 
-		const json = await IndexedDBStorage.get(
+		const json = await IndexedDBUtils.get(
 			AnalysisService.DB_INSTANCE,
 			AnalysisService.ANALYSIS_STORE.name,
 			urn
@@ -56,7 +56,7 @@ export default class AnalysisService {
 			return AnalysisService.CACHE.get(id);
 		}
 
-		const json = await IndexedDBStorage.get(
+		const json = await IndexedDBUtils.get(
 			AnalysisService.DB_INSTANCE,
 			AnalysisService.ANALYSIS_STORE.name,
 			id

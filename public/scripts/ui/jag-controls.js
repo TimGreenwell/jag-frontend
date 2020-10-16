@@ -2,7 +2,7 @@
  * @fileOverview JAG controls component.
  *
  * @author mvignati
- * @version 0.05
+ * @version 0.07
  */
 
 'use strict';

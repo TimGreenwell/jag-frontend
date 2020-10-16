@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.32
+ * @version 2.34
  */
 
 'use strict';
@@ -71,7 +71,7 @@ class JAGView extends AnalysisCell {
 		this.model.subscribe('sync', this._sync.bind(this));
 		this._createDocument();
 
-		JAGService.getAllAvailable()
+		JAGService.instance('idb-service').all()
 			.then(jags => this._elements.suggestions.suggestions = jags);
 	}
 

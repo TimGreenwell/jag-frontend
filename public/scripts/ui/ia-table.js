@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 0.49
+ * @version 0.55
  */
 
 'use strict';
@@ -13,6 +13,7 @@ import JAGService from '../services/jag.js';
 import NodeService from '../services/node.js';
 import AnalysisModel from '../models/analysis.js';
 import AnalysisView from '../views/analysis.js';
+import IndexedDBStorage from '../storages/indexed-db.js';
 
 class IATable extends HTMLElement {
 
@@ -89,7 +90,7 @@ class IATable extends HTMLElement {
 		const stores = [
 			AnalysisService.storageDefinition,
 			NodeService.storageDefinition,
-			JAGService.storageDefinition
+			IndexedDBStorage.__JAG_STORE
 		];
 
 		const db = await IndexedDBUtils.initStorage(
@@ -115,7 +116,7 @@ class IATable extends HTMLElement {
 		$option_title.setAttribute('selected', '');
 		options.appendChild($option_title);
 
-		for(let id of analysis) {
+		for(let { id } of analysis) {
 			// @TODO: only names and ids should be retreived and in bulk
 			// not one by one inside this loop
 			const local_analysis = await AnalysisService.get(id);

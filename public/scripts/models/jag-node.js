@@ -2,7 +2,7 @@
  * @file Node model for a specific analysis' JAG.
  *
  * @author mvignati
- * @version 1.21
+ * @version 1.29
  */
 
 'use strict';
@@ -13,6 +13,7 @@ import JAGModel from './jag-ia.js'
 import JAGService from '../services/jag.js'
 import NodeService from '../services/node.js'
 import Observable from '../utils/observable.js'
+import JAG from '../models/jag.js'
 
 export default class JAGNodeModel extends Observable {
 
@@ -34,7 +35,7 @@ export default class JAGNodeModel extends Observable {
 
 	static async fromJSON(json) {
 		// Replaces the id with the actual jag model.
-		const jag = await JAGService.get(json.jag);
+		const jag = await JAGService.instance('idb-service').get(json.jag);
 		json.jag = jag;
 
 		const node = new JAGNodeModel(json);
@@ -122,7 +123,7 @@ export default class JAGNodeModel extends Observable {
 	}
 
 	get canHaveChildren() {
-		return this.jag !== undefined && this.jag.hasValidURN;
+		return true;//this.jag !== undefined;// && this.jag.hasValidURN;
 	}
 
 	newChild() {
@@ -213,7 +214,7 @@ export default class JAGNodeModel extends Observable {
 			return;
 		}
 
-		let jag = await JAGService.get(urn);
+		let jag = await JAGService.instance('idb-service').get(urn);
 
 		// If the model does not exists create one from the view values.
 		// if the model does exists, reset to previous state unless replace is true.
@@ -287,9 +288,9 @@ export default class JAGNodeModel extends Observable {
 
 	async _createChildren() {
 		for(let child_urn of this.jag.children) {
-			const jag = await JAGService.get(child_urn);
+			const jag = await JAGService.instance('idb-service').get(child_urn);
 			const model = new JAGNodeModel({
-				jag: jag
+				jag: JAG.fromJSON(jag)
 			});
 
 			this.addChild(model, false);
