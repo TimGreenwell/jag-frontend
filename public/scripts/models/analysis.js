@@ -2,22 +2,22 @@
  * @fileOverview Analysis model.
  *
  * @author mvignati
- * @version 0.28
+ * @version 0.39
  */
 
 'use strict';
 
-import { UUIDv4 } from '../utils/uuid.js'
+import { UUIDv4 } from '../utils/uuid.js';
 
-import AgentModel from './agent.js'
-import JAGNodeModel from './jag-node.js'
-import TeamModel from './team.js'
-import AnalysisService from '../services/analysis.js'
-import NodeService from '../services/node.js'
+import AgentModel from './agent.js';
+import Node from './node.js';
+import TeamModel from './team.js';
+import NodeService from '../services/node.js';
 
-export default class AnalysisModel {
+export default class Analysis extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = AnalysisModel.DEFAULT_NAME, root = new JAGNodeModel({is_root: true}) } = {}) {
+	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, root = new Node({is_root: true}) } = {}) {
+		super();
 		this._id = id;
 		this._name = name;
 		this._root = root;
@@ -48,12 +48,12 @@ export default class AnalysisModel {
 
 	static async fromJSON(json) {
 		const node_id = json.root;
-		const root = await NodeService.get(node_id);
+		const root = await NodeService.instance('idb-service').get(node_id);
 
 		// Replace id by the actual model.
 		json.root = root;
 
-		return new AnalysisModel(json);
+		return new Analysis(json);
 	}
 
 	get id() {
@@ -78,7 +78,7 @@ export default class AnalysisModel {
 	}
 
 	save() {
-		AnalysisService.store(this);
+		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
 	}
 
 	toJSON() {
@@ -93,5 +93,4 @@ export default class AnalysisModel {
 
 }
 
-AnalysisModel.DEFAULT_NAME = '';
-
+Analysis.DEFAULT_NAME = '';

@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.88
+ * @version 0.89
  */
 
 import {UUIDv4} from '../utils/uuid.js';
@@ -82,7 +82,7 @@ export default class JAG extends EventTarget {
 		try {
 			JAGATValidation.validateJAG(json);
 		} catch (e) {
-			throw new Error(`Error parsing ${urn}: ${e.message}`);
+			throw new Error(`Error parsing ${json.urn}: ${e.message}`);
 		}
 
 		return new JAG(json);
