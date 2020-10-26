@@ -2,18 +2,14 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 0.55
+ * @version 0.69
  */
 
 'use strict';
 
-import IndexedDBUtils from '../utils/indexed-db.js';
+import Analysis from '../models/analysis.js';
 import AnalysisService from '../services/analysis.js';
-import JAGService from '../services/jag.js';
-import NodeService from '../services/node.js';
-import AnalysisModel from '../models/analysis.js';
 import AnalysisView from '../views/analysis.js';
-import IndexedDBStorage from '../storages/indexed-db.js';
 
 class IATable extends HTMLElement {
 
@@ -55,7 +51,6 @@ class IATable extends HTMLElement {
 
 
 	async _init() {
-		await this._initServices();
 		this._initUI();
 		this._populateAnalysis();
 	}
@@ -86,26 +81,9 @@ class IATable extends HTMLElement {
 		this._elements.name = $analysis_name;
 	}
 
-	async _initServices() {
-		const stores = [
-			AnalysisService.storageDefinition,
-			NodeService.storageDefinition,
-			IndexedDBStorage.__JAG_STORE
-		];
-
-		const db = await IndexedDBUtils.initStorage(
-			IATable.DB_ID,
-			IATable.DB_VERSION,
-			stores
-		);
-
-		AnalysisService.DB_INSTANCE = db;
-		JAGService.DB_INSTANCE = db;
-		NodeService.DB_INSTANCE = db;
-	}
-
 	async _populateAnalysis() {
-		const analysis = await AnalysisService.getAllAvailable();
+		const idb_service = AnalysisService.instance('idb-service');
+		const analyses = await idb_service.all();
 
 		const options = document.createDocumentFragment();
 
@@ -116,21 +94,19 @@ class IATable extends HTMLElement {
 		$option_title.setAttribute('selected', '');
 		options.appendChild($option_title);
 
-		for(let { id } of analysis) {
-			// @TODO: only names and ids should be retreived and in bulk
-			// not one by one inside this loop
-			const local_analysis = await AnalysisService.get(id);
-			const $entry = this._createAnalysisEntry(local_analysis);
+		analyses.forEach((analysis) => {
+			//const local_analysis = await AnalysisService.get(id);
+			const $entry = this._createAnalysisEntry(analysis);
 			options.appendChild($entry);
-		}
+		});
 
 		this._elements.selector.appendChild(options);
 	}
 
 	_handleNewAnalysis() {
-		const analysis = new AnalysisModel();
+		const analysis = new Analysis();
 		this.analysis = analysis;
-		analysis.save();
+		AnalysisService.instance('idb-service').create(analysis);
 
 		// Select the new entry
 		const $entry = this._createAnalysisEntry(analysis);
@@ -141,6 +117,7 @@ class IATable extends HTMLElement {
 	_handleAnalysisChange(event) {
 		const analysis_id = event.target.value;
 		AnalysisService
+			.instance('idb-service')
 			.get(analysis_id)
 			.then(analysis => this.analysis = analysis);
 	}
@@ -163,8 +140,6 @@ class IATable extends HTMLElement {
 
 }
 
-IATable.DB_ID = 'interdependence-analysis';
-IATable.DB_VERSION = 1;
 IATable.FALLBACK_ANALYSIS_NAME = 'Analysis w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';
 

@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.34
+ * @version 2.36
  */
 
 'use strict';
@@ -99,7 +99,7 @@ class JAGView extends AnalysisCell {
 		$urn.setAttribute('spellcheck', 'false');
 		$urn.setAttribute('tabindex', '-1');
 
-		if(this._model.jag !== undefined && this._model.jag.hasValidURN)
+		if(this._model.jag !== undefined)// && this._model.jag.hasValidURN)
 			$urn.innerText = this.model.urn;
 		else
 			this.classList.add('unsaved');
@@ -194,7 +194,7 @@ class JAGView extends AnalysisCell {
 	_handleNameInput(e) {
 		if(this._model.linkStatus) {
 			const name = e.target.innerText;
-			const urnified_name = name.toLowerCase().replace(/\s/g, '-');
+			const urnified_name = name.trim().toLowerCase().replace(/\s/g, '-');
 			const urn = `urn:ihmc:${urnified_name}`;
 			this._elements.urn.innerText = urn;
 		}
