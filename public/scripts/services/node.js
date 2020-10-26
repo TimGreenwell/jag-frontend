@@ -2,90 +2,108 @@
  * @fileOverview JAG Node service.
  *
  * @author mvignati
- * @version 0.02
+ * @version 0.14
  */
 
 'use strict';
 
-import JAGNodeModel from '../models/jag-node.js';
-import IndexedDBStorage from '../utils/indexed-db.js';
+import Node from '../models/node.js'
+
+const __SERVICES = new Map();
 
 export default class NodeService {
 
-	static get storageDefinition() {
-		return NodeService.NODE_STORE;
+	/**
+	 * Creates a new NodeService that uses the specified storage for persistence.
+	 */
+	constructor(id, storage) {
+		this._id = id;
+		this._storage = storage;
+		// @TODO: nothing is cached just yet.
+		this._cache = new Map();
 	}
 
-	static store(model) {
-		//@TODO: check what happen if the jag already exists
-		NodeService.CACHE.set(model.id, model);
+	/**
+	 * Retrieves a named instance of the service if it exists.
+	 */
+	static instance(id) {
+		if(!__SERVICES.has(id))
+			throw new Error(`No service instance '${id}'.`);
 
-		return IndexedDBStorage.store(
-			NodeService.DB_INSTANCE,
-			NodeService.NODE_STORE.name,
-			model.toJSON(),
-			model.id
-		);
+		return __SERVICES.get(id);
 	}
 
-	static async getAllAvailable() {
-		const cursor = await IndexedDBStorage.getKeys(
-			NodeService.DB_INSTANCE,
-			NodeService.NODE_STORE.name
-		);
+	/**
+	 * Creates a named instance of the service backed by the specified storage.
+	 */
+	static createInstance(id, storage) {
+		if(__SERVICES.has(id))
+			throw new Error(`There already exists a service instance named ${id}.`);
 
-		return cursor;
+		const instance = new NodeService(id, storage);
+		__SERVICES.set(id, instance);
+
+		console.log(__SERVICES);
+		return instance;
 	}
 
-	// @TODO: change that to only query for key existence.
-	static async has(id) {
-		if(NodeService.CACHE.has(id)) {
-			return true;
-		}
-
-		const json = await IndexedDBStorage.get(
-			NodeService.DB_INSTANCE,
-			NodeService.NODE_STORE.name,
-			id
-		);
-
-		return json !== undefined;
+	/**
+	 * Retrieves all existing nodes.
+	 * @TODO: Should accept filtering options.
+	 */
+	async all() {
+		const descriptions = await this._storage.all('node');
+		return descriptions.map(this._createModel.bind(this));
 	}
 
-	static async get(id) {
-		if(NodeService.CACHE.has(id)) {
-			return NodeService.CACHE.get(id);
-		}
+	/**
+	 * Retrieves the node model for the specified ID.
+	 */
+	async get(id) {
+		const description = await this._storage.get('node', id);
 
-		const json = await IndexedDBStorage.get(
-			NodeService.DB_INSTANCE,
-			NodeService.NODE_STORE.name,
-			id
-		);
+		if (description === undefined) return null;
 
-		if(json === undefined)
-			return undefined;
+		return this._createModel(description);
+	}
 
-		const model = JAGNodeModel.fromJSON(json);
-		NodeService.CACHE.set(id, model);
+	/**
+	 * Check for existence of the specified ID.
+	 */
+	async has(id) {
+		return await this._storage.has('node', id);
+	}
 
+	/**
+	 * Creates a new node with the specified model. This uses the ID property supplied in the model.
+	 */
+	async create(model) {
+		// Service instance creating a model become implicitly responsible for handling updates to that model.
+		// Multiple instances can be attached to a single model instance.
+		// @TODO: attach listeners
+		const description = model.toJSON();
+
+		await this._storage.create('node', description.id, description);
+	}
+
+	/**
+	 * Updates an existing model with the specified content.
+	 * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
+	 */
+	update(model) {
+		const description = model.toJSON();
+		this._storage.update('node', description.id, description);
+	}
+
+	/**
+	 * Creates a model from a json description, stores it in cache and attaches the necessary listeners.
+	 */
+	_createModel(description) {
+		const model = Node.fromJSON(description);
+		// @TODO: attach listeners to model
+
+		// @TODO: store model in cache
 		return model;
 	}
 
 }
-
-NodeService.CACHE = new Map();
-
-NodeService.NODE_STORE = {
-	name: 'node',
-	indexes: [
-		{
-			name: 'id-index',
-			property: 'id',
-			options: {
-				unique: true
-			}
-		}
-	]
-};
-

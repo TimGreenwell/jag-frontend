@@ -5,7 +5,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 3.63
+ * @version 3.65
  */
 
 import JAG from '../models/jag.js';
@@ -54,7 +54,7 @@ export default class JAGService {
 	 * @TODO: Should accept filtering options.
 	 */
 	async all() {
-		const descriptions = await this._storage.all();
+		const descriptions = await this._storage.all('jag');
 		return descriptions.map(this._createModel.bind(this));
 	}
 
@@ -62,9 +62,9 @@ export default class JAGService {
 	 * Retrieves the jag model for the specified urn.
 	 */
 	async get(urn) {
-		const description = await this._storage.get(urn);
+		const description = await this._storage.get('jag', urn);
 
-		if(description === undefined) return null;
+		if (description === undefined) return null;
 
 		return this._createModel(description);
 	}
@@ -73,7 +73,7 @@ export default class JAGService {
 	 * Check for existence of the specified urn.
 	 */
 	async has(urn) {
-		return await this._storage.has(urn);
+		return await this._storage.has('jag', urn);
 	}
 
 	/**
@@ -85,7 +85,7 @@ export default class JAGService {
 		model.addEventListener('update', this._handleUpdate.bind(this));
 		const description = model.toJSON();
 
-		await this._storage.create(description);
+		await this._storage.create('jag', description.urn, description);
 	}
 
 	/**
@@ -94,7 +94,7 @@ export default class JAGService {
 	 */
 	update(model) {
 		const description = model.toJSON();
-		this._storage.update(description);
+		this._storage.update('jag', description.urn, description);
 	}
 
 	/**
