@@ -3,10 +3,11 @@
  *
  * @author mvignati
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.19
+ * @version 0.29
  */
 
 import IndexedDBUtils from '../utils/indexed-db.js';
+import SchemaManager from './schemas.js';
 
 export default class IndexedDBStorage {
 
@@ -20,42 +21,31 @@ export default class IndexedDBStorage {
 		this._db = await IndexedDBUtils.initStorage(
 			this._name,
 			this._version,
-			[__JAG_STORE]
+			SchemaManager.all()
 		);
 	}
 
-	async all() {
-		const cursor = await IndexedDBUtils.all(this._db, __JAG_STORE.name);
+	async all(schema) {
+		const cursor = await IndexedDBUtils.all(this._db, SchemaManager.get(schema).name);
 		return Array.from(cursor);
 	}
 
-	async get(urn) {
-		const description = await IndexedDBUtils.get(this._db, __JAG_STORE.name, urn);
+	async get(schema, key) {
+		const description = await IndexedDBUtils.get(this._db, SchemaManager.get(schema).name, key);
 		return description;
 	}
 
-	async has(urn) {
-		const key = await IndexedDBUtils.getKey(this._db, __JAG_STORE.name, urn);
-		return key !== undefined;
+	async has(schema, key) {
+		const result = await IndexedDBUtils.getKey(this._db, SchemaManager.get(schema).name, key);
+		return result !== undefined;
 	}
 
-	async create(description) {
-		return IndexedDBUtils.store(this._db, __JAG_STORE.name, description, description.urn);
+	async create(schema, key, description) {
+		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 
-	async update(description) {
-		return IndexedDBUtils.store(this._db, __JAG_STORE.name, description, description.urn);
+	async update(schema, key, description) {
+		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 
 }
-
-const __JAG_STORE = {
-	name: 'joint-activity-graph',
-	indexes: [
-		{
-			name: 'urn-index',
-			property: 'urn',
-			options: {unique: true}
-		}
-	]
-};
