@@ -4,7 +4,7 @@
  * @author mvignati
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.16
+ * @version 0.17
  */
 
 import RESTUtils from '../utils/rest.js';
@@ -12,8 +12,8 @@ import RESTUtils from '../utils/rest.js';
 export default class RESTStorage {
 
 	constructor(name, version, endpoint) {
-		this._name = name,
-			this._version = version;
+		this._name = name;
+		this._version = version;
 		this._endpoint = endpoint;
 	}
 
