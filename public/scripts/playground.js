@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.69
+ * @version 0.70
  */
 
 import JAGNode from './views/jag-node.js';
@@ -715,6 +715,7 @@ Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.
 
 		for (const node of tree) {
 			node.removeAllEdges();
+			node.detachHandlers();
 			this._nodes.delete(node);
 			this._nodes_container.removeChild(node);
 		}
