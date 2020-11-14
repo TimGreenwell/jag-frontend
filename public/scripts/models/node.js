@@ -2,7 +2,7 @@
  * @file Node model for a specific analysis' JAG.
  *
  * @author mvignati
- * @version 1.46
+ * @version 1.52
  */
 
 'use strict';
@@ -12,10 +12,9 @@ import { UUIDv4 }  from '../utils/uuid.js';
 import JAG from './jag.js';
 import JAGService from '../services/jag.js';
 import NodeService from '../services/node.js';
-import Observable from '../utils/observable.js';
 import JAGATValidation from '../utils/validation.js';
 
-export default class Node extends Observable {
+export default class Node extends EventTarget {
 
 	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
 		super();
@@ -132,6 +131,7 @@ export default class Node extends Observable {
 			return;
 
 		const child = new Node();
+		NodeService.instance('idb-service').create(child);
 		this.addChild(child);
 	}
 
@@ -139,14 +139,14 @@ export default class Node extends Observable {
 		child.parent = this;
 		this._children.push(child);
 
-		this.notify('attach', {
+		this.dispatchEvent(new CustomEvent('attach', { detail: {
 			target: child,
 			reference: this,
 			layout: layout
-		});
+		}}));
 
 		this.save();
-		this.notify('sync');
+		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 	deleteChild(child) {
@@ -154,29 +154,29 @@ export default class Node extends Observable {
 		this._children.splice(index, 1);
 
 		this.save();
-		this.notify('sync');
+		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 	deleteAllChildren() {
 		const safe_children_list = this.children.slice();
 		safe_children_list.forEach(child => {
 			child.deleteAllChildren();
-			this.notify('detach', {
+			this.dispatchEvent(new CustomEvent('detach', { detail: {
 				target: child,
 				layout: false
-			});
+			}}));
 		});
 
 		this._children = [];
-		this.notify('sync');
+		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 	delete() {
 		this.deleteAllChildren();
 		this.parent.deleteChild(this);
-		this.notify('detach', {
+		this.dispatchEvent(new CustomEvent('detach', { detail: {
 			target: this
-		});
+		}}));
 	}
 
 	unlink() {
@@ -185,7 +185,7 @@ export default class Node extends Observable {
 
 	toggleCollapse() {
 		this._collapsed = !this._collapsed;
-		this.notify('layout');
+		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
 	async commitNameChange(view) {
@@ -196,7 +196,7 @@ export default class Node extends Observable {
 	}
 
 	syncView() {
-		this.notify('sync');
+		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 	/**
@@ -242,7 +242,7 @@ export default class Node extends Observable {
 		if(valid)
 			this.unlink();
 
-		this.notify('layout');
+		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
 

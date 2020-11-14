@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.36
+ * @version 2.38
  */
 
 'use strict';
@@ -44,7 +44,7 @@ class JAGView extends AnalysisCell {
 	}
 
 	get name() {
-		return this._elements.name.innerText;
+		return this._elements.name.innerText.trim();
 	}
 
 	set name(name) {
@@ -68,7 +68,7 @@ class JAGView extends AnalysisCell {
 	}
 
 	_init() {
-		this.model.subscribe('sync', this._sync.bind(this));
+		this.model.addEventListener('sync', this._sync.bind(this));
 		this._createDocument();
 
 		JAGService.instance('idb-service').all()

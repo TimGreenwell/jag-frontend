@@ -2,7 +2,7 @@
  * @fileOverview Analysis model.
  *
  * @author mvignati
- * @version 0.39
+ * @version 0.50
  */
 
 'use strict';
@@ -13,37 +13,40 @@ import AgentModel from './agent.js';
 import Node from './node.js';
 import TeamModel from './team.js';
 import NodeService from '../services/node.js';
+import AgentService from '../services/agent.js';
+import TeamService from '../services/team.js';
 
 export default class Analysis extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, root = new Node({is_root: true}) } = {}) {
+	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, root = new Node({is_root: true}), teams = [] } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
 		this._root = root;
+		this._teams = teams;
 
+		// TODO: remove default team/agent configuration and add ability to create teams and agents.
+		if (this._teams.length == 0) {
+			const elves = new TeamModel({name: "Elves"});
+			elves.addAgent(new AgentModel({name: "Alfie"}));
+			elves.addAgent(new AgentModel({name: "Basil"}));
+			elves.addAgent(new AgentModel({name: "Cal"}));
+			elves.addAgent(new AgentModel({name: "Didi"}));
+			elves.addAgent(new AgentModel({name: "Elle"}));
+			elves.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
+			TeamService.instance('idb-service').create(elves);
 
-		// Temporary static testing
-		const b_team = new TeamModel({name: 'B Team'});
-		b_team.addAgent(new AgentModel({name: 'Bab'}));
-		b_team.addAgent(new AgentModel({name: 'Beb'}));
-		b_team.addAgent(new AgentModel({name: 'Bib'}));
-		b_team.addAgent(new AgentModel({name: 'Bob'}));
-		b_team.addAgent(new AgentModel({name: 'Bub'}));
+			const dwarves = new TeamModel({name: "Dwarves"});
+			dwarves.addAgent(new AgentModel({name: "Angus"}));
+			dwarves.addAgent(new AgentModel({name: "Backus"}));
+			dwarves.addAgent(new AgentModel({name: "Coffin"}));
+			dwarves.addAgent(new AgentModel({name: "Daedrick"}));
+			dwarves.addAgent(new AgentModel({name: "Eukip"}));
+			dwarves.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
+			TeamService.instance('idb-service').create(dwarves);
 
-		const dwarves = new TeamModel({name: 'Dwarves'});
-		dwarves.addAgent(new AgentModel({name: 'Oriferlug'}));
-		dwarves.addAgent(new AgentModel({name: 'Groroum'}));
-		dwarves.addAgent(new AgentModel({name: 'Anen'}));
-		dwarves.addAgent(new AgentModel({name: 'Glorithon'}));
-		dwarves.addAgent(new AgentModel({name: 'Karduk'}));
-		dwarves.addAgent(new AgentModel({name: 'Krudrouk'}));
-		dwarves.addAgent(new AgentModel({name: 'Daredgrek'}));
-
-		this._teams = [
-			b_team,
-			dwarves
-		];
+			this._teams = [elves, dwarves];
+		}
 	}
 
 	static async fromJSON(json) {
@@ -52,6 +55,21 @@ export default class Analysis extends EventTarget {
 
 		// Replace id by the actual model.
 		json.root = root;
+
+		const teams = [];
+
+		for (const team_id of json.teams) {
+			let team = await TeamService.instance('idb-service').get(team_id);
+
+			if (team == undefined) {
+				team = new TeamModel({name: "(Unknown Team)"});
+				await TeamService.instance('idb-service').create(team);
+			}
+
+			teams.push(team);
+		}
+
+		json.teams = teams;
 
 		return new Analysis(json);
 	}
@@ -85,7 +103,8 @@ export default class Analysis extends EventTarget {
 		const json = {
 			id: this._id,
 			name: this._name,
-			root: this.root.id
+			root: this.root.id,
+			teams: this._teams.map(team => team.id)
 		};
 
 		return json;

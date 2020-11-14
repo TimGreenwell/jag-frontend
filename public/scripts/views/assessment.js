@@ -2,7 +2,7 @@
  * @fileOverview Team member assessment view for a given pseudo leaf (real or collapsed).
  *
  * @author mvignati
- * @version 0.66
+ * @version 0.72
  */
 
 'use strict';
@@ -29,7 +29,8 @@ class AssessmentView extends AnalysisCell {
 	}
 
 	_init() {
-		this._agent.subscribe('assessment', this._processAssessmentUpdate.bind(this));
+		this._setAssessment(this._agent.assessment(this._node));
+		this._agent.addEventListener('assessment', this._processAssessmentUpdate.bind(this));
 		this.addEventListener('contextmenu', _ => {
 			this.addContextMenuListener(ContextMenu.SELECT_EVENT, this._processContextMenuChoice.bind(this));
 		});
@@ -40,20 +41,27 @@ class AssessmentView extends AnalysisCell {
 		this._agent.setAssessment(this._node.urn, result);
 	}
 
-	_processAssessmentUpdate(urn) {
-		if(urn !== this._node.urn)
-			return;
-
-		const assessment = this._agent.assessment(this._node);
-		if(assessment === undefined)
+	_setAssessment(assessment) {
+		if (assessment === undefined)
 			return;
 
 		const description = AssessmentView.ASSESSMENT_DESCRIPTIONS[assessment];
 		const rgb = description.color;
-		if(rgb !== undefined) {
+		if (rgb !== undefined) {
 			const color = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 			this.style.setProperty('background-color', color);
 		}
+	}
+
+	_processAssessmentUpdate(e) {
+		const urn = e.detail.urn;
+
+		if (urn !== this._node.urn)
+			return;
+
+		const assessment = this._agent.assessment(this._node);
+
+		this._setAssessment(assessment);
 	}
 
 	_handleMouseUp(event) {

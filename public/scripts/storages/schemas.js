@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.04
+ * @version 0.06
  */
 
 export default class Schemas {
@@ -60,9 +60,36 @@ const ANALYSIS_STORE = {
 	]
 };
 
+const AGENT_STORE = {
+	name: 'agent',
+	indexes: [
+		{
+			name: 'id-index',
+			property: 'id',
+			options: {
+				unique: true
+			}
+		}
+	]
+};
+
+const TEAM_STORE = {
+	name: 'team',
+	indexes: [
+		{
+			name: 'id-index',
+			property: 'id',
+			options: {
+				unique: true
+			}
+		}
+	]
+}
 
 Schemas.SCHEMA_SET = {
 	'jag': JAG_STORE,
 	'node': NODE_STORE,
-	'analysis': ANALYSIS_STORE
+	'analysis': ANALYSIS_STORE,
+	'agent': AGENT_STORE,
+	'team': TEAM_STORE
 };

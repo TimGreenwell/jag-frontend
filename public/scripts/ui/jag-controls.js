@@ -2,7 +2,7 @@
  * @fileOverview JAG controls component.
  *
  * @author mvignati
- * @version 0.07
+ * @version 0.08
  */
 
 'use strict';
@@ -38,7 +38,7 @@ class JAGControls extends HTMLElement {
 
 		this._remove.addEventListener('click', () => {
 			this._node.delete();
-			this._node.notify('update');
+			this._node.dispatchEvent(new CustomEvent('update'));
 		});
 	}
 

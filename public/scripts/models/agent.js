@@ -2,22 +2,43 @@
  * @fileOverview Agent model.
  *
  * @author mvignati
- * @version 0.14
+ * @version 0.40
  */
 
 'use strict';
 
 import {UUIDv4} from '../utils/uuid.js';
-import Observable from '../utils/observable.js';
 
-export default class AgentModel extends Observable {
+export default class AgentModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = AgentModel.DEFAULT_NAME } = {}) {
+	constructor({ id = UUIDv4(), name = AgentModel.DEFAULT_NAME, assessments = new Map() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
+		this._assessments = assessments;
+	}
 
-		this._assessments = new Map();
+	static fromJSON(json) {
+		const assessments = new Map();
+		for (const urn in json.assessments) {
+			const value = json.assessments[urn];
+			let assessment = undefined;
+
+			if (value == 1) {
+				assessment = AgentModel.CAN_DO_PERFECTLY;
+			} else if (value == 2) {
+				assessment = AgentModel.CAN_DO;
+			} else if (value == 3) {
+				assessment = AgentModel.CAN_HELP;
+			} else if (value == 4) {
+				assessment = AgentModel.CANNOT_DO;
+			}
+
+			assessments.set(urn, assessment);
+		}
+		json.assessments = assessments;
+
+		return new AgentModel(json);
 	}
 
 	get id() {
@@ -30,16 +51,42 @@ export default class AgentModel extends Observable {
 
 	setAssessment(urn, assessment) {
 		this._assessments.set(urn, assessment);
-		this.notify('assessment', urn);
+		this.dispatchEvent(new CustomEvent('assessment', { detail: { urn: urn, assessment: assessment }}));
 	}
 
 	assessment(node) {
-		if(node.urn === '')
+		if (node.urn === '')
 			return undefined;
 
 		return this._assessments.get(node.urn);
 	}
 
+	toJSON() {
+		let json = {
+			id: this._id,
+			name: this._name,
+			assessments: {}
+		};
+
+		for (let assessment of this._assessments.keys()) {
+			const symbol = this._assessments.get(assessment);
+			let value = 0;
+
+			if (symbol == AgentModel.CAN_DO_PERFECTLY) {
+				value = 1;
+			} else if (symbol == AgentModel.CAN_DO) {
+				value = 2;
+			} else if (symbol == AgentModel.CAN_HELP) {
+				value = 3;
+			} else if (symbol == AgentModel.CANNOT_DO) {
+				value = 4;
+			}
+
+			json.assessments[assessment] = value;
+		}
+
+		return json;
+	}
 }
 
 AgentModel.CAN_DO_PERFECTLY = Symbol();

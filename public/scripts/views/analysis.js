@@ -2,7 +2,7 @@
  * @fileOverview Analysis view.
  *
  * @author mvignati
- * @version 2.37
+ * @version 2.42
  */
 
 'use strict';
@@ -76,9 +76,9 @@ class AnalysisView extends HTMLElement {
 	}
 
 	attach({target, reference = null, layout = true, select = true } = {}) {
-		target.subscribe('layout', this.layout.bind(this));
-		target.subscribe('attach', this.attach.bind(this));
-		target.subscribe('detach', this.detach.bind(this));
+		target.addEventListener('layout', this.layout.bind(this));
+		target.addEventListener('attach', this._handleAttach.bind(this));
+		target.addEventListener('detach', this._handleDetach.bind(this));
 
 		// Finds the element representing the left most leaf in the tree.
 		if(reference === null)
@@ -92,10 +92,18 @@ class AnalysisView extends HTMLElement {
 		if(layout) this.layout();
 	}
 
+	_handleAttach(e) {
+		this.attach(e.detail);
+	}
+
 	detach({target, layout = true } = {}) {
 		const $target = this.getNodeView(target);
 		this.removeChild($target);
 		if(layout) this.layout();
+	}
+
+	_handleDetach(e) {
+		this.detach(e.detail);
 	}
 
 	selectName(child) {

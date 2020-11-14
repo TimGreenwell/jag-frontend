@@ -2,31 +2,40 @@
  * @fileOverview Team model.
  *
  * @author mvignati
- * @version 0.15
+ * @version 0.38
  */
 
 'use strict';
 
+import AgentService from '../services/agent.js';
+import TeamService from '../services/team.js';
 import { UUIDv4 }  from '../utils/uuid.js'
+import AgentModel from './agent.js';
 
-export default class TeamModel {
+export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME } = {}) {
+	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agents = [] } = {}) {
+		super();
 		this._id = id;
 		this._name = name;
-		this._agents = [];
+		this._agents = agents;
 	}
 
 	static async fromJSON(json) {
-		const node_id = json.root;
-		const root = await NodeService.get(node_id);
-		const team = new TeamModel(json);
+		const agents = [];
+		for (const agent_id of json.agents) {
+			let agent = await AgentService.instance('idb-service').get(agent_id);
 
-		for(let agent of json.agents) {
-			// this.addAgent(agent);
+			if (agent == undefined) {
+				agent = new AgentModel({name: "(Unknown Agent)"});
+				await AgentService.instance('idb-service').create(agent);
+			}
+
+			agents.push(agent);
 		}
+		json.agents = agents;
 
-		return team;
+		return new TeamModel(json);
 	}
 
 	get id() {
@@ -48,6 +57,7 @@ export default class TeamModel {
 
 	addAgent(agent) {
 		this._agents.push(agent);
+		this.dispatchEvent(new CustomEvent('agent', { detail: { agent: agent } }));
 	}
 
 	save() {
