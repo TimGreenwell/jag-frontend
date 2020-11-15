@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.38
+ * @version 2.42
  */
 
 'use strict';
@@ -72,7 +72,7 @@ class JAGView extends AnalysisCell {
 		this._createDocument();
 
 		JAGService.instance('idb-service').all()
-			.then(jags => this._elements.suggestions.suggestions = jags);
+			.then(jags => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
 	}
 
 	_createDocument() {
@@ -127,7 +127,7 @@ class JAGView extends AnalysisCell {
 	}
 
 	_handleURNChange(e) {
-		if(this.urn === this.model.urn)
+		if (this.urn === this.model.urn)
 			return;
 
 		this._elements.suggestions.hide();
@@ -139,7 +139,7 @@ class JAGView extends AnalysisCell {
 			case 'Enter':
 				e.preventDefault();
 				const selected = this._elements.suggestions.selected;
-				if(selected !== undefined)
+				if (selected !== undefined)
 					this._elements.urn.innerText = selected
 				this._elements.urn.blur();
 				break;

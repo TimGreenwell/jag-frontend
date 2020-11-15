@@ -3,7 +3,7 @@
  * Shows suggestions for the specified input based on specified source data.
  *
  * @author mvignati
- * @version 0.12
+ * @version 0.14
  */
 
 'use strict';
@@ -29,7 +29,6 @@ class AutoComplete extends HTMLElement {
 
 	filter(value) {
 		this._filtered_suggestions = this._suggestions.filter(suggestion => {
-			console.log(suggestion);
 			return suggestion.indexOf(value) === 0;
 		});
 
@@ -46,10 +45,10 @@ class AutoComplete extends HTMLElement {
 		this._selected_index = 0;
 
 		// Removes all existing childs
-		while(this.hasChildNodes())
+		while (this.hasChildNodes())
 			this.removeChild(this.lastChild);
 
-		if(this._filtered_suggestions.length <= 0)
+		if (this._filtered_suggestions.length <= 0)
 			return;
 
 		const $suggestions = document.createDocumentFragment();
@@ -87,7 +86,6 @@ class AutoComplete extends HTMLElement {
 
 		this.children[this._selected_index].classList.add('selected');
 	}
-
 }
 
 

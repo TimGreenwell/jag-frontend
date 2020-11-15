@@ -167,3 +167,11 @@ ia-context-menu > div {
 ia-context-menu > div:hover {
 	background-color: lightblue;
 }
+
+auto-complete:not(.visible) {
+	display: none;
+}
+
+auto-complete > .selected {
+	background-color: lightblue;
+}
