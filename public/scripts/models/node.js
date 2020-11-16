@@ -2,7 +2,7 @@
  * @file Node model for a specific analysis' JAG.
  *
  * @author mvignati
- * @version 1.52
+ * @version 1.65
  */
 
 'use strict';
@@ -35,7 +35,7 @@ export default class Node extends EventTarget {
 	static async fromJSON(json) {
 		// Replaces the id with the actual jag model.
 		const jag = await JAGService.instance('idb-service').get(json.jag);
-		json.jag = jag;
+		json.jag = (jag != null) ? jag : undefined;
 
 		const node = new Node(json);
 
@@ -127,7 +127,7 @@ export default class Node extends EventTarget {
 
 	newChild() {
 		// @TODO: Show user feedback message when trying to create a child on an usaved jag.
-		if(!this.canHaveChildren)
+		if (!this.canHaveChildren)
 			return;
 
 		const child = new Node();
@@ -290,23 +290,20 @@ export default class Node extends EventTarget {
 	}
 
 	async _createChildren() {
-		for(let child_urn of this.jag.children) {
-			const jag = await JAGService.instance('idb-service').get(child_urn);
-			const model = new Node({
-				jag: jag
-			});
-
-			this.addChild(model, false);
+		for (let child of this.jag.children) {
+			const jag = await JAGService.instance('idb-service').get(child.urn);
+			const model = new Node({jag: jag});
+			await NodeService.instance('idb-service').create(model);
+			this.addChild(model, true);
 		}
 	}
 
-	_updateJAG(jag) {
+	async _updateJAG(jag) {
 		this._jag = jag;
 		this.save();
-		this.syncView();
 		this.deleteAllChildren();
-
-		//this._createChildren();
+		await this._createChildren();
+		this.syncView();
 	}
 
 }
