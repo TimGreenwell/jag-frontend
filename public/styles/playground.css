@@ -1,0 +1,262 @@
+/* Playground */
+jag-playground {
+	/* Reset layout */
+	position: relative;
+	flex-grow: 1;
+	box-shadow: 0 0 0 1px darkgrey;
+	cursor: grab;
+	overflow: hidden;
+}
+
+jag-playground > div, jag-playground > svg {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+
+jag-playground jag-node {
+	position: absolute;
+	display: flex;
+	z-index: 3;
+	top: 0px;
+	left: 0px;
+}
+
+jag-playground jag-node > * {
+	background: white;
+	box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.11), 0px 0px 6px hsla(0, 0%, 0%, 0.11);
+	transition: box-shadow 350ms var(--transition-function);
+}
+
+jag-playground jag-node.selected-node > * {
+	box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.15), 0px 0px 10px hsla(0, 0%, 0%, 0.22);
+}
+
+jag-playground jag-node.selected-node {
+	outline: none;
+}
+
+jag-playground jag-node header {
+	display: flex;
+	cursor: pointer;
+}
+
+jag-playground jag-node header h1.node-name {
+	width: 100%;
+	font-size: 1.25em;
+	padding: 0.25em;
+	border: 1px solid var(--input-border);
+	border-radius: 2px;
+	-webkit-user-select: none;
+	transition: border 350ms var(--transition-function), padding 100ms var(--transition-function);
+}
+
+jag-playground jag-node.selected-node header h1.node-name {
+	border: 1px solid var(--input-active);
+	/* padding: 0.5em; */
+}
+
+jag-playground jag-node div.connector {
+	font-size: 0.75em;
+	cursor: pointer;
+	border: 1px dotted var(--main-fg);
+	border-left: none;
+	padding: 0.25em;
+	min-width: 2px;
+	line-height: 1em;
+	align-self: center;
+	box-sizing: border-box;
+	position: absolute;
+	right: -2em;
+	top: 0em;
+	width: 2em;
+	text-align: center;
+}
+
+jag-playground jag-node div.expand {
+	font-size: 0.75em;
+	cursor: pointer;
+	border: 1px solid var(--main-fg);
+	border-left: none;
+	padding: 0.25em;
+	line-height: 0.75em;
+	align-self: center;
+	box-sizing: border-box;
+	position: absolute;
+	right: -1.5em;
+	bottom: 0em;
+	width: 1.5em;
+	text-align: center;
+	background-color: orange;
+	color: black;
+	font-weight: bold;
+}
+
+jag-playground jag-node div.concurrency {
+	font-size: 12pt;
+	color: green;
+	position: absolute;
+	right: -2.5em;
+	top: 5px;
+	font-family: FontAwesome;
+	background: transparent;
+	box-shadow: none;
+}
+
+jag-playground jag-node div.node-io {
+	display: none;
+	margin: 0 0.25rem 0 0.25rem;
+	transform-origin: 50% 0%;
+	transition: transform 0.25s ease-out;
+	overflow: hidden;
+}
+
+jag-playground jag-node header:hover + div.node-io {
+	transform:rotateX(0deg);
+}
+
+jag-playground jag-node div.node-io div.io-content {
+	background: lightblue;
+	box-shadow: inset 1px 1px 2px 2px hsla(200, 91%, 35%, 0.08);
+	padding: 0.75em;
+	box-sizing: border-box;
+}
+
+jag-playground jag-node div.node-io div.collapse {
+	background: lightgray;
+	text-align: center;
+	font-family: 'courier';
+	transition: transform 0.5s ease-out;
+}
+
+jag-playground jag-node div.node-io div.collapse.active {
+	transform: rotateX(180deg);
+}
+
+jag-playground jag-node div.node-io div.io-options {
+	display: none;
+	text-align: right;
+}
+
+jag-playground svg {
+	overflow: visible;
+}
+
+jag-playground svg text.sequential-label {
+	font-family: sans-serif;
+	font-size: 8pt;
+}
+
+jag-playground svg text.annotation-label {
+	fill: orange;
+	font-weight: bold;
+}
+
+jag-playground svg tspan.annotation-key {
+	fill: blue;
+}
+
+jag-playground svg text.participation-label {
+	fill: green;
+	font-size: 12pt;
+	font-weight: 900;
+	font-family: FontAwesome;
+}
+
+jag-playground .popup-box {
+	background-color: rgba(0, 0, 0, 0.75);
+	border: 3px solid black;
+	border-radius: 6px;
+	position: absolute;
+	width: 200px;
+	height: 150px;
+	color: white;
+	z-index: 10;
+}
+
+jag-playground .popup-content {
+	padding: 10px;
+}
+
+jag-playground .popup-warning:before {
+	content: "Warning: ";
+}
+
+jag-playground .popup-notice:before {
+	content: "Notice: ";
+}
+
+jag-playground div.popup-box span {
+	display: inline-block;
+}
+
+jag-playground .popup-name {
+	font-weight: bold;
+	margin: 10px 0 10px 0;
+}
+
+jag-playground .popup-warning span.popup-name {
+	color: red;
+}
+
+jag-playground .popup-notice span.popup-name {
+	color: orange;
+}
+
+jag-playground .popup-description {
+	color: white;
+}
+
+jag-playground .popup-warning-highlight {
+	box-shadow: 0 3px 20px rgba(255, 0, 0, 0.33);
+}
+
+jag-playground .popup-notice-highlight {
+	box-shadow: 0 3px 20px rgba(255, 150, 0, 0.33);
+}
+
+jag-playground .popup-action {
+	margin: 10px;
+}
+
+jag-playground .cardinal {
+	width: 24px;
+	height: 24px;
+	margin-top: -12px;
+	margin-left: -12px;
+	margin-bottom: 12px;
+	margin-right: 12px;
+	position: absolute;
+	visibility: hidden;
+	box-shadow: 0px 3px 5px black;
+	background-size: 24px 24px;
+	z-index: 100;
+}
+
+jag-playground .cardinal.visible {
+	visibility: visible;
+}
+
+jag-playground .cardinal.left {
+	top: 50%;
+	left: 12px;
+	background-image: url('../icons/ic_cardinal_left.png');
+}
+
+jag-playground .cardinal.right {
+	top: 50%;
+	right: -12px;
+	background-image: url('../icons/ic_cardinal_right.png');
+}
+
+jag-playground .cardinal.up {
+	top: 12px;
+	left: 50%;
+	background-image: url('../icons/ic_cardinal_up.png');
+}
+
+jag-playground .cardinal.down {
+	bottom: -12px;
+	left: 50%;
+	background-image: url('../icons/ic_cardinal_down.png');
+}

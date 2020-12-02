@@ -67,7 +67,7 @@ ol {
 	list-style: none;
 }
 
-jag-properties, jag-library, jag-menu, side#ide {
+side#ide {
 	background: var(--main-bg-darker);
 	color: var(--main-fg);
 }
@@ -602,8 +602,4 @@ jag-playground .cardinal.down {
 	bottom: -12px;
 	left: 50%;
 	background-image: url('../icons/ic_cardinal_down.png');
-}
-
-jag-properties, jag-library {
-	z-index: 100;
 }

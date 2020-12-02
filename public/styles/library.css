@@ -1,0 +1,34 @@
+/* Library panel */
+jag-library {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 20%;
+    z-index: 100;
+    background: var(--main-bg-darker);
+	color: var(--main-fg);
+}
+
+jag-library ol {
+	height: 100%;
+	overflow-y: scroll;
+}
+
+jag-library li {
+	padding: 0.25em;
+	border-bottom: 1px solid white;
+	cursor: pointer;
+	transition: background-color 350ms var(--transition-function);
+}
+
+jag-library li:hover {
+	background-color: var(--main-fg-lighter);
+}
+
+jag-library h3 {
+	padding: 0.25em;
+}
+
+jag-library p {
+	padding: 0.25em;
+}

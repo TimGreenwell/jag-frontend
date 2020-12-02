@@ -2,7 +2,7 @@
  * @fileOverview IA table application.
  *
  * @author mvignati
- * @version 0.14
+ * @version 0.18
  */
 
 'use strict';
@@ -14,6 +14,8 @@ import TeamService from './services/team.js';
 import AnalysisService from './services/analysis.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import IATable from './ui/ia-table.js';
+import Library from './views/library.js';
+import RESTStorage from './storages/rest.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -23,6 +25,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
     JAGService.createInstance('idb-service', idb_storage);
+
+	// @TODO: this should be setup by the user (configuration file).
+	// Initializes a rest storage
+	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
+	JAGService.createInstance('local-rest-service', rest_storage);
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
     NodeService.createInstance('idb-service', idb_storage);
@@ -39,6 +46,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const body = document.querySelector('body');
 
 	const table = new IATable();
+	const library = new Library();
 
+	body.appendChild(library);
 	body.appendChild(table);
+
+	library.addEventListener('item-selected', (e) => {
+		// TODO: add to table
+	});
+
+	library.addEventListener('refresh', (e) => {
+		// TODO: refresh table
+	});
 });
