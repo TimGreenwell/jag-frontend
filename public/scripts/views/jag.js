@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.42
+ * @version 2.45
  */
 
 'use strict';
@@ -142,6 +142,7 @@ class JAGView extends AnalysisCell {
 				if (selected !== undefined)
 					this._elements.urn.innerText = selected
 				this._elements.urn.blur();
+				this._elements.suggestions.hide();
 				break;
 			case 'Escape':
 				this._elements.urn.innerText = this.jag.urn;

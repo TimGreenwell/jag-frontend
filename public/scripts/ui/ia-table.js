@@ -2,19 +2,23 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 0.69
+ * @version 0.95
  */
 
 'use strict';
 
 import Analysis from '../models/analysis.js';
 import AnalysisService from '../services/analysis.js';
+import JAGService from '../services/jag.js';
+import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
 
-class IATable extends HTMLElement {
+class IATable extends Popupable {
 
 	constructor() {
 		super();
+
+		this.setPopupBounds(this);
 
 		this._analysis = undefined;
 
@@ -60,25 +64,37 @@ class IATable extends HTMLElement {
 		const $new_analysis = document.createElement('button');
 		const $analysis_selector = document.createElement('select');
 		const $analysis_name = document.createElement('input');
+		const $export_analysis = document.createElement('button');
+		const $import_analysis = document.createElement('button');
 
 		$new_analysis.innerText = 'New Analysis';
 		$new_analysis.setAttribute('id', 'new-analysis');
 		$analysis_selector.setAttribute('id', 'select-analysis');
 		$analysis_name.setAttribute('id', 'analysis-name');
 		$analysis_name.setAttribute('disabled', '');
+		$export_analysis.innerText = 'Export';
+		$export_analysis.setAttribute('id', 'export-analysis');
+		$import_analysis.innerText = 'Import';
+		$import_analysis.setAttribute('id', 'import-analysis');
 
 		$header.appendChild($new_analysis);
 		$header.appendChild($analysis_selector);
 		$header.appendChild($analysis_name);
+		$header.appendChild($export_analysis);
+		$header.appendChild($import_analysis);
 
 		$new_analysis.addEventListener('click', this._handleNewAnalysis.bind(this));
 		$analysis_selector.addEventListener('change', this._handleAnalysisChange.bind(this));
 		$analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
+		$export_analysis.addEventListener('click', this._handleExportAnalysis.bind(this));
+		$import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
 
 		this.appendChild($header);
 
 		this._elements.selector = $analysis_selector;
 		this._elements.name = $analysis_name;
+		this._elements.export = $export_analysis;
+		this._elements.import = $import_analysis;
 	}
 
 	async _populateAnalysis() {
@@ -126,6 +142,14 @@ class IATable extends HTMLElement {
 		this._analysis.name = event.target.value;
 	}
 
+	_handleExportAnalysis() {
+		this.popup(IATable.NOTICE_EXPORT_STATIC, this._elements.export, function () { return this; }.bind(this), [this._elements.export])
+	}
+
+	_handleImportAnalysis() {
+		
+	}
+
 	_createAnalysisEntry(analysis) {
 		const $option = document.createElement('option');
 		$option.setAttribute('value', analysis.id);
@@ -138,7 +162,77 @@ class IATable extends HTMLElement {
 		return $option;
 	}
 
+	async export(static_jags) {
+		const analysis = this._analysis;
+		const json = analysis.toJSON();
+
+		const root = analysis.root;
+		let children = [root];
+
+		const jags = [];
+
+		json.nodes = [];
+
+		while (children.length > 0) {
+			const child = children.splice(0, 1)[0];
+
+			if (!children) children = [];
+
+			if (child.children) {
+				for (let grandchild in child.children) {
+					children.push(child.children[grandchild]);
+				}
+			}
+
+			json.nodes.push(child.toJSON());
+
+			if (child.urn != '' && jags.indexOf(child.urn) === -1) {
+				jags.push(child.urn);
+			}
+		}
+
+		if (static_jags === true) {
+			json.jags = [];
+			const service = JAGService.instance('idb-service');
+
+			for (let jag of jags) {
+				const model = await service.get(jag);
+				json.jags.push(model.toJSON());
+			}
+		}
+
+		const teams = [];
+		for (let team of analysis.teams) {
+			const jteam = team.toJSON();
+
+			const agents = [];
+			for (let agent of team.agents) {
+				agents.push(agent.toJSON());
+			}
+			jteam.agents = agents;
+
+			teams.push(jteam);
+		}
+		json.teams = teams;
+
+		const a = document.createElement('a');
+		const data = `data:application/json,${encodeURI(JSON.stringify(json))}`;
+		a.href = data;
+		a.download = `${analysis.name}.json`;
+		a.click();
+	}
 }
+
+IATable.POPUP_TYPES = {
+	WARNING: 'popup-warning',
+	NOTICE: 'popup-notice',
+	INFO: 'popup-info'
+};
+
+IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup(IATable.POPUP_TYPES.NOTICE, "Export Static", "Export this IA table with a static copy of current JAGs?", [
+	{ text: "Yes", color: "black", bgColor: "red", action: function (table) { table.export(true); } },
+	{ text: "No", color: "white", bgColor: "black", action: function (table) { table.export(false); } }
+]);
 
 IATable.FALLBACK_ANALYSIS_NAME = 'Analysis w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';

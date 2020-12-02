@@ -8,9 +8,9 @@
 
 import JAGNode from './views/jag-node.js';
 import Edge from './views/edge.js';
-import JAGService from './services/jag.js';
+import Popupable from './utils/popupable.js';
 
-class Playground extends HTMLElement {
+class Playground extends Popupable {
 
 	constructor() {
 		super();
@@ -22,15 +22,16 @@ class Playground extends HTMLElement {
 
 		this._nodes_container = document.createElement('div');
 		this.appendChild(this._nodes_container);
+		this.setPopupBounds(this._nodes_container);
 
 		this._nodes = new Set();
 		this._selected = new Set();
 		this._is_edge_being_created = false;
 
-		this._content = document.createElement('div');
-		this._content.className = "popup-box";
-		this._content.style.visibility = "hidden";
-		this.appendChild(this._content);
+		// this._content = document.createElement('div');
+		// this._content.className = "popup-box";
+		// this._content.style.visibility = "hidden";
+		// this.appendChild(this._content);
 
 		this._cardinals = {
 			left: this._createCardinal("left", 1, 0),
@@ -49,9 +50,6 @@ class Playground extends HTMLElement {
 		this._showCardinals(this._canMoveView);
 
 		this._zoomFactor = 1.00;
-
-		this._popups = [];
-		this._popupHighlights = [];
 
 		this._boundHandleEdgeSelected = this._handleEdgeSelected.bind(this);
 		this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
@@ -140,26 +138,6 @@ class Playground extends HTMLElement {
 		this._checkBounds();
 	}
 
-	static _createPopup(type, name, description, actions) {
-		const _p = document.createElement("p");
-		_p.classList.add("popup-content");
-		_p.classList.add(type);
-
-		const _name = document.createElement("span");
-		_name.className = "popup-name";
-		_name.innerText = name;
-
-		const _description = document.createElement("span");
-		_description.className = "popup-description";
-		_description.innerText = description;
-
-		_p.append(_name, _description);
-
-		_p.setAttributeNS(null, 'popup-type', type);
-
-		return { type: type, display: _p, actions: actions };
-	}
-
 	_dragView(dx, dy) {
 		for (let node of this._nodes) {
 			node.translate(dx, dy, false);
@@ -167,7 +145,7 @@ class Playground extends HTMLElement {
 
 		this._checkBounds();
 	}
-	
+
 	dragView(e) {
 		const dx = e.clientX - this._initialMouse.x;
 		const dy = e.clientY - this._initialMouse.y;
@@ -196,7 +174,7 @@ class Playground extends HTMLElement {
 		this.addEventListener('mousemove', (e) => {
 			this._edges_container.dispatchEvent(new MouseEvent('mousemove', { clientX: e.clientX, clientY: e.clientY }));
 		});
-		
+
 		this.addEventListener('dragenter', this.onPreImport.bind(this));
 		this.addEventListener('dragover', this.cancelDefault.bind(this));
 		this.addEventListener('drop', this.onImport.bind(this));
@@ -335,111 +313,6 @@ class Playground extends HTMLElement {
 		this._addNode(item);
 	}
 
-	_displayNextPopup() {
-		if (this._popupCallback) {
-			this._popupCallback();
-		}
-
-		for (let highlight of this._popupHighlights) {
-			highlight.classList.remove(`${this._activePopup.content.type}-highlight`);
-		}
-
-		this._popupHighlights = [];
-
-		if (this._popups.length > 0) {
-			this._activePopup = this._popups.splice(0, 1)[0];
-
-			if (!this._popups) this._popups = [];
-
-			const {content, trackEl, callback, highlights} = this._activePopup;
-			const loc = trackEl.getBoundingClientRect();
-			const ix = loc.x, iy = loc.y, width = loc.width;
-
-			this._content.innerHTML = "";
-			this._content.appendChild(content.display);
-
-			const {x, y} = this._nodes_container.getBoundingClientRect();
-			this._content.style.left = (ix - x + (width / 2) - 100) + "px";
-			this._content.style.top = (iy - y - 160) + "px";
-
-			trackEl.addEventListener('change-position', (e) => {
-				const newLoc = trackEl.getBoundingClientRect();
-				const nx = newLoc.x, ny = newLoc.y;
-				this._content.style.left = (nx - x + (width / 2) - 100) + "px";
-				this._content.style.top = (ny - y - 160) + "px";
-			});
-
-			this._popupHighlights = highlights;
-
-			for (let highlight of highlights) {
-				highlight.classList.add(`${content.type}-highlight`);
-			}
-
-			if (!this._popupInterval && !content.actions) {
-				this._popupInterval = setInterval(this._displayNextPopup.bind(this), 4000);
-			} else if (this._popupInterval && content.actions) {
-				clearInterval(this._popupInterval);
-				this._popupInterval = undefined;
-			}
-
-			if (content.actions) {
-				for (const {text, color, bgColor, action} of content.actions) {
-					const boundAction = action ? action.bind(this) : undefined;
-					const actionBtn = document.createElement('button');
-					actionBtn.className = "popup-action";
-					actionBtn.innerText = text;
-
-					if (color) actionBtn.style.color = color;
-					if (bgColor) actionBtn.style.backgroundColor = bgColor;
-
-					actionBtn.onclick = function () {
-						if (boundAction) {
-							if (callback) {
-								boundAction(callback());
-							} else {
-								boundAction();
-							}
-						} else {
-							callback();
-						}
-
-						this._displayNextPopup();
-					}.bind(this);
-
-					this._content.appendChild(actionBtn);
-				}
-			} else if (callback) {
-				this._popupCallback = callback;
-			}
-
-			this._content.style.visibility = "visible";
-		} else {
-			if (this._popupInterval) {
-				clearInterval(this._popupInterval);
-				this._popupInterval = undefined;
-			}
-
-			this._popupCallback = undefined;
-
-			this._activePopup = undefined;
-
-			this._content.style.visibility = "hidden";
-		}
-	}
-
-	popup(content, trackEl, callback, highlights = []) {
-		this._popups.push({
-			content: content,
-			trackEl: trackEl,
-			callback: callback,
-			highlights: highlights
-		});
-
-		if (!this._popupInterval && !this._activePopup) {
-			this._displayNextPopup();
-		}
-	}
-
 	handleRefresh({ model, model_set, refreshed = new Set() }) {
 		const margin = 50;
 
@@ -574,7 +447,7 @@ class Playground extends HTMLElement {
 			if (context.name) node.setContextualName(context.name);
 			if (context.description) node.setContextualDescription(context.description);
 		}
-		
+
 		node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
 		if (!sub_item.children)
@@ -710,7 +583,7 @@ Playground.POPUP_TYPES = {
 	INFO: 'popup-info'
 };
 
-Playground.NOTICE_REMOVE_CHILD = Playground._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
+Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
 	{ text: "Yes", color: "black", bgColor: "red", action: function (node) {
 		const edge = node.getParentEdge();
 		const id = edge.getChildId();

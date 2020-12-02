@@ -3,7 +3,7 @@
  * Shows suggestions for the specified input based on specified source data.
  *
  * @author mvignati
- * @version 0.14
+ * @version 0.15
  */
 
 'use strict';
@@ -77,7 +77,6 @@ class AutoComplete extends HTMLElement {
 	}
 
 	_handleMouseEnter(idx, event) {
-		console.log(idx, event);
 		if(this._selected_index >= 0) {
 			this.children[this._selected_index].classList.remove('selected');
 		}
