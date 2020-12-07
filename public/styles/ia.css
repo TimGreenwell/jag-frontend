@@ -175,3 +175,7 @@ auto-complete:not(.visible) {
 auto-complete > .selected {
 	background-color: lightblue;
 }
+
+input#analysis-file {
+	display: none;
+}

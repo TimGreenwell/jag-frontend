@@ -2,14 +2,21 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 0.95
+ * @version 1.41
  */
 
 'use strict';
 
+import AgentModel from '../models/agent.js';
 import Analysis from '../models/analysis.js';
+import JAG from '../models/jag.js';
+import Node from '../models/node.js';
+import TeamModel from '../models/team.js';
+import AgentService from '../services/agent.js';
 import AnalysisService from '../services/analysis.js';
 import JAGService from '../services/jag.js';
+import NodeService from '../services/node.js';
+import TeamService from '../services/team.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
 
@@ -66,6 +73,7 @@ class IATable extends Popupable {
 		const $analysis_name = document.createElement('input');
 		const $export_analysis = document.createElement('button');
 		const $import_analysis = document.createElement('button');
+		const $analysis_file = document.createElement('input');
 
 		$new_analysis.innerText = 'New Analysis';
 		$new_analysis.setAttribute('id', 'new-analysis');
@@ -76,18 +84,22 @@ class IATable extends Popupable {
 		$export_analysis.setAttribute('id', 'export-analysis');
 		$import_analysis.innerText = 'Import';
 		$import_analysis.setAttribute('id', 'import-analysis');
+		$analysis_file.setAttribute('id', 'analysis-file');
+		$analysis_file.setAttribute('type', 'file');
 
 		$header.appendChild($new_analysis);
 		$header.appendChild($analysis_selector);
 		$header.appendChild($analysis_name);
 		$header.appendChild($export_analysis);
 		$header.appendChild($import_analysis);
+		$header.appendChild($analysis_file);
 
 		$new_analysis.addEventListener('click', this._handleNewAnalysis.bind(this));
 		$analysis_selector.addEventListener('change', this._handleAnalysisChange.bind(this));
 		$analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
 		$export_analysis.addEventListener('click', this._handleExportAnalysis.bind(this));
 		$import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
+		$analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
 		this.appendChild($header);
 
@@ -95,6 +107,7 @@ class IATable extends Popupable {
 		this._elements.name = $analysis_name;
 		this._elements.export = $export_analysis;
 		this._elements.import = $import_analysis;
+		this._elements.file = $analysis_file;
 	}
 
 	async _populateAnalysis() {
@@ -146,8 +159,109 @@ class IATable extends Popupable {
 		this.popup(IATable.NOTICE_EXPORT_STATIC, this._elements.export, function () { return this; }.bind(this), [this._elements.export])
 	}
 
-	_handleImportAnalysis() {
-		
+	async _checkImportConflicts(analysis) {
+		{
+			const service = AnalysisService.instance('idb-service');
+			if (await service.has(analysis.id))
+				return true;
+		}
+
+		{
+			const service = NodeService.instance('idb-service');
+			for (const node of analysis.nodes)
+				if (await service.has(node.id))
+					return true;
+		}
+
+		{
+			const service = TeamService.instance('idb-service');
+			for (const team of analysis.teams)
+				if (await service.has(team.id))
+					return true;
+		}
+
+		{
+			const service = AgentService.instance('idb-service');
+			for (const team of analysis.teams)
+				for (const agent of team.agents)
+					if (await service.has(agent.id))
+						return true;
+		}
+	}
+
+	async _handleUploadAnalysis(e) {
+		const files = this._elements.file.files;
+
+		if (files.length < 1)
+			return;
+
+		const file = files[0];
+		const content = await file.text();
+		const analysis = JSON.parse(content);
+
+		if (await this._checkImportConflicts(analysis))
+			if (!window.confirm("Uploading this analysis may overwrite existing data. Continue?"))
+				return;
+
+		if (analysis.jags) {
+			const service = JAGService.instance('idb-service');
+
+			for (const jag of analysis.jags) {
+				let store = true;
+
+				if (await service.has(jag.urn))
+					if (!window.confirm(`The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`))
+						store = false;
+
+				if (!store) continue;
+
+				const model = JAG.fromJSON(jag);
+				await service.create(model);
+			}
+		}
+
+		{
+			const service = NodeService.instance('idb-service');
+
+			// Sort nodes with the least number of children first.
+			analysis.nodes.sort((a, b) => a.children.length - b.children.length);
+
+			for (const node of analysis.nodes) {
+				const model = await Node.fromJSON(node);
+				await service.create(model);
+			}
+		}
+
+		{
+			const team_service = TeamService.instance('idb-service');
+			const agent_service = AgentService.instance('idb-service');
+
+			for (const team of analysis.teams) {
+				for (const agent of team.agents) {
+					await agent_service.create(AgentModel.fromJSON(agent));
+				}
+
+				team.agents = team.agents.map((agent) => agent.id);
+				const model = await TeamModel.fromJSON(team);
+				await team_service.create(model);
+			}
+		}
+
+		const service = AnalysisService.instance('idb-service');
+
+		const model = await Analysis.fromJSON({
+			id: analysis.id,
+			name: analysis.name,
+			root: analysis.root,
+			description: analysis.description || '',
+			teams: analysis.teams.map((team) => team.id)
+		});
+
+		await service.create(model);
+	}
+
+	_handleImportAnalysis(e) {
+		this._elements.file.click();
 	}
 
 	_createAnalysisEntry(analysis) {
