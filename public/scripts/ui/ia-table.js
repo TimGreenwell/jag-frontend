@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 1.58
+ * @version 1.59
  */
 
 'use strict';
@@ -75,7 +75,7 @@ class IATable extends Popupable {
 		const $import_analysis = document.createElement('button');
 		const $analysis_file = document.createElement('input');
 
-		$new_analysis.innerText = 'New Analysis';
+		$new_analysis.innerText = 'Create Analysis';
 		$new_analysis.setAttribute('id', 'new-analysis');
 		$analysis_selector.setAttribute('id', 'select-analysis');
 		$analysis_name.setAttribute('id', 'analysis-name');
