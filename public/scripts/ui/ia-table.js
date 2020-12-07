@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 1.41
+ * @version 1.58
  */
 
 'use strict';
@@ -156,7 +156,12 @@ class IATable extends Popupable {
 	}
 
 	_handleExportAnalysis() {
-		this.popup(IATable.NOTICE_EXPORT_STATIC, this._elements.export, function () { return this; }.bind(this), [this._elements.export])
+		this.popup({
+			type: IATable.NOTICE_EXPORT_STATIC,
+			trackEl: this._elements.export,
+			callback: function () { return this; }.bind(this),
+			highlights: [this._elements.export]
+		});
 	}
 
 	async _checkImportConflicts(analysis) {
@@ -199,27 +204,47 @@ class IATable extends Popupable {
 		const content = await file.text();
 		const analysis = JSON.parse(content);
 
-		if (await this._checkImportConflicts(analysis))
-			if (!window.confirm("Uploading this analysis may overwrite existing data. Continue?"))
-				return;
-
 		if (analysis.jags) {
 			const service = JAGService.instance('idb-service');
 
 			for (const jag of analysis.jags) {
-				let store = true;
-
-				if (await service.has(jag.urn))
-					if (!window.confirm(`The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`))
-						store = false;
-
-				if (!store) continue;
-
-				const model = JAG.fromJSON(jag);
-				await service.create(model);
+				if (await service.has(jag.urn)) {
+					this.popup({
+						content: IATable.NOTICE_OVERWRITE_JAG,
+						trackEl: this._elements.import,
+						inputs: { jag: jag },
+						highlights: [this._elements.import]
+					});
+				}
 			}
 		}
 
+		this.popup({
+			content: IATable.NOTICE_OVERWRITE_ANALYSIS,
+			trackEl: this._elements.import,
+			callback: () => { return { table: this, analysis: analysis } },
+			inputs: { conflict: await this._checkImportConflicts(analysis) },
+			highlights: [this._elements.import]
+		});
+	}
+
+	_handleImportAnalysis(e) {
+		this._elements.file.click();
+	}
+
+	_createAnalysisEntry(analysis) {
+		const $option = document.createElement('option');
+		$option.setAttribute('value', analysis.id);
+
+		let name = analysis.name;
+		if(name === '')
+			name = IATable.FALLBACK_ANALYSIS_NAME;
+
+		$option.innerText = name;
+		return $option;
+	}
+
+	async import(analysis) {
 		{
 			const service = NodeService.instance('idb-service');
 
@@ -258,22 +283,6 @@ class IATable extends Popupable {
 		});
 
 		await service.create(model);
-	}
-
-	_handleImportAnalysis(e) {
-		this._elements.file.click();
-	}
-
-	_createAnalysisEntry(analysis) {
-		const $option = document.createElement('option');
-		$option.setAttribute('value', analysis.id);
-
-		let name = analysis.name;
-		if(name === '')
-			name = IATable.FALLBACK_ANALYSIS_NAME;
-
-		$option.innerText = name;
-		return $option;
 	}
 
 	async export(static_jags) {
@@ -343,10 +352,46 @@ IATable.POPUP_TYPES = {
 	INFO: 'popup-info'
 };
 
-IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup(IATable.POPUP_TYPES.NOTICE, "Export Static", "Export this IA table with a static copy of current JAGs?", [
-	{ text: "Yes", color: "black", bgColor: "red", action: function (table) { table.export(true); } },
-	{ text: "No", color: "white", bgColor: "black", action: function (table) { table.export(false); } }
-]);
+IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
+	type: IATable.POPUP_TYPES.NOTICE,
+	name: "Export Static",
+	description: "Export this IA table with a static copy of current JAGs?",
+	actions: [
+		{ text: "Yes", color: "black", bgColor: "red", action: function (table) { table.export(true); } },
+		{ text: "No", color: "white", bgColor: "black", action: function (table) { table.export(false); } }
+	]
+});
+
+IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
+	type: IATable.POPUP_TYPES.NOTICE,
+	name: "Overwrite Analysis",
+	description: "Data already exists for this analysis. Overwrite existing data?",
+	actions: [
+		{ text: "Overwrite", color: "black", bgColor: "red",
+			action: function ({table, analysis}) {
+				table.import(analysis);
+			}
+		},
+		{ text: "Cancel", color: "white", bgColor: "black" }
+	],
+	fallback: 0,
+	skip: ({inputs}) => !inputs.conflict
+});
+
+IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
+	type: IATable.POPUP_TYPES.NOTICE,
+	name: "Overwrite JAGs",
+	description: ({jag}) => `The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
+	actions: [
+		{ text: "Overwrite", color: "black", bgColor: "red",
+			action: async function ({jag}) {
+				const model = JAG.fromJSON(jag);
+				await service.create(model);
+			}
+		},
+		{ text: "Cancel", color: "white", bgColor: "black" }
+	]
+});
 
 IATable.FALLBACK_ANALYSIS_NAME = 'Analysis w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';

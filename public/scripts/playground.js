@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.77
+ * @version 0.78
  */
 
 import JAGNode from './views/jag-node.js';
@@ -262,7 +262,13 @@ class Playground extends Popupable {
 				if (!this._selected.has(child)) {
 					if (!this._selected.has(parent)) {
 						const child = e.getNodeEnd();
-						this.popup(Playground.NOTICE_REMOVE_CHILD, child, function() { return child; }, [child]);
+
+						this.popup({
+							content: Playground.NOTICE_REMOVE_CHILD,
+							trackEl: child,
+							callback: function() { return child; },
+							highlights: [child]
+						});
 					} else {
 						e.destroy();
 					}
@@ -280,7 +286,12 @@ class Playground extends Popupable {
 					this._nodes.delete(n);
 					this._nodes_container.removeChild(n);
 				} else {
-					this.popup(Playground.NOTICE_REMOVE_CHILD, n, function () { return n; }, [n]);
+					this.popup({
+						content: Playground.NOTICE_REMOVE_CHILD,
+						trackEl: n,
+						callback: function () { return n; },
+						highlights: [n]
+					});
 				}
 
 				n.setSelected(false);
@@ -583,25 +594,31 @@ Playground.POPUP_TYPES = {
 	INFO: 'popup-info'
 };
 
-Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup(Playground.POPUP_TYPES.NOTICE, "Remove Child", "Remove this child from parent JAG?", [
-	{ text: "Yes", color: "black", bgColor: "red", action: function (node) {
-		const edge = node.getParentEdge();
-		const id = edge.getChildId();
-		const parent = node.getParent();
+Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
+	type: Playground.POPUP_TYPES.NOTICE,
+	name: "Remove Child",
+	description: "Remove this child from parent JAG?",
+	actions: [
+		{ text: "Yes", color: "black", bgColor: "red",
+			action: function (node) {
+				const edge = node.getParentEdge();
+				const id = edge.getChildId();
+				const parent = node.getParent();
 
-		parent.removeChild(edge, id);
+				parent.removeChild(edge, id);
 
-		const tree = node.getTree();
+				const tree = node.getTree();
 
-		for (const node of tree) {
-			node.removeAllEdges();
-			node.detachHandlers();
-			this._nodes.delete(node);
-			this._nodes_container.removeChild(node);
-		}
-	}},
-	{ text: "No", color: "white", bgColor: "black" }
-]);
+				for (const node of tree) {
+					node.removeAllEdges();
+					this._nodes.delete(node);
+					this._nodes_container.removeChild(node);
+				}
+			}
+		},
+		{ text: "No", color: "white", bgColor: "black" }
+	]
+});
 
 Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;
 
