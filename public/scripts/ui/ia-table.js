@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 1.59
+ * @version 1.88
  */
 
 'use strict';
@@ -35,7 +35,7 @@ class IATable extends Popupable {
 			analysis: undefined,
 		};
 
-		this._init();
+		this._initUI();
 	}
 
 	get analysisSelector() {
@@ -57,29 +57,39 @@ class IATable extends Popupable {
 		this._analysis = analysis;
 		this._elements.name.removeAttribute('disabled');
 		this._elements.name.value = analysis.name;
+		this._elements.description.removeAttribute('disabled');
+		this._elements.description.value = analysis.description;
 		this._elements.analysis = view;
-	}
-
-
-	async _init() {
-		this._initUI();
-		this._populateAnalysis();
 	}
 
 	_initUI() {
 		const $header = document.createElement('header');
 		const $new_analysis = document.createElement('button');
-		const $analysis_selector = document.createElement('select');
+
+		const $analysis_name_wrapper = document.createElement('div');
+		const $analysis_name_label = document.createElement('label');
 		const $analysis_name = document.createElement('input');
+
+		const $analysis_description_wrapper = document.createElement('div');
+		const $analysis_description_label = document.createElement('label');
+		const $analysis_description = document.createElement('input');
+
 		const $export_analysis = document.createElement('button');
 		const $import_analysis = document.createElement('button');
 		const $analysis_file = document.createElement('input');
 
 		$new_analysis.innerText = 'Create Analysis';
 		$new_analysis.setAttribute('id', 'new-analysis');
-		$analysis_selector.setAttribute('id', 'select-analysis');
+		$analysis_name_label.setAttribute('for', 'analysis-name');
+		$analysis_name_label.innerText = 'Name';
+		$analysis_name.setAttribute('name', 'analysis-name');
 		$analysis_name.setAttribute('id', 'analysis-name');
 		$analysis_name.setAttribute('disabled', '');
+		$analysis_description_label.setAttribute('for', 'analysis-description');
+		$analysis_description_label.innerText = 'Description';
+		$analysis_description.setAttribute('name', 'analysis-description');
+		$analysis_description.setAttribute('id', 'analysis-description');
+		$analysis_description.setAttribute('disabled', '');
 		$export_analysis.innerText = 'Export';
 		$export_analysis.setAttribute('id', 'export-analysis');
 		$import_analysis.innerText = 'Import';
@@ -88,78 +98,59 @@ class IATable extends Popupable {
 		$analysis_file.setAttribute('type', 'file');
 
 		$header.appendChild($new_analysis);
-		$header.appendChild($analysis_selector);
-		$header.appendChild($analysis_name);
+		$header.appendChild($analysis_name_label);
+
+		$analysis_name_wrapper.appendChild($analysis_name_label);
+		$analysis_name_wrapper.appendChild($analysis_name);
+		$header.appendChild($analysis_name_wrapper);
+
+		$analysis_description_wrapper.appendChild($analysis_description_label);
+		$analysis_description_wrapper.appendChild($analysis_description);
+		$header.appendChild($analysis_description_wrapper);
+
 		$header.appendChild($export_analysis);
 		$header.appendChild($import_analysis);
 		$header.appendChild($analysis_file);
 
 		$new_analysis.addEventListener('click', this._handleNewAnalysis.bind(this));
-		$analysis_selector.addEventListener('change', this._handleAnalysisChange.bind(this));
 		$analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
+		$analysis_description.addEventListener('blur', this._handleAnalysisDescriptionChange.bind(this));
 		$export_analysis.addEventListener('click', this._handleExportAnalysis.bind(this));
 		$import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
 		$analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
 		this.appendChild($header);
 
-		this._elements.selector = $analysis_selector;
+		this._elements.create = $new_analysis;
 		this._elements.name = $analysis_name;
+		this._elements.description = $analysis_description;
 		this._elements.export = $export_analysis;
 		this._elements.import = $import_analysis;
 		this._elements.file = $analysis_file;
 	}
 
-	async _populateAnalysis() {
-		const idb_service = AnalysisService.instance('idb-service');
-		const analyses = await idb_service.all();
-
-		const options = document.createDocumentFragment();
-
-		// Adds the first entry.
-		const $option_title = document.createElement('option');
-		$option_title.innerText = IATable.ANALYSIS_SELECTOR_TITLE;
-		$option_title.setAttribute('disabled', '');
-		$option_title.setAttribute('selected', '');
-		options.appendChild($option_title);
-
-		analyses.forEach((analysis) => {
-			//const local_analysis = await AnalysisService.get(id);
-			const $entry = this._createAnalysisEntry(analysis);
-			options.appendChild($entry);
-		});
-
-		this._elements.selector.appendChild(options);
-	}
-
 	_handleNewAnalysis() {
-		const analysis = new Analysis();
-		this.analysis = analysis;
-		AnalysisService.instance('idb-service').create(analysis);
-
-		// Select the new entry
-		const $entry = this._createAnalysisEntry(analysis);
-		this._elements.selector.appendChild($entry);
-		this._elements.selector.selectedIndex = this._elements.selector.options.length - 1;
-	}
-
-	_handleAnalysisChange(event) {
-		const analysis_id = event.target.value;
-		AnalysisService
-			.instance('idb-service')
-			.get(analysis_id)
-			.then(analysis => this.analysis = analysis);
+		this.popup({
+			content: IATable.NOTICE_CREATE_ANALYSIS,
+			trackEl: this._elements.create,
+			inputs: { table: this },
+			highlights: [this._elements.create]
+		});
 	}
 
 	_handleAnalysisNameChange(event) {
 		this._analysis.name = event.target.value;
 	}
 
+	_handleAnalysisDescriptionChange(event) {
+		this._analysis.description = event.target.value;
+	}
+
 	_handleExportAnalysis() {
 		this.popup({
-			type: IATable.NOTICE_EXPORT_STATIC,
+			content: IATable.NOTICE_EXPORT_STATIC,
 			trackEl: this._elements.export,
-			callback: function () { return this; }.bind(this),
+			inputs: { table: this },
 			highlights: [this._elements.export]
 		});
 	}
@@ -222,8 +213,7 @@ class IATable extends Popupable {
 		this.popup({
 			content: IATable.NOTICE_OVERWRITE_ANALYSIS,
 			trackEl: this._elements.import,
-			callback: () => { return { table: this, analysis: analysis } },
-			inputs: { conflict: await this._checkImportConflicts(analysis) },
+			inputs: { table: this, analysis: analysis, conflict: await this._checkImportConflicts(analysis) },
 			highlights: [this._elements.import]
 		});
 	}
@@ -242,6 +232,21 @@ class IATable extends Popupable {
 
 		$option.innerText = name;
 		return $option;
+	}
+
+	async create(name, root) {
+		const jag = await JAGService.instance('idb-service').get(root);
+
+		const node = new Node({jag: jag});
+		await NodeService.instance('idb-service').create(node);
+
+		const analysis = new Analysis({name: name, root: node});
+		await AnalysisService.instance('idb-service').create(analysis);
+
+		analysis.save();
+		this.analysis = analysis;
+
+		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
 	}
 
 	async import(analysis) {
@@ -283,6 +288,8 @@ class IATable extends Popupable {
 		});
 
 		await service.create(model);
+
+		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: model }}));
 	}
 
 	async export(static_jags) {
@@ -352,13 +359,54 @@ IATable.POPUP_TYPES = {
 	INFO: 'popup-info'
 };
 
+IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
+	type: IATable.POPUP_TYPES.NOTICE,
+	name: "Create Analysis",
+	description: "Provide a name and root node to create a new analysis.",
+	properties: [
+		{ name: 'name', label: 'Name', type: 'text' },
+		{ name: 'root', label: 'Root JAG', type: 'select',
+			options: async function () {
+				const options = [];
+
+				const jags = await JAGService.instance('idb-service').all();
+
+				for (const jag of jags) {
+					options.push({
+						'text': jag.urn,
+						'value': jag.urn
+					});
+				}
+
+				return options;
+			}
+		}
+	],
+	actions: [
+		{ text: "Create", color: "white", bgColor: "green",
+			action: function ({inputs: {table}, outputs: {name, root}}) {
+				table.create(name, root);
+			}
+		},
+		{ text: "Cancel", color: "black", bgColor: "white" }
+	]
+});
+
 IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
 	type: IATable.POPUP_TYPES.NOTICE,
 	name: "Export Static",
 	description: "Export this IA table with a static copy of current JAGs?",
 	actions: [
-		{ text: "Yes", color: "black", bgColor: "red", action: function (table) { table.export(true); } },
-		{ text: "No", color: "white", bgColor: "black", action: function (table) { table.export(false); } }
+		{ text: "Yes", color: "black", bgColor: "red",
+			action: function ({inputs: {table}}) {
+				table.export(true);
+			}
+		},
+		{ text: "No", color: "white", bgColor: "black",
+			action: function ({inputs: {table}}) {
+				table.export(false);
+			}
+		}
 	]
 });
 
@@ -368,23 +416,23 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 	description: "Data already exists for this analysis. Overwrite existing data?",
 	actions: [
 		{ text: "Overwrite", color: "black", bgColor: "red",
-			action: function ({table, analysis}) {
+			action: function ({inputs: {table, analysis}}) {
 				table.import(analysis);
 			}
 		},
 		{ text: "Cancel", color: "white", bgColor: "black" }
 	],
 	fallback: 0,
-	skip: ({inputs}) => !inputs.conflict
+	skip: ({inputs: {conflict}}) => !conflict
 });
 
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
 	type: IATable.POPUP_TYPES.NOTICE,
 	name: "Overwrite JAGs",
-	description: ({jag}) => `The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
+	description: ({inputs: {jag}}) => `The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
 	actions: [
 		{ text: "Overwrite", color: "black", bgColor: "red",
-			action: async function ({jag}) {
+			action: async function ({inputs: {jag}}) {
 				const model = JAG.fromJSON(jag);
 				await service.create(model);
 			}

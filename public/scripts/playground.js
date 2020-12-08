@@ -3,7 +3,7 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.78
+ * @version 0.80
  */
 
 import JAGNode from './views/jag-node.js';
@@ -266,7 +266,7 @@ class Playground extends Popupable {
 						this.popup({
 							content: Playground.NOTICE_REMOVE_CHILD,
 							trackEl: child,
-							callback: function() { return child; },
+							inputs: {node: child},
 							highlights: [child]
 						});
 					} else {
@@ -289,7 +289,7 @@ class Playground extends Popupable {
 					this.popup({
 						content: Playground.NOTICE_REMOVE_CHILD,
 						trackEl: n,
-						callback: function () { return n; },
+						inputs: {node: n},
 						highlights: [n]
 					});
 				}
@@ -600,7 +600,7 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
 	description: "Remove this child from parent JAG?",
 	actions: [
 		{ text: "Yes", color: "black", bgColor: "red",
-			action: function (node) {
+			action: function ({inputs: {node}}) {
 				const edge = node.getParentEdge();
 				const id = edge.getChildId();
 				const parent = node.getParent();

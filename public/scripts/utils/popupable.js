@@ -12,7 +12,7 @@ export default class Popupable extends HTMLElement {
 		this._popupOutputs = {};
     }
 
-	static _createPopup({type, name, description, actions, fallback, skip}) {
+	static _createPopup({type, name, description, properties, actions, fallback, skip}) {
 		const _p = document.createElement("p");
 		_p.classList.add("popup-content");
 		_p.classList.add(type);
@@ -33,13 +33,12 @@ export default class Popupable extends HTMLElement {
 
 		_p.setAttributeNS(null, 'popup-type', type);
 
-		return { type: type, display: _p, actions: actions, fallback: fallback, skip: skip };
+		return { type: type, display: _p, properties: properties, actions: actions, fallback: fallback, skip: skip };
 	}
 
 	async _displayNextPopup() {
 		if (this._popupCallback) {
-			await this._popupCallback();
-			this._popupOutputs = {};
+			await this._popupCallback({outputs: this._popupOutputs});
 		}
 
 		for (let highlight of this._popupHighlights) {
@@ -55,37 +54,39 @@ export default class Popupable extends HTMLElement {
 
 			if (!this._popups) this._popups = [];
 
-			const {content, trackEl, callback, inputs, highlights} = this._activePopup;
+			const {content, trackEl, callback, properties, inputs, highlights} = this._activePopup;
 			const loc = trackEl.getBoundingClientRect();
 			const ix = loc.x, iy = loc.y, width = loc.width;
 
 			this._content.innerHTML = "";
 
+			const data = { inputs: inputs, outputs: this._popupOutputs };
+
 			if (content.skip) {
-				if (content.skip({ inputs: inputs, outputs: this._popupOutputs })) {
+				if (content.skip(data)) {
+					if (properties) {
+						for (const property in properties)
+							this._popupOutputs[property] = properties[property].value;
+
+						data.outputs = this._popupOutputs;
+					}
+
+					let result;
+
 					if (content.fallback != undefined) {
 						if (typeof content.fallback === 'number') {
 							const boundAction = content.actions[content.fallback].action.bind(this);
-
-							let result;
-
-							if (callback) {
-								result = await boundAction(callback());
-							} else {
-								result = await boundAction();
-							}
-
-							if (result) {
-								for (const output in result) {
-									outputs[output] = result[output];
-								}
-							}
+							result = await boundAction(data);
 						} else {
-							if (callback) {
-								content.fallback(callback());
-							} else {
-								content.fallback();
-							}
+							result = await content.fallback(data);
+						}
+					} else if (callback) {
+						this._popupCallback = callback;
+					}
+
+					if (result) {
+						for (const output in result) {
+							this._popupOutputs[output] = result[output];
 						}
 					}
 
@@ -125,6 +126,50 @@ export default class Popupable extends HTMLElement {
 					this._popupInterval = undefined;
 				}
 
+				if (content.properties) {
+					this._activePopup.properties = {};
+
+					for (const {name, label, type, value = null, options = null} of content.properties) {
+						const $label = document.createElement('label');
+						$label.setAttribute('for', name);
+						$label.innerHTML = label;
+
+						let input_el = 'input';
+						if (type === 'select') input_el = 'select';
+						if (type === 'textarea') input_el = 'textarea';
+
+						const $input = document.createElement(input_el);
+						$input.setAttribute('name', name);
+
+						if (input_el === 'input')
+							$input.setAttribute('type', type);
+
+						if (options) {
+							let roptions = options;
+
+							if (typeof options !== 'array')
+								roptions = await options(data);
+
+							if (type === 'select') {
+								for (const {text, value} of roptions) {
+									const $option = document.createElement('option');
+									$option.setAttribute('value', value);
+									$option.innerHTML = text;
+
+									$input.appendChild($option);
+								}
+							}
+						}
+
+						if (value) $input.setAttribute('value', value);
+
+						this._content.appendChild($label);
+						this._content.appendChild($input);
+
+						this._activePopup.properties[name] = $input;
+					}
+				}
+
 				if (content.actions) {
 					for (const {text, color, bgColor, action} of content.actions) {
 						const boundAction = action ? action.bind(this) : undefined;
@@ -138,19 +183,19 @@ export default class Popupable extends HTMLElement {
 						actionBtn.onclick = async function () {
 							let result;
 
-							if (boundAction) {
-								if (callback) {
-									result = await boundAction(callback());
-								} else {
-									result = await boundAction();
-								}
-							} else if (callback) {
-								result = await callback();
+							if (this._activePopup.properties) {
+								for (const property in this._activePopup.properties)
+									this._popupOutputs[property] = this._activePopup.properties[property].value;
+
+								data.outputs = this._popupOutputs;
 							}
+
+							if (boundAction)
+								result = await boundAction(data);
 
 							if (result) {
 								for (const output in result) {
-									outputs[output] = result[output];
+									this._popupOutputs[output] = result[output];
 								}
 							}
 

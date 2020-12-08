@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.09
+ * @version 0.16
  */
 
 import AnalysisService from '../services/analysis.js';
@@ -58,27 +58,21 @@ customElements.define('analysis-library', class extends HTMLElement {
 		});
 
 		model.addEventListener('update', (e) => {
-			const {property} = e.detail;
+			const {property, extra} = e.detail;
 
 			if (property == 'name') {
-				h3.innerHTML = model.name;
-			} else if (property == 'root') {
-				pre.innerHTML = model.root;
+				h3.innerHTML = extra.name;
 			} else if (property == 'description') {
-				p.innerHTML = model.description;
+				p.innerHTML = extra.description;
 			}
 		});
 
 		li.addEventListener('click', (event) => {
-			this._getChildModels(model, new Map()).then(function (all_models) {
-				this.dispatchEvent(new CustomEvent('item-selected', {
-					detail: {
-						model: model,
-						model_set: all_models,
-						expanded: event.shiftKey
-					}
-				}))
-			}.bind(this));
+			this.dispatchEvent(new CustomEvent('item-selected', {
+				detail: {
+					model: model
+				}
+			}));
 		});
 
 		this._$list.appendChild(li);

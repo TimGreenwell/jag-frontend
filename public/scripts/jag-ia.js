@@ -2,7 +2,7 @@
  * @fileOverview IA table application.
  *
  * @author mvignati
- * @version 0.24
+ * @version 0.27
  */
 
 'use strict';
@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 	body.appendChild(table);
 
 	library.addEventListener('item-selected', (e) => {
-		// TODO: open table
+		table.analysis = e.detail.model;
+	});
+
+	table.addEventListener('create-analysis', (e) => {
+		library.addItem(e.detail.analysis, 0);
 	});
 });

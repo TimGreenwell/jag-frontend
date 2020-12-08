@@ -1,5 +1,5 @@
 /* Library panel */
-jag-library {
+jag-library, analysis-library {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
@@ -9,26 +9,31 @@ jag-library {
 	color: var(--main-fg);
 }
 
-jag-library ol {
+jag-library ol, analysis-library ol {
 	height: 100%;
 	overflow-y: scroll;
 }
 
-jag-library li {
+jag-library li, analysis-library li {
 	padding: 0.25em;
 	border-bottom: 1px solid white;
 	cursor: pointer;
 	transition: background-color 350ms var(--transition-function);
 }
 
-jag-library li:hover {
+jag-library li:hover, analysis-library li:hover {
 	background-color: var(--main-fg-lighter);
 }
 
-jag-library h3 {
+jag-library h3, analysis-library h3 {
 	padding: 0.25em;
 }
 
-jag-library p {
+jag-library p, analysis-library p {
 	padding: 0.25em;
+}
+
+analysis-library pre {
+	padding: 0.25em;
+	margin: 0em;
 }
