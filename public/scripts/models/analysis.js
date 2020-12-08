@@ -2,7 +2,7 @@
  * @fileOverview Analysis model.
  *
  * @author mvignati
- * @version 0.50
+ * @version 0.55
  */
 
 'use strict';
@@ -18,10 +18,11 @@ import TeamService from '../services/team.js';
 
 export default class Analysis extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, root = new Node({is_root: true}), teams = [] } = {}) {
+	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, description = Analysis.DEFAULT_DESCRIPTION, root = new Node({is_root: true}), teams = [] } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
+		this._description = description;
 		this._root = root;
 		this._teams = teams;
 
@@ -84,7 +85,16 @@ export default class Analysis extends EventTarget {
 
 	set name(name) {
 		this._name = name;
-		this.save();
+		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name', 'extra': { 'name': this._name }}}));
+	}
+
+	get description() {
+		return this._description;
+	}
+
+	set description(description) {
+		this._description = description;
+		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description', 'extra': { 'description': this._description }}}));
 	}
 
 	get root() {
@@ -103,6 +113,7 @@ export default class Analysis extends EventTarget {
 		const json = {
 			id: this._id,
 			name: this._name,
+			description: this._description,
 			root: this.root.id,
 			teams: this._teams.map(team => team.id)
 		};
@@ -113,3 +124,4 @@ export default class Analysis extends EventTarget {
 }
 
 Analysis.DEFAULT_NAME = '';
+Analysis.DEFAULT_DESCRIPTION = '';
