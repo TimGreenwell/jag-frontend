@@ -97,8 +97,8 @@ export default class Popupable extends HTMLElement {
 			if (displayThis) {
 				displayNext = false;
 
-				if (content.display.$name) content.display.$name(inputs);
-				if (content.display.$description) content.display.$description(inputs);
+				if (content.display.$name) content.display.$name({inputs: inputs});
+				if (content.display.$description) content.display.$description({inputs: inputs});
 
 				this._content.appendChild(content.display);
 
