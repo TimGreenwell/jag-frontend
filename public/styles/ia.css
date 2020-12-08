@@ -17,6 +17,8 @@ ia-table {
 }
 
 ia-table > header {
+	min-width: 25em;
+	width: 50%;
 	max-width: 50em;
 	padding: 0.75em;
 	padding-bottom: 0;
