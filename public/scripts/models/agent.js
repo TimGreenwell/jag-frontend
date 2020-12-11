@@ -2,7 +2,7 @@
  * @fileOverview Agent model.
  *
  * @author mvignati
- * @version 0.40
+ * @version 0.42
  */
 
 'use strict';
@@ -49,9 +49,14 @@ export default class AgentModel extends EventTarget {
 		return this._name;
 	}
 
+	set name(name) {
+		this._name = name;
+		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
+	}
+
 	setAssessment(urn, assessment) {
 		this._assessments.set(urn, assessment);
-		this.dispatchEvent(new CustomEvent('assessment', { detail: { urn: urn, assessment: assessment }}));
+		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "assessment", "extra": { "urn": urn, "assessment": assessment }}}));
 	}
 
 	assessment(node) {

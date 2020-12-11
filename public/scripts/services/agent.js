@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.07
+ * @version 0.08
  */
 
 import AgentModel from '../models/agent.js';
@@ -79,7 +79,7 @@ export default class AgentService {
 	async create(model) {
 		// Service instance creating a model become implicitly responsible for handling updates to that model.
 		// Multiple instances can be attached to a single model instance.
-		model.addEventListener('assessment', this._handleUpdate.bind(this));
+		model.addEventListener('update', this._handleUpdate.bind(this));
 		const description = model.toJSON();
 
 		await this._storage.create('agent', description.id, description);
@@ -107,7 +107,7 @@ export default class AgentService {
 	_createModel(description) {
 		const model = AgentModel.fromJSON(description);
 		// Listen to update events to commit the change in storage.
-		model.addEventListener('assessment', this._handleUpdate.bind(this));
+		model.addEventListener('update', this._handleUpdate.bind(this));
 
 		// @TODO: store model in cache
 		return model;
