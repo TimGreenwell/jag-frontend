@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 1.99
+ * @version 2.03
  */
 
 'use strict';
@@ -58,7 +58,7 @@ class IATable extends Popupable {
 			this.removeChild(this._elements.analysis);
 			this._analysis.team.removeEventListener('update', this._boundRefresh);
 			for (const agent of this._agents) {
-				agent.addEventListener('update', this._boundRefresh);
+				agent.removeEventListener('update', this._boundRefresh);
 			}
 		}
 
@@ -149,7 +149,7 @@ class IATable extends Popupable {
 	}
 
 	_refresh(e) {
-		this.analysis = this.analysis;
+		this._elements.analysis.layout();
 	}
 
 	_handleNewAnalysis() {
