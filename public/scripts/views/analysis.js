@@ -2,7 +2,7 @@
  * @fileOverview Analysis view.
  *
  * @author mvignati
- * @version 2.46
+ * @version 2.50
  */
 
 'use strict';
@@ -38,6 +38,9 @@ class AnalysisView extends HTMLElement {
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
 		this._initializeTree(this._root);
+
+		// TODO: temporary ugly fix
+		this._views.get(this._root.id).model.syncJAG(this._views.get(this._root.id));
 
 		this.layout();
 	}
@@ -120,11 +123,9 @@ class AnalysisView extends HTMLElement {
 		let height = -1;
 		let rows = 0;
 
-		if(this._root !== undefined) {
-			this._layoutJAG(this._root, AnalysisView.HEADER_DEPTH, 0);
-			height = this._root.height;
-			rows = this._root.breadth;
-		}
+		this._layoutJAG(this._root, AnalysisView.HEADER_DEPTH, 0);
+		height = this._root.height;
+		rows = this._root.breadth;
 
 		const level_count = height + 1;
 		const agent_count = this._layoutHeaders(level_count);
@@ -227,6 +228,8 @@ class AnalysisView extends HTMLElement {
 		// Gets (and makes if necessary) the team header
 		if(!this._column_headers.has(team.id))
 			this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
+		else
+			this._column_headers.get(team.id).innerText = team.name;
 
 		const $column = this._column_headers.get(team.id);
 		$column.colStart = abs_offset;
@@ -237,6 +240,8 @@ class AnalysisView extends HTMLElement {
 
 			if (!this._column_headers.has(agent.id))
 				this._makeHeader(agent.id, agent.name, i, 1);
+			else
+				this._column_headers.get(agent.id).innerText = agent.name;
 
 			const $column = this._column_headers.get(agent.id);
 			$column.colStart = i;
