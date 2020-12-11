@@ -2,7 +2,7 @@
  * @fileOverview JAG view.
  *
  * @author mvignati
- * @version 2.46
+ * @version 2.47
  */
 
 'use strict';
@@ -25,7 +25,6 @@ class JAGView extends AnalysisCell {
 		};
 
 		this._init();
-		this.model.syncJAG(this);
 	}
 
 	get model() {
