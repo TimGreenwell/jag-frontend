@@ -2,7 +2,7 @@
  * @fileOverview IA table component.
  *
  * @author mvignati
- * @version 1.88
+ * @version 1.99
  */
 
 'use strict';
@@ -36,6 +36,8 @@ class IATable extends Popupable {
 		};
 
 		this._initUI();
+
+		this._boundRefresh = this._refresh.bind(this);
 	}
 
 	get analysisSelector() {
@@ -46,20 +48,37 @@ class IATable extends Popupable {
 		return this._elements.analysis;
 	}
 
+	get analysis() {
+		return this._analysis;
+	}
+
 	set analysis(analysis) {
 		// remove current view if it exists
-		if(this._elements.analysis !== undefined)
+		if (this._elements.analysis !== undefined) {
 			this.removeChild(this._elements.analysis);
+			this._analysis.team.removeEventListener('update', this._boundRefresh);
+			for (const agent of this._agents) {
+				agent.addEventListener('update', this._boundRefresh);
+			}
+		}
 
-		const view = new AnalysisView(analysis);
-		view.initialize(this);
+		if (analysis) {
+			const view = new AnalysisView(analysis);
+			view.initialize(this);
 
-		this._analysis = analysis;
-		this._elements.name.removeAttribute('disabled');
-		this._elements.name.value = analysis.name;
-		this._elements.description.removeAttribute('disabled');
-		this._elements.description.value = analysis.description;
-		this._elements.analysis = view;
+			this._analysis = analysis;
+			this._elements.name.removeAttribute('disabled');
+			this._elements.name.value = analysis.name;
+			this._elements.description.removeAttribute('disabled');
+			this._elements.description.value = analysis.description;
+			this._elements.analysis = view;
+
+			this._analysis.team.addEventListener('update', this._boundRefresh);
+			this._agents = this._analysis.team.agents;
+			for (const agent of this._agents) {
+				agent.addEventListener('update', this._boundRefresh);
+			}
+		}
 	}
 
 	_initUI() {
@@ -127,6 +146,10 @@ class IATable extends Popupable {
 		this._elements.export = $export_analysis;
 		this._elements.import = $import_analysis;
 		this._elements.file = $analysis_file;
+	}
+
+	_refresh(e) {
+		this.analysis = this.analysis;
 	}
 
 	_handleNewAnalysis() {
