@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.07
+ * @version 0.08
  */
 
 import TeamModel from '../models/team.js';
@@ -86,7 +86,7 @@ export default class TeamService {
 	async create(model) {
 		// Service instance creating a model become implicitly responsible for handling updates to that model.
 		// Multiple instances can be attached to a single model instance.
-		model.addEventListener('agent', this._handleUpdate.bind(this));
+		model.addEventListener('update', this._handleUpdate.bind(this));
 		const description = model.toJSON();
 
 		await this._storage.create('team', description.id, description);
@@ -114,7 +114,7 @@ export default class TeamService {
 	async _createModel(description) {
 		const model = await TeamModel.fromJSON(description);
 		// Listen to update events to commit the change in storage.
-		model.addEventListener('agent', this._handleUpdate.bind(this));
+		model.addEventListener('update', this._handleUpdate.bind(this));
 
 		// @TODO: store model in cache
 		return model;
