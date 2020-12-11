@@ -2,7 +2,7 @@
  * @fileOverview IA table application.
  *
  * @author mvignati
- * @version 0.27
+ * @version 0.31
  */
 
 'use strict';
@@ -16,6 +16,7 @@ import IndexedDBStorage from './storages/indexed-db.js';
 import IATable from './ui/ia-table.js';
 import AnalysisLibrary from './views/analysis-library.js';
 import RESTStorage from './storages/rest.js';
+import TeamEditor from './views/team.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -47,15 +48,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	const table = new IATable();
 	const library = new AnalysisLibrary();
+	const editor = new TeamEditor();
 
 	body.appendChild(library);
 	body.appendChild(table);
+	body.appendChild(editor);
 
 	library.addEventListener('item-selected', (e) => {
 		table.analysis = e.detail.model;
+		editor.team = e.detail.model.team;
 	});
 
 	table.addEventListener('create-analysis', (e) => {
 		library.addItem(e.detail.analysis, 0);
+		editor.team = e.detail.analysis.team;
 	});
 });
