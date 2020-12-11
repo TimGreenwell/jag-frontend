@@ -2,7 +2,7 @@
  * @fileOverview Analysis model.
  *
  * @author mvignati
- * @version 0.61
+ * @version 0.63
  */
 
 'use strict';
@@ -13,6 +13,8 @@ import Node from './node.js';
 import TeamModel from './team.js';
 import NodeService from '../services/node.js';
 import TeamService from '../services/team.js';
+import AgentModel from './agent.js';
+import AgentService from '../services/agent.js';
 
 export default class Analysis extends EventTarget {
 
@@ -26,6 +28,9 @@ export default class Analysis extends EventTarget {
 		
 		if (team == undefined) {
 			this._team = new TeamModel();
+			this._team.addAgent(new AgentModel({name: 'Agent 1'}));
+			this._team.addAgent(new AgentModel({name: 'Agent 2'}));
+			this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
 			TeamService.instance('idb-service').create(this._team);
 		}
 	}
