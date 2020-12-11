@@ -2,7 +2,7 @@
  * @fileOverview Analysis view.
  *
  * @author mvignati
- * @version 2.42
+ * @version 2.46
  */
 
 'use strict';
@@ -176,29 +176,28 @@ class AnalysisView extends HTMLElement {
 		const $assessments = document.createDocumentFragment();
 
 		let offset = 0;
-		for(let team of this._model.teams) {
-			for(let agent of team.agents) {
-				const assessments = this.getAssessments(agent);
+		const team = this._model.team;
+		for(let agent of team.agents) {
+			const assessments = this.getAssessments(agent);
 
-				// Removes all assessment views that are not part of the current leaf set.
-				for(let [node_id, $assessment] of assessments)
-					if(!this._isNodeInTheLeafSet(node_id) && this.contains($assessment))
-						this.removeChild($assessment);
+			// Removes all assessment views that are not part of the current leaf set.
+			for(let [node_id, $assessment] of assessments)
+				if(!this._isNodeInTheLeafSet(node_id) && this.contains($assessment))
+					this.removeChild($assessment);
 
-				// Relayouts all assessment views for the current leaf set.
-				for(let i = 0 ; i < this._leaf_set.length ; i++) {
-					const node = this._leaf_set[i];
-					const $assessment = this.getAssessmentView(agent, node, assessments);
-					// Adds the current assessment view to the fragment if it is not already in the DOM.
-					if(!this.contains($assessment))
-						$assessments.appendChild($assessment);
+			// Relayouts all assessment views for the current leaf set.
+			for(let i = 0 ; i < this._leaf_set.length ; i++) {
+				const node = this._leaf_set[i];
+				const $assessment = this.getAssessmentView(agent, node, assessments);
+				// Adds the current assessment view to the fragment if it is not already in the DOM.
+				if(!this.contains($assessment))
+					$assessments.appendChild($assessment);
 
-					// Updates the layout
-					$assessment.style.setProperty('--col-start', col + offset + 1);
-					$assessment.style.setProperty('--row-start', row + i + 1);
-				}
-				offset++;
+				// Updates the layout
+				$assessment.style.setProperty('--col-start', col + offset + 1);
+				$assessment.style.setProperty('--row-start', row + i + 1);
 			}
+			offset++;
 		}
 
 		this.appendChild($assessments);
@@ -221,30 +220,29 @@ class AnalysisView extends HTMLElement {
 		}
 
 		let offset = 0;
-		for(let team of this._model.teams) {
-			const agent_count = team.agents.length;
-			const abs_offset = level_count + offset;
+		const team = this._model.team;
+		const agent_count = team.agents.length;
+		const abs_offset = level_count + offset;
 
-			// Gets (and makes if necessary) the team header
-			if(!this._column_headers.has(team.id))
-				this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
+		// Gets (and makes if necessary) the team header
+		if(!this._column_headers.has(team.id))
+			this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
 
-			const $column = this._column_headers.get(team.id);
-			$column.colStart = abs_offset;
+		const $column = this._column_headers.get(team.id);
+		$column.colStart = abs_offset;
+		$columns.appendChild($column);
+
+		for (let i = abs_offset, agent_idx = 0 ; i < abs_offset + agent_count; i++, agent_idx++) {
+			const agent = team.agents[agent_idx];
+
+			if (!this._column_headers.has(agent.id))
+				this._makeHeader(agent.id, agent.name, i, 1);
+
+			const $column = this._column_headers.get(agent.id);
+			$column.colStart = i;
 			$columns.appendChild($column);
-
-			for (let i = abs_offset, agent_idx = 0 ; i < abs_offset + agent_count; i++, agent_idx++) {
-				const agent = team.agents[agent_idx];
-
-				if(!this._column_headers.has(agent.id))
-					this._makeHeader(agent.id, agent.name, i, 1);
-
-				const $column = this._column_headers.get(agent.id);
-				$column.colStart = i;
-				$columns.appendChild($column);
-			}
-			offset += agent_count;
 		}
+		offset += agent_count;
 
 		this.appendChild($columns);
 
