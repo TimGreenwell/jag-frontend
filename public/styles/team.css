@@ -1,0 +1,13 @@
+/* Team editor */
+team-editor {
+	width: 20%;
+	height: 100%;
+	overflow-y: scroll;
+	z-index: 100;
+	background: var(--main-bg-darker);
+	color: var(--main-fg);
+}
+
+team-editor div {
+	padding: 0.75em;
+}
