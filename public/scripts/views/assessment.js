@@ -2,7 +2,7 @@
  * @fileOverview Team member assessment view for a given pseudo leaf (real or collapsed).
  *
  * @author mvignati
- * @version 0.72
+ * @version 0.76
  */
 
 'use strict';
@@ -30,10 +30,18 @@ class AssessmentView extends AnalysisCell {
 
 	_init() {
 		this._setAssessment(this._agent.assessment(this._node));
-		this._agent.addEventListener('assessment', this._processAssessmentUpdate.bind(this));
+		this._agent.addEventListener('update', this._handleAgentUpdate.bind(this));
 		this.addEventListener('contextmenu', _ => {
 			this.addContextMenuListener(ContextMenu.SELECT_EVENT, this._processContextMenuChoice.bind(this));
 		});
+	}
+
+	_handleAgentUpdate(e) {
+		if (e.detail.property == "assessment") {
+			const {urn, assessment} = e.detail.extra;
+			if (urn == this._node.urn)
+				this._setAssessment(assessment);
+		}
 	}
 
 	_processContextMenuChoice(event) {
@@ -51,17 +59,6 @@ class AssessmentView extends AnalysisCell {
 			const color = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 			this.style.setProperty('background-color', color);
 		}
-	}
-
-	_processAssessmentUpdate(e) {
-		const urn = e.detail.urn;
-
-		if (urn !== this._node.urn)
-			return;
-
-		const assessment = this._agent.assessment(this._node);
-
-		this._setAssessment(assessment);
 	}
 
 	_handleMouseUp(event) {
