@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 1.04
+ * @version 1.07
  */
 
 import JAG from '../models/jag.js';
@@ -649,33 +649,33 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._leafNode.id = 'leaf-node';
 		leafNode_el.appendChild(this._leafNode);
 
-		const urn_el = createPropertyElement('urn-property', 'URN');
-		this._urn = createTextInput('urn-property');
+		const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
+		this._urn = FormUtils.createTextInput('urn-property');
 		this._urn.className = "direct-property";
 		urn_el.appendChild(this._urn);
 
-		const name_el = createPropertyElement('name-property', 'Name');
-		this._name = createTextInput('name-property');
+		const name_el = FormUtils.createPropertyElement('name-property', 'Name');
+		this._name = FormUtils.createTextInput('name-property');
 		this._name.className = "direct-property";
 		name_el.appendChild(this._name);
 
-		const desc_el = createPropertyElement('desc-property', 'Description');
-		this._desc = createTextInput('desc-property');
+		const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
+		this._desc = FormUtils.createTextInput('desc-property');
 		this._desc.className = "direct-property";
 		desc_el.appendChild(this._desc);
 
-		const name_ctx_el = createPropertyElement('name-ctx-property', 'Contextual Name');
-		this._name_ctx = createTextInput('name-ctx-property');
+		const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
+		this._name_ctx = FormUtils.createTextInput('name-ctx-property');
 		this._name_ctx.className = "contextual";
 		name_ctx_el.appendChild(this._name_ctx);
 
-		const desc_ctx_el = createPropertyElement('desc-ctx-property', 'Contextual Description');
-		this._desc_ctx = createTextInput('desc-ctx-property');
+		const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
+		this._desc_ctx = FormUtils.createTextInput('desc-ctx-property');
 		this._desc_ctx.className = "contextual";
 		desc_ctx_el.appendChild(this._desc_ctx);
 
-		const execution_el = createPropertyElement('execution-property', 'Execution');
-		this._execution = createSelect('execution-property', [{
+		const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
+		this._execution = FormUtils.createSelect('execution-property', [{
 			value: JAG.EXECUTION.NONE,
 			text: 'None'
 		},{

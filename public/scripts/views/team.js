@@ -3,7 +3,7 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.44
+ * @version 0.45
  */
 
 import AgentModel from '../models/agent.js';
@@ -88,7 +88,7 @@ customElements.define('team-editor', class extends HTMLElement {
 
 		if (this._team && this._agent) {
 			this._agent_name.value = this._agent.name;
-			this._agent_primary.checked = this._team.primary(this._agent.id);
+			this._agent_performer.checked = this._team.performer(this._agent.id);
 		}
 	}
 
@@ -112,16 +112,16 @@ customElements.define('team-editor', class extends HTMLElement {
 		agentName_el.appendChild(this._agent_name);
 
 		const agentRole_el = FormUtils.createPropertyElement('agent-role', 'Agent Role');
-		const agentPrimary_el = document.createElement('div');
-		this._agent_primary = document.createElement('input');
-		this._agent_primary.setAttribute('type', 'checkbox');
-		this._agent_primary.setAttribute('id', 'agent-primary');
-		const agent_primary_label = document.createElement('label');
-		agent_primary_label.setAttribute('for', 'agent-primary');
-		agent_primary_label.innerText = 'Primary Capable';
-		agentPrimary_el.appendChild(this._agent_primary);
-		agentPrimary_el.appendChild(agent_primary_label);
-		agentRole_el.appendChild(agentPrimary_el);
+		const agentPerformer_el = document.createElement('div');
+		this._agent_performer = document.createElement('input');
+		this._agent_performer.setAttribute('type', 'checkbox');
+		this._agent_performer.setAttribute('id', 'agent-performer');
+		const agent_performer_label = document.createElement('label');
+		agent_performer_label.setAttribute('for', 'agent-performer');
+		agent_performer_label.innerText = 'Performer Capable';
+		agentPerformer_el.appendChild(this._agent_performer);
+		agentPerformer_el.appendChild(agent_performer_label);
+		agentRole_el.appendChild(agentPerformer_el);
 
 		this._enableTeamProperties(false);
 		this._enableAgentProperties(false);
@@ -154,8 +154,8 @@ customElements.define('team-editor', class extends HTMLElement {
 			this._agent.name = e.target.value;
 		});
 
-		this._agent_primary.addEventListener('change', e => {
-			this._team.setPrimary(this._agent.id, e.target.checked);
+		this._agent_performer.addEventListener('change', e => {
+			this._team.setPerformer(this._agent.id, e.target.checked);
 		});
 	}
 
@@ -173,7 +173,7 @@ customElements.define('team-editor', class extends HTMLElement {
 
 	_clearAgentProperties() {
 		this._agent_name.value = '';
-		this._agent_primary.checked = false;
+		this._agent_performer.checked = false;
 	}
 
 	_enableTeamProperties(enabled) {
@@ -183,7 +183,7 @@ customElements.define('team-editor', class extends HTMLElement {
 
 	_enableAgentProperties(enabled) {
 		this._agent_name.disabled = !enabled;
-		this._agent_primary.disabled = !enabled;
+		this._agent_performer.disabled = !enabled;
 	}
 });
 

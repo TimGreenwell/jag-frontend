@@ -2,7 +2,7 @@
  * @fileOverview Team model.
  *
  * @author mvignati
- * @version 0.47
+ * @version 0.48
  */
 
 'use strict';
@@ -14,12 +14,12 @@ import AgentModel from './agent.js';
 
 export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agents = [], primary = new Set() } = {}) {
+	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agents = [], performers = new Set() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
 		this._agents = agents;
-		this._primary = primary;
+		this._performers = performers;
 	}
 
 	static async fromJSON(json) {
@@ -36,7 +36,7 @@ export default class TeamModel extends EventTarget {
 		}
 		json.agents = agents;
 
-		json.primary = new Set(json.primary);
+		json.performers = new Set(json.performers);
 
 		return new TeamModel(json);
 	}
@@ -68,23 +68,23 @@ export default class TeamModel extends EventTarget {
 		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
 	}
 
-	setPrimary(id, primary) {
-		if (this._primary.has(id) && !primary) {
-			this._primary.delete(id);
-		} else if (!this._primary.has(id) && primary) {
-			this._primary.add(id);
+	setPerformer(id, performer) {
+		if (this._performers.has(id) && !performer) {
+			this._performers.delete(id);
+		} else if (!this._performers.has(id) && performer) {
+			this._performers.add(id);
 		} else {
 			return;
 		}
 
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "primary", "extra": { "primary": this._primary }}}));
+		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "performers", "extra": { "performers": this._performers }}}));
 	}
 
-	primary(id) {
+	performer(id) {
 		const ids = this._agents.map(agent => agent.id);
 
 		if (ids.indexOf(id) >= 0)
-			return this._primary.has(id);
+			return this._performers.has(id);
 
 		return undefined;
 	}
@@ -98,7 +98,7 @@ export default class TeamModel extends EventTarget {
 			id: this._id,
 			name: this._name,
 			agents: this._agents.map(agent => agent.id),
-			primary: Array.from(this._primary)
+			performers: Array.from(this._performers)
 		};
 
 		return json;
