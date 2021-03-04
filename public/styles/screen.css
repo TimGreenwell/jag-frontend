@@ -141,12 +141,12 @@ jag-properties #leafNode {
 	color: white;
 }
 
-jag-properties:not(.definedModel) .directProperty {
-	box-shadow: 0px 0px 5px red;
-}
-
 jag-properties:not(.rootNode) input.contextual {
 	box-shadow: 0px 3px 5px blue;
+}
+
+jag-properties:not(.definedModel) .directProperty {
+	box-shadow: 0px 0px 5px red;
 }
 
 jag-properties.rootNode .childOfNotice {

@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.98
+ * @version 1.00
  */
 
 import JAG from '../models/jag.js';
@@ -79,10 +79,12 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	_updateProperties() {
 		this._urn.value = this._model.urn;
-		this._name.value = this._node.getContextualName();
+		this._name.value = this._model.name;
+		this._name_ctx.value = this._node.getContextualName();
 		this._execution.value =  this._model.execution || 'none';
 		this._operator.value =  this._model.operator || 'none';
-		this._desc.value = this._node.getContextualDescription();
+		this._desc.value = this._model.description;
+		this._desc_ctx.value = this._node.getContextualDescription();
 
 		if (this._model instanceof UndefinedJAG) {
 			this._enableProperties(false);
@@ -653,13 +655,23 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		const name_el = createPropertyElement('name-property', 'Name');
 		this._name = createTextInput('name-property');
-		this._name.className = "directProperty contextual";
+		this._name.className = "directProperty";
 		name_el.appendChild(this._name);
 
 		const desc_el = createPropertyElement('desc-property', 'Description');
 		this._desc = createTextInput('desc-property');
-		this._desc.className = "directProperty contextual";
+		this._desc.className = "directProperty";
 		desc_el.appendChild(this._desc);
+
+		const name_ctx_el = createPropertyElement('name-ctx-property', 'Contextual Name');
+		this._name_ctx = createTextInput('name-ctx-property');
+		this._name_ctx.className = "contextual";
+		name_ctx_el.appendChild(this._name_ctx);
+
+		const desc_ctx_el = createPropertyElement('desc-ctx-property', 'Contextual Description');
+		this._desc_ctx = createTextInput('desc-ctx-property');
+		this._desc_ctx.className = "contextual";
+		desc_ctx_el.appendChild(this._desc_ctx);
 
 		const execution_el = createPropertyElement('execution-property', 'Execution');
 		this._execution = createSelect('execution-property', [{
@@ -743,6 +755,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this.appendChild(urn_el);
 		this.appendChild(name_el);
 		this.appendChild(desc_el);
+		this.appendChild(name_ctx_el);
+		this.appendChild(desc_ctx_el);
 		this.appendChild(execution_el);
 		this.appendChild(operator_el);
 		this.appendChild(inputs_el);
@@ -801,20 +815,20 @@ customElements.define('jag-properties', class extends HTMLElement {
 			}
 		});
 
-		this._name.addEventListener('keyup', e => {
-			if (this._node.getParent()) {
-				this._node.setContextualName(this._name.value);
-			} else {
-				this._model.name = this._name.value;
-			}
+		this._name.addEventListener('keyup', () => {
+			this._model.name = this._name.value;
 		});
 
-		this._desc.addEventListener('keyup', e => {
-			if (this._node.getParent()) {
-				this._node.setContextualDescription(this._desc.value);
-			} else {
-				this._model.description = this._desc.value;
-			}
+		this._desc.addEventListener('keyup', () => {
+			this._model.description = this._desc.value;
+		});
+
+		this._name_ctx.addEventListener('keyup', () => {
+			this._node.setContextualName(this._name_ctx.value);
+		});
+
+		this._desc_ctx.addEventListener('keyup', () => {
+			this._node.setContextualDescription(this._desc_ctx.value);
 		});
 
 		this._execution.addEventListener('change', e => {
@@ -841,6 +855,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._urn.value = '';
 		this._name.value = '';
 		this._desc.value = '';
+		this._name_ctx.value = '';
+		this._desc_ctx.value = '';
 		this._execution.value = JAG.EXECUTION.NONE;
 		this._operator.value = JAG.OPERATOR.NONE;
 
@@ -880,6 +896,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._urn.disabled = !enabled;
 		this._name.disabled = !enabled;
 		this._desc.disabled = !enabled;
+		this._name_ctx.disabled = !enabled;
+		this._desc_ctx.disabled = !enabled;
 		this._execution.disabled = !enabled;
 		this._operator.disabled = !enabled;
 
@@ -887,13 +905,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._output_elements.disabled = !enabled;
 		this._export.disabled = !enabled;
 
-		if ((enabled && this._node.getParent()) || (this._model instanceof UndefinedJAG && this._node.getParent())) {
+		if (this._node && this._node.getParent() != undefined && (enabled || this._model instanceof UndefinedJAG)) {
 			this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
 			this.classList.toggle('rootNode', false);
-			this._name.disabled = false;
-			this._desc.disabled = false;
+			this._name_ctx.disabled = false;
+			this._desc_ctx.disabled = false;
 		} else {
 			this.classList.toggle('rootNode', true);
+			this._name_ctx.disabled = true;
+			this._desc_ctx.disabled = true;
 		}
 
 		if (enabled || (!enabled && !this._model)) {
