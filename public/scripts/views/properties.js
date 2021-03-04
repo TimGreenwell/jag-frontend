@@ -4,7 +4,7 @@
  * @author cwilber
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 1.02
+ * @version 1.04
  */
 
 import JAG from '../models/jag.js';
@@ -650,17 +650,17 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		const urn_el = createPropertyElement('urn-property', 'URN');
 		this._urn = createTextInput('urn-property');
-		this._urn.className = 'direct-property';
+		this._urn.className = "direct-property";
 		urn_el.appendChild(this._urn);
 
 		const name_el = createPropertyElement('name-property', 'Name');
 		this._name = createTextInput('name-property');
-		this._name.className = "direct-property contextual";
+		this._name.className = "direct-property";
 		name_el.appendChild(this._name);
 
 		const desc_el = createPropertyElement('desc-property', 'Description');
 		this._desc = createTextInput('desc-property');
-		this._desc.className = "direct-property contextual";
+		this._desc.className = "direct-property";
 		desc_el.appendChild(this._desc);
 
 		const name_ctx_el = createPropertyElement('name-ctx-property', 'Contextual Name');
