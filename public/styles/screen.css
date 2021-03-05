@@ -67,7 +67,7 @@ ol {
 	list-style: none;
 }
 
-jag-properties, jag-library, side#ide {
+jag-properties, jag-library, jag-menu, side#ide {
 	background: var(--main-bg-darker);
 	color: var(--main-fg);
 }
@@ -77,11 +77,77 @@ span.variable {
 	font-style: italic;
 }
 
+/* Menu bar */
+jag-menu {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: 5%;
+	box-shadow: inset 0 0 3px darkgray;
+}
+
+jag-menu ul {
+	list-style: none;
+	width: 100%;
+}
+
+jag-menu li {
+	height: 100%;
+	float: left;
+}
+
+jag-menu li:first-child {
+	border-right: 1px solid darkgray;
+	min-width: 20%;
+}
+
+jag-menu li:last-child {
+	float: right;
+	border-left: 1px solid darkgray;
+	min-width: 20%;
+}
+
+jag-menu li div {
+	display: table;
+	height: 100%;
+	float: left;
+}
+
+jag-menu li:last-child div {
+	float: right;
+}
+
+jag-menu .menu-item {
+	display: table-cell;
+	vertical-align: middle;
+	padding-left: 10px;
+	padding-right: 10px;
+	cursor: pointer;
+}
+
+jag-menu .menu-item:hover {
+	background: var(--main-fg-lighter);
+}
+
+jag-menu .menu-item img {
+	height: 80%;
+	vertical-align: middle;
+}
+
+jag-menu #menu-header {
+	font-size: 16px;
+}
+
+jag-menu #menu-header:hover {
+	background: none;
+	cursor: default;
+}
+
 /* Library panel */
 jag-library {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
+	height: 95%;
 	width: 20%;
 }
 
@@ -112,7 +178,7 @@ jag-library p {
 /* Properties panel */
 jag-properties {
 	width: 20%;
-	height: 100%;
+	height: 95%;
 	overflow-y: scroll;
 }
 
@@ -337,14 +403,13 @@ jag-playground {
 	/* Reset layout */
 	position: relative;
 	flex-grow: 1;
-	box-shadow: 0 0 0 1px darkgrey;
 	cursor: grab;
 	overflow: hidden;
 }
 
 jag-playground > div, jag-playground > svg {
 	width: 100%;
-	height: 100%;
+	height: 95%;
 	position: absolute;
 }
 

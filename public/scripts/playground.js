@@ -3,11 +3,12 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.70
+ * @version 0.77
  */
 
 import JAGNode from './views/jag-node.js';
 import Edge from './views/edge.js';
+import JAGService from './services/jag.js';
 
 class Playground extends HTMLElement {
 
@@ -693,6 +694,12 @@ class Playground extends HTMLElement {
 			this._selected.add(e.target);
 		} else {
 			this._selected.delete(e.target);
+		}
+	}
+
+	handleMenuAction(detail) {
+		if (detail.action == "clear") {
+			this.clearPlayground();
 		}
 	}
 }

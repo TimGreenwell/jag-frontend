@@ -3,12 +3,13 @@
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
- * @version 0.51
+ * @version 0.57
  */
 
 import Playground from './playground.js';
 import IDE from './ide.js';
 import Library from './views/library.js';
+import Menu from './views/menu.js';
 import Properties from './views/properties.js';
 import GraphService from './services/graph-service.js';
 import JAGService from './services/jag.js';
@@ -33,16 +34,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const body = document.querySelector('body');
 
 	const library = new Library();
-
+	const menu = new Menu();
 	const playground = new Playground();
 	const properties = new Properties();
 	const ide = new IDE();
 
+	body.appendChild(menu)
 	body.appendChild(library)
 	body.appendChild(playground)
 	body.appendChild(properties)
 
 	const graph_service = new GraphService();
+
+	menu.addEventListener('item-selected', (e) => {
+		playground.handleMenuAction(e.detail);
+	});
 
 	library.addEventListener('item-selected', (e) => {
 		playground.handleItemSelected(e.detail);
