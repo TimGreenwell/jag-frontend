@@ -8,3 +8,5 @@ docs
 test/scripts/mocha.js
 test/styles/mocha.css
 test/src-scripts
+
+.idea/
