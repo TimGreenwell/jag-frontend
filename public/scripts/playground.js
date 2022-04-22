@@ -1,5 +1,6 @@
 /**
- * @file Playground - Visual area for authoring JAGs.
+ * @file Playground - Visual area for authoring JAGs.  Controls the general playground environment
+ * including panning, zooming, adding and removing edges/nodes.
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
@@ -587,6 +588,15 @@ class Playground extends Popupable {
 		}
 	}
 }
+
+// END OF CLASS
+// Initial UI builder creates
+// <svg version="1.1" xmlns="http//www.w3.org/2000/svg"></svg>
+//	  <div></div>
+//	  <div class="popup-box" style="visablity
+
+
+
 
 Playground.POPUP_TYPES = {
 	WARNING: 'popup-warning',

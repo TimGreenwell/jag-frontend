@@ -10,22 +10,22 @@
 
 export default class Observable {
 
-	constructor() {
+	static {
 		this._subscribers = new Map();
 	}
 
-	subscribe(topic, subscriber) {
+	static subscribe(topic, subscriber) {
 		if(!this._subscribers.has(topic))
 			this._subscribers.set(topic, new Set());
 
 		this._subscribers.get(topic).add(subscriber);
 	}
 
-	unsubscribe(topic, subscriber) {
+	static unsubscribe(topic, subscriber) {
 		this._subscribers.get(topic).delete(subscriber);
 	}
 
-	notify(topic, data) {
+	static notify(topic, data) {
 		if(!this._subscribers.has(topic))
 			return;
 

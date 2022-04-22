@@ -8,7 +8,8 @@
  */
 
 import JAG from '../models/jag.js';
-import JAGService from '../services/jag.js';
+//import JAGService from '../services/jag.js';
+import StorageService from '../services/storage-service.js';
 import UndefinedJAG from '../models/undefined.js';
 import FormUtils from '../utils/forms.js';
 
@@ -42,6 +43,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 			this._updateProperties();
 		}.bind(this);
 	}
+
+
+	/////////////////////////////////////////// JUST TESTING //////////////////////////////
+	screamer(data) {
+		console.log("Properties yells.... ");
+		console.log(data);
+		console.log(".....................");
+	};
+
 
 	handleSelectionUpdate(selection) {
 		if (this._model)
@@ -768,7 +778,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 	}
 
 	async _updateURN(urn) {
-		const idb_service = JAGService.instance('idb-service');
+		//const idb_service = JAGService.instance('idb-service');
 
 		if(this._urn.value == this._model.urn)
 			return;
@@ -777,7 +787,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 			return;
 
 		// Checks if new urn has a model associated to it and asks for permission to overwrite.
-		if(await idb_service.has(this._urn.value)) {
+		if(await StorageService.has(this._urn.value, 'jag')) {
 			// Ask for confirmation
 			const overwrite = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
 			if(!overwrite) {
@@ -799,7 +809,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		// Store the updated model.
 		// @TODO: switch to update when avail.
-		idb_service.create(new_model);
+		await StorageService.create(new_model, 'jag');
 
 		// Remove unsaved box shadow on URN property input.
 		this._urn.classList.toggle("edited", false);
