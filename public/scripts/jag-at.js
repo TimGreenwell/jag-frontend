@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const playground = new Playground();
 	const properties = new Properties();
 	body.appendChild(menu)
-	body.appendChild(library)
-	body.appendChild(playground)
-	body.appendChild(properties)
+	body.appendChild(library);
+	body.appendChild(playground);
+	body.appendChild(properties);
 
 	/**
 	 * EventListeners triggering action in different panel
@@ -67,16 +67,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'clear-playground' - when menu clears nodes from playground
-	// @TODO make this 'clear-playground'
-	menu.addEventListener('item-selected', (e) => {
+	menu.addEventListener('clear-playground', (e) => {
 		playground.handleMenuAction(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
-	// Event: 'node-added-to-playground' - when menu or library adds a (new or existing) node to playground
+	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
 	// @TODO
-	//menu.addEventListener('node-added-to-playground', (e) => {
-	//	playground.handleItemSelected(e.detail);  //calls playground._addNode
-	//});
+	menu.addEventListener('add-new-node-to-playground', (e) => {
+		playground.handleItemSelected(e.detail);  //calls playground._addNode
+		//properties.handleUndefinedURN();
+	});
     //////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.

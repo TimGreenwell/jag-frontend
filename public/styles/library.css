@@ -33,6 +33,18 @@ jag-library p, analysis-library p {
 	padding: 0.25em;
 }
 
+jag-library .library-search {
+	height: 30px;
+	font-size: 14px;
+	background-image: url('../icons/search_mag_20.png');
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 40px;
+	background-color: #fff;
+	border: 1px solid darkgray;
+	box-shadow: none;
+}
+
 analysis-library pre {
 	padding: 0.25em;
 	margin: 0em;

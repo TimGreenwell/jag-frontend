@@ -37,7 +37,6 @@ export default class StorageService extends Observable{
         if (typeof this._preferredStorage == "undefined") {
             this._preferredStorage = id
         };
-        console.log(this.__SERVICES);
     }
 
     static areStoragesSynced(){
@@ -86,9 +85,6 @@ export default class StorageService extends Observable{
      * Check for existence of the specified urn.
      */
     static async has(urn, schema = this._schema) {
-        console.log("looking in storage service now for " + urn);
-        console.log(this._preferredStorage);
-        console.log(this.__SERVICES.get(this._preferredStorage));
         return await this.__SERVICES.get(this._preferredStorage).has(schema, urn);
     }
 
@@ -103,8 +99,6 @@ export default class StorageService extends Observable{
         const description = modelNode.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, description.urn, description);
         const temp = JAG.fromJSON(description);
-        console.log("+++++");
-        console.log(temp);
         this.notify("storage-created",temp);
     }
 
@@ -115,7 +109,6 @@ export default class StorageService extends Observable{
     static update(modelNode, schema = this._schema) {
         //@TODO if sync - update all storages
         const description = modelNode.toJSON();
-        console.log("updating DB");
         this.__SERVICES.get(this._preferredStorage).update(schema, description.urn, description);
         this.notify("storage-updated",description);
     }
@@ -135,7 +128,6 @@ export default class StorageService extends Observable{
         const model = JAG.fromJSON(description);
         // Listen to update events to commit the change in storage.
         model.addEventListener('update', this._handleUpdate.bind(this));
-        console.log("STORAGE createModel");
         // @TODO: store model in cache
         return model;
     }
@@ -148,7 +140,6 @@ export default class StorageService extends Observable{
 
         // @TODO: check that we are responsible for this model.
         this.update(model);
-        console.log("STORAGE handleUpdate");
     }
 
 }

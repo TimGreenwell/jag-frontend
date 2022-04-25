@@ -237,6 +237,8 @@ class Playground extends Popupable {
 			}
 		});
 
+
+//////////////??
 		node.addEventListener('refresh', (e) => {
 			this.dispatchEvent(new CustomEvent('refresh', { detail: e.detail }));
 		});
@@ -436,10 +438,6 @@ class Playground extends Popupable {
 		this.cancelEdge();
 	}
 
-	onPreImport(e) {
-		console.log('pre imp');
-	}
-
 	onImport(e) {
 		e.preventDefault();
 		const files = e.dataTransfer.files;
@@ -539,7 +537,6 @@ class Playground extends Popupable {
 	}
 
 	_generateActivityGraphFromJSON(json) {
-		console.log(json);
 		let root_goal = json.rootGoal;
 		let root_node = this.addRootGoal(root_goal.name, root_goal.description);
 		root_node.getConnector().setType(root_goal.connectorType);

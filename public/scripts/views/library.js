@@ -8,8 +8,7 @@
 
 import JAG from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
-import UndefinedJAG from '../models/undefined.js';
-
+//import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
@@ -17,18 +16,15 @@ customElements.define('jag-library', class extends HTMLElement {
 		super();
 		this._items = [];                         // <li> elements holding model.name & description + (search context) + model
 		this._defined = new Set();                // Set of URNs in _items
-
+        // Build outer structure inside <jag-library> (search input & ol for nodes)
 		this._initUI();
 		this._initListeners();
 		StorageService.setSchema('jag');
-		StorageService.subscribe("storage-updated", this.refreshItem.bind(this));
+		StorageService.subscribe("storage-updated", this.updateItem.bind(this));
 		StorageService.subscribe("storage-created", this.addItem.bind(this));
-
-		this.addItem(new JAG({ name: 'New', description: 'Empty node that can be used to create new behaviors.' }));
 
 		this.clearItems();
 		this.loadFromDB();
-		this.loadFromLocalhost();
 	};
 
 	clearItems() {
@@ -43,8 +39,21 @@ customElements.define('jag-library', class extends HTMLElement {
 	//           <p> 'description'
 	//         </li>
 
-	async _createItem(e) {
-		this.addItem(e.detail.model);
+	updateItem(updatedModel) {
+
+		for (let idx in this._items) {
+			if (this._items[idx].model.urn == updatedModel.urn) {
+				this._items[idx].model = updatedModel;
+				this._items[idx].element.id=updatedModel.urn;
+				this._items[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedModel.name;
+				this._items[idx].element.querySelectorAll("p").item(0).innerHTML = updatedModel.description;
+				let search_params =[];
+				search_params.push(updatedModel.urn.toLowerCase());
+				search_params.push(updatedModel.name.toLowerCase());
+				search_params.push(updatedModel.description.toLowerCase());
+				this._items[idx].search_content = search_params.join(" ");
+			}
+		}
 	}
 
 	// Adding an item in library:
@@ -53,9 +62,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	//     3)   Attach 'click' to <li> to dispatch 'item-selected'
 
 	addItem(model, idx = -1) {                    // model here is type JAG
-		console.log("addItem() incoming..");
-		console.log(model);
-		console.log("...................");
 		if (!this._defined.has(model.urn)) {
 			if (model instanceof JAG) {
 				const id = model.urn || '';
@@ -78,7 +84,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					model: model
 				});
 
-
+				// Unsure what this listener is for.  We do not need JAG model dispatching updates if we have observer going.
 				model.addEventListener('update', (e) => {
 					const {property} = e.detail;
 					if (property == 'name') {
@@ -94,8 +100,6 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.refreshItem(model);
 				});
 
-				model.addEventListener('copy', this._createItem.bind(this));
-
 				li.addEventListener('click', (event) => {
 					this._getChildModels(model, new Map()).then(function (all_models) {
 						this.dispatchEvent(new CustomEvent('item-selected', {
@@ -110,13 +114,15 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				this._$list.appendChild(li);
 				this._defined.add(model.urn);
-			} else if (model instanceof UndefinedJAG) {
-				this._items.push({
-					model: model
-				});
-
-				model.addEventListener('define', this._defineItem.bind(this));
+			//	model.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			}
+			//  else if (model instanceof UndefinedJAG) {
+			// 	this._items.push({
+			// 		model: model
+			// 	});
+			//
+			// 	model.addEventListener('define', this._defineItem.bind(this));
+			// }
 		}
 	}
 
@@ -134,11 +140,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		const jags = await StorageService.all('jag');
-		jags.forEach(jag => this.addItem(jag));
-	}
-
-	async loadFromLocalhost() {
 		const jags = await StorageService.all('jag');
 		jags.forEach(jag => this.addItem(jag));
 	}
@@ -164,7 +165,6 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	_filterFromSearchInput(e) {
 		const search_text = e.srcElement.value.toLowerCase();
-
 		this._items.forEach((item) => {
 			if (item.element) {
 				item.element.style.display = 'block';
@@ -173,7 +173,6 @@ customElements.define('jag-library', class extends HTMLElement {
 			}
 		});
 	}
-
 
 	// why is this here -- why not a master list of JAG models with functions like this so
 	// everyone can use.
@@ -188,7 +187,8 @@ customElements.define('jag-library', class extends HTMLElement {
 		}
 		return map;
 	}
-     // (see above) same applies below.
+
+    // (see above) same applies below.
 	// Got some concerns about this one.  There is no '.getDirect' on any existing services.
 	// I think its supposed to look at some cache obj.. seems like unnecessary redundancy
 	// Whats the speed cost of IndexedDB. Does it matter?  @TODO write hashtbl for all nodes.
@@ -211,7 +211,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async refreshItem(model, refreshed = new Set()) {
-		console.log("refreshing Items -- not sure this it the right move");
 		this._getChildModels(model, new Map()).then(function (all_models) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
@@ -223,20 +222,7 @@ customElements.define('jag-library', class extends HTMLElement {
 		}.bind(this));
 	}
 
-	// Not sure of the reason for this.
-	// Callback for listener on 'define'
-	// Listener attached during (addItem) when incoming JAG model is typeof undefinedJAG
-	async _defineItem(e) {
-		for (let idx in this._items) {
-			if (this._items[idx].model.urn == e.detail.urn) {
-				this._items.splice(idx, 1);
-				break;
-			}
-		}
-		const model = e.detail.model;
-		this.addItem(model);
-		await this.refreshItem(model);
-	}
+
 });
 
 export default customElements.get('jag-library');
@@ -244,6 +230,33 @@ export default customElements.get('jag-library');
 // <jag-library> (this)
 //   <input class='library-search'></input>
 //   <ol class='library-list'>
-//      ( Line items added later by _________ )
+//      ( Line items added later by addItems )
 //   </ol>
 // </jag-library>
+
+////////////////////////////////////////////////
+
+// async _createItem(e) {                       // ??
+// 	this.addItem(e.detail.model);               //  part of the 'copy' listener.  has no dispatcher - looks obs
+// }
+
+// Not sure of the reason for this.
+// Callback for listener on 'define'
+// Listener attached during (addItem) when incoming JAG model is typeof undefinedJAG
+// async _defineItem(e) {
+// 	for (let idx in this._items) {
+// 		if (this._items[idx].model.urn == e.detail.urn) {
+// 			this._items.splice(idx, 1);
+// 			break;
+// 		}
+// 	}
+// 	const model = e.detail.model;
+// 	this.addItem(model);
+// 	await this.refreshItem(model);
+// }
+
+
+// async loadFromLocalhost() {
+// 	const jags = await StorageService.all('jag');
+// 	jags.forEach(jag => this.addItem(jag));
+// }

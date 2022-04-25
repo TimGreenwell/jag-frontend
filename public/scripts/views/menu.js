@@ -6,7 +6,7 @@
  * @version 0.23
  */
 
-
+import JAG from '../models/jag.js';
 customElements.define('jag-menu', class extends HTMLElement {
 
 	constructor() {
@@ -39,42 +39,131 @@ customElements.define('jag-menu', class extends HTMLElement {
 	}
 
 	_initUI() {
-		const $body = document.createElement("ul");
+		const $ul = document.createElement("ul");
+		//
+		//    The left section containing the application name "JAG Authoring Tool"
+		//
+		const $leftLi = document.createElement("li");
+		$ul.appendChild($leftLi);
 
-		const $left_outer = document.createElement("li");
-		const $left = document.createElement("div");
-		$left_outer.appendChild($left);
+		const $leftLiDiv = document.createElement("div");
+		$leftLi.appendChild($leftLiDiv);
 
-		const $header = this._createMenuItem("header", null, "JAG Authoring Tool");
-		$left.appendChild($header);
+		const $title = document.createElement("span");
+		$title.id = "menu-title";
+		$title.classList.add("menu-item");
+		$title.innerText = "JAG Authoring Tool";
+		$leftLiDiv.appendChild($title);
 
-		const $center_outer = document.createElement("li");
-		const $center = document.createElement("div");
-		$center_outer.appendChild($center);
+		//
+		// The center section containing the menu options (Currently: Clear)
+		//
+		const $centerLi = document.createElement("li");
+		$ul.appendChild($centerLi);
 
-		const $right_outer = document.createElement("li");
-		const $right = document.createElement("div");
-		$right_outer.appendChild($right);
+		const $centerLiDiv = document.createElement("div");
+		$centerLi.appendChild($centerLiDiv);
 
-		const $clear = this._createMenuItem("clear", null, "Clear");
+		const $new = document.createElement("span");
+		$new.id = "menu-new";
+		$new.classList.add("menu-item");
+		$new.innerText = "new\nnode";
+		$centerLiDiv.appendChild($new);
 
-		$clear.addEventListener('click', function (e) {
-			this.dispatchEvent(new CustomEvent("item-selected", { "detail": { "action": "clear" } }));
+
+		$new.addEventListener('click', function (e) {
+			this.dispatchEvent(new CustomEvent('add-new-node-to-playground', {
+				detail: {
+					model: new JAG({ name: " New ", description: "" }),
+					model_set: [],
+					expanded: false
+				}
+			}));
+
 		}.bind(this));
 
-		$center.appendChild($clear);
 
-		$body.appendChild($left_outer);
-		$body.appendChild($center_outer);
-		$body.appendChild($right_outer);
+		const $clear = document.createElement("span");
+		$clear.id = "menu-clear";
+		$clear.classList.add("menu-item");
+		$clear.innerText = "clear\nspace";
+		$centerLiDiv.appendChild($clear);
+		$clear.addEventListener('click', function (e) {
+			this.dispatchEvent(new CustomEvent("clear-playground", { "detail": { "action": "clear" } }));
+		}.bind(this));
 
-		this.$left = $left;
-		this.$center = $center;
-		this.$right = $right;
+		const $delete = document.createElement("span");
+		$delete.id = "menu-delete";
+		$delete.classList.add("menu-item");
+		$delete.innerText = "delete\nnode";
+		$centerLiDiv.appendChild($delete);
+		$delete.addEventListener('click', function (e) {
+			this.dispatchEvent(new CustomEvent("item-selected", { "detail": { "action": "delete" } }));
+		}.bind(this));
 
-		this.appendChild($body);
+		//
+		// The right section containing the IHMC logo
+		//
+		const $rightLi = document.createElement("li");
+		$ul.appendChild($rightLi);
+
+		const $rightLiDiv = document.createElement("div");
+		$rightLiDiv.classList.add("menu-item");
+		$rightLi.appendChild($rightLiDiv);
+
+		const $logoImage = document.createElement("img");
+		$logoImage.classList.add("menu-item");
+		$logoImage.id = "menu-logo";
+		$logoImage.setAttribute('src',"icons/ihmc_logo.png");  //@TODO put in css
+		$rightLiDiv.appendChild($logoImage);
+
+		this.appendChild($ul);
+
+		this.$leftLiDiv = $leftLiDiv;
+		this.$centerLiDiv = $centerLiDiv;
+		this.$rightLiDiv = $rightLiDiv;
+
+
 	}
 });
+
+// 	_initUI() {
+// 		const $body = document.createElement("ul");
+//
+// 		const $left_outer = document.createElement("li");
+// 		const $left = document.createElement("div");
+// 		$left_outer.appendChild($left);
+//
+// 		const $header = this._createMenuItem("header", null, "JAG Authoring Tool");
+// 		$left.appendChild($header);
+//
+// 		const $center_outer = document.createElement("li");
+// 		const $center = document.createElement("div");
+// 		$center_outer.appendChild($center);
+//
+// 		const $right_outer = document.createElement("li");
+// 		const $right = document.createElement("div");
+// 		$right_outer.appendChild($right);
+//
+// 		const $clear = this._createMenuItem("clear", null, "Clear");
+//
+// 		$clear.addEventListener('click', function (e) {
+// 			this.dispatchEvent(new CustomEvent("item-selected", { "detail": { "action": "clear" } }));
+// 		}.bind(this));
+//
+// 		$center.appendChild($clear);
+//
+// 		$body.appendChild($left_outer);
+// 		$body.appendChild($center_outer);
+// 		$body.appendChild($right_outer);
+//
+// 		this.$left = $left;
+// 		this.$center = $center;
+// 		this.$right = $right;
+//
+// 		this.appendChild($body);
+// 	}
+// });
 
 export default customElements.get('jag-menu');
 

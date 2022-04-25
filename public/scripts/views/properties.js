@@ -17,6 +17,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 	constructor() {
 		super();
+		this._defaultURN = "us:ihmc:";
+		this._undefinedURNIndex = 0;
 		this._model = undefined;
 		this._input_elements = new Map();
 		this._output_elements = new Map();
@@ -44,15 +46,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 		}.bind(this);
 	}
 
-
-	/////////////////////////////////////////// JUST TESTING //////////////////////////////
-	screamer(data) {
-		console.log("Properties yells.... ");
-		console.log(data);
-		console.log(".....................");
-	};
-
-
 	handleSelectionUpdate(selection) {
 		if (this._model)
 		{
@@ -71,7 +64,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 		if (selection.size == 1) {
 			const firstValue = selection.values().next().value;
 
-			if (firstValue._model) {
+			if (firstValue._model) {         // why wouldnt this have a model(node)?
 				this._node = firstValue;
 				this._model = this._node.model;
 
@@ -88,8 +81,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 		}
 	}
 
+
 	_updateProperties() {
-		this._urn.value = this._model.urn;
+		if (typeof this._model.urn == 'undefined') {
+			this._urn.value = this._defaultURN;
+		} else {
+			this._urn.value = this._model.urn
+		}
 		this._name.value = this._model.name;
 		this._name_ctx.value = this._node.getContextualName();
 		this._execution.value =  this._model.execution || 'none';
@@ -109,6 +107,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 			input.title = input.value;
 			input.onchange = () => input.title = input.value;
 		}
+
+
 	}
 
 	_addInput(e) {
@@ -661,16 +661,25 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
 		this._urn = FormUtils.createTextInput('urn-property');
+		this._urn.setAttribute("tabIndex", "0");
 		this._urn.className = "direct-property";
 		urn_el.appendChild(this._urn);
 
 		const name_el = FormUtils.createPropertyElement('name-property', 'Name');
 		this._name = FormUtils.createTextInput('name-property');
+		this._name.setAttribute("placeholder", "display name");
+		this._name.setAttribute("tabIndex", "1");
 		this._name.className = "direct-property";
 		name_el.appendChild(this._name);
 
 		const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
-		this._desc = FormUtils.createTextInput('desc-property');
+		this._desc = document.createElement('textarea');
+		this._desc.setAttribute('id', 'desc-property');
+		this._desc.setAttribute('width', '100%');
+		this._desc.setAttribute('rows', '3');
+		this._desc.setAttribute("placeholder", "Enter your description of node here...");
+		this._desc.setAttribute("tabIndex", "2");
+		//this._desc = FormUtils.createTextInput('desc-property');
 		this._desc.className = "direct-property";
 		desc_el.appendChild(this._desc);
 
@@ -777,19 +786,23 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this.appendChild(export_el);
 	}
 
-	async _updateURN(urn) {
+	async _updateURN(newURN) {
 		//const idb_service = JAGService.instance('idb-service');
+		const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
+		const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
 
-		if(this._urn.value == this._model.urn)
-			return;
+		// dont think I need this anymore
+		// if(this._urn.value == this._model.urn) //??
+		//	return;}
 
-		if(!window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)"))
-			return;
+		// dont think I need this anymore
+		//if(!window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)"))
+		//	return;
 
 		// Checks if new urn has a model associated to it and asks for permission to overwrite.
-		if(await StorageService.has(this._urn.value, 'jag')) {
+		if(await StorageService.has(newURN, 'jag')) {
 			// Ask for confirmation
-			const overwrite = window.confirm("The new URN (" + this._urn.value + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)");
+			const overwrite = window.confirm(URL_RENAME_WARNING_POPUP);
 			if(!overwrite) {
 				// Reverts the urn to its original value and exits early.
 				this._urn.value = this._model.urn;
@@ -799,55 +812,138 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 		// If we get there we can create/overwrite
 		// @TODO: replace with clone function (add to JAG model)
+		// @TODO: replace with clone function (add to JAG model)
 		const description = this._model.toJSON();
-		description.urn = urn;
+		description.urn = newURN;
 		const new_model = JAG.fromJSON(description);
 
 		// Update model references.
 		this._node.model = new_model;
 		this._model = new_model;
 
-		// Store the updated model.
-		// @TODO: switch to update when avail.
-		await StorageService.create(new_model, 'jag');
+		let regex = new RegExp("^" + this._defaultURN + "tmp-[0-9]{5}$");    ///^(" + this._defaultURN +
+
+		if (!new_model.urn.match(regex)) {
+			// Store the updated model.
+			// @TODO: switch to update when avail.
+			await StorageService.create(new_model, 'jag');
+		}
 
 		// Remove unsaved box shadow on URN property input.
 		this._urn.classList.toggle("edited", false);
 	}
 
 	_initHandlers() {
-		this._urn.addEventListener('keyup', e => {
-			this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
-		});
+		// this._urn.addEventListener('keyup', e => {
+		// 	this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
+		// });
 
-		this._urn.addEventListener('keypress', e => {
+		this._urn.addEventListener('keyup', (e) => {
 			if (e.key == "Enter") {
-				this._updateURN(this._urn.value);
+				e.preventDefault();
+				let inputs = this.querySelectorAll("input:enabled, textarea");
+				this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
+				//current position in 'form'
+				const currentPosition = this._urn.tabIndex;
+				if (currentPosition < inputs.length-1) {
+					inputs.item(currentPosition + 1).focus();
+				} else {
+					inputs.item(currentPosition).blur();
+				}
 			}
 		});
 
-		this._name.addEventListener('keyup', () => {
-			this._model.name = this._name.value;
+		//this._urn.addEventListener('keypress', e => {
+		//	if (e.key == "Enter") {
+	    //    this._updateURN(this._urn.value);
+		//	}
+		//});
+
+		this._urn.addEventListener('focusout', (e) => {
+			if (this._model.urn != this._urn.value) {
+				if (!/^[a-zA-Z0-9-:]+(?<!:)$/.test(this._urn.value)) {
+					window.alert("Invalid URL - Assigning unsavable temp.");
+					this._urn.value = this._defaultURN + "tmp-" + this._undefinedURNIndex.toString().padStart(5, '0');
+					this._updateURN(this._urn.value);    // getting renamed to TMP CRAP
+					this._undefinedURNIndex = this._undefinedURNIndex + 1;
+					this._urn.setAttribute("temp", "true");
+					this._name.value = this._urn.value.split(':').pop();
+					this._model.name = this._name.value;
+				} else {
+					this._updateURN(this._urn.value);  // might be a rename
+					if (this._name.value == ' New ') {
+						this._name.value = this._urn.value.split(':').pop();
+						this._model.name = this._name.value;
+					}
+
+					this._defaultURN = this._urn.value.split(':').slice(0, -1).join(':') + ":";
+				}
+			}
 		});
 
-		this._desc.addEventListener('keyup', () => {
-			this._model.description = this._desc.value;
+		this._name.addEventListener('blur', (e) => {
+			StorageService.update(this._model);
 		});
+
+		this._name.addEventListener('keyup', (e) => {
+			if (e.key == "Enter") {
+				e.preventDefault();
+				let inputs = this.querySelectorAll("input:enabled, textarea");
+
+				//current position in 'form'
+				const currentPosition = this._name.tabIndex;
+				if (currentPosition < inputs.length-1) {
+					inputs.item(currentPosition + 1).focus();
+				} else {
+					inputs.item(currentPosition).blur();
+				}
+
+			} else {
+				this._model.name = this._name.value;
+			}
+		});
+
+
+		this._desc.addEventListener('blur', (e) => {
+			StorageService.update(this._model);
+		});
+
+		this._desc.addEventListener('keyup', (e) => {
+			if (e.key == "Enter") {
+				e.preventDefault();
+				let inputs = this.querySelectorAll("input:enabled, textarea");
+				//current position in 'form'
+				const currentPosition = this._desc.tabIndex;
+				if (currentPosition < inputs.length-1) {
+					inputs.item(currentPosition + 1).focus();
+				} else {
+					inputs.item(currentPosition).blur();
+				}
+			} else {
+				this._model.description = this._desc.value;
+
+			}
+		});
+
 
 		this._name_ctx.addEventListener('keyup', () => {
 			this._node.setContextualName(this._name_ctx.value);
+			StorageService.update(this._model);
 		});
 
 		this._desc_ctx.addEventListener('keyup', () => {
 			this._node.setContextualDescription(this._desc_ctx.value);
+			StorageService.update(this._model);
 		});
 
 		this._execution.addEventListener('change', e => {
 			this._model.execution = this._execution.value;
+			StorageService.update(this._model);
 		});
 
 		this._operator.addEventListener('change', e => {
 			this._model.operator = this._operator.value;
+			StorageService.update(this._model);
 		});
 
 		this._export.addEventListener('click', e => {
