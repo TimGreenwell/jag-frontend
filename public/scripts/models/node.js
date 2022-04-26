@@ -10,8 +10,9 @@
 import { UUIDv4 }  from '../utils/uuid.js';
 
 import JAG from './jag.js';
-import JAGService from '../services/jag.js';
-import NodeService from '../services/node.js';
+//import JAGService from '../services/jag.js';
+//import NodeService from '../services/node.js';
+import StorageService from '../services/storage-service.js';
 import JAGATValidation from '../utils/validation.js';
 
 export default class Node extends EventTarget {
@@ -34,14 +35,16 @@ export default class Node extends EventTarget {
 
 	static async fromJSON(json) {
 		// Replaces the id with the actual jag model.
-		const jag = await JAGService.instance('idb-service').get(json.jag);
+		//const jag = await JAGService.instance('idb-service').get(json.jag);
+		const jag = await StorageService.get(json.jag,'jag');
 		json.jag = (jag != null) ? jag : undefined;
 
 		const node = new Node(json);
 
 		// @TODO: Can we lazy load these ?
 		const children = json.children.map(child_node_id => {
-			return NodeService.instance('idb-service').get(child_node_id);
+			//return NodeService.instance('idb-service').get(child_node_id);
+			return StorageService.get(child_node_id,'jag');
 		});
 
 		(await Promise.all(children)).forEach(child => {
@@ -131,7 +134,8 @@ export default class Node extends EventTarget {
 			return;
 
 		const child = new Node();
-		NodeService.instance('idb-service').create(child);
+		//NodeService.instance('idb-service').create(child);
+		StorageService.create(child,'node');
 		this.addChild(child);
 	}
 
@@ -216,7 +220,8 @@ export default class Node extends EventTarget {
 			return;
 		}
 
-		let jag = await JAGService.instance('idb-service').get(urn);
+		//let jag = await JAGService.instance('idb-service').get(urn);
+		let jag = await StorageService.get(urn,'jag');
 
 		// If the model does not exists create one from the view values.
 		// if the model does exists, reset to previous state unless replace is true.
@@ -226,7 +231,8 @@ export default class Node extends EventTarget {
 				name: name
 			});
 			
-			await JAGService.instance('idb-service').create(jag);
+			//await JAGService.instance('idb-service').create(jag);
+			await StorageService.create(jag,'jag');
 		} else if (!replace) {
 			// If the jag already exists we want to abort unless replace is set to true.
 			//@TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
@@ -266,8 +272,8 @@ export default class Node extends EventTarget {
 	}
 
 	async save() {
-		await NodeService.instance('idb-service').update(this);
-
+		//await NodeService.instance('idb-service').update(this);
+		await StorageService.update(this,'node');
 		//if(!this.hasValidURN)
 			//return;
 
@@ -291,9 +297,11 @@ export default class Node extends EventTarget {
 
 	async _createChildren() {
 		for (let child of this.jag.children) {
-			const jag = await JAGService.instance('idb-service').get(child.urn);
+			//const jag = await JAGService.instance('idb-service').get(child.urn);
+			const jag = await StorageService.get(child.urn,'jag');
 			const model = new Node({jag: jag});
-			await NodeService.instance('idb-service').create(model);
+			//await NodeService.instance('idb-service').create(model);
+			await StorageService.create(model,'node');
 			this.addChild(model, true);
 		}
 	}

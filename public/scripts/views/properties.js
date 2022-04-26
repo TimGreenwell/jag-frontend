@@ -813,9 +813,14 @@ customElements.define('jag-properties', class extends HTMLElement {
 		// If we get there we can create/overwrite
 		// @TODO: replace with clone function (add to JAG model)
 		// @TODO: replace with clone function (add to JAG model)
+		console.log(this._model);
+
 		const description = this._model.toJSON();
+		console.log(description);
 		description.urn = newURN;
 		const new_model = JAG.fromJSON(description);
+		console.log(new_model);
+		console.log("timmy");
 
 		// Update model references.
 		this._node.model = new_model;
@@ -881,7 +886,10 @@ customElements.define('jag-properties', class extends HTMLElement {
 			}
 		});
 
-		this._name.addEventListener('blur', (e) => {
+		this._name.addEventListener('blur', (e) => {  // get an error if the blur goes to a playground click on empty space.
+			this._model.name = this._name.value;
+			console.log("goob");
+			console.log(this._model);
 			StorageService.update(this._model);
 		});
 
@@ -905,6 +913,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 
 		this._desc.addEventListener('blur', (e) => {
+			console.log(this._model);
 			StorageService.update(this._model);
 		});
 

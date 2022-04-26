@@ -79,6 +79,24 @@ export default class IndexedDBUtils {
 		});
 	}
 
+	//tlg
+	static delete(db, store, key) {
+		return new Promise((resolve,reject) => {
+			const transaction = db.transaction(store, 'readwrite');
+			const object_store = transaction.objectStore(store);
+			const request = object_store.delete(key);
+
+			request.addEventListener('success', event => {
+				resolve(event.target.result);
+			});
+
+			request.addEventListener('error', event => {
+				reject(new Error(`Error while deleting key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
+			});
+		})
+	};
+
+
 	static getKey(db, store, key) {
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readonly');

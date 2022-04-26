@@ -12,11 +12,12 @@ import Analysis from '../models/analysis.js';
 import JAG from '../models/jag.js';
 import Node from '../models/node.js';
 import TeamModel from '../models/team.js';
-import AgentService from '../services/agent.js';
-import AnalysisService from '../services/analysis.js';
-import JAGService from '../services/jag.js';
-import NodeService from '../services/node.js';
-import TeamService from '../services/team.js';
+//import AgentService from '../services/agent.js';
+//import AnalysisService from '../services/analysis.js';
+//import JAGService from '../services/jag.js';
+//import NodeService from '../services/node.js';
+//import TeamService from '../services/team.js';
+import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
 
@@ -180,30 +181,30 @@ class IATable extends Popupable {
 
 	async _checkImportConflicts(analysis) {
 		{
-			const service = AnalysisService.instance('idb-service');
-			if (await service.has(analysis.id))
+			//const service = AnalysisService.instance('idb-service');
+			if (await StorageService.has(analysis.id,'analysis'))
 				return true;
 		}
 
 		{
-			const service = NodeService.instance('idb-service');
+			//const service = NodeService.instance('idb-service');
 			for (const node of analysis.nodes)
-				if (await service.has(node.id))
+				if (await StorageService.has(node.id,'node'))
 					return true;
 		}
 
 		{
-			const service = TeamService.instance('idb-service');
-			for (const team of analysis.teams)
-				if (await service.has(team.id))
+			//const service = TeamService.instance('idb-service');
+				for (const team of analysis.teams)
+				if (await StorageService.has(team.id, 'team'))
 					return true;
 		}
 
 		{
-			const service = AgentService.instance('idb-service');
+			//const service = AgentService.instance('idb-service');
 			for (const team of analysis.teams)
 				for (const agent of team.agents)
-					if (await service.has(agent.id))
+					if (await StorageService.has(agent.id, 'agent'))
 						return true;
 		}
 	}
@@ -219,10 +220,9 @@ class IATable extends Popupable {
 		const analysis = JSON.parse(content);
 
 		if (analysis.jags) {
-			const service = JAGService.instance('idb-service');
-
+			//const service = JAGService.instance('idb-service');
 			for (const jag of analysis.jags) {
-				if (await service.has(jag.urn)) {
+				if (await StorageService.has(jag.urn, 'jag')) {
 					this.popup({
 						content: IATable.NOTICE_OVERWRITE_JAG,
 						trackEl: this._elements.import,
@@ -258,13 +258,21 @@ class IATable extends Popupable {
 	}
 
 	async create(name, root) {
-		const jag = await JAGService.instance('idb-service').get(root);
+		//const jag = await JAGService.instance('idb-service').get(root);
+		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
+		// The below will work but better to use the 'preferred service'
+		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
+		const jag = await StorageService.get(root,'jag');
 
 		const node = new Node({jag: jag});
-		await NodeService.instance('idb-service').create(node);
+		//await NodeService.instance('idb-service').create(node);
+		//await StorageService.getStorageInstance('idb-service').create(node,'node');
+		await StorageService.create(node,'node');
 
 		const analysis = new Analysis({name: name, root: node});
-		await AnalysisService.instance('idb-service').create(analysis);
+		//await AnalysisService.instance('idb-service').create(analysis);
+		//await StorageService.instance('idb-service').create(analysis,'analysis');
+		await StorageService.create(analysis,'analysis');
 
 		analysis.save();
 		this.analysis = analysis;
@@ -274,33 +282,39 @@ class IATable extends Popupable {
 
 	async import(analysis) {
 		{
-			const service = NodeService.instance('idb-service');
+			//const service = NodeService.instance('idb-service');
+			// const service = StorageService.getStorageInstance('idb-service');
 
 			// Sort nodes with the least number of children first.
 			analysis.nodes.sort((a, b) => a.children.length - b.children.length);
 
 			for (const node of analysis.nodes) {
 				const model = await Node.fromJSON(node);
-				await service.create(model);
+				//await service.create(model,'node');
+				await StorageService.create(model,'node');
 			}
 		}
 
 		{
-			const team_service = TeamService.instance('idb-service');
-			const agent_service = AgentService.instance('idb-service');
+			//const team_service = TeamService.instance('idb-service');
+			//const team_service = StorageService.getStorageInstance('idb-service');
+
+			//const agent_service = AgentService.instance('idb-service');
+			//const agent_service = StorageService.getStorageInstance('idb-service');
 
 			for (const team of analysis.teams) {
 				for (const agent of team.agents) {
-					await agent_service.create(AgentModel.fromJSON(agent));
+					await StorageService.create(AgentModel.fromJSON(agent),'agent');
 				}
 
 				team.agents = team.agents.map((agent) => agent.id);
 				const model = await TeamModel.fromJSON(team);
-				await team_service.create(model);
+				await StorageService.create(model,'team');
 			}
 		}
 
-		const service = AnalysisService.instance('idb-service');
+		//const service = AnalysisService.instance('idb-service');
+	//	const service = StorageService.getStorageInstance('idb-service');
 
 		const model = await Analysis.fromJSON({
 			id: analysis.id,
@@ -310,7 +324,7 @@ class IATable extends Popupable {
 			teams: analysis.teams.map((team) => team.id)
 		});
 
-		await service.create(model);
+		await StorageService.create(model,'analysis');
 
 		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: model }}));
 	}
@@ -346,10 +360,11 @@ class IATable extends Popupable {
 
 		if (static_jags === true) {
 			json.jags = [];
-			const service = JAGService.instance('idb-service');
+			//const service = JAGService.instance('idb-service');
+			//const service = StorageService.getStorageInstance('idb-service');
 
 			for (let jag of jags) {
-				const model = await service.get(jag);
+				const model = await StorageService.get(jag,'jag');
 				json.jags.push(model.toJSON());
 			}
 		}
@@ -392,7 +407,9 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 			options: async function () {
 				const options = [];
 
-				const jags = await JAGService.instance('idb-service').all();
+				//const jags = await JAGService.instance('idb-service').all();
+				const jsonList = await StorageService.all('jag');
+				const jags = jsonList.map(JAG.fromJSON);
 
 				for (const jag of jags) {
 					options.push({
@@ -457,7 +474,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
 		{ text: "Overwrite", color: "black", bgColor: "red",
 			action: async function ({inputs: {jag}}) {
 				const model = JAG.fromJSON(jag);
-				await service.create(model);
+				await StorageService.create(model,'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
 			}
 		},
 		{ text: "Cancel", color: "white", bgColor: "black" }

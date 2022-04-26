@@ -8,6 +8,7 @@
 
 import JAG from "../models/jag.js";
 import Observable from "../utils/observable.js";
+import SchemaManager from '../storages/schemas.js';
 
 export default class StorageService extends Observable{
 
@@ -23,9 +24,9 @@ export default class StorageService extends Observable{
      */
 
     static getStorageInstance(id) {
-
         if(!this.__SERVICES.has(id))
             throw new Error(`No service instance '${id}'.`);
+        console.log(this.__SERVICES.get(id));
         return this.__SERVICES.get(id);
     }
 
@@ -69,16 +70,23 @@ export default class StorageService extends Observable{
      */
     static async all(schema = this._schema) {
         const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
-        return descriptions.map(this._createModel.bind(this));
+        //return descriptions.map(this._createModel.bind(this));
+        console.log("YOU ARE MISSING //return descriptions.map(this._createModel.bind(this));")
+        return descriptions;
     }
 
     /**
      * Retrieves the jag model for the specified urn.
      */
     static async get(urn, schema = this._schema) {
+        console.log(urn);
+        console.log(schema);
+        console.log("kkkkkkkk");
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, urn);
         if(description === undefined) return null;
-        return this._createModel(description);
+        //return this._createModel(description);
+        console.log("You are missing //return this._createModel(description);");
+        return description;
     }
 
     /**
@@ -97,9 +105,12 @@ export default class StorageService extends Observable{
         // @TODO if sync - update all storages
         modelNode.addEventListener('update', this._handleUpdate.bind(this));
         const description = modelNode.toJSON();
-        await this.__SERVICES.get(this._preferredStorage).create(schema, description.urn, description);
-        const temp = JAG.fromJSON(description);
-        this.notify("storage-created",temp);
+        console.log("=========>");
+        console.log(modelNode);
+        console.log(SchemaManager.getKeyValue('jag',modelNode));
+        await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
+      //  const temp = JAG.fromJSON(description);
+        this.notify("storage-created",description);
     }
 
     /**
@@ -109,16 +120,22 @@ export default class StorageService extends Observable{
     static update(modelNode, schema = this._schema) {
         //@TODO if sync - update all storages
         const description = modelNode.toJSON();
-        this.__SERVICES.get(this._preferredStorage).update(schema, description.urn, description);
+        console.log("====v====>");
+        console.log(modelNode);
+        console.log(schema);
+        console.log("====^====>");
+        console.log(SchemaManager.getKeyValue('jag',modelNode));
+        this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
         this.notify("storage-updated",description);
     }
 
     /**
      * Removes the model with the existing urn from storage.
      */
-    static remove(schema = this._schema, urn) {
-        this.__SERVICES.get(this._preferredStorage).update(description);
-        this.notify("storage-removed",urn);
+    static delete(id, schema = this._schema) {
+        //SchemaManager.getKey(schema)
+        this.__SERVICES.get(this._preferredStorage).delete(id,schema);
+        this.notify("storage-removed",id);
     }
 
     /**

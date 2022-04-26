@@ -11,10 +11,11 @@ import { UUIDv4 } from '../utils/uuid.js';
 
 import Node from './node.js';
 import TeamModel from './team.js';
-import NodeService from '../services/node.js';
-import TeamService from '../services/team.js';
+//import NodeService from '../services/node.js';
+//import TeamService from '../services/team.js';
 import AgentModel from './agent.js';
-import AgentService from '../services/agent.js';
+//import AgentService from '../services/agent.js';
+import StorageService from '../services/storage-service.js';
 
 export default class Analysis extends EventTarget {
 
@@ -30,24 +31,29 @@ export default class Analysis extends EventTarget {
 			this._team = new TeamModel();
 			this._team.addAgent(new AgentModel({name: 'Agent 1'}));
 			this._team.addAgent(new AgentModel({name: 'Agent 2'}));
-			this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
-			TeamService.instance('idb-service').create(this._team);
+			//this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
+			this._team.agents.forEach(agent => StorageService.create(agent,'agent'));
+			//TeamService.instance('idb-service').create(this._team);
+			StorageService.create(this._team,'team');
 		}
 	}
 
 	static async fromJSON(json) {
 		const node_id = json.root;
-		const root = await NodeService.instance('idb-service').get(node_id);
+		//const root = await NodeService.instance('idb-service').get(node_id);
+		const root = await StorageService.get(node_id, 'node');
 
 		// Replace id by the actual model.
 		json.root = root;
 
 		const team_id = json.team;
-		let team = await TeamService.instance('idb-service').get(team_id);
+		//let team = await TeamService.instance('idb-service').get(team_id);
+		let team = await StorageService.get(team_id, 'team');
 
 		if (team == undefined) {
 			team = new TeamModel();
-			await TeamService.instance('idb-service').create(team);
+			//await TeamService.instance('idb-service').create(team);
+			await StorageService.create(team, 'team');
 		}
 
 		json.team = team;
@@ -63,18 +69,26 @@ export default class Analysis extends EventTarget {
 		return this._name;
 	}
 
+
+// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
+	// StorageService.setSchema('analysis'); is a temp fix
 	set name(name) {
 		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name', 'extra': { 'name': this._name }}}));
+		StorageService.setSchema('analysis');
+		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name','extra': { 'name': this._name }}}));
 	}
 
 	get description() {
 		return this._description;
 	}
 
+
+// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
+	// StorageService.setSchema('analysis'); is a temp fix
 	set description(description) {
 		this._description = description;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description', 'extra': { 'description': this._description }}}));
+		StorageService.setSchema('analysis');
+		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description','extra': { 'description': this._description }}}));
 	}
 
 	get root() {
@@ -85,7 +99,10 @@ export default class Analysis extends EventTarget {
 		return this._team;
 	}
 
+	// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
+	// StorageService.setSchema('analysis'); is a temp fix
 	save() {
+		StorageService.setSchema('analysis');
 		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
 	}
 

@@ -7,16 +7,17 @@
 
 'use strict';
 
-import JAGService from './services/jag.js';
-import NodeService from './services/node.js';
-import AgentService from './services/agent.js';
-import TeamService from './services/team.js';
-import AnalysisService from './services/analysis.js';
+//import JAGService from './services/jag.js';
+//import NodeService from './services/node.js';
+//import AgentService from './services/agent.js';
+//import TeamService from './services/team.js';
+//import AnalysisService from './services/analysis.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import IATable from './ui/ia-table.js';
 import AnalysisLibrary from './views/analysis-library.js';
 import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/team.js';
+import StorageService from "./services/storage-service.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -25,24 +26,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 	await idb_storage.init();
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    JAGService.createInstance('idb-service', idb_storage);
+    //JAGService.createInstance('idb-service', idb_storage);
+	StorageService.addStorageInstance('idb-service', idb_storage);
 
 	// @TODO: this should be setup by the user (configuration file).
 	// Initializes a rest storage
 	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
-	JAGService.createInstance('local-rest-service', rest_storage);
+	//JAGService.createInstance('local-rest-service', rest_storage);
+	StorageService.addStorageInstance('local-rest-service', rest_storage);
+
+	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
+	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
+    //NodeService.createInstance('idb-service', idb_storage);
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    NodeService.createInstance('idb-service', idb_storage);
+	//AgentService.createInstance('idb-service', idb_storage);
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	AgentService.createInstance('idb-service', idb_storage);
+	//TeamService.createInstance('idb-service', idb_storage);
 
 	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	TeamService.createInstance('idb-service', idb_storage);
-
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	AnalysisService.createInstance('idb-service', idb_storage);
+	//AnalysisService.createInstance('idb-service', idb_storage);
 
 	const body = document.querySelector('body');
 

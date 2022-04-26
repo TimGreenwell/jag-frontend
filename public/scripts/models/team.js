@@ -7,8 +7,9 @@
 
 'use strict';
 
-import AgentService from '../services/agent.js';
-import TeamService from '../services/team.js';
+import StorageService from '../services/storage-service.js';
+//import AgentService from '../services/agent.js';
+//import TeamService from '../services/team.js';
 import { UUIDv4 }  from '../utils/uuid.js'
 import AgentModel from './agent.js';
 
@@ -25,11 +26,13 @@ export default class TeamModel extends EventTarget {
 	static async fromJSON(json) {
 		const agents = [];
 		for (const agent_id of json.agents) {
-			let agent = await AgentService.instance('idb-service').get(agent_id);
+			//let agent = await AgentService.instance('idb-service').get(agent_id);
+			let agent = await StorageService.get(agent_id,'agent');
 
 			if (agent == undefined) {
 				agent = new AgentModel();
-				await AgentService.instance('idb-service').create(agent);
+				//await AgentService.instance('idb-service').create(agent);
+				await StorageService.create(agent,'agent');
 			}
 
 			agents.push(agent);

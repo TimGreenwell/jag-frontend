@@ -490,6 +490,17 @@ export default class JAG extends EventTarget {
 		return 0;
 	}
 
+
+	// static _createModel(description) {
+	// 	const model = JAG.fromJSON(description);
+	// 	// Listen to update events to commit the change in storage.
+	// //	model.addEventListener('update', this._handleUpdate.bind(this));
+	// 	// @TODO: store model in cache
+	// 	return model;
+	// }
+
+
+
 	toJSON() {
 		const json = {
 			urn: this._urn,
@@ -553,6 +564,9 @@ export default class JAG extends EventTarget {
 
 		return json;
 	}
+
+
+
 }
 
 JAG.EXECUTION = {

@@ -140,7 +140,8 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		const jags = await StorageService.all('jag');
+		const jsonList = await StorageService.all('jag');
+		const jags = jsonList.map(JAG.fromJSON);
 		jags.forEach(jag => this.addItem(jag));
 	}
 

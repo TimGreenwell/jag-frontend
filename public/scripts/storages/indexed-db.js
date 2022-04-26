@@ -31,6 +31,10 @@ export default class IndexedDBStorage {
 	}
 
 	async get(schema, key) {
+		console.log("%%%%%%%%%");
+		console.log(schema);
+		console.log(key);
+		console.log("%%%%%%%%%");
 		const description = await IndexedDBUtils.get(this._db, SchemaManager.get(schema).name, key);
 		return description;
 	}
@@ -47,5 +51,10 @@ export default class IndexedDBStorage {
 	async update(schema, key, description) {
 		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
+
+    async delete(id, schema) {
+		return IndexedDBUtils.delete(this._db, SchemaManager.get(schema).name, id);
+	}
+
 
 }

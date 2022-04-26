@@ -176,7 +176,7 @@ class Playground extends Popupable {
 			this._edges_container.dispatchEvent(new MouseEvent('mousemove', { clientX: e.clientX, clientY: e.clientY }));
 		});
 
-		this.addEventListener('dragenter', this.onPreImport.bind(this));
+	//	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
 		this.addEventListener('dragover', this.cancelDefault.bind(this));
 		this.addEventListener('drop', this.onImport.bind(this));
 	}

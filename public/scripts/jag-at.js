@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'selection' (playground-node-selected)
 	playground.addEventListener('selection', (e) => {
+		console.log(e);
 		properties.handleSelectionUpdate(e.detail);
 		//ide.handleSelectionUpdate(e.detail);
 	});

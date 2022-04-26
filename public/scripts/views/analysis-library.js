@@ -6,7 +6,10 @@
  * @version 0.16
  */
 
-import AnalysisService from '../services/analysis.js';
+//import AnalysisService from '../services/analysis.js';
+import StorageService from "../services/storage-service.js";
+import Analysis from "../models/analysis.js";
+import JAG from "../models/jag.js";
 
 customElements.define('analysis-library', class extends HTMLElement {
 
@@ -33,6 +36,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	addItem(model, idx = -1) {
+		console.log("Here:");
+		console.log(model);
 		const id = model.urn || '';
 		const root = model.root.urn;
 		const name = model.name;
@@ -83,8 +88,11 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		const idb_service = AnalysisService.instance('idb-service');
-		const analyses = await idb_service.all();
+		//const idb_service = AnalysisService.instance('idb-service');
+		const analysesJsonList = await StorageService.all('analysis');
+		const analyses = analysesJsonList.map(Analysis.fromJSON);
+		console.log(analysesJsonList);
+		console.log(analyses);
 		analyses.forEach(analysis => this.addItem(analysis));
 	}
 

@@ -7,10 +7,12 @@
 
 'use strict';
 
-import JAGService from '../services/jag.js';
+//import JAGService from '../services/jag.js';
+import StorageService from '../services/storage-service.js';
 import AutoComplete from '../ui/auto-complete.js';
 import JAGControls from '../ui/jag-controls.js';
 import AnalysisCell from './analysis-cell.js';
+import JAG from "../models/jag.js";
 
 class JAGView extends AnalysisCell {
 
@@ -67,12 +69,15 @@ class JAGView extends AnalysisCell {
 		this.classList.remove('hidden');
 	}
 
-	_init() {
+	async _init() {
 		this.model.addEventListener('sync', this._sync.bind(this));
 		this._createDocument();
 
-		JAGService.instance('idb-service').all()
-			.then(jags => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
+		//JAGService.instance('idb-service').all()
+		const resultJsonList = await StorageService.all('jag');
+		const jags = resultJsonList.map(JAG.fromJSON);
+		jags.forEach(jag => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
+
 	}
 
 	_createDocument() {
