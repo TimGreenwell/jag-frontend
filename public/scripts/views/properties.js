@@ -8,7 +8,6 @@
  */
 
 import JAG from '../models/jag.js';
-//import JAGService from '../services/jag.js';
 import StorageService from '../services/storage-service.js';
 import UndefinedJAG from '../models/undefined.js';
 import FormUtils from '../utils/forms.js';
@@ -886,10 +885,12 @@ customElements.define('jag-properties', class extends HTMLElement {
 			}
 		});
 
+		//Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._model.name = this._name.value;]
 		this._name.addEventListener('blur', (e) => {  // get an error if the blur goes to a playground click on empty space.
-			this._model.name = this._name.value;
 			console.log("goob");
 			console.log(this._model);
+			console.log(e);
+			this._model.name = this._name.value;
 			StorageService.update(this._model);
 		});
 

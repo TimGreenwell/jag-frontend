@@ -38,6 +38,9 @@ customElements.define('jag-menu', class extends HTMLElement {
 		return $el;
 	}
 
+
+
+
 	_initUI() {
 		const $ul = document.createElement("ul");
 		//
@@ -70,7 +73,7 @@ customElements.define('jag-menu', class extends HTMLElement {
 		$new.innerText = "new\nnode";
 		$centerLiDiv.appendChild($new);
 
-
+		// @todo instead -> pop a modal window and enforce urn. Send that to storage to trigger properties, playground...etc
 		$new.addEventListener('click', function (e) {
 			this.dispatchEvent(new CustomEvent('add-new-node-to-playground', {
 				detail: {
@@ -79,7 +82,6 @@ customElements.define('jag-menu', class extends HTMLElement {
 					expanded: false
 				}
 			}));
-
 		}.bind(this));
 
 
@@ -89,7 +91,7 @@ customElements.define('jag-menu', class extends HTMLElement {
 		$clear.innerText = "clear\nspace";
 		$centerLiDiv.appendChild($clear);
 		$clear.addEventListener('click', function (e) {
-			this.dispatchEvent(new CustomEvent("clear-playground", { "detail": { "action": "clear" } }));
+			this.dispatchEvent(new CustomEvent("clear-playground"));
 		}.bind(this));
 
 		const $delete = document.createElement("span");
@@ -97,8 +99,9 @@ customElements.define('jag-menu', class extends HTMLElement {
 		$delete.classList.add("menu-item");
 		$delete.innerText = "delete\nnode";
 		$centerLiDiv.appendChild($delete);
+		// @ TODO impliment -- clear - or really delete
 		$delete.addEventListener('click', function (e) {
-			this.dispatchEvent(new CustomEvent("item-selected", { "detail": { "action": "delete" } }));
+			this.dispatchEvent(new CustomEvent("delete-selected"));
 		}.bind(this));
 
 		//
@@ -114,7 +117,7 @@ customElements.define('jag-menu', class extends HTMLElement {
 		const $logoImage = document.createElement("img");
 		$logoImage.classList.add("menu-item");
 		$logoImage.id = "menu-logo";
-		$logoImage.setAttribute('src',"icons/ihmc_logo.png");  //@TODO put in css
+		$logoImage.setAttribute('src',"icons/ihmc_logo.png");
 		$rightLiDiv.appendChild($logoImage);
 
 		this.appendChild($ul);
@@ -126,44 +129,6 @@ customElements.define('jag-menu', class extends HTMLElement {
 
 	}
 });
-
-// 	_initUI() {
-// 		const $body = document.createElement("ul");
-//
-// 		const $left_outer = document.createElement("li");
-// 		const $left = document.createElement("div");
-// 		$left_outer.appendChild($left);
-//
-// 		const $header = this._createMenuItem("header", null, "JAG Authoring Tool");
-// 		$left.appendChild($header);
-//
-// 		const $center_outer = document.createElement("li");
-// 		const $center = document.createElement("div");
-// 		$center_outer.appendChild($center);
-//
-// 		const $right_outer = document.createElement("li");
-// 		const $right = document.createElement("div");
-// 		$right_outer.appendChild($right);
-//
-// 		const $clear = this._createMenuItem("clear", null, "Clear");
-//
-// 		$clear.addEventListener('click', function (e) {
-// 			this.dispatchEvent(new CustomEvent("item-selected", { "detail": { "action": "clear" } }));
-// 		}.bind(this));
-//
-// 		$center.appendChild($clear);
-//
-// 		$body.appendChild($left_outer);
-// 		$body.appendChild($center_outer);
-// 		$body.appendChild($right_outer);
-//
-// 		this.$left = $left;
-// 		this.$center = $center;
-// 		this.$right = $right;
-//
-// 		this.appendChild($body);
-// 	}
-// });
 
 export default customElements.get('jag-menu');
 

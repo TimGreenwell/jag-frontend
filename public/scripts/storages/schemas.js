@@ -6,12 +6,19 @@
  * @version 0.06
  */
 
+import JAG from  '../models/jag.js';
+import Node from  '../models/node.js';
+import Analysis from  '../models/analysis.js';
+import Agent from  '../models/agent.js';
+import Team from  '../models/team.js';
+
 export default class Schemas {
 
 	static
 	{
 		const JAG_STORE = {
 			name: 'joint-activity-graph',
+			unserialize: JAG.fromJSON,
 			indexes: [
 				{
 					name: 'urn-index',
@@ -25,6 +32,7 @@ export default class Schemas {
 
 		const NODE_STORE = {
 			name: 'node',
+			unserialize: Node.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -38,6 +46,7 @@ export default class Schemas {
 
 		const ANALYSIS_STORE = {
 			name: 'analysis',
+			unserialize: Analysis.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -51,6 +60,7 @@ export default class Schemas {
 
 		const AGENT_STORE = {
 			name: 'agent',
+			unserialize: Agent.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -64,6 +74,7 @@ export default class Schemas {
 
 		const TEAM_STORE = {
 			name: 'team',
+			unserialize: Team.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -100,7 +111,12 @@ export default class Schemas {
 		console.log("-> " + schema);
 		let key = Schemas.get(schema).indexes[0].property;
 		return(obj[key]);
+	}
 
+	static uncerealize(schema,before) {
+		console.log("trying.....");
+		console.log(schema);
+		return Schemas.get(schema).unserialize(before);
 	}
 }
 

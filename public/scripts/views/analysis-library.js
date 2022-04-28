@@ -30,7 +30,6 @@ customElements.define('analysis-library', class extends HTMLElement {
 		for (let item of this._items) {
 			this._$list.removeChild(item.element);
 		}
-
 		this._items = [];
 		this._defined.clear();
 	}

@@ -7,6 +7,7 @@
  */
 
 import JAG from "../models/jag.js";
+import Node from  "../models/node.js";
 import Observable from "../utils/observable.js";
 import SchemaManager from '../storages/schemas.js';
 
@@ -71,18 +72,31 @@ export default class StorageService extends Observable{
     static async all(schema = this._schema) {
         const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
         //return descriptions.map(this._createModel.bind(this));
-        console.log("YOU ARE MISSING //return descriptions.map(this._createModel.bind(this));")
+        console.log("WARNING:  //return descriptions.map(this._createModel.bind(this));")
         return descriptions;
     }
 
     /**
      * Retrieves the jag model for the specified urn.
      */
-    static async get(urn, schema = this._schema) {
-        console.log(urn);
+    static async get(id, schema = this._schema) {
+        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
+        console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+        console.log(id);
         console.log(schema);
-        console.log("kkkkkkkk");
-        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, urn);
+        console.log(typeof description);
+        console.log(description);
+        //const model = Node.fromJSON(description);
+        const model = SchemaManager.uncerealize(schema,description);
+        console.log(typeof model);
+        console.log(model);
+        console.log("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
+        return model;
+
+
+
+
+
         if(description === undefined) return null;
         //return this._createModel(description);
         console.log("You are missing //return this._createModel(description);");
@@ -99,34 +113,25 @@ export default class StorageService extends Observable{
     /**
      * Creates a new jag with the specified model. This uses the urn property supplied in the model.
      */
-    static async create(modelNode, schema = this._schema) {
+    static async create(createdJAG, schema = this._schema) {
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
-        modelNode.addEventListener('update', this._handleUpdate.bind(this));
-        const description = modelNode.toJSON();
-        console.log("=========>");
-        console.log(modelNode);
-        console.log(SchemaManager.getKeyValue('jag',modelNode));
+        createdJAG.addEventListener('update', this._handleUpdate.bind(this));
+        const description = createdJAG.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-      //  const temp = JAG.fromJSON(description);
-        this.notify("storage-created",description);
+        this.notify("storage-created",createdJAG);
     }
 
     /**
      * Updates an existing model with the specified content.
      * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
      */
-    static update(modelNode, schema = this._schema) {
+    static update(updatedJAG, schema = this._schema) {
         //@TODO if sync - update all storages
-        const description = modelNode.toJSON();
-        console.log("====v====>");
-        console.log(modelNode);
-        console.log(schema);
-        console.log("====^====>");
-        console.log(SchemaManager.getKeyValue('jag',modelNode));
+        const description = updatedJAG.toJSON();
         this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
-        this.notify("storage-updated",description);
+        this.notify("storage-updated",updatedJAG);
     }
 
     /**

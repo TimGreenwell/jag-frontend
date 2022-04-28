@@ -19,6 +19,7 @@ import IDE from './ide.js';                                   // ?? - seems unus
 import Library from './views/library.js';                     // AT - Left view of available JAG Entities
 import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
 import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
+import Modal from './views/modal.js';                         // AT - Center graphic view of JAG Nodes
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
@@ -46,15 +47,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const graph_service = new GraphService();
 
 	// Load DOM outer skeleton for Authoring Tool
-	const body = document.querySelector('body');
-	const library = new Library();
-	const menu = new Menu();
-	const playground = new Playground();
-	const properties = new Properties();
-	body.appendChild(menu)
-	body.appendChild(library);
-	body.appendChild(playground);
-	body.appendChild(properties);
+	const $body = document.querySelector('body');
+	const $library = new Library();
+	const $menu = new Menu();
+	const $playground = new Playground();
+	const $properties = new Properties();
+	const $modal = new Modal();
+	$body.appendChild($menu)
+	$body.appendChild($library);
+	$body.appendChild($playground);
+	$body.appendChild($properties);
+	$body.appendChild($modal);
 
 	/**
 	 * EventListeners triggering action in different panel
@@ -67,43 +70,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'clear-playground' - when menu clears nodes from playground
-	menu.addEventListener('clear-playground', (e) => {
-		playground.handleMenuAction(e.detail);
+	$menu.addEventListener('clear-playground', (e) => {
+		$playground.handleMenuAction(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
 	// @TODO
-	menu.addEventListener('add-new-node-to-playground', (e) => {
-		playground.handleItemSelected(e.detail);  //calls playground._addNode
+	$menu.addEventListener('add-new-node-to-playground', (e) => {
+		$modal.handleToggleModal();
+		//$playground.handleItemSelected(e.detail);  //calls playground._addNode
 		//properties.handleUndefinedURN();
 	});
     //////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.
-	library.addEventListener('item-selected', (e) => {
-		playground.handleItemSelected(e.detail);
+	$library.addEventListener('item-selected', (e) => {
+		$playground.handleItemSelected(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
-	library.addEventListener('refresh', (e) => {
-		playground.handleRefresh(e.detail);
+	$library.addEventListener('refresh', (e) => {
+		$playground.handleRefresh(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'resources' (???)
 	graph_service.addEventListener('resources', (e) => {
-		library.handleResourceUpdate(e.detail);
+		$library.handleResourceUpdate(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'selection' (playground-node-selected)
-	playground.addEventListener('selection', (e) => {
+	$playground.addEventListener('selection', (e) => {
 		console.log(e);
-		properties.handleSelectionUpdate(e.detail);
+		$properties.handleSelectionUpdate(e.detail);
 		//ide.handleSelectionUpdate(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
-	playground.addEventListener('refresh', (e) => {
-		library.refreshItem(e.detail.model, e.detail.refreshed);
+	$playground.addEventListener('refresh', (e) => {
+		$library.refreshItem(e.detail.model, e.detail.refreshed);
 	});
 
 });

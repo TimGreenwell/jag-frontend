@@ -48,10 +48,14 @@ export default class IndexedDBUtils {
 			const transaction = db.transaction(store, 'readwrite');
 			const object_store = transaction.objectStore(store);
 			let request;
-			if(key)
+			if (key)
 				request = object_store.put(value, key);
 			else
-				request = object_store.add(value);
+			{	console.log("No key - ");
+			    console.log(store);
+				console.log(value);
+				console.log(key);
+				request = object_store.add(value);}
 
 			request.addEventListener('success', event => {
 				resolve(event.target.result);
