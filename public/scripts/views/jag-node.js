@@ -10,12 +10,14 @@
 const SNAP_SIZE = 5.0;
 
 import JAG from '../models/jag.js';
-import UndefinedJAG from '../models/undefined.js';
+import UndefinedJAG from '../models/undefined.js';   //  @todo remove if possible
 
 customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(model, expanded) {
 		super();
+		console.log("ADDING NEW NODE ____");
+		console.log(model);
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
@@ -40,6 +42,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	set model(model) {
 		if (this._model) {
 			if (this._model instanceof UndefinedJAG) {
+				console.log("Found undefined JAG (1)");
 				this._model.removeEventListener('define', this._boundDefineModel);
 			} else {
 				this._model.removeEventListener('update', this._boundUpdateHandler);
@@ -49,6 +52,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._model = model;
 
 		if (this._model instanceof UndefinedJAG) {
+			console.log("Found undefined JAG (2)");
 			this._model.addEventListener('define', this._boundDefineModel);
 		} else {
 			this._model.addEventListener('update', this._boundUpdateHandler);
@@ -367,6 +371,9 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._snap();
 		this.dispatchEvent(new CustomEvent('drag'));
 		this.removeEventListener('mousemove', this._boundNodeDrag);
+		console.log(this.getURN());
+		console.log("My prent is: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		console.log(this.parentNode);
 		this.parentNode.removeEventListener('mousemove', this._boundDrag);
 	}
 

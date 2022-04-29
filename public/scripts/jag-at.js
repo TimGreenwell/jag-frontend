@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     //////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.
-	$library.addEventListener('item-selected', (e) => {
-		$playground.handleItemSelected(e.detail);
+	$library.addEventListener('library-lineItem-selected', (e) => {
+		$playground.handleLibraryListItemSelected(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)

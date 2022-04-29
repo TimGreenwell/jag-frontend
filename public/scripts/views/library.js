@@ -61,7 +61,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	// Adding an item in library:
 	//     1)   Build <li> element for list (also holds search content and JAG model[why?])
 	//     2)   Attach 'update' and 'refresh' and 'copy' listeners
-	//     3)   Attach 'click' to <li> to dispatch 'item-selected'(@TODO change)
+	//     3)   Attach 'click' to <li> to dispatch 'library-lineItem-selected'
 
 	addItem(newJAGModel, idx = -1) {
 		if (!this._existingURNS.has(newJAGModel.urn)) {
@@ -105,12 +105,14 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.refreshItem(newJAGModel);
 				});
 
+
+				// Send the newJAGModel and all its children through the dispatch
 				$li.addEventListener('click', (event) => {
-					this._getChildModels(newJAGModel, new Map()).then(function (childrenSet) {
-						this.dispatchEvent(new CustomEvent('item-selected', {
+					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
+						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
 							detail: {
 								model: newJAGModel,
-								model_set: childrenSet,
+								model_set: childrenMap,
 								expanded: event.shiftKey
 							}
 						}))
@@ -181,12 +183,12 @@ customElements.define('jag-library', class extends HTMLElement {
 	// everyone can use.
 
 	async _getChildModels(parentJAGModel, childrenJAGMap) {
-		if(!parentJAGModel.children)
+		if(!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
 			return childrenJAGMap;
 		for (let childDetails of parentJAGModel.children) {
-			const child = await this._lazyGet(childDetails.urn);
-			childrenJAGMap.set(childDetails.urn, child);
-			childrenJAGMap = await this._getChildModels(child, childrenJAGMap);
+			const childJAGModel = await this._lazyGet(childDetails.urn);
+			childrenJAGMap.set(childDetails.urn, childJAGModel);
+			childrenJAGMap = await this._getChildModels(childJAGModel, childrenJAGMap);
 		}
 		return childrenJAGMap;
 	}
