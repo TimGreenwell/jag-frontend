@@ -2,245 +2,270 @@ export default class Popupable extends HTMLElement {
     constructor() {
         super();
 
-		this._content = document.createElement('div');
-		this._content.className = "popup-box";
-		this._content.style.visibility = "hidden";
-		this.appendChild(this._content);
+        this._popupContent = document.createElement('div');
+        this._popupContent.className = "popup-box";
+        this._popupContent.style.visibility = "hidden";
+        this.appendChild(this._popupContent);
 
-		this._popups = [];
-		this._popupHighlights = [];
-		this._popupOutputs = {};
+        this._popups = [];
+        this._popupHighlights = [];
+        this._popupOutputs = {};
+        this._suggestedHeight = 140;
     }
 
-	static _createPopup({type, name, description, properties, actions, fallback, skip}) {
-		const _p = document.createElement("p");
-		_p.classList.add("popup-content");
-		_p.classList.add(type);
+    // Creates the upper Name/Description part of the popup.
+    // type provides an extra css classlist (besides popup-context)
+    // properties, actions, fallback, skip are simply passed back out
+    // Also passes back are type and _p.
+    static _createPopup({type, name, description, properties, actions, fallback, skip}) {
+        const _p = document.createElement("p");
+        _p.classList.add("popup-content");
+        _p.classList.add(type);
 
-		const _name = document.createElement("span");
-		_name.className = "popup-name";
+        const _name = document.createElement("span");
+        _name.className = "popup-name";
 
-		if (typeof name === 'string') _name.innerText = name;
-		else _p.$name = (inputs) => _name.innerText = name(inputs);
+        if (typeof name === 'string') _name.innerText = name;
+        else _p.$name = (inputs) => _name.innerText = name(inputs);
 
-		const _description = document.createElement("span");
-		_description.className = "popup-description";
+        const _description = document.createElement("span");
+        _description.className = "popup-description";
 
-		if (typeof description === 'string') _description.innerText = description;
-		else _p.$description = (inputs) => _description.innerText = description(inputs);
+        if (typeof description === 'string') _description.innerText = description;
+        else _p.$description = (inputs) => _description.innerText = description(inputs);
 
-		_p.append(_name, _description);
+        _p.append(_name, _description);
 
-		_p.setAttributeNS(null, 'popup-type', type);
+        _p.setAttributeNS(null, 'popup-type', type);
 
-		return { type: type, display: _p, properties: properties, actions: actions, fallback: fallback, skip: skip };
-	}
+        return {type: type, display: _p, properties: properties, actions: actions, fallback: fallback, skip: skip};
+    }
 
-	async _displayNextPopup() {
-		if (this._popupCallback) {
-			await this._popupCallback({outputs: this._popupOutputs});
-		}
 
-		for (let highlight of this._popupHighlights) {
-			highlight.classList.remove(`${this._activePopup.content.type}-highlight`);
-		}
+    async _displayNextPopup() {
+        this._suggestedHeight = 140;
+        if (this._popupCallback) {
+            await this._popupCallback({outputs: this._popupOutputs});
+        }
 
-		this._popupHighlights = [];
+        for (let highlight of this._popupHighlights) {
+            highlight.classList.remove(`${this._activePopup.content.type}-highlight`);
+        }
 
-		let displayNext = true, displayThis = true;
+        this._popupHighlights = [];
 
-		if (this._popups.length > 0) {
-			this._activePopup = this._popups.splice(0, 1)[0];
+        let displayNext = true, displayThis = true;
 
-			if (!this._popups) this._popups = [];
+        if (this._popups.length > 0) {
+            this._activePopup = this._popups.splice(0, 1)[0];
 
-			const {content, trackEl, callback, properties, inputs, highlights} = this._activePopup;
-			const loc = trackEl.getBoundingClientRect();
-			const ix = loc.x, iy = loc.y, width = loc.width;
+            if (!this._popups) this._popups = [];
 
-			this._content.innerHTML = "";
+            const {content, trackEl, callback, properties, inputs, highlights} = this._activePopup;
+            const loc = trackEl.getBoundingClientRect();
+            const ix = loc.x, iy = loc.y, width = loc.width;
 
-			const data = { inputs: inputs, outputs: this._popupOutputs };
+            this._popupContent.innerHTML = "";
 
-			if (content.skip) {
-				if (content.skip(data)) {
-					if (properties) {
-						for (const property in properties)
-							this._popupOutputs[property] = properties[property].value;
+            const data = {inputs: inputs, outputs: this._popupOutputs};
 
-						data.outputs = this._popupOutputs;
-					}
+            if (content.skip) {
+                if (content.skip(data)) {
+                    if (properties) {
+                        for (const property in properties)
+                            this._popupOutputs[property] = properties[property].value;
 
-					let result;
+                        data.outputs = this._popupOutputs;
+                    }
 
-					if (content.fallback != undefined) {
-						if (typeof content.fallback === 'number') {
-							const boundAction = content.actions[content.fallback].action.bind(this);
-							result = await boundAction(data);
-						} else {
-							result = await content.fallback(data);
-						}
-					} else if (callback) {
-						this._popupCallback = callback;
-					}
+                    let result;
 
-					if (result) {
-						for (const output in result) {
-							this._popupOutputs[output] = result[output];
-						}
-					}
+                    if (content.fallback != undefined) {
+                        if (typeof content.fallback === 'number') {
+                            const boundAction = content.actions[content.fallback].action.bind(this);
+                            result = await boundAction(data);
+                        } else {
+                            result = await content.fallback(data);
+                        }
+                    } else if (callback) {
+                        this._popupCallback = callback;
+                    }
 
-					displayThis = false;
-				}
-			}
+                    if (result) {
+                        for (const output in result) {
+                            this._popupOutputs[output] = result[output];
+                        }
+                    }
 
-			if (displayThis) {
-				displayNext = false;
+                    displayThis = false;
+                }
+            }
 
-				if (content.display.$name) content.display.$name({inputs: inputs});
-				if (content.display.$description) content.display.$description({inputs: inputs});
 
-				this._content.appendChild(content.display);
+            if (displayThis) {
+                displayNext = false;
 
-				const {x, y} = this._popupBounds.getBoundingClientRect();
-				this._content.style.left = (ix - x + (width / 2) - 100) + "px";
-				this._content.style.top = (iy - y + 50) + "px";
+                if (content.display.$name) content.display.$name({inputs: inputs}); //??
+                if (content.display.$description) content.display.$description({inputs: inputs}); //??
 
-				trackEl.addEventListener('change-position', (e) => {
-					const newLoc = trackEl.getBoundingClientRect();
-					const nx = newLoc.x, ny = newLoc.y;
-					this._content.style.left = (nx - x + (width / 2) - 100) + "px";
-					this._content.style.top = (ny - y - 160) + "px";
-				});
+                this._popupContent.appendChild(content.display);
 
-				this._popupHighlights = highlights;
+                const {x, y} = this._popupBounds.getBoundingClientRect();
+                this._popupContent.style.left = (ix - x + (width / 2) - 100) + "px";
+                this._popupContent.style.top = (iy - y + 10) + "px";
+                this._popupContent.style.height = "10px";
 
-				for (let highlight of highlights) {
-					highlight.classList.add(`${content.type}-highlight`);
-				}
+                trackEl.addEventListener('change-position', (e) => {
+                    const newLoc = trackEl.getBoundingClientRect();
+                    const nx = newLoc.x, ny = newLoc.y;
+                    this._popupContent.style.left = (nx - x + (width / 2) - 100) + "px";
+                    this._popupContent.style.top = (ny - y - 160) + "px";
 
-				if (!this._popupInterval && !content.actions) {
-					this._popupInterval = setInterval(this._displayNextPopup.bind(this), 4000);
-				} else if (this._popupInterval && content.actions) {
-					clearInterval(this._popupInterval);
-					this._popupInterval = undefined;
-				}
+                });
 
-				if (content.properties) {
-					this._activePopup.properties = {};
+                this._popupHighlights = highlights;
 
-					for (const {name, label, type, value = null, options = null} of content.properties) {
-						const $label = document.createElement('label');
-						$label.setAttribute('for', name);
-						$label.innerHTML = label;
+                for (let highlight of highlights) {
+                    highlight.classList.add(`${content.type}-highlight`);
+                }
 
-						let input_el = 'input';
-						if (type === 'select') input_el = 'select';
-						if (type === 'textarea') input_el = 'textarea';
+                if (!this._popupInterval && !content.actions) {
+                    this._popupInterval = setInterval(this._displayNextPopup.bind(this), 4000);
+                } else if (this._popupInterval && content.actions) {
+                    clearInterval(this._popupInterval);
+                    this._popupInterval = undefined;
+                }
 
-						const $input = document.createElement(input_el);
-						$input.setAttribute('name', name);
+                if (content.properties) {
+                    this._activePopup.properties = {};
 
-						if (input_el === 'input')
-							$input.setAttribute('type', type);
+                    for (const {name, label, type, value = null, options = null} of content.properties) {
+                        const $label = document.createElement('label');
+                        $label.setAttribute('for', name);
+                        $label.innerHTML = label;
+                        this._suggestedHeight = this._suggestedHeight + 15;
 
-						if (options) {
-							let roptions = options;
 
-							if (typeof options !== 'array')
-								roptions = await options(data);
+                        let input_el = 'input';
+                        if (type === 'select') input_el = 'select';
+                        if (type === 'textarea') {
+                            input_el = 'textarea';
+                            this._suggestedHeight = this._suggestedHeight + 45;
+                        }
 
-							if (type === 'select') {
-								for (const {text, value} of roptions) {
-									const $option = document.createElement('option');
-									$option.setAttribute('value', value);
-									$option.innerHTML = text;
+                        const $input = document.createElement(input_el);
+                        $input.setAttribute('name', name);
 
-									$input.appendChild($option);
-								}
-							}
-						}
+                        if (input_el === 'input')
+                            $input.setAttribute('type', type);
 
-						if (value) $input.setAttribute('value', value);
+                        if (options) {
+                            let roptions = options;
 
-						this._content.appendChild($label);
-						this._content.appendChild($input);
+                            //  throws error - options is not a function.    --purpose?
+                            if (typeof options !== 'array')
+                                roptions = await options(data);
 
-						this._activePopup.properties[name] = $input;
-					}
-				}
+                            if (type === 'textarea') {
+                                for (let [key, value] of roptions.entries()) {
+                                    $input.setAttribute(key, value);
+                                }
+                            }
 
-				if (content.actions) {
-					for (const {text, color, bgColor, action} of content.actions) {
-						const boundAction = action ? action.bind(this) : undefined;
-						const actionBtn = document.createElement('button');
-						actionBtn.className = "popup-action";
-						actionBtn.innerText = text;
+                            if (type === 'select') {
+                                for (const {text, value} of roptions) {
+                                    const $option = document.createElement('option');
+                                    $option.setAttribute('value', value);
+                                    $option.innerHTML = text;
 
-						if (color) actionBtn.style.color = color;
-						if (bgColor) actionBtn.style.backgroundColor = bgColor;
+                                    $input.appendChild($option);
+                                }
+                            }
+                        }
 
-						actionBtn.onclick = async function () {
-							let result;
+                        if (value) $input.setAttribute('value', value);
 
-							if (this._activePopup.properties) {
-								for (const property in this._activePopup.properties)
-									this._popupOutputs[property] = this._activePopup.properties[property].value;
+                        this._popupContent.appendChild($label);
+                        this._popupContent.appendChild($input);
 
-								data.outputs = this._popupOutputs;
-							}
+                        this._activePopup.properties[name] = $input;
+                    }
+                }
 
-							if (boundAction)
-								result = await boundAction(data);
+                if (content.actions) {
+                    this._suggestedHeight = this._suggestedHeight + 50;
+                    for (const {text, color, bgColor, action} of content.actions) {
+                        const boundAction = action ? action.bind(this) : undefined;
+                        const actionBtn = document.createElement('button');
+                        actionBtn.className = "popup-action";
+                        actionBtn.innerText = text;
 
-							if (result) {
-								for (const output in result) {
-									this._popupOutputs[output] = result[output];
-								}
-							}
+                        if (color) actionBtn.style.color = color;
+                        if (bgColor) actionBtn.style.backgroundColor = bgColor;
 
-							this._displayNextPopup();
-						}.bind(this);
+                        actionBtn.onclick = async function () {
+                            let result;
 
-						this._content.appendChild(actionBtn);
-					}
-				} else if (callback) {
-					this._popupCallback = callback;
-				}
+                            if (this._activePopup.properties) {
+                                for (const property in this._activePopup.properties) {
+                                    this._popupOutputs[property] = this._activePopup.properties[property].value;
+                                }
 
-				this._content.style.visibility = "visible";
-			}
-		}
+                                data.outputs = this._popupOutputs;
+                            }
 
-		if (displayNext) {
-			if (this._popupInterval) {
-				clearInterval(this._popupInterval);
-				this._popupInterval = undefined;
-			}
+                            if (boundAction)
+                                result = await boundAction(data);
 
-			this._popupCallback = undefined;
+                            if (result) {
+                                for (const output in result) {
+                                    this._popupOutputs[output] = result[output];
+                                }
+                            }
 
-			this._activePopup = undefined;
+                            this._displayNextPopup();
+                        }.bind(this);
 
-			this._content.style.visibility = "hidden";
-		}
-	}
+                        this._popupContent.appendChild(actionBtn);
+                    }
+                } else if (callback) {
+                    this._popupCallback = callback;
+                }
+                this._popupContent.style.height = this._suggestedHeight + "px";
+                this._popupContent.style.visibility = "visible";
+            }
+        }
 
-	setPopupBounds(bounds) {
-		this._popupBounds = bounds;
-	}
+        if (displayNext) {
+            if (this._popupInterval) {
+                clearInterval(this._popupInterval);
+                this._popupInterval = undefined;
+            }
 
-	popup({ content, trackEl, callback, inputs = {}, highlights = [] }) {
-		this._popups.push({
-			content: content,
-			trackEl: trackEl,
-			callback: callback,
-			inputs: inputs,
-			highlights: highlights
-		});
+            this._popupCallback = undefined;
 
-		if (!this._popupInterval && !this._activePopup) {
-			this._displayNextPopup();
-		}
-	}
+            this._activePopup = undefined;
+
+            this._popupContent.style.visibility = "hidden";
+        }
+    }
+
+    setPopupBounds(bounds) {
+        this._popupBounds = bounds;
+    }
+
+    popup({content, trackEl, callback, inputs = {}, highlights = []}) {
+        this._popups.push({
+            content: content,
+            trackEl: trackEl,
+            callback: callback,
+            inputs: inputs,
+            highlights: highlights
+        });
+
+        if (!this._popupInterval && !this._activePopup) {
+            this._displayNextPopup();
+        }
+    }
 }
+

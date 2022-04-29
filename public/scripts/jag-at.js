@@ -19,7 +19,6 @@ import IDE from './ide.js';                                   // ?? - seems unus
 import Library from './views/library.js';                     // AT - Left view of available JAG Entities
 import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
 import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
-import Modal from './views/modal.js';                         // AT - Center graphic view of JAG Nodes
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
@@ -52,12 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const $menu = new Menu();
 	const $playground = new Playground();
 	const $properties = new Properties();
-	const $modal = new Modal();
+
 	$body.appendChild($menu)
 	$body.appendChild($library);
 	$body.appendChild($playground);
 	$body.appendChild($properties);
-	$body.appendChild($modal);
+
 
 	/**
 	 * EventListeners triggering action in different panel
@@ -71,13 +70,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'clear-playground' - when menu clears nodes from playground
 	$menu.addEventListener('clear-playground', (e) => {
-		$playground.handleMenuAction(e.detail);
+		//$playground.handleMenuAction(e.detail);
+		$playground.clearPlayground();
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
 	// @TODO
-	$menu.addEventListener('add-new-node-to-playground', (e) => {
-		$modal.handleToggleModal();
+	$menu.addEventListener('add-new-node', (e) => {
+		// properties.createNewNode(e.detail);
+		$playground._handleNewNodePopup(e);
 		//$playground.handleItemSelected(e.detail);  //calls playground._addNode
 		//properties.handleUndefinedURN();
 	});

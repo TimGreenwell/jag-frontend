@@ -10,6 +10,8 @@
 import JAGNode from './views/jag-node.js';
 import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
+import StorageService from "./services/storage-service.js";
+import JAG from "./models/jag.js";
 
 class Playground extends Popupable {
 
@@ -57,7 +59,8 @@ class Playground extends Popupable {
 		this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
 		this._boundDragView = this.dragView.bind(this);
 		this._boundStopDragView = this.stopDragView.bind(this);
-
+		// StorageService.subscribe("storage-updated", this.updateItem.bind(this));
+		// StorageService.subscribe("storage-created", this.addItem.bind(this));
 		this.initGlobalEvents();
 	}
 
@@ -308,6 +311,7 @@ class Playground extends Popupable {
 
 	clearPlayground() {
 		for (let node of this._nodes) {
+			console.log("clearing nodes");
 			node.removeAllEdges();
 			this._nodes_container.removeChild(node);
 		}
@@ -584,6 +588,24 @@ class Playground extends Popupable {
 			this.clearPlayground();
 		}
 	}
+
+// this.popup({
+//     content: Playground.NOTICE_REMOVE_CHILD,
+//     trackEl: child,
+//     inputs: {node: child},
+//     highlights: [child]
+// });
+	_handleNewNodePopup(e) {
+		const initiator = document.getElementById('menu-new');
+		this.popup({
+			content: Playground.NOTICE_CREATE_JAG,
+			trackEl: this,
+			inputs: {event: e},
+			highlights: [initiator]
+		});
+	}
+
+
 }
 
 // END OF CLASS
@@ -600,6 +622,46 @@ Playground.POPUP_TYPES = {
 	NOTICE: 'popup-notice',
 	INFO: 'popup-info'
 };
+
+// why cant this go inside scope.? Does anyone else need it?
+Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
+	type: Playground.POPUP_TYPES.NOTICE,
+	name: "Add New Node",
+	description: "Be precise.  You can always edit this later.",
+	properties: [
+		{name: 'name', label: 'Name', type: 'text'},  // value & options
+		{name: 'urn', label: 'URN', type: 'text'},
+		{name: 'description', label: 'Description', type: 'textarea',
+			options: async function () {
+			  let paramMap = new Map();
+			  paramMap.set('cols',24);
+			  paramMap.set('rows', 4);
+			  return paramMap;
+			}},
+	],
+	actions: [
+		{
+			text: "Create", color: "black", bgColor: "red",
+			action: async function ({inputs: {}, outputs: {name, urn, description}}) {
+
+				console.log("((((())))))))");
+				console.log(name);
+				console.log(urn);
+				console.log(description);
+				console.log("((((())))))))");
+				const newJAG = new JAG({ urn: urn, name: name, description: description });
+				console.log("New JAG created:");
+				console.log(newJAG);
+				await StorageService.create(newJAG, 'jag');
+			}
+		},
+		{text: "Cancel", color: "white", bgColor: "black"}
+	]
+	// display: ?
+	// fallback: ?
+	// skip: ?
+});
+
 
 Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
 	type: Playground.POPUP_TYPES.NOTICE,
@@ -636,3 +698,4 @@ Playground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 customElements.define('jag-playground', Playground);
 
 export default customElements.get('jag-playground');
+

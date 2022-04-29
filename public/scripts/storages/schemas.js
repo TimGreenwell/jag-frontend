@@ -108,7 +108,8 @@ export default class Schemas {
     }
 
 	static getKeyValue(schema,obj) {
-		console.log("-> " + schema);
+		console.log("-> " );
+		console.log(obj);
 		let key = Schemas.get(schema).indexes[0].property;
 		return(obj[key]);
 	}

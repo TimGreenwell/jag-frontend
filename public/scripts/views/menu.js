@@ -73,17 +73,16 @@ customElements.define('jag-menu', class extends HTMLElement {
 		$new.innerText = "new\nnode";
 		$centerLiDiv.appendChild($new);
 
-		// @todo instead -> pop a modal window and enforce urn. Send that to storage to trigger properties, playground...etc
 		$new.addEventListener('click', function (e) {
-			this.dispatchEvent(new CustomEvent('add-new-node-to-playground', {
-				detail: {
-					model: new JAG({ name: " New ", description: "" }),
-					model_set: [],
-					expanded: false
+			this.dispatchEvent(new CustomEvent('add-new-node', {
+//    detail: {
+//       model: new JAG({ name: " New ", description: "" }),
+//       model_set: [],
+//       expanded: false
+//    }
 				}
-			}));
+			));
 		}.bind(this));
-
 
 		const $clear = document.createElement("span");
 		$clear.id = "menu-clear";

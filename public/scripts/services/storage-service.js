@@ -117,9 +117,13 @@ export default class StorageService extends Observable{
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
-        createdJAG.addEventListener('update', this._handleUpdate.bind(this));
+      //  createdJAG.addEventListener('update', this._handleUpdate.bind(this));
         const description = createdJAG.toJSON();
+        console.log("in StorageService.create.  Now calling the create of the preferred service");
+        console.log("double checking");
+        console.log(SchemaManager.getKeyValue(schema,description));
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
+        console.log("back in StorageService.create.  Notifying all subscribers");
         this.notify("storage-created",createdJAG);
     }
 
@@ -146,23 +150,23 @@ export default class StorageService extends Observable{
     /**
      * Creates a modelNode from a json description, stores it in cache and attaches the necessary listeners.
      */
-    static _createModel(description) {
-        const model = JAG.fromJSON(description);
-        // Listen to update events to commit the change in storage.
-        model.addEventListener('update', this._handleUpdate.bind(this));
-        // @TODO: store model in cache
-        return model;
-    }
+    // static _createModel(description) {
+    //     const model = JAG.fromJSON(description);
+    //     // Listen to update events to commit the change in storage.
+    //     model.addEventListener('update', this._handleUpdate.bind(this));
+    //     // @TODO: store model in cache
+    //     return model;
+    // }
 
     /**
      * Handles model update.
      */
-    static _handleUpdate(e) {
-        const model = e.target;
-
-        // @TODO: check that we are responsible for this model.
-        this.update(model);
-    }
+    // static _handleUpdate(e) {
+    //     const model = e.target;
+    //
+    //     // @TODO: check that we are responsible for this model.
+    //     this.update(model);
+    // }
 
 }
 

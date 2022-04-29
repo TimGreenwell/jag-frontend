@@ -45,6 +45,8 @@ export default class IndexedDBStorage {
 	}
 
 	async create(schema, key, description) {
+		console.log("now in indexed-db storage create.  Committing a store to DB");
+
 		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 

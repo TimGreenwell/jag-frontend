@@ -44,6 +44,7 @@ export default class IndexedDBUtils {
 	}
 
 	static store(db, store, value, key) {
+
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readwrite');
 			const object_store = transaction.objectStore(store);

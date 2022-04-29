@@ -818,8 +818,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 		console.log(description);
 		description.urn = newURN;
 		const new_model = JAG.fromJSON(description);
-		console.log(new_model);
-		console.log("timmy");
 
 		// Update model references.
 		this._node.model = new_model;
