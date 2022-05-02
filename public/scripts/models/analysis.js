@@ -9,33 +9,65 @@
 
 import { UUIDv4 } from '../utils/uuid.js';
 
-import Node from './node.js';
+import NodeModel from './node.js';
 import TeamModel from './team.js';
-//import NodeService from '../services/node.js';
-//import TeamService from '../services/team.js';
 import AgentModel from './agent.js';
-//import AgentService from '../services/agent.js';
 import StorageService from '../services/storage-service.js';
 
 export default class Analysis extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = Analysis.DEFAULT_NAME, description = Analysis.DEFAULT_DESCRIPTION, root = new Node({is_root: true}), team } = {}) {
+	// constructor : why pass in root into a new NodeModel? results in same.  hrm
+	constructor({
+					id = UUIDv4(),
+					name = Analysis.DEFAULT_NAME,
+					description = Analysis.DEFAULT_DESCRIPTION,
+					root = new NodeModel({is_root: true}),
+					team
+				} = {}) {
 		super();
 		this._id = id;
 		this._name = name;
 		this._description = description;
-		this._root = root;
+		this._rootNodeModel = root;
 		this._team = team;
-		
+		this._nodeSet = new Set();
+
+		this.buildAnalysisJagNodes(this._rootNodeModel);
+		console.log("hhhhhhhhhhhhhhhhhhh");
+		console.log(this._nodeSet)
+
 		if (team == undefined) {
 			this._team = new TeamModel();
 			this._team.addAgent(new AgentModel({name: 'Agent 1'}));
 			this._team.addAgent(new AgentModel({name: 'Agent 2'}));
 			//this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
-			this._team.agents.forEach(agent => StorageService.create(agent,'agent'));
+			this._team.agents.forEach(agent => StorageService.create(agent, 'agent'));
 			//TeamService.instance('idb-service').create(this._team);
-			StorageService.create(this._team,'team');
+			StorageService.create(this._team, 'team');
 		}
+	};
+
+	async buildAnalysisJagNodes(newRootNodeModel) {
+        let currentNode = newRootNodeModel;
+		let children = newRootNodeModel.jag.children;
+		console.log("children of new ROOT");
+		console.log(children);
+
+		children.map(async ({urn, id}) => {
+			const childJagModel = await StorageService.get(urn, 'jag');
+			const childNodeModel = new NodeModel({jag: childJagModel});
+			//await StorageService.create(childNodeModel,'node');
+console.log("child model being scanned...");
+console.log(childNodeModel);
+			currentNode.addChild(childNodeModel, true);
+
+			await this.buildAnalysisJagNodes(childNodeModel);
+		})
+		this._nodeSet.add(currentNode);
+		console.log("current node being added to _nodeSet");
+		console.log(currentNode);
+
+		//	const jagModel = await StorageService.get(rootUrn,'jag');
 	}
 
 	static async fromJSON(json) {
@@ -95,7 +127,7 @@ export default class Analysis extends EventTarget {
 	}
 
 	get root() {
-		return this._root;
+		return this._rootNodeModel;
 	}
 
 	get team() {
@@ -103,7 +135,7 @@ export default class Analysis extends EventTarget {
 	}
 
 
-	// StorageService.setSchema('analysis'); is a temp fix
+	// @TODO StorageService.setSchema('analysis'); is a temp fix  -- update - fixed.  Test removal
 	save() {
 		StorageService.setSchema('analysis');
 
@@ -113,6 +145,7 @@ export default class Analysis extends EventTarget {
 	}
 
 	toJSON() {
+
 		const json = {
 			id: this._id,
 			name: this._name,

@@ -79,8 +79,6 @@ export default class JAG extends EventTarget {
 	}
 
 	static fromJSON(json) {
-		console.log("in fromJSON of models/jag.js --> using this json:");
-		console.log(json);
 
 		try {
 			JAGATValidation.validateJAG(json);

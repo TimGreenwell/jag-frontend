@@ -10,7 +10,7 @@
 import AgentModel from '../models/agent.js';
 import Analysis from '../models/analysis.js';
 import JAG from '../models/jag.js';
-import Node from '../models/node.js';
+import NodeModel from '../models/node.js';
 import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
@@ -166,7 +166,6 @@ class IATable extends Popupable {
 	}
 
 	_handleAnalysisDescriptionChange(event) {
-		console.log("HANDLING NEW ANALYSIS NAME CHANGE........................................................................................");
 		this._analysis.description = event.target.value;
 		StorageService.update(this._analysis, 'analysis');
 	}
@@ -262,22 +261,14 @@ class IATable extends Popupable {
 		//const jag = await JAGService.instance('idb-service').get(root);
 		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
 		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
-		const jagModel = await StorageService.get(rootUrn,'jag');
+		const rootJagModel = await StorageService.get(rootUrn,'jag');
+	 	const nodeModel = new NodeModel({jag: rootJagModel});
 
-		const node = new Node({jag: jagModel});
-		console.log("-------------------------------------------------");
-		console.log(jagModel);
-		console.log(node);
-		//await NodeService.instance('idb-service').create(node);
-		//await StorageService.getStorageInstance('idb-service').create(node,'node');
-		await StorageService.create(node,'node');
-
-		const analysis = new Analysis({name: analysisName, root: node});
-		//await AnalysisService.instance('idb-service').create(analysis);
-		//await StorageService.instance('idb-service').create(analysis,'analysis');
+	 	//await StorageService.create(nodeModel,'node');
+		const analysis = new Analysis({name: analysisName, root: nodeModel});
 		await StorageService.create(analysis,'analysis');
 
-		analysis.save();
+		analysis.save();  // I dont think this does anything.
 		this.analysis = analysis;
 
 		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
@@ -292,7 +283,7 @@ class IATable extends Popupable {
 			analysis.nodes.sort((a, b) => a.children.length - b.children.length);
 
 			for (const node of analysis.nodes) {
-				const model = await Node.fromJSON(node);
+				const model = await NodeModel.fromJSON(node);
 				//await service.create(model,'node');
 				await StorageService.create(model,'node');
 			}
@@ -428,7 +419,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 	actions: [
 		{ text: "Create", color: "white", bgColor: "green",
 			action: function ({inputs: {table}, outputs: {name, root}}) {  // analysis name and root URN
-				table.create(name, root);
+				table.create(name, root);  // table = ia-table (this)
 			}
 		},
 		{ text: "Cancel", color: "black", bgColor: "white" }

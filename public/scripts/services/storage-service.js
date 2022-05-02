@@ -72,8 +72,6 @@ export default class StorageService extends Observable{
     static async all(schema = this._schema) {
         const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
         const models = [];
-        console.log(descriptions);
-        console.log("Unserializing objects with schema:" + schema);
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
             return newModel;
@@ -112,10 +110,8 @@ export default class StorageService extends Observable{
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
       //  createdModel.addEventListener('update', this._handleUpdate.bind(this));
-        console.log("The object being created on DB is type: "  + createdModel.constructor.name + " and being stored with schema:" + schema);
         const description = createdModel.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-        console.log("Yelling: ${schema}-storage-created");
         this.notify(`${schema}-storage-created`,createdModel);
     }
 
@@ -126,7 +122,6 @@ export default class StorageService extends Observable{
     static update(updatedModel, schema = this._schema) {
         //@TODO if sync - update all storages
         const description = updatedModel.toJSON();
-        console.log("The object being updated on DB is type: "  + updatedModel.constructor.name + " and being stored with schema:" + schema);
         this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
         this.notify(`${schema}-storage-updated`,updatedModel);
     }
