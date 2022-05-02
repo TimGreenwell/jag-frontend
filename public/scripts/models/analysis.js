@@ -40,6 +40,8 @@ export default class Analysis extends EventTarget {
 
 	static async fromJSON(json) {
 		const node_id = json.root;
+
+		//   ex  		const foundJAGModel = StorageService.get(targetURN, 'jag');
 		//const root = await NodeService.instance('idb-service').get(node_id);
 		const root = await StorageService.get(node_id, 'node');
 
@@ -57,8 +59,11 @@ export default class Analysis extends EventTarget {
 		}
 
 		json.team = team;
+		const newAnalysis = new Analysis(json);
+		console.log("()()()");
+		console.log(newAnalysis);
 
-		return new Analysis(json);
+		return newAnalysis;
 	}
 
 	get id() {
@@ -74,8 +79,7 @@ export default class Analysis extends EventTarget {
 	// StorageService.setSchema('analysis'); is a temp fix
 	set name(name) {
 		this._name = name;
-		StorageService.setSchema('analysis');
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name','extra': { 'name': this._name }}}));
+	//	this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name','extra': { 'name': this._name }}}));
 	}
 
 	get description() {
@@ -87,8 +91,7 @@ export default class Analysis extends EventTarget {
 	// StorageService.setSchema('analysis'); is a temp fix
 	set description(description) {
 		this._description = description;
-		StorageService.setSchema('analysis');
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description','extra': { 'description': this._description }}}));
+	//	this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description','extra': { 'description': this._description }}}));
 	}
 
 	get root() {
@@ -99,11 +102,14 @@ export default class Analysis extends EventTarget {
 		return this._team;
 	}
 
-	// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
+
 	// StorageService.setSchema('analysis'); is a temp fix
 	save() {
 		StorageService.setSchema('analysis');
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
+
+		// THIS BEING USED ANYWHERE?
+
+	//	this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
 	}
 
 	toJSON() {

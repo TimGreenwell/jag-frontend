@@ -5,6 +5,8 @@
  * @version 2.47
  */
 
+// These are the table JAG blocks - contains autocomplete,
+
 'use strict';
 
 //import JAGService from '../services/jag.js';
@@ -74,8 +76,8 @@ class JAGView extends AnalysisCell {
 		this._createDocument();
 
 		//JAGService.instance('idb-service').all()
-		const resultJsonList = await StorageService.all('jag');
-		const jags = resultJsonList.map(JAG.fromJSON);
+		const jags = await StorageService.all('jag');
+//xxx		const jags = resultJsonList.map(JAG.fromJSON);
 		jags.forEach(jag => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
 
 	}

@@ -12,11 +12,6 @@ import Analysis from '../models/analysis.js';
 import JAG from '../models/jag.js';
 import Node from '../models/node.js';
 import TeamModel from '../models/team.js';
-//import AgentService from '../services/agent.js';
-//import AnalysisService from '../services/analysis.js';
-//import JAGService from '../services/jag.js';
-//import NodeService from '../services/node.js';
-//import TeamService from '../services/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
@@ -39,6 +34,9 @@ class IATable extends Popupable {
 		this._initUI();
 
 		this._boundRefresh = this._refresh.bind(this);
+
+	//	StorageService.subscribe("jag-storage-updated", this.updateNode.bind(this));
+//		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 	}
 
 	get analysisSelector() {
@@ -64,15 +62,15 @@ class IATable extends Popupable {
 		}
 
 		if (analysis) {
-			const view = new AnalysisView(analysis);
-			view.initialize(this);
+			const analysisView = new AnalysisView(analysis);
+			analysisView.initialize(this);
 
 			this._analysis = analysis;
 			this._elements.name.removeAttribute('disabled');
 			this._elements.name.value = analysis.name;
 			this._elements.description.removeAttribute('disabled');
 			this._elements.description.value = analysis.description;
-			this._elements.analysis = view;
+			this._elements.analysis = analysisView;
 
 			this._analysis.team.addEventListener('update', this._boundRefresh);
 			this._agents = this._analysis.team.agents;
@@ -164,10 +162,13 @@ class IATable extends Popupable {
 
 	_handleAnalysisNameChange(event) {
 		this._analysis.name = event.target.value;
+		StorageService.update(this._analysis, 'analysis');
 	}
 
 	_handleAnalysisDescriptionChange(event) {
+		console.log("HANDLING NEW ANALYSIS NAME CHANGE........................................................................................");
 		this._analysis.description = event.target.value;
+		StorageService.update(this._analysis, 'analysis');
 	}
 
 	_handleExportAnalysis() {
@@ -257,19 +258,21 @@ class IATable extends Popupable {
 		return $option;
 	}
 
-	async create(name, root) {
+	async create(analysisName, rootUrn) {
 		//const jag = await JAGService.instance('idb-service').get(root);
 		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
-		// The below will work but better to use the 'preferred service'
 		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
-		const jag = await StorageService.get(root,'jag');
+		const jagModel = await StorageService.get(rootUrn,'jag');
 
-		const node = new Node({jag: jag});
+		const node = new Node({jag: jagModel});
+		console.log("-------------------------------------------------");
+		console.log(jagModel);
+		console.log(node);
 		//await NodeService.instance('idb-service').create(node);
 		//await StorageService.getStorageInstance('idb-service').create(node,'node');
 		await StorageService.create(node,'node');
 
-		const analysis = new Analysis({name: name, root: node});
+		const analysis = new Analysis({name: analysisName, root: node});
 		//await AnalysisService.instance('idb-service').create(analysis);
 		//await StorageService.instance('idb-service').create(analysis,'analysis');
 		await StorageService.create(analysis,'analysis');
@@ -408,8 +411,8 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 				const options = [];
 
 				//const jags = await JAGService.instance('idb-service').all();
-				const jsonList = await StorageService.all('jag');
-				const jags = jsonList.map(JAG.fromJSON);
+				const jags = await StorageService.all('jag');
+		//		const jags = jsonList.map(JAG.fromJSON);
 
 				for (const jag of jags) {
 					options.push({
@@ -424,7 +427,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 	],
 	actions: [
 		{ text: "Create", color: "white", bgColor: "green",
-			action: function ({inputs: {table}, outputs: {name, root}}) {
+			action: function ({inputs: {table}, outputs: {name, root}}) {  // analysis name and root URN
 				table.create(name, root);
 			}
 		},

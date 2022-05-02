@@ -20,10 +20,11 @@ class Playground extends Popupable {
 		this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		this._edges_container.setAttribute('version', '1.1');
 		this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
+		this._edges_container.id = "edges-container";
 		this.appendChild(this._edges_container);
 
 		this.$nodes_container = document.createElement('div');
+		this.$nodes_container.id = "nodes-container";
 		this.appendChild(this.$nodes_container);
 		this.setPopupBounds(this.$nodes_container);
 
@@ -54,10 +55,11 @@ class Playground extends Popupable {
 		this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
 		this._boundDragView = this.dragView.bind(this);
 		this._boundStopDragView = this.stopDragView.bind(this);
-		// StorageService.subscribe("storage-updated", this.updateItem.bind(this));
-		StorageService.subscribe("storage-created", this._addNode.bind(this));
+		StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
+		StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
 		this.initGlobalEvents();
 	}
+
 
 	_createCardinal(type, dx, dy) {
 		const cardinal = document.createElement("div");
@@ -159,11 +161,13 @@ class Playground extends Popupable {
 	}
 
 	initGlobalEvents() {
-		document.addEventListener('keydown', this.onKeyDown.bind(this));
+		// Turned this off temporarily.  Most keys have no function here.  They all work when
+		// a node inside is selected
+		// document.addEventListener('keydown', this.onKeyDown.bind(this));
 
 		this.addEventListener('mousedown', (e) => {
 			if (!e.shiftKey) this.deselectAll();
-			this.dispatchEvent(new CustomEvent('selection', { detail: this._selectedNodesSet }));
+			this.dispatchEvent(new CustomEvent('playground-nodes-selected', { detail: this._selectedNodesSet }));
 			this._edges_container.dispatchEvent(new MouseEvent('click', { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }));
 			this._initialMouse = { x: e.clientX, y: e.clientY };
 			this.addEventListener('mousemove', this._boundDragView);
@@ -193,77 +197,46 @@ class Playground extends Popupable {
 		return this._selectedNodesSet.values().next().value.model.urn;
 	}
 
-	addNode(jagModel, expanded) {
-		console.log("GETTING CALLED HERE");
-		console.log(jagModel);
-		console.log(expanded);
-		const node = new JAGNode(jagModel, expanded);
+	updateJagNode(updatedJagModel) {
+		// Going to be more complicated than originally thought.
+		// 1) update activeNodeSet - replace existing node with this one.
+		// 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
+		// 3.1) if change involes bindings or children, resync $nodeContainer with activeNodeSet?  <--- xxxx  no
+		// 3.2) bindings can be handled with two normal property updates.  This leaves children..
+		//   3.2.1) new child - one create then one update (new edge on update)
+		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
+		console.log("updatedJagModel -->");
+		console.log(updatedJagModel);
+		console.log(this._activeNodesSet);
+		this._activeNodesSet.forEach((node) => {
+			//	for (const node of this._activeNodesSet) {
+			console.log("-1> " + node.model.urn);
+			console.log("-2> " + updatedJagModel.urn);
 
-		node.addEventListener('mousedown', (e) => {
-			// If meta isn't pressed clear previous selection
-			if(!e.shiftKey) {
-				this._selectedNodesSet.forEach(local_node => {
-					if(local_node != node)
-						local_node.setSelected(false);
-				});
-				this._selectedNodesSet.clear();
+			if (node.model.urn == updatedJagModel.urn) {
+				const oldNode = node.model;
+				console.log("(.)");
+				console.log(node instanceof JAGNode);
+				node.model = updatedJagModel;
 			}
-
-			this._selectedNodesSet.add(node);
-
-			if (e.ctrlKey) {
-				const all_selected = node.setSelected(true, new Set());
-				for (const sub_node of all_selected)
-					this._selectedNodesSet.add(sub_node);
-			} else {
-				node.setSelected(true);
-			}
-
-			this.dispatchEvent(new CustomEvent('selection', { detail: this._selectedNodesSet }));
-			e.stopPropagation();
-		});
-
-		node.addEventListener('keydown', this.onKeyDown.bind(this));
-
-		node.addEventListener('drag', () => {
-			this._checkBounds();
-		});
-
-		node.addEventListener('toggle-visible', (e) => {
-			if (e.detail) {
-				this._checkBounds(node.getTree());
-			} else {
-				this._checkBounds();
-			}
-		});
-
-
-//////////////??
-		node.addEventListener('refresh', (e) => {
-			this.dispatchEvent(new CustomEvent('refresh', { detail: e.detail }));
-		});
-
-		this._activeNodesSet.add(node);
-		this.$nodes_container.appendChild(node);
-
-		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-		return node;
+		})
 	}
+
+
 
 	deselectAll() {
 		this._selectedNodesSet.forEach(n => n.setSelected(false));
 		this._selectedNodesSet.clear();
 	}
 
-	deleteSelected() {
-		for (let e of this._selectedNodesSet) {
+	clearNodeSet(jagNodeSet) {
+		for (let e of jagNodeSet) {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
 				const child = e.getNodeEnd();
 
-				if (!this._selectedNodesSet.has(child)) {
-					if (!this._selectedNodesSet.has(parent)) {
+				if (!jagNodeSet.has(child)) {
+					if (!jagNodeSet.has(parent)) {
 						const child = e.getNodeEnd();
 
 						this.popup({
@@ -279,11 +252,11 @@ class Playground extends Popupable {
 			}
 		}
 
-		for (let n of this._selectedNodesSet) {
+		for (let n of jagNodeSet) {
 			if (n instanceof JAGNode) {
 				const parent = n.getParent();
 
-				if (!parent || (parent && this._selectedNodesSet.has(parent))) {
+				if (!parent || (parent && jagNodeSet.has(parent))) {
 					n.removeAllEdges();
 					n.detachHandlers();
 					this._activeNodesSet.delete(n);
@@ -301,23 +274,17 @@ class Playground extends Popupable {
 			}
 		}
 
-		this._selectedNodesSet.clear();
+		jagNodeSet.clear();
 
 		this._checkBounds();
 	}
 
 	clearPlayground() {
-		for (let node of this._activeNodesSet) {
-			console.log("clearing nodes");
-			console.log("---------------");
-			console.log(node)
-			node.removeAllEdges();
-			this.$nodes_container.removeChild(node);
-		}
-
-		this._activeNodesSet.clear();
-
-		this._checkBounds();
+		console.log(",,,,,");
+		console.log(this._activeNodesSet);
+		console.log(".....");
+		console.log(this.$nodes_container);
+		this.clearNodeSet(this._activeNodesSet);
 	}
 
 	fromClientToPlaygroundCoordinates(x, y) {
@@ -325,8 +292,6 @@ class Playground extends Popupable {
 		const py = y - this.offsetTop;
 		return [px, py];
 	}
-
-
 
 	handleRefresh({ model, model_set, refreshed = new Set() }) {
 		const margin = 50;
@@ -338,7 +303,7 @@ class Playground extends Popupable {
 				if (root == node) {
 					const [x, y] = node.getPosition();
 
-					this._addNodeRecursive(model, model_set, true, margin, x, y, node);
+					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
 
 					const tree = node.getTree();
 
@@ -364,7 +329,7 @@ class Playground extends Popupable {
 			if (e.ctrlKey) {
 				this.clearPlayground();
 			} else {
-				this.deleteSelected();
+				this.clearNodeSet(this._selectedNodesSet);
 			}
 		} else if (e.key == 'ArrowLeft') {
 			if (this._canMoveView.left) {
@@ -417,7 +382,16 @@ class Playground extends Popupable {
 		if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
 			this._is_edge_being_created = false;
 			this._created_edge.setNodeEnd(node);
-			this._created_edge.addEventListener('selection', this._boundHandleEdgeSelected);
+			this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+
+			// JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
+			// @TODO consider bringing it up here (separation of functionality)
+			 const parentJag = this._created_edge._node_origin.model;
+			 const childJag = this._created_edge._node_end.model;
+  			// parentJag.addChild(childJag);
+
+			StorageService.update(parentJag, 'jag');
+
 		} else {
 			this.cancelEdge();
 		}
@@ -451,9 +425,63 @@ class Playground extends Popupable {
 		e.preventDefault();
 	}
 
-	_addNodeRecursive(currentParentJag, descendantJagMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+	createJagNode(jagModel, expanded) {
+		const node = new JAGNode(jagModel, expanded);
+
+		node.addEventListener('mousedown', (e) => {
+			// If meta isn't pressed clear previous selection
+			if(!e.shiftKey) {
+				this._selectedNodesSet.forEach(local_node => {
+					if(local_node != node)
+						local_node.setSelected(false);
+				});
+				this._selectedNodesSet.clear();
+			}
+
+			this._selectedNodesSet.add(node);
+
+			if (e.ctrlKey) {
+				const all_selected = node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
+				for (const sub_node of all_selected)
+					this._selectedNodesSet.add(sub_node);
+			} else {
+				node.setSelected(true);
+			}
+
+			this.dispatchEvent(new CustomEvent('playground-nodes-selected', { detail: this._selectedNodesSet }));
+			e.stopPropagation();
+		});
+
+		node.addEventListener('keydown', this.onKeyDown.bind(this));
+
+		node.addEventListener('drag', () => {
+			this._checkBounds();
+		});
+
+		node.addEventListener('toggle-visible', (e) => {
+			if (e.detail) {
+				this._checkBounds(node.getTree());
+			} else {
+				this._checkBounds();
+			}
+		});
+
+		////?? @TODO think about this.
+		node.addEventListener('refresh', (e) => {
+			this.dispatchEvent(new CustomEvent('refresh', { detail: e.detail }));
+		});
+		// Are these two below not the same info.  activeNodeSet needed?
+		this._activeNodesSet.add(node);
+		this.$nodes_container.appendChild(node);
+		node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
+		node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
+		return node;
+	}
+
+	_traverseJagNodeTree(currentParentJag, descendantJagMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
 		// if no child...  addNode
-		const node = childURN || this.addNode(currentParentJag, isExpanded);
+		// else proceed with the current child
+		const node = childURN || this.createJagNode(currentParentJag, isExpanded);
 
 		if (context) {
 			if (context.name) node.setContextualName(context.name);
@@ -475,7 +503,7 @@ class Playground extends Popupable {
 		let y_offset = y - preferred_height / 2;
 
 		const childrenMap = new Map();
-		for (const child_edge of node.getChildEdges()) {
+		for (const child_edge of node.getChildEdges()) {     //@TODO  what is this? -> getChildEdges.  Are edges stored or just node.chldren
 			childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
 		}
 
@@ -484,13 +512,13 @@ class Playground extends Popupable {
 			const local_preferred_size = this._getNodePreferredHeight(def, descendantJagMap);
 			y_offset += (local_preferred_size * node_height) / 2;
 
-			const sub_node = this._addNodeRecursive(def, descendantJagMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+			const sub_node = this._traverseJagNodeTree(def, descendantJagMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
 			y_offset += (local_preferred_size * node_height) / 2;
 
 			if (!childrenMap.has(child.id)) {
 				let edge = this._createEdge(node, child.id);
 				edge.setNodeEnd(sub_node);
-				edge.addEventListener('selection', this._boundHandleEdgeSelected);
+				edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
 			}
 
 			if (child.name) sub_node.setContextualName(child.name);
@@ -517,25 +545,19 @@ class Playground extends Popupable {
 				}
 			}
 		}
-
 		return node;
 	}
 
 
-
-	_addNode(selectedJag, selectedJagDescendants = [], isExpanded = false) {
+	_addJagNodeTree(selectedJag, selectedJagDescendants = [], isExpanded = false) {
 		const margin = 50;
-		const ch = this.clientHeight;
-		const node = this._addNodeRecursive(selectedJag, selectedJagDescendants, isExpanded, margin, 10, ch/2);
+		const height = this.clientHeight;
+		const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height/2);
 		this._checkBounds(node.getTree());
 	}
 
 	handleLibraryListItemSelected({model: selectedJag, model_set: selectedJagDescendants = [], expanded: isExpanded = false}) {
-		console.log("+++++++++++++++");
-		console.log(selectedJag);
-		console.log(selectedJagDescendants);
-		console.log(isExpanded);
-		this._addNode(selectedJag, selectedJagDescendants, isExpanded);
+		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
 
 	_getNodePreferredHeight(item, model_set) {
@@ -591,18 +613,6 @@ class Playground extends Popupable {
 		}
 	}
 
-	handleMenuAction(detail) {
-		if (detail.action == "clear") {
-			this.clearPlayground();
-		}
-	}
-
-// this.popup({
-//     content: Playground.NOTICE_REMOVE_CHILD,
-//     trackEl: child,
-//     inputs: {node: child},
-//     highlights: [child]
-// });
 	_handleNewNodePopup(e) {
 		const initiator = document.getElementById('menu-new');
 		this.popup({
@@ -622,7 +632,7 @@ class Playground extends Popupable {
 //	  <div></div>
 //	  <div class="popup-box" style="visablity
 
-
+Playground.defaultUrn = "us:ihmc:";
 
 
 Playground.POPUP_TYPES = {
@@ -637,30 +647,47 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
 	name: "Add New Node",
 	description: "Be precise.  You can always edit this later.",
 	properties: [
-		{name: 'name', label: 'Name', type: 'text'},  // value & options
-		{name: 'urn', label: 'URN', type: 'text'},
-		{name: 'description', label: 'Description', type: 'textarea',
+		{
+			name: 'popname', label: 'Name', type: 'text', options: function () {
+				let eventMap = new Map();
+				eventMap.set('input', () => {
+					const newName = Playground.defaultUrn + document.getElementById('popname').value;
+					const convName = newName.replace(' ','-').replace(/[^0-9a-zA-Z:-]+/g,"").toLowerCase();
+					document.getElementById('popurn').value = convName;
+				});
+				return eventMap;
+			}
+		},
+		{
+			name: 'popurn', label: 'URN', type: 'text', options: function () {
+				let eventMap = new Map();
+				eventMap.set('blur', () => {
+					const newUrn = document.getElementById('popurn').value;
+					Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
+				});
+				return eventMap;
+			}
+		},
+		{
+			name: 'popdescription', label: 'Description', type: 'textarea',
 			options: async function () {
-			  let paramMap = new Map();
-			  paramMap.set('cols',24);
-			  paramMap.set('rows', 4);
-			  return paramMap;
-			}},
+				let paramMap = new Map();
+				paramMap.set('cols', 24);
+				paramMap.set('rows', 4);
+				return paramMap;
+			}
+		},
 	],
 	actions: [
 		{
 			text: "Create", color: "black", bgColor: "red",
-			action: async function ({inputs: {}, outputs: {name, urn, description}}) {
-
-				console.log("((((())))))))");
-				console.log(name);
-				console.log(urn);
-				console.log(description);
-				console.log("((((())))))))");
-				const newJAG = new JAG({ urn: urn, name: name, description: description });
-				console.log("New JAG created:");
-				console.log(newJAG);
-				await StorageService.create(newJAG, 'jag');
+			action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
+				const newJAG = new JAG({ urn: popurn, name: popname, description: popdescription });
+				if (newJAG.isValid()){
+	    			await StorageService.create(newJAG, 'jag');}
+				else {
+					window.alert("Invalid URN");
+				}
 			}
 		},
 		{text: "Cancel", color: "white", bgColor: "black"}

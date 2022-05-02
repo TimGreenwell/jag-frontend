@@ -21,6 +21,9 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 		this._initUI();
 		this._initListeners();
+		//StorageService.subscribe("jag-storage-updated", this.updateListItem.bind(this));  not needed until URN renames allowed
+		StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
+		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 
 		this.clearItems();
 		this.loadFromDB();
@@ -34,9 +37,49 @@ customElements.define('analysis-library', class extends HTMLElement {
 		this._defined.clear();
 	}
 
-	addItem(model, idx = -1) {
-		console.log("Here:");
-		console.log(model);
+	// updateItem(updatedJAGModel) {
+	// 	for (let idx in this._libraryList) {
+	// 		if (this._libraryList[idx].model.urn == updatedJAGModel.urn) {
+	// 			console.log("nice!!");
+	// 			this._libraryList[idx].model = updatedJAGModel;
+	// 			this._libraryList[idx].element.id=updatedJAGModel.urn;
+	// 			this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedJAGModel.name;
+	// 			this._libraryList[idx].element.querySelectorAll("p").item(0).innerHTML = updatedJAGModel.description;
+	// 			let search_params =[];
+	// 			search_params.push(updatedJAGModel.urn.toLowerCase());
+	// 			search_params.push(updatedJAGModel.name.toLowerCase());
+	// 			search_params.push(updatedJAGModel.description.toLowerCase());
+	// 			this._libraryList[idx].search_content = search_params.join(" ");
+	// 			this.refreshItem(updatedJAGModel);
+	// 		}
+	// 	}
+	// }
+
+	updateListItem(updatedAnalysisModel, idx = -1) {
+		console.log("!!!!!!!!!!!!!!!!   going to update the Analyst Model !!!!!!!!!!!!!!!!!!!");
+		console.log(this._items);
+		for (let idx in this._items) {
+			console.log(this._items[idx].model.id);
+			console.log(updatedAnalysisModel.id);
+			if (this._items[idx].model.id == updatedAnalysisModel.id) {
+
+				const rootUrn = this._items[idx].element.querySelectorAll("pre").item(0).innerText;
+				const name = updatedAnalysisModel.name;
+				const description = updatedAnalysisModel.description;
+
+				this._items[idx].element.querySelectorAll("h3").item(0).innerText = name;
+				this._items[idx].element.querySelectorAll("p").item(0).innerText = description;
+
+				const search_params =[];
+				search_params.push(name.toLowerCase());
+				search_params.push(rootUrn.toLowerCase());
+				search_params.push(description.toLowerCase());
+				this._items[idx].search_content = search_params.join(" ");
+			}
+		}
+	}
+
+	addListItem(model, idx = -1) {
 		const id = model.urn || '';
 		const root = model.root.urn;
 		const name = model.name;
@@ -45,19 +88,24 @@ customElements.define('analysis-library', class extends HTMLElement {
 		const li = document.createElement('li');
 		li.id = id;
 		const h3 = document.createElement('h3');
-		h3.innerHTML = name;
+		h3.innerHTML = name;  // analysis name
 		const pre = document.createElement('pre');
-		pre.innerHTML = root;
+		pre.innerHTML = root; // root url
 		const p = document.createElement('p');
-		p.innerHTML = description;
+		p.innerHTML = description;  // analysis description
 
 		li.appendChild(h3);
 		li.appendChild(pre);
 		li.appendChild(p);
 
+		const search_params = [];
+		search_params.push(name.toLowerCase());
+		search_params.push(root.toLowerCase());
+		search_params.push(description.toLowerCase());
+
 		this._items.push({
 			element: li,
-			search_content: `${id.toLowerCase()} ${name.toLowerCase()} ${root.toLowerCase()} ${description.toLowerCase()}`,
+			search_content: search_params.join(" "),
 			model: model
 		});
 
@@ -87,12 +135,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		//const idb_service = AnalysisService.instance('idb-service');
-		const analysesJsonList = await StorageService.all('analysis');
-		const analyses = analysesJsonList.map(Analysis.fromJSON);
-		console.log(analysesJsonList);
-		console.log(analyses);
-		analyses.forEach(analysis => this.addItem(analysis));
+		const analyses = await StorageService.all('analysis');
+		analyses.forEach(analysis => this.addListItem(analysis));
 	}
 
 	_initUI() {
@@ -140,7 +184,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	async _createItem(e) {
-		this.addItem(e.detail.model);
+		this.addListItem(e.detail.model);
 	}
 
 });

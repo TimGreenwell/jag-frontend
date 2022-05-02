@@ -16,10 +16,10 @@ import JAGView from './jag.js';
 
 class AnalysisView extends HTMLElement {
 
-	constructor(model, table) {
+	constructor(analysisModel, table) {
 		super();
 
-		this._model = model;
+		this._model = analysisModel;
 		this._views = new Map();
 		this._column_headers = new Map();
 		this._leaf_set = new Array();
@@ -35,6 +35,8 @@ class AnalysisView extends HTMLElement {
 		// Registers root view
 		this._root = this._model.root;
 
+		console.log("herehere................................................");
+		console.log(this._root);
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
 		this._initializeTree(this._root);
@@ -114,8 +116,11 @@ class AnalysisView extends HTMLElement {
 	}
 
 	layout() {
+		// level_count changes width of level 1's box
+
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
+
 		this._root.update();
 		// Resets the leaf set.
 		this._leaf_set.length = 0;
@@ -127,10 +132,11 @@ class AnalysisView extends HTMLElement {
 		height = this._root.height;
 		rows = this._root.breadth;
 
-		const level_count = height + 1;
+		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
-		this._layoutAssessments(level_count, AnalysisView.HEADER_DEPTH);
 
+
+		this._layoutAssessments(level_count, AnalysisView.HEADER_DEPTH);
 		this.style.setProperty('--jag-columns', level_count);
 		this.style.setProperty('--team-columns', agent_count);
 		this.style.setProperty('--rows', rows);
@@ -161,12 +167,15 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_initializeTree(node) {
+
 		this.attach({
 			target: node,
 			layout: false
 		});
 
-		node.children.forEach(child_node => this._initializeTree(child_node));
+		node.children.forEach((child_node) => {
+			this._initializeTree(child_node);
+		});
 	}
 
 	_isNodeInTheLeafSet(node_id) {

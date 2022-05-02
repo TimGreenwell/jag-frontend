@@ -18,7 +18,7 @@ import JAGATValidation from '../utils/validation.js';
  */
 export default class JAG extends EventTarget {
 
-	constructor({ urn, name, connector = { execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE }, description = '', inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
+	constructor({ urn, name, description = '', connector = { execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE }, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined }) {
 		super();
 
 		// All string properties can be copied.
@@ -79,6 +79,9 @@ export default class JAG extends EventTarget {
 	}
 
 	static fromJSON(json) {
+		console.log("in fromJSON of models/jag.js --> using this json:");
+		console.log(json);
+
 		try {
 			JAGATValidation.validateJAG(json);
 		} catch (e) {
@@ -97,7 +100,7 @@ export default class JAG extends EventTarget {
 	set name(name) {
 		if (this._name != name) {
 			this._name = name;
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "name", "extra": { "name": this._name } } }));
+		//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "name", "extra": { "name": this._name } } }));
 		}
 	}
 
@@ -108,7 +111,7 @@ export default class JAG extends EventTarget {
 	set execution(type) {
 		if (this._execution != type) {
 			this._execution = type;
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "execution", "extra": { "execution": this._execution, "children": this._children } } }));
+		//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "execution", "extra": { "execution": this._execution, "children": this._children } } }));
 		}
 	}
 
@@ -119,7 +122,7 @@ export default class JAG extends EventTarget {
 	set operator(type) {
 		if (this._operator != type) {
 			this._operator = type;
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "operator", "extra": { "operator": this._operator } } }));
+		//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "operator", "extra": { "operator": this._operator } } }));
 		}
 	}
 
@@ -130,7 +133,7 @@ export default class JAG extends EventTarget {
 	set description(description) {
 		if (this._description != description) {
 			this._description = description;
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description", "extra": { "description": this._description } } }));
+		//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "description", "extra": { "description": this._description } } }));
 		}
 	}
 
@@ -154,6 +157,17 @@ export default class JAG extends EventTarget {
 		return [...this._bindings];
 	}
 
+	isValid() {
+		let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
+		console.log("testing...");
+		console.log(this._urn);
+		if (this._urn.match(regex)) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
 	/**
 	 * Adds the given input to the inputs of this JAG.
 	 * Dispatches an update.
@@ -162,7 +176,7 @@ export default class JAG extends EventTarget {
 	 */
 	addInput(input) {
 		this._inputs.push(input);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "inputs", "extra": { "inputs": this._inputs } } }));
+	//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "inputs", "extra": { "inputs": this._inputs } } }));
 	}
 
 	/**
@@ -173,7 +187,7 @@ export default class JAG extends EventTarget {
 	 */
 	addOutput(output) {
 		this._outputs.push(output);
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "outputs", "extra": { "outputs": this._outputs } } }));
+	//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "outputs", "extra": { "outputs": this._outputs } } }));
 	}
 
 	/**
@@ -195,7 +209,7 @@ export default class JAG extends EventTarget {
 				model: child
 			});
 
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
+		//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
 		}
 
 		return id;
@@ -219,7 +233,7 @@ export default class JAG extends EventTarget {
 			if (binding.provider.id == child.id || binding.consumer.id == child.id)
 				this.removeBinding(binding);
 
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
+	//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
 	}
 
 	/**
@@ -233,7 +247,7 @@ export default class JAG extends EventTarget {
 			if (child.id == id) {
 				if (child.name != name) {
 					child.name = name;
-					this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
+		//			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
 				}
 
 				break;
@@ -252,7 +266,7 @@ export default class JAG extends EventTarget {
 			if (child.id == id) {
 				if (child.description != description) {
 					child.description = description;
-					this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
+		//			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
 				}
 
 				break;
@@ -379,7 +393,7 @@ export default class JAG extends EventTarget {
 
 		this._bindings.add(binding);
 
-		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings", "extra": { "bindings": this._bindings } } }));
+	//	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings", "extra": { "bindings": this._bindings } } }));
 	}
 
 	/**
@@ -417,7 +431,7 @@ export default class JAG extends EventTarget {
 	 */
 	removeBinding(binding) {
 		if (this._bindings.delete(binding)) {
-			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings", "extra": { "bindings": this._bindings } } }));
+	//		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "bindings", "extra": { "bindings": this._bindings } } }));
 		}
 	}
 
@@ -436,7 +450,7 @@ export default class JAG extends EventTarget {
 			if (!child.annotations || !child.annotations.has(name) || child.annotations.get(name) != value) {
 				if (!child.annotations) child.annotations = new Map();
 				child.annotations.set(name, value);
-				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } }}));
+		//		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } }}));
 			}
 		}
 	}
@@ -456,7 +470,7 @@ export default class JAG extends EventTarget {
 
 			if (child.annotations.has(name)) {
 				child.annotations.delete(name);
-				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } }}));
+		//		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } }}));
 			}
 		}
 	}
@@ -472,7 +486,7 @@ export default class JAG extends EventTarget {
 			if (child.id == id) {
 				if (child.iterable == value) return;
 				child.iterable = value;
-				this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } } }));
+		//		this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "annotations", "extra": { "id": id, "annotations": child.annotations, "iterable": child.iterable } } }));
 				return;
 			}
 		}

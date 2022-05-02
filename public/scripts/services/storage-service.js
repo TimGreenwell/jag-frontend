@@ -27,7 +27,6 @@ export default class StorageService extends Observable{
     static getStorageInstance(id) {
         if(!this.__SERVICES.has(id))
             throw new Error(`No service instance '${id}'.`);
-        console.log(this.__SERVICES.get(id));
         return this.__SERVICES.get(id);
     }
 
@@ -68,12 +67,20 @@ export default class StorageService extends Observable{
     /**
      * Retrieves all existing jags.
      * @TODO: Should accept filtering options.
+     * @TODO : Please convert to descriptions.map...
      */
     static async all(schema = this._schema) {
         const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
-        //return descriptions.map(this._createModel.bind(this));
-        console.log("WARNING:  //return descriptions.map(this._createModel.bind(this));")
-        return descriptions;
+        const models = [];
+        console.log(descriptions);
+        console.log("Unserializing objects with schema:" + schema);
+        const promisedModels = descriptions.map(async description => {
+            const newModel = await SchemaManager.deserialize(schema,description);
+            return newModel;
+        })
+        const newModels = await Promise.all(promisedModels);
+
+        return newModels;
     }
 
     /**
@@ -81,21 +88,8 @@ export default class StorageService extends Observable{
      */
     static async get(id, schema = this._schema) {
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
-        console.log("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-        console.log(id);
-        console.log(schema);
-        console.log(typeof description);
-        console.log(description);
-        //const model = Node.fromJSON(description);
-        const model = SchemaManager.uncerealize(schema,description);
-        console.log(typeof model);
-        console.log(model);
-        console.log("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
+        const model = SchemaManager.deserialize(schema,description);
         return model;
-
-
-
-
 
         if(description === undefined) return null;
         //return this._createModel(description);
@@ -113,29 +107,28 @@ export default class StorageService extends Observable{
     /**
      * Creates a new jag with the specified model. This uses the urn property supplied in the model.
      */
-    static async create(createdJAG, schema = this._schema) {
+    static async create(createdModel, schema = this._schema) {
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
-      //  createdJAG.addEventListener('update', this._handleUpdate.bind(this));
-        const description = createdJAG.toJSON();
-        console.log("in StorageService.create.  Now calling the create of the preferred service");
-        console.log("double checking");
-        console.log(SchemaManager.getKeyValue(schema,description));
+      //  createdModel.addEventListener('update', this._handleUpdate.bind(this));
+        console.log("The object being created on DB is type: "  + createdModel.constructor.name + " and being stored with schema:" + schema);
+        const description = createdModel.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-        console.log("back in StorageService.create.  Notifying all subscribers");
-        this.notify("storage-created",createdJAG);
+        console.log("Yelling: ${schema}-storage-created");
+        this.notify(`${schema}-storage-created`,createdModel);
     }
 
     /**
      * Updates an existing model with the specified content.
      * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
      */
-    static update(updatedJAG, schema = this._schema) {
+    static update(updatedModel, schema = this._schema) {
         //@TODO if sync - update all storages
-        const description = updatedJAG.toJSON();
+        const description = updatedModel.toJSON();
+        console.log("The object being updated on DB is type: "  + updatedModel.constructor.name + " and being stored with schema:" + schema);
         this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
-        this.notify("storage-updated",updatedJAG);
+        this.notify(`${schema}-storage-updated`,updatedModel);
     }
 
     /**
@@ -144,7 +137,7 @@ export default class StorageService extends Observable{
     static delete(id, schema = this._schema) {
         //SchemaManager.getKey(schema)
         this.__SERVICES.get(this._preferredStorage).delete(id,schema);
-        this.notify("storage-removed",id);
+        this.notify(`${schema}-storage-removed`,id);
     }
 
     /**

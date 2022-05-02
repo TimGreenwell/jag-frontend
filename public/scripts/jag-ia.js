@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	});
 
 	table.addEventListener('create-analysis', (e) => {
-		library.addItem(e.detail.analysis, 0);
+	//	library.addItem(e.detail.analysis, 0);
 		editor.team = e.detail.analysis.team;
 	});
 });

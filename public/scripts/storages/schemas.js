@@ -18,7 +18,7 @@ export default class Schemas {
 	{
 		const JAG_STORE = {
 			name: 'joint-activity-graph',
-			unserialize: JAG.fromJSON,
+			deserialize: JAG.fromJSON,
 			indexes: [
 				{
 					name: 'urn-index',
@@ -32,7 +32,7 @@ export default class Schemas {
 
 		const NODE_STORE = {
 			name: 'node',
-			unserialize: Node.fromJSON,
+			deserialize: Node.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -46,7 +46,7 @@ export default class Schemas {
 
 		const ANALYSIS_STORE = {
 			name: 'analysis',
-			unserialize: Analysis.fromJSON,
+			deserialize: Analysis.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -60,7 +60,7 @@ export default class Schemas {
 
 		const AGENT_STORE = {
 			name: 'agent',
-			unserialize: Agent.fromJSON,
+			deserialize: Agent.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -74,7 +74,7 @@ export default class Schemas {
 
 		const TEAM_STORE = {
 			name: 'team',
-			unserialize: Team.fromJSON,
+			deserialize: Team.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -108,16 +108,13 @@ export default class Schemas {
     }
 
 	static getKeyValue(schema,obj) {
-		console.log("-> " );
-		console.log(obj);
 		let key = Schemas.get(schema).indexes[0].property;
 		return(obj[key]);
 	}
 
-	static uncerealize(schema,before) {
-		console.log("trying.....");
-		console.log(schema);
-		return Schemas.get(schema).unserialize(before);
+	static async deserialize(schema,descript) {;
+		const newObj = await Schemas.get(schema).deserialize(descript)
+		return newObj;
 	}
 }
 

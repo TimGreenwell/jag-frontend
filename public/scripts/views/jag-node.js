@@ -7,8 +7,9 @@
  */
 
 
-const SNAP_SIZE = 5.0;
+//  This is the playground Jag Node -
 
+const SNAP_SIZE = 5.0;
 import JAG from '../models/jag.js';
 import UndefinedJAG from '../models/undefined.js';   //  @todo remove if possible
 
@@ -16,8 +17,6 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(model, expanded) {
 		super();
-		console.log("ADDING NEW NODE ____");
-		console.log(model);
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
@@ -42,7 +41,6 @@ customElements.define('jag-node', class extends HTMLElement {
 	set model(model) {
 		if (this._model) {
 			if (this._model instanceof UndefinedJAG) {
-				console.log("Found undefined JAG (1)");
 				this._model.removeEventListener('define', this._boundDefineModel);
 			} else {
 				this._model.removeEventListener('update', this._boundUpdateHandler);
@@ -52,14 +50,15 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._model = model;
 
 		if (this._model instanceof UndefinedJAG) {
-			console.log("Found undefined JAG (2)");
 			this._model.addEventListener('define', this._boundDefineModel);
 		} else {
 			this._model.addEventListener('update', this._boundUpdateHandler);
 		}
-
+        console.log("applyName");
 		this._applyName();
+		console.log("applyOperator");
 		this._applyOperator();
+		console.log("applyExecution");
 		this._applyExecution();
 	}
 
@@ -175,7 +174,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		// Else refresh this node's expanded tree.
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
-		
+
+		// @TODO models should not be talking to models...
 		return this._model.addChild(edge.getNodeEnd().model, id);
 	}
 
@@ -185,6 +185,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	removeChild(edge, id) {
 		if (edge.getNodeEnd()) {
+			// @TODO models should not be talking to models... separate functionality
 			this._model.removeChild({ id: id, model: edge.getNodeEnd().model });
 			this._outs.delete(edge);
 			edge.destroy();
@@ -271,27 +272,29 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._model.setChildDescription(id, description);
 	}
 
-	setSelected(is_selected, recursive = undefined) {
-		if(is_selected != this._is_selected)
+
+	// @TODO Break this up into 2 functions: getNodeDescendantSet(node)  &  selectNodes(Set)
+	setSelected(is_selected, nodeDescendantSet = undefined) {
+		if (is_selected != this._is_selected) {
 			this._animationRefresh();
+		}
 
 		this._is_selected = is_selected;
 
 		if (is_selected) {
 			this.classList.add('selected-node');
 
-			if (recursive) {
+			if (nodeDescendantSet) {
 				for (const out_edge of this._outs) {
 					const sub_node = out_edge.getNodeEnd();
-					recursive.add(sub_node);
-					recursive = sub_node.setSelected(true, recursive);
+					nodeDescendantSet.add(sub_node);
+					nodeDescendantSet = sub_node.setSelected(true, nodeDescendantSet);
 				}
 			}
 		} else {
 			this.classList.remove('selected-node');
 		}
-
-		return recursive;
+		return nodeDescendantSet;
 	}
 
 	getParentEdge() {
@@ -371,9 +374,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._snap();
 		this.dispatchEvent(new CustomEvent('drag'));
 		this.removeEventListener('mousemove', this._boundNodeDrag);
-		console.log(this.getURN());
-		console.log("My prent is: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		console.log(this.parentNode);
 		this.parentNode.removeEventListener('mousemove', this._boundDrag);
 	}
 

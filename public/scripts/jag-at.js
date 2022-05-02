@@ -77,10 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
 	// @TODO
 	$menu.addEventListener('add-new-node', (e) => {
-		// properties.createNewNode(e.detail);
 		$playground._handleNewNodePopup(e);
-		//$playground.handleItemSelected(e.detail);  //calls playground._addNode
-		//properties.handleUndefinedURN();
 	});
     //////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' (defined-node-added)
@@ -99,9 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 		$library.handleResourceUpdate(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
-	// Event: 'selection' (playground-node-selected)
-	$playground.addEventListener('selection', (e) => {
-		console.log(e);
+	// Event: 'playground-nodes-selected' (playground-node-selected)
+	$playground.addEventListener('playground-nodes-selected', (e) => {
 		$properties.handleSelectionUpdate(e.detail);
 		//ide.handleSelectionUpdate(e.detail);
 	});

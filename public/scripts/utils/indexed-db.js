@@ -109,11 +109,12 @@ export default class IndexedDBUtils {
 			const request = object_store.getKey(key);
 
 			request.addEventListener('success', event => {
+				console.log('IndexedDB Utils (getKey ' + key + ') successfully retrieved data');
 				resolve(event.target.result);
 			});
 
 			request.addEventListener('error', event => {
-				reject(new Error(`Error while retreiving key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
+				reject(new Error(`Error while retrieving key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
 			});
 		});
 	}
@@ -125,11 +126,12 @@ export default class IndexedDBUtils {
 			const request = object_store.getAll(query, count);
 
 			request.addEventListener('success', event => {
+				console.log('IndexedDB Utils (all) successfully retrieved data');
 				resolve(event.target.result);
 			});
 
 			request.addEventListener('error', event => {
-				reject(new Error(`Error while retreiving objects for store ${store} : ${event.target.error}`));
+				reject(new Error(`Error while retrieving objects for store ${store} : ${event.target.error}`));
 			});
 		});
 	}

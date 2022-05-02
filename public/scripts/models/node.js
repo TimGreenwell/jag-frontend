@@ -10,8 +10,6 @@
 import { UUIDv4 }  from '../utils/uuid.js';
 
 import JAG from './jag.js';
-//import JAGService from '../services/jag.js';
-//import NodeService from '../services/node.js';
 import StorageService from '../services/storage-service.js';
 import JAGATValidation from '../utils/validation.js';
 
@@ -42,15 +40,15 @@ export default class Node extends EventTarget {
 		const node = new Node(json);
 
 		// @TODO: Can we lazy load these ?
-		const children = json.children.map(child_node_id => {
-			//return NodeService.instance('idb-service').get(child_node_id);
-			return StorageService.get(child_node_id,'jag');
+		const promisedChildren = json.children.map(async child_node_id => {
+			const child = await StorageService.get(child_node_id,'jag');
+			return child;
 		});
 
-		(await Promise.all(children)).forEach(child => {
+		const children = await Promise.all(promisedChildren);
+		children.forEach(child => {
 			if(child === undefined)
 				child = new Node();
-
 			node.addChild(child);
 		});
 
@@ -206,6 +204,7 @@ export default class Node extends EventTarget {
 	/**
 	 * Synchronizes the display values with the underlying jag model.
 	 * Actions could be, load a new jag model, create a new jag model or change the name of the current jag.
+	 * tlg - @TODO think this obs - no more 'undefined JAGs'
 	 */
 	async syncJAG(view, replace = true) {
 		const urn = view.urn;

@@ -155,6 +155,7 @@ export default class Popupable extends HTMLElement {
 
                         const $input = document.createElement(input_el);
                         $input.setAttribute('name', name);
+                        $input.setAttribute('id', name);
 
                         if (input_el === 'input')
                             $input.setAttribute('type', type);
@@ -172,6 +173,13 @@ export default class Popupable extends HTMLElement {
                                 }
                             }
 
+                            if (type === 'text') {
+                                for (let [key, value] of roptions.entries()) {
+                                    $input.addEventListener(key, value);
+                                }
+                            }
+
+
                             if (type === 'select') {
                                 for (const {text, value} of roptions) {
                                     const $option = document.createElement('option');
@@ -183,7 +191,9 @@ export default class Popupable extends HTMLElement {
                             }
                         }
 
-                        if (value) $input.setAttribute('value', value);
+                        if (value) {
+                            $input.setAttribute('value', value);
+                        }
 
                         this._popupContent.appendChild($label);
                         this._popupContent.appendChild($input);

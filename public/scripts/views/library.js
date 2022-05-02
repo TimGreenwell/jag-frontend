@@ -20,8 +20,8 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._initUI();
 		this._initListeners();
 		StorageService.setSchema('jag');
-		StorageService.subscribe("storage-updated", this.updateItem.bind(this));
-		StorageService.subscribe("storage-created", this.addItem.bind(this));
+		StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
+		StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
 
 		this.clearLibraryList();
 		this.loadFromDB();
@@ -144,8 +144,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	async loadFromDB() {
-		const jsonList = await StorageService.all('jag');
-		const jags = jsonList.map(JAG.fromJSON);
+		const jags = await StorageService.all('jag');
 		jags.forEach(jag => this.addItem(jag));
 	}
 

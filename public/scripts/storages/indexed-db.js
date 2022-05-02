@@ -12,7 +12,7 @@ import SchemaManager from './schemas.js';
 export default class IndexedDBStorage {
 
 	constructor(name, version) {
-		this._name = name,
+		this._name = name;
 		this._version = version;
 		this._db = undefined;
 	}
@@ -31,10 +31,6 @@ export default class IndexedDBStorage {
 	}
 
 	async get(schema, key) {
-		console.log("%%%%%%%%%");
-		console.log(schema);
-		console.log(key);
-		console.log("%%%%%%%%%");
 		const description = await IndexedDBUtils.get(this._db, SchemaManager.get(schema).name, key);
 		return description;
 	}
@@ -45,8 +41,6 @@ export default class IndexedDBStorage {
 	}
 
 	async create(schema, key, description) {
-		console.log("now in indexed-db storage create.  Committing a store to DB");
-
 		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 
@@ -57,6 +51,5 @@ export default class IndexedDBStorage {
     async delete(id, schema) {
 		return IndexedDBUtils.delete(this._db, SchemaManager.get(schema).name, id);
 	}
-
 
 }
