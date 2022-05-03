@@ -42,7 +42,7 @@ class AnalysisView extends HTMLElement {
 		this._initializeTree(this._root);
 
 		// TODO: temporary ugly fix
-		this._views.get(this._root.id).model.syncJAG(this._views.get(this._root.id));
+		// this._views.get(this._root.id).model.syncJAG(this._views.get(this._root.id));
 
 		this.layout();
 	}

@@ -32,40 +32,55 @@ export default class Analysis extends EventTarget {
 		this._team = team;
 		this._nodeSet = new Set();
 
-		this.buildAnalysisJagNodes(this._rootNodeModel);
-		console.log("hhhhhhhhhhhhhhhhhhh");
-		console.log(this._nodeSet)
 
-		if (team == undefined) {
+
+
+	};
+
+	async buildDefaultTeam() {
+		if (this._team == undefined) {
 			this._team = new TeamModel();
 			this._team.addAgent(new AgentModel({name: 'Agent 1'}));
 			this._team.addAgent(new AgentModel({name: 'Agent 2'}));
 			//this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
 			this._team.agents.forEach(agent => StorageService.create(agent, 'agent'));
 			//TeamService.instance('idb-service').create(this._team);
-			StorageService.create(this._team, 'team');
+			await StorageService.create(this._team, 'team');
 		}
-	};
+	}
 
+
+	// This was an attempt to build the Nodes for the IA-TABLE based off the JAG Models.
+	// The current setup -- loses full children info at depth 1.
 	async buildAnalysisJagNodes(newRootNodeModel) {
-        let currentNode = newRootNodeModel;
+		let currentNode = newRootNodeModel;
+		console.log("The current node (current recursion root).");
+		console.log(currentNode);
 		let children = newRootNodeModel.jag.children;
-		console.log("children of new ROOT");
+		console.log("Children of current recursion Root. (According to internal JAG object's children");
 		console.log(children);
 
+		await Promise.all(
 		children.map(async ({urn, id}) => {
 			const childJagModel = await StorageService.get(urn, 'jag');
 			const childNodeModel = new NodeModel({jag: childJagModel});
 			//await StorageService.create(childNodeModel,'node');
-console.log("child model being scanned...");
-console.log(childNodeModel);
+			console.log("A newly created Node Child...");
+			console.log(childNodeModel);
 			currentNode.addChild(childNodeModel, true);
 
+			console.log("The same current node (this time with child [hopefully]).");
+			console.log(JSON.stringify(currentNode));
+			console.log("NOTE - NOTE - NOTE - NOTE: This is how it looks now:");
+			console.log(currentNode);
+
+			console.log("....restarting recursion - this time with child")
 			await this.buildAnalysisJagNodes(childNodeModel);
-		})
+		}))
+		console.log("vvvvvv current node being added to _nodeSet vvvvvv");
 		this._nodeSet.add(currentNode);
-		console.log("current node being added to _nodeSet");
-		console.log(currentNode);
+		console.log("^^^^^^^^moved to this nodeSet^^^^^^^^^^^^");
+		console.log(this._nodeSet);
 
 		//	const jagModel = await StorageService.get(rootUrn,'jag');
 	}
@@ -137,8 +152,6 @@ console.log(childNodeModel);
 
 	// @TODO StorageService.setSchema('analysis'); is a temp fix  -- update - fixed.  Test removal
 	save() {
-		StorageService.setSchema('analysis');
-
 		// THIS BEING USED ANYWHERE?
 
 	//	this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));

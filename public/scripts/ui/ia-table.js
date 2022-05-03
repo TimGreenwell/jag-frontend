@@ -80,6 +80,31 @@ class IATable extends Popupable {
 		}
 	}
 
+	async create(analysisName, rootUrn) {
+		//const jag = await JAGService.instance('idb-service').get(root);
+		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
+		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
+		const rootJagModel = await StorageService.get(rootUrn,'jag');
+		const nodeModel = new NodeModel({jag: rootJagModel});
+
+		//await StorageService.create(nodeModel,'node');
+		const analysis = new Analysis({name: analysisName, root: nodeModel});
+
+		await analysis.buildAnalysisJagNodes(nodeModel);
+		await analysis.buildDefaultTeam();
+
+		console.log("--------------  PAST ALL THE RECURSION ---  CONTINUE TO TEAM AND AGENT SETUP ----------------------------")
+		console.log("Saving the full analysis....");
+
+		await StorageService.create(analysis,'analysis');
+		console.log("Saved the full analysis....");
+
+		analysis.save();
+		this.analysis = analysis;
+
+		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
+	}
+
 	_initUI() {
 		const $header = document.createElement('header');
 		const $new_analysis = document.createElement('button');
@@ -257,22 +282,7 @@ class IATable extends Popupable {
 		return $option;
 	}
 
-	async create(analysisName, rootUrn) {
-		//const jag = await JAGService.instance('idb-service').get(root);
-		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
-		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
-		const rootJagModel = await StorageService.get(rootUrn,'jag');
-	 	const nodeModel = new NodeModel({jag: rootJagModel});
 
-	 	//await StorageService.create(nodeModel,'node');
-		const analysis = new Analysis({name: analysisName, root: nodeModel});
-		await StorageService.create(analysis,'analysis');
-
-		analysis.save();  // I dont think this does anything.
-		this.analysis = analysis;
-
-		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
-	}
 
 	async import(analysis) {
 		{
