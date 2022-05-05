@@ -24,9 +24,26 @@ import Properties from './views/properties.js';               // AT - Right view
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
-import RESTStorage from './storages/rest.js';                 // Available storage option (REST to ???)
+import RESTStorage from './storages/rest.js';
+import SharedService from "./services/shared-service.js";                 // Available storage option (REST to ???)
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+
+	// SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
+	// SharedService.senderId = 'jag-at';
+
+	//SharedService.worker.port.onmessage = handleNewMessage;
+
+	// function handleNewMessage({ data }) {
+	// 	console.log("Don't think I will need this handler - but checking out this new data");
+	// 	console.log({ data });
+	// }
+	//
+	// function postStorageMessage(command, paramList) {
+	// 	console.log("Posting new data from jagat");
+	// }
+
 
 	// Initializes local storage
 	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
@@ -82,10 +99,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 		$playground._handleNewNodePopup(e);
 	});
     //////////////////////////////////////////////////////////////////////
+
 	// Event: 'item-selected' (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.
 	$library.addEventListener('library-lineItem-selected', (e) => {
+
 		$playground.handleLibraryListItemSelected(e.detail);
+		console.log("sending from jagat.....")
+		postStorageMessage("hi", []);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)

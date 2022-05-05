@@ -12,6 +12,7 @@ import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import JAG from "./models/jag.js";
+import SharedService from "./services/shared-service.js";
 
 class Playground extends Popupable {
 
@@ -55,6 +56,9 @@ class Playground extends Popupable {
 		this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
 		this._boundDragView = this.dragView.bind(this);
 		this._boundStopDragView = this.stopDragView.bind(this);
+
+
+
 		StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
 		StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
 		this.initGlobalEvents();

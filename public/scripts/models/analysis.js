@@ -31,9 +31,8 @@ export default class Analysis extends EventTarget {
 		this._rootNodeModel = root;
 		this._team = team;
 		this._nodeSet = new Set();
-
-
-
+	//	StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
+	//	StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
 
 	};
 
@@ -42,47 +41,71 @@ export default class Analysis extends EventTarget {
 			this._team = new TeamModel();
 			this._team.addAgent(new AgentModel({name: 'Agent 1'}));
 			this._team.addAgent(new AgentModel({name: 'Agent 2'}));
-			//this._team.agents.forEach(agent => AgentService.instance('idb-service').create(agent));
-			this._team.agents.forEach(agent => StorageService.create(agent, 'agent'));
-			//TeamService.instance('idb-service').create(this._team);
+			await Promise.all(this._team.agents.map(async agent => await StorageService.create(agent, 'agent')));
 			await StorageService.create(this._team, 'team');
 		}
 	}
 
 
+
+
+
+
+// same thing but no recursion
+
+	async buildAnalysisJagNodes2(newRootNodeModel) {
+		const nodeStack = [];
+		const myNodeSet = new Set();
+		myNodeSet.clear();
+		console.log("..new nodeset === ....");
+		console.log(JSON.stringify(myNodeSet));
+		nodeStack.push(rootNodeModel);
+		while (nodeStack.length != 0) {
+			let currentNode = nodeStack.pop();
+			console.log("CURRENTNODE");
+			console.log(currentNode);
+			for (const child of currentNode.jag.children) {
+				console.log("my baby::>");
+				console.log(child);
+				const childJagModel = await StorageService.get(child.urn, 'jag');
+				console.log("my baby jag::>");
+				console.log(childJagModel);
+				const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+				console.log("my baby nodie::>");
+				console.log(childNodeModel);
+				currentNode.addChild(childNodeModel, true);
+				console.log("................");
+				console.log(currentNode);
+				console.log("added");
+				console.log(childNodeModel);
+				console.log("................");
+				nodeStack.push(childNodeModel);
+				console.log("..new nodestack === ....");
+				console.log(nodeStack);
+				console.log("::finsihed with current node  urn ::::" + currentNode.urn + ":::::::::::>>");
+			}
+			myNodeSet.add(currentNode);
+			console.log("..new nodeset === ....");
+			console.log(myNodeSet);
+		}
+		console.log("hhhhhhhhhhFirst answer hhhhhhhhh");
+	}
+
 	// This was an attempt to build the Nodes for the IA-TABLE based off the JAG Models.
 	// The current setup -- loses full children info at depth 1.
 	async buildAnalysisJagNodes(newRootNodeModel) {
 		let currentNode = newRootNodeModel;
-		console.log("The current node (current recursion root).");
-		console.log(currentNode);
 		let children = newRootNodeModel.jag.children;
-		console.log("Children of current recursion Root. (According to internal JAG object's children");
-		console.log(children);
 
 		await Promise.all(
 		children.map(async ({urn, id}) => {
 			const childJagModel = await StorageService.get(urn, 'jag');
 			const childNodeModel = new NodeModel({jag: childJagModel});
-			//await StorageService.create(childNodeModel,'node');
-			console.log("A newly created Node Child...");
-			console.log(childNodeModel);
 			currentNode.addChild(childNodeModel, true);
-
-			console.log("The same current node (this time with child [hopefully]).");
-			console.log(JSON.stringify(currentNode));
-			console.log("NOTE - NOTE - NOTE - NOTE: This is how it looks now:");
-			console.log(currentNode);
-
-			console.log("....restarting recursion - this time with child")
 			await this.buildAnalysisJagNodes(childNodeModel);
 		}))
-		console.log("vvvvvv current node being added to _nodeSet vvvvvv");
 		this._nodeSet.add(currentNode);
-		console.log("^^^^^^^^moved to this nodeSet^^^^^^^^^^^^");
-		console.log(this._nodeSet);
-
-		//	const jagModel = await StorageService.get(rootUrn,'jag');
+		await StorageService.create(currentNode,'node');
 	}
 
 	static async fromJSON(json) {

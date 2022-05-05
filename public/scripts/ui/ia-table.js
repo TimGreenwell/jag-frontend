@@ -25,7 +25,7 @@ class IATable extends Popupable {
 
 		this._analysis = undefined;
 
-		this._elements = {
+		this._domElements = {
 			name: undefined,
 			selector: undefined,
 			analysis: undefined,
@@ -39,38 +39,39 @@ class IATable extends Popupable {
 //		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 	}
 
-	get analysisSelector() {
-		return this._elements.selector;
-	}
+	// get analysisSelector() {
+	// 	return this._domElements.selector;
+	// }
 
 	get analysisView() {
-		return this._elements.analysis;
+		return this._domElements.analysis;
 	}
 
 	get analysis() {
 		return this._analysis;
 	}
 
-	set analysis(analysis) {
+	set analysis(newAnalysisModel) {
 		// remove current view if it exists
-		if (this._elements.analysis !== undefined) {
-			this.removeChild(this._elements.analysis);
+
+		if (this._domElements.analysis !== undefined) {
+			this.removeChild(this._domElements.analysis);
 			this._analysis.team.removeEventListener('update', this._boundRefresh);
 			for (const agent of this._agents) {
 				agent.removeEventListener('update', this._boundRefresh);
 			}
 		}
 
-		if (analysis) {
-			const analysisView = new AnalysisView(analysis);
+		if (newAnalysisModel) {
+			const analysisView = new AnalysisView(newAnalysisModel);
 			analysisView.initialize(this);
 
-			this._analysis = analysis;
-			this._elements.name.removeAttribute('disabled');
-			this._elements.name.value = analysis.name;
-			this._elements.description.removeAttribute('disabled');
-			this._elements.description.value = analysis.description;
-			this._elements.analysis = analysisView;
+			this._analysis = newAnalysisModel;
+			this._domElements.name.removeAttribute('disabled');
+			this._domElements.name.value = newAnalysisModel.name;
+			this._domElements.description.removeAttribute('disabled');
+			this._domElements.description.value = newAnalysisModel.description;
+			this._domElements.analysis = analysisView;
 
 			this._analysis.team.addEventListener('update', this._boundRefresh);
 			this._agents = this._analysis.team.agents;
@@ -93,16 +94,12 @@ class IATable extends Popupable {
 		await analysis.buildAnalysisJagNodes(nodeModel);
 		await analysis.buildDefaultTeam();
 
-		console.log("--------------  PAST ALL THE RECURSION ---  CONTINUE TO TEAM AND AGENT SETUP ----------------------------")
-		console.log("Saving the full analysis....");
-
 		await StorageService.create(analysis,'analysis');
-		console.log("Saved the full analysis....");
 
 		analysis.save();
 		this.analysis = analysis;
 
-		this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
+	//	this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
 	}
 
 	_initUI() {
@@ -164,24 +161,24 @@ class IATable extends Popupable {
 
 		this.appendChild($header);
 
-		this._elements.create = $new_analysis;
-		this._elements.name = $analysis_name;
-		this._elements.description = $analysis_description;
-		this._elements.export = $export_analysis;
-		this._elements.import = $import_analysis;
-		this._elements.file = $analysis_file;
+		this._domElements.create = $new_analysis;
+		this._domElements.name = $analysis_name;
+		this._domElements.description = $analysis_description;
+		this._domElements.export = $export_analysis;
+		this._domElements.import = $import_analysis;
+		this._domElements.file = $analysis_file;
 	}
 
 	_refresh(e) {
-		this._elements.analysis.layout();
+		this._domElements.analysis.layout();
 	}
 
 	_handleNewAnalysis() {
 		this.popup({
 			content: IATable.NOTICE_CREATE_ANALYSIS,
-			trackEl: this._elements.create,
+			trackEl: this._domElements.create,
 			inputs: { table: this },
-			highlights: [this._elements.create]
+			highlights: [this._domElements.create]
 		});
 	}
 
@@ -198,9 +195,9 @@ class IATable extends Popupable {
 	_handleExportAnalysis() {
 		this.popup({
 			content: IATable.NOTICE_EXPORT_STATIC,
-			trackEl: this._elements.export,
+			trackEl: this._domElements.export,
 			inputs: { table: this },
-			highlights: [this._elements.export]
+			highlights: [this._domElements.export]
 		});
 	}
 
@@ -235,7 +232,7 @@ class IATable extends Popupable {
 	}
 
 	async _handleUploadAnalysis(e) {
-		const files = this._elements.file.files;
+		const files = this._domElements.file.files;
 
 		if (files.length < 1)
 			return;
@@ -250,9 +247,9 @@ class IATable extends Popupable {
 				if (await StorageService.has(jag.urn, 'jag')) {
 					this.popup({
 						content: IATable.NOTICE_OVERWRITE_JAG,
-						trackEl: this._elements.import,
+						trackEl: this._domElements.import,
 						inputs: { jag: jag },
-						highlights: [this._elements.import]
+						highlights: [this._domElements.import]
 					});
 				}
 			}
@@ -260,14 +257,14 @@ class IATable extends Popupable {
 
 		this.popup({
 			content: IATable.NOTICE_OVERWRITE_ANALYSIS,
-			trackEl: this._elements.import,
+			trackEl: this._domElements.import,
 			inputs: { table: this, analysis: analysis, conflict: await this._checkImportConflicts(analysis) },
-			highlights: [this._elements.import]
+			highlights: [this._domElements.import]
 		});
 	}
 
 	_handleImportAnalysis(e) {
-		this._elements.file.click();
+		this._domElements.file.click();
 	}
 
 	_createAnalysisEntry(analysis) {

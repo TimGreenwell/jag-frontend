@@ -18,8 +18,24 @@ import AnalysisLibrary from './views/analysis-library.js';
 import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/team.js';
 import StorageService from "./services/storage-service.js";
+import SharedService from "./services/shared-service.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+
+	// SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
+	// SharedService.senderId = 'jag-ia';
+	//
+	// SharedService.worker.port.onmessage = handleNewMessage;
+	//
+	// function handleNewMessage({ data }) {
+	// 	console.log("Don't think I will need this handler - but checking out this new data");
+	// 	console.log({ data });
+	// }
+	//
+	// function postStorageMessage(command, paramList) {
+	// 	console.log("Posting new data from jagat");
+	// }
     
 	// Initializes local storage
 	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);

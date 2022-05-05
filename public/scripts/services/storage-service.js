@@ -10,6 +10,8 @@ import JAG from "../models/jag.js";
 import Node from  "../models/node.js";
 import Observable from "../utils/observable.js";
 import SchemaManager from '../storages/schemas.js';
+import SharedService from "./shared-service.js";
+
 
 export default class StorageService extends Observable{
 
@@ -18,7 +20,15 @@ export default class StorageService extends Observable{
         this._preferredStorage = undefined;  // service instance for reads
         this._storagesSynced = true;         // write to all storages or just preferredStorage
         this._schema = undefined;            // specific schema within Storage
+        SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
+        SharedService.senderId = 'jag-at';
+        console.log(SharedService.senderId);
+        console.log(SharedService.worker);
+        SharedService.worker.port.onmessage = this.handleNewMessage;
     }
+
+
+
 
     /**
      * Retrieves a storage instance of the service if it exists.
@@ -112,7 +122,8 @@ export default class StorageService extends Observable{
       //  createdModel.addEventListener('update', this._handleUpdate.bind(this));
         const description = createdModel.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-        this.notify(`${schema}-storage-created`,createdModel);
+      //  this.notify(`${schema}-storage-created`,createdModel);
+        SharedService.worker.port.postMessage({topic:`${schema}-storage-created`,schema: schema, desc: description});
     }
 
     /**
@@ -124,7 +135,29 @@ export default class StorageService extends Observable{
         const description = updatedModel.toJSON();
         this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
         this.notify(`${schema}-storage-updated`,updatedModel);
+        SharedService.worker.port.postMessage({topic:`${schema}-storage-update`,schema: schema, desc: description});
     }
+
+    static handleNewMessage(message) {
+        console.log(message);
+        console.log("..v..");
+        let schema = message.data.schema;
+        console.log(schema);
+        let topic = message.data.topic;
+        console.log(topic);
+        let description = message.data.desc;
+        console.log(description);
+        console.log("..^..");
+        console.log(topic);
+
+        console.log(description);
+        const newModel = SchemaManager.deserialize(schema, description);
+        console.log(newModel);
+        this.notify(`${schema}-storage-updated`,newModel);
+       // this.notify(topic, newModel);
+    }
+
+
 
     /**
      * Removes the model with the existing urn from storage.

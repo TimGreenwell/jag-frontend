@@ -35,8 +35,6 @@ class AnalysisView extends HTMLElement {
 		// Registers root view
 		this._root = this._model.root;
 
-		console.log("herehere................................................");
-		console.log(this._root);
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
 		this._initializeTree(this._root);

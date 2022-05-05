@@ -31,29 +31,7 @@ export default class Node extends EventTarget {
 		this._children = Array();
 	}
 
-	static async fromJSON(json) {
-		// Replaces the id with the actual jag model.
-		//const jag = await JAGService.instance('idb-service').get(json.jag);
-		const jag = await StorageService.get(json.jag,'jag');
-		json.jag = (jag != null) ? jag : undefined;
 
-		const node = new Node(json);
-
-		// @TODO: Can we lazy load these ?
-		const promisedChildren = json.children.map(async child_node_id => {
-			const child = await StorageService.get(child_node_id,'jag');
-			return child;
-		});
-
-		const children = await Promise.all(promisedChildren);
-		children.forEach(child => {
-			if(child === undefined)
-				child = new Node();
-			node.addChild(child);
-		});
-
-		return node;
-	}
 
 	get id() {
 		return this._id;
@@ -292,6 +270,30 @@ export default class Node extends EventTarget {
 		json.children = this._children.map(child => child.id);
 
 		return json;
+	}
+
+	static async fromJSON(json) {
+		// Replaces the id with the actual jag model.
+		//const jag = await JAGService.instance('idb-service').get(json.jag);
+		const jag = await StorageService.get(json.jag,'jag');
+		json.jag = (jag != null) ? jag : undefined;
+
+		const node = new Node(json);
+
+		// @TODO: Can we lazy load these ?
+		const promisedChildren = json.children.map(async child_node_id => {
+			const child = await StorageService.get(child_node_id,'jag');
+			return child;
+		});
+
+		const children = await Promise.all(promisedChildren);
+		children.forEach(child => {
+			if(child === undefined)
+				child = new Node();
+			node.addChild(child);
+		});
+
+		return node;
 	}
 
 	async _createChildren() {

@@ -54,11 +54,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		} else {
 			this._model.addEventListener('update', this._boundUpdateHandler);
 		}
-        console.log("applyName");
 		this._applyName();
-		console.log("applyOperator");
 		this._applyOperator();
-		console.log("applyExecution");
 		this._applyExecution();
 	}
 

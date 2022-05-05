@@ -19,7 +19,8 @@ customElements.define('jag-library', class extends HTMLElement {
         // Build outer structure inside <jag-library> (search input & ol for nodes)
 		this._initUI();
 		this._initListeners();
-		StorageService.setSchema('jag');
+
+
 		StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
 		StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
 
@@ -109,6 +110,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				// Send the newJAGModel and all its children through the dispatch
 				$li.addEventListener('click', (event) => {
 					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
+						console.log("clicked");
 						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
 							detail: {
 								model: newJAGModel,

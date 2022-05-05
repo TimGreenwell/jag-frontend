@@ -112,8 +112,8 @@ export default class Schemas {
 		return(obj[key]);
 	}
 
-	static async deserialize(schema,descript) {;
-		const newObj = await Schemas.get(schema).deserialize(descript)
+	static  deserialize(schema,descript) {;
+		const newObj =  Schemas.get(schema).deserialize(descript)
 		return newObj;
 	}
 }
