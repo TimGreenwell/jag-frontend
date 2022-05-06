@@ -20,15 +20,8 @@ export default class StorageService extends Observable{
         this._preferredStorage = undefined;  // service instance for reads
         this._storagesSynced = true;         // write to all storages or just preferredStorage
         this._schema = undefined;            // specific schema within Storage
-        SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
-        SharedService.senderId = 'jag-at';
-        console.log(SharedService.senderId);
-        console.log(SharedService.worker);
-        SharedService.worker.port.onmessage = this.handleNewMessage;
+
     }
-
-
-
 
     /**
      * Retrieves a storage instance of the service if it exists.
@@ -87,7 +80,6 @@ export default class StorageService extends Observable{
             return newModel;
         })
         const newModels = await Promise.all(promisedModels);
-
         return newModels;
     }
 
@@ -96,7 +88,7 @@ export default class StorageService extends Observable{
      */
     static async get(id, schema = this._schema) {
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
-        const model = SchemaManager.deserialize(schema,description);
+        const model = await SchemaManager.deserialize(schema,description);
         return model;
 
         if(description === undefined) return null;
@@ -119,11 +111,9 @@ export default class StorageService extends Observable{
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
-      //  createdModel.addEventListener('update', this._handleUpdate.bind(this));
         const description = createdModel.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-      //  this.notify(`${schema}-storage-created`,createdModel);
-        SharedService.worker.port.postMessage({topic:`${schema}-storage-created`,schema: schema, desc: description});
+        this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, description: description});
     }
 
     /**
@@ -131,31 +121,18 @@ export default class StorageService extends Observable{
      * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
      */
     static update(updatedModel, schema = this._schema) {
+        console.log("in storageservice")
+        console.log(updatedModel);
         //@TODO if sync - update all storages
         const description = updatedModel.toJSON();
+        console.log(description);
+        console.log("sending it to indexed db services");
         this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
-        this.notify(`${schema}-storage-updated`,updatedModel);
-        SharedService.worker.port.postMessage({topic:`${schema}-storage-update`,schema: schema, desc: description});
+        console.log("done sending it");
+        this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, description: description});
     }
 
-    static handleNewMessage(message) {
-        console.log(message);
-        console.log("..v..");
-        let schema = message.data.schema;
-        console.log(schema);
-        let topic = message.data.topic;
-        console.log(topic);
-        let description = message.data.desc;
-        console.log(description);
-        console.log("..^..");
-        console.log(topic);
 
-        console.log(description);
-        const newModel = SchemaManager.deserialize(schema, description);
-        console.log(newModel);
-        this.notify(`${schema}-storage-updated`,newModel);
-       // this.notify(topic, newModel);
-    }
 
 
 
@@ -167,27 +144,5 @@ export default class StorageService extends Observable{
         this.__SERVICES.get(this._preferredStorage).delete(id,schema);
         this.notify(`${schema}-storage-removed`,id);
     }
-
-    /**
-     * Creates a modelNode from a json description, stores it in cache and attaches the necessary listeners.
-     */
-    // static _createModel(description) {
-    //     const model = JAG.fromJSON(description);
-    //     // Listen to update events to commit the change in storage.
-    //     model.addEventListener('update', this._handleUpdate.bind(this));
-    //     // @TODO: store model in cache
-    //     return model;
-    // }
-
-    /**
-     * Handles model update.
-     */
-    // static _handleUpdate(e) {
-    //     const model = e.target;
-    //
-    //     // @TODO: check that we are responsible for this model.
-    //     this.update(model);
-    // }
-
 }
 

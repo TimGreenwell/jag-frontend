@@ -41,15 +41,15 @@ export default class IndexedDBStorage {
 	}
 
 	async create(schema, key, description) {
-		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
+		return await IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 
 	async update(schema, key, description) {
-		return IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
+		return await IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
 	}
 
     async delete(id, schema) {
-		return IndexedDBUtils.delete(this._db, SchemaManager.get(schema).name, id);
+		return await IndexedDBUtils.delete(this._db, SchemaManager.get(schema).name, id);
 	}
 
 }

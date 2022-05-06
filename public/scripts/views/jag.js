@@ -15,12 +15,13 @@ import AutoComplete from '../ui/auto-complete.js';
 import JAGControls from '../ui/jag-controls.js';
 import AnalysisCell from './analysis-cell.js';
 import JAG from "../models/jag.js";
+import IaTable from "../ui/ia-table.js";
 
 class JAGView extends AnalysisCell {
 
-	constructor(model) {
+	constructor(nodeModel) {
 		super();
-		this._model = model;
+		this._nodeModel = nodeModel;
 
 		this._elements = {
 			urn: undefined,
@@ -31,8 +32,8 @@ class JAGView extends AnalysisCell {
 		this._init();
 	}
 
-	get model() {
-		return this._model;
+	get nodeModel() {
+		return this._nodeModel;
 	}
 
 	get urn() {
@@ -72,18 +73,17 @@ class JAGView extends AnalysisCell {
 	}
 
 	async _init() {
-		this.model.addEventListener('sync', this._sync.bind(this));
+		this.nodeModel.addEventListener('sync', this._sync.bind(this));
 		this._createDocument();
 
 		//JAGService.instance('idb-service').all()
-		const jags = await StorageService.all('jag');
-//xxx		const jags = resultJsonList.map(JAG.fromJSON);
-		jags.forEach(jag => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
+		const allJagModels = await StorageService.all('jag');
+		allJagModels.forEach(jagModel => this._elements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
 
 	}
 
 	_createDocument() {
-		const $controls = new JAGControls(this.model);
+		const $controls = new JAGControls(this.nodeModel);
 		const $header = document.createElement('header');
 		const $name = document.createElement('h1');
 		const $urn = document.createElement('h2');
@@ -97,7 +97,7 @@ class JAGView extends AnalysisCell {
 		$name.addEventListener('input', this._handleNameInput.bind(this));
 		$name.setAttribute('contenteditable', '');
 		$name.setAttribute('spellcheck', 'false');
-		$name.innerText = this.model.name;
+		$name.innerText = this.nodeModel.name;
 
 		$urn.addEventListener('blur', this._handleURNChange.bind(this));
 		$urn.addEventListener('keydown', this._handleURNEdit.bind(this));
@@ -106,12 +106,12 @@ class JAGView extends AnalysisCell {
 		$urn.setAttribute('spellcheck', 'false');
 		$urn.setAttribute('tabindex', '-1');
 
-		if(this._model.jag !== undefined)// && this._model.jag.hasValidURN)
-			$urn.innerText = this.model.urn;
+		if(this._nodeModel.jag !== undefined)// && this._nodeModel.jag.hasValidURN)
+			$urn.innerText = this.nodeModel.urn;
 		else
 			this.classList.add('unsaved');
 
-		$fold.addEventListener('click', () => this.model.toggleCollapse());
+		$fold.addEventListener('click', () => this.nodeModel.toggleCollapse());
 		$fold.classList.add('fold-button');
 
 		$header.appendChild($name);
@@ -128,17 +128,17 @@ class JAGView extends AnalysisCell {
 	}
 
 	_sync() {
-		this.urn = this.model.urn;
-		this.name = this.model.name;
+		this.urn = this.nodeModel.urn;                                   //   this = jagView
+		this.name = this.nodeModel.name;
 		this._setLeafStatus();
 	}
 
 	_handleURNChange(e) {
-		if (this.urn === this.model.urn)
+		if (this.urn === this.nodeModel.urn)
 			return;
 
 		this._elements.suggestions.hide();
-		this.model.syncJAG(this);
+		this.nodeModel.syncJAG(this);
 	}
 
 	_handleURNEdit(e) {
@@ -171,9 +171,25 @@ class JAGView extends AnalysisCell {
 		$suggestions.filter(this._elements.urn.innerText);
 	}
 
+
+	// This runs when the Name field of the IATABLE Jag node area loses focus.
 	_handleNameChange() {
-		if(this.jag === undefined || this._elements.name.innerText !== this.jag.name)
-			this.model.commitNameChange(this);
+		console.log("view/jag - handling name change");
+		if(this.jag === undefined || this._elements.name.innerText !== this.jag.name) {
+             // if url is empty or valid then url becomes mutation of the name:
+			console.log("NAME HAS CHANGED");
+			const dirtyUrl = IaTable.defaultUrn + this.jag.name;
+			const possUrl = dirtyUrl.replace(' ','-').replace(/[^0-9a-zA-Z:-]+/g,"").toLowerCase();
+			const urn = possUrl;
+			this._elements.urn.innerText = urn;
+			this._elements.urn.innerText.focus();
+
+			this.nodeModel.commitNameChange(this);
+		}
+		else{console.log("NAME DID NOT CHANGE OR WE ARE UNDEFINED")}
+
+
+
 	}
 
 	async _handleNameEdit(e) {
@@ -182,15 +198,16 @@ class JAGView extends AnalysisCell {
 				// Enter adds a new sibling
 				// Shift+Enter adds a new child
 				e.preventDefault();
-				await this.model.commitNameChange(this);
+				this._elements.name.blur();
 
 				if(e.shiftKey)
-					this.model.newChild();
-				else if (this.model.parent !== undefined)
-					this.model.parent.newChild();
-				else
-					console.log('Can\'t add siblings to root');
-					// @TODO: Notify if trying to add a sibling to the root, instead of failing silently.
+					this.nodeModel.newChild();
+				if(e.ctrlKey) {
+					if (this.nodeModel.parent !== undefined)
+						this.nodeModel.parent.newChild();
+					else
+						console.log('Can\'t add siblings to root');
+				}
 
 				break;
 			case 'Escape':
@@ -199,17 +216,16 @@ class JAGView extends AnalysisCell {
 		}
 	}
 
+	// This updates as the user type in the names field of the IATABLE jag node area.
 	_handleNameInput(e) {
-		if(this._model.linkStatus) {
 			const name = e.target.innerText;
-			const urnified_name = name.trim().toLowerCase().replace(/\s/g, '-');
-			const urn = `urn:ihmc:${urnified_name}`;
-			this._elements.urn.innerText = urn;
-		}
+			console.log("pppppppppppppppppppp");
+			console.log(this.nodeModel);
+		console.log(this._nodeModel);
 	}
 
 	_setLeafStatus() {
-		this.classList.toggle('leaf', this.model.childCount === 0);
+		this.classList.toggle('leaf', this.nodeModel.childCount === 0);
 	}
 
 

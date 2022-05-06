@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+	SharedService.senderId = 'jag-at';
+
 
 	const ide = new IDE();
 	const graph_service = new GraphService();
@@ -105,8 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 	$library.addEventListener('library-lineItem-selected', (e) => {
 
 		$playground.handleLibraryListItemSelected(e.detail);
-		console.log("sending from jagat.....")
-		postStorageMessage("hi", []);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)

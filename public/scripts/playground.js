@@ -12,8 +12,6 @@ import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import JAG from "./models/jag.js";
-import SharedService from "./services/shared-service.js";
-
 class Playground extends Popupable {
 
 	constructor() {
@@ -56,8 +54,6 @@ class Playground extends Popupable {
 		this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
 		this._boundDragView = this.dragView.bind(this);
 		this._boundStopDragView = this.stopDragView.bind(this);
-
-
 
 		StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
 		StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
@@ -209,18 +205,12 @@ class Playground extends Popupable {
 		// 3.2) bindings can be handled with two normal property updates.  This leaves children..
 		//   3.2.1) new child - one create then one update (new edge on update)
 		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
-		console.log("updatedJagModel -->");
-		console.log(updatedJagModel);
-		console.log(this._activeNodesSet);
 		this._activeNodesSet.forEach((node) => {
 			//	for (const node of this._activeNodesSet) {
-			console.log("-1> " + node.model.urn);
-			console.log("-2> " + updatedJagModel.urn);
 
 			if (node.model.urn == updatedJagModel.urn) {
 				const oldNode = node.model;
-				console.log("(.)");
-				console.log(node instanceof JAGNode);
+
 				node.model = updatedJagModel;
 			}
 		})
@@ -284,10 +274,7 @@ class Playground extends Popupable {
 	}
 
 	clearPlayground() {
-		console.log(",,,,,");
-		console.log(this._activeNodesSet);
-		console.log(".....");
-		console.log(this.$nodes_container);
+
 		this.clearNodeSet(this._activeNodesSet);
 	}
 
@@ -379,7 +366,7 @@ class Playground extends Popupable {
 		this._created_edge.setEnd(x, y);
 	}
 
-	onEdgeFinalized(e, node) {
+	async onEdgeFinalized(e, node) {
 		if(!this._is_edge_being_created)
 			return;
 
@@ -394,7 +381,7 @@ class Playground extends Popupable {
 			 const childJag = this._created_edge._node_end.model;
   			// parentJag.addChild(childJag);
 
-			StorageService.update(parentJag, 'jag');
+			await StorageService.update(parentJag, 'jag');
 
 		} else {
 			this.cancelEdge();

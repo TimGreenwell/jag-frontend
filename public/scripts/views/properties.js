@@ -21,6 +21,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._output_elements = new Map();
         this._initUI();
         this._initHandlers();
+        StorageService.subscribe("jag-storage-updated", this.handleStorageUpdate.bind(this)); // only case is when selected playground item is updated by the jag-ia updates.
 
         this._boundUpdate = function (e) {
             const property = e.detail.property;
@@ -41,6 +42,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 
             this._updateProperties();
         }.bind(this);
+    }
+
+    handleStorageUpdate(newJagModel) {
+        console.log("properties view getting updated!");
+        console.log(newJagModel);
+        if (newJagModel.urn == this._urn) {
+            this._model = newJagModel;
+            this._updateProperties();
+        }
     }
 
     handleSelectionUpdate(selection) {
@@ -832,9 +842,11 @@ customElements.define('jag-properties', class extends HTMLElement {
         // });
 
         //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._model.name = this._name.value;]
-        this._name.addEventListener('blur', (e) => {  // get an error if the blur goes to a playground click on empty space.
+        this._name.addEventListener('blur', async(e) => {  // get an error if the blur goes to a playground click on empty space.
             this._model.name = this._name.value;
-            StorageService.update(this._model, 'jag');
+            console.log("Going to update - this._model (schema jag) after a name change");
+            console.log(this._model)
+            await StorageService.update(this._model, 'jag');
         });
 
         this._name.addEventListener('keyup', (e) => {
@@ -881,9 +893,9 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         })
 
-        this._desc.addEventListener('blur', (e) => {
+        this._desc.addEventListener('blur', async (e) => {
             console.log(this._model);
-            StorageService.update(this._model, 'jag');
+            await StorageService.update(this._model, 'jag');
         });
 
         this._desc.addEventListener('keyup', (e) => {
@@ -903,24 +915,24 @@ customElements.define('jag-properties', class extends HTMLElement {
         });
 
 
-        this._name_ctx.addEventListener('keyup', () => {
+        this._name_ctx.addEventListener('keyup', async () => {
             this._node.setContextualName(this._name_ctx.value);
-            StorageService.update(this._model, 'jag');
+            await StorageService.update(this._model, 'jag');
         });
 
-        this._desc_ctx.addEventListener('keyup', () => {
+        this._desc_ctx.addEventListener('keyup', async () => {
             this._node.setContextualDescription(this._desc_ctx.value);
-            StorageService.update(this._model, 'jag');
+            await StorageService.update(this._model, 'jag');
         });
 
-        this._execution.addEventListener('change', e => {
+        this._execution.addEventListener('change', async  e => {
             this._model.execution = this._execution.value;
-            StorageService.update(this._model, 'jag');
+            await StorageService.update(this._model, 'jag');
         });
 
-        this._operator.addEventListener('change', e => {
+        this._operator.addEventListener('change', async e => {
             this._model.operator = this._operator.value;
-            StorageService.update(this._model, 'jag');
+            await StorageService.update(this._model, 'jag');
         });
 
         this._export.addEventListener('click', e => {

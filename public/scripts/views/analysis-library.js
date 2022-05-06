@@ -80,6 +80,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	addListItem(model, idx = -1) {
+		console.log(model);
 		const id = model.urn || '';
 		const root = model.root.urn;
 		const name = model.name;

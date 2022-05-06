@@ -10,21 +10,18 @@ export default class SharedService {
 
     static {
         this._senderId = undefined;
-        this._worker = undefined;
+        this._sharedWorker = undefined;
     }
 
-    static set worker(newWorker) {
-        this._worker = newWorker;
+    static set sharedWorker(newWorker) {
+        this._sharedWorker = newWorker;
     }
 
-    static get worker() {
-        return this._worker;
+    static get sharedWorker() {
+        return this._sharedWorker;
     }
 
     static set senderId(newSenderId){
-        console.log(newSenderId);
-        console.log("to");
-        console.log(this._senderId)
         this._senderId = newSenderId;
     }
 

@@ -31,6 +31,8 @@ class IATable extends Popupable {
 			analysis: undefined,
 		};
 
+
+
 		this._initUI();
 
 		this._boundRefresh = this._refresh.bind(this);
@@ -93,6 +95,8 @@ class IATable extends Popupable {
 
 		await analysis.buildAnalysisJagNodes(nodeModel);
 		await analysis.buildDefaultTeam();
+		console.log("--");
+		console.log(analysis);
 
 		await StorageService.create(analysis,'analysis');
 
@@ -482,6 +486,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
 	]
 });
 
+IATable.defaultUrn  = "us:ihmc:";
 IATable.FALLBACK_ANALYSIS_NAME = 'Analysis w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';
 

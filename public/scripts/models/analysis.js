@@ -110,28 +110,21 @@ export default class Analysis extends EventTarget {
 
 	static async fromJSON(json) {
 		const node_id = json.root;
-
 		//   ex  		const foundJAGModel = StorageService.get(targetURN, 'jag');
 		//const root = await NodeService.instance('idb-service').get(node_id);
 		const root = await StorageService.get(node_id, 'node');
-
 		// Replace id by the actual model.
 		json.root = root;
-
 		const team_id = json.team;
 		//let team = await TeamService.instance('idb-service').get(team_id);
 		let team = await StorageService.get(team_id, 'team');
-
 		if (team == undefined) {
 			team = new TeamModel();
 			//await TeamService.instance('idb-service').create(team);
 			await StorageService.create(team, 'team');
 		}
-
 		json.team = team;
 		const newAnalysis = new Analysis(json);
-		console.log("()()()");
-		console.log(newAnalysis);
 
 		return newAnalysis;
 	}

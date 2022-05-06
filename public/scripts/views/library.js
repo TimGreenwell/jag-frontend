@@ -202,7 +202,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				return lineItem.model;
 			}
 		}
-		const foundJAGModel = StorageService.get(targetURN, 'jag');
+		const foundJAGModel = await StorageService.get(targetURN, 'jag');
 		this.addItem(foundJAGModel);
 		return foundJAGModel;
 	}

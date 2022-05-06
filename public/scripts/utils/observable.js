@@ -8,16 +8,24 @@
 
 'use strict';
 
-export default class Observable {
+import SharedService from "../services/shared-service.js";
+import SchemaManager from "../storages/schemas.js";
+
+export default class SharedObservable extends SharedService{
 
 	static {
 		this._subscribers = new Map();
+		this.sharedWorker = new SharedWorker('scripts/services/shared-worker.js');
+		this.sharedWorker.port.onmessage = this.handleReceiveMessage.bind(this);
+	}
+
+	static get subscribers() {
+		return this._subscribers;
 	}
 
 	static subscribe(topic, subscriber) {
 		if(!this._subscribers.has(topic))
 			this._subscribers.set(topic, new Set());
-
 		this._subscribers.get(topic).add(subscriber);
 	}
 
@@ -25,10 +33,28 @@ export default class Observable {
 		this._subscribers.get(topic).delete(subscriber);
 	}
 
-	static notify(topic, data) {
+	static confirmStorageChange({topic, schema, description}){
+		console.log("a) " + topic);
+		console.log("b) " + schema);
+		console.log("c " + description);
+		console.log(description);
+		this.sharedWorker.port.postMessage({topic: topic,schema: schema, description: description});
+	}
+
+	static async handleReceiveMessage(message) {
+		let schema = message.data.schema;
+		let topic = message.data.topic;
+		let description = message.data.description;
+		console.log(description);
+		const newModel = await SchemaManager.deserialize(schema, description);
+		console.log("++");
+		console.log(newModel);
+		this.notifySubscribers(topic, newModel);
+	}
+
+	static notifySubscribers(topic, data) {
 		if(!this._subscribers.has(topic))
 			return;
-
 		this._subscribers.get(topic).forEach((l) => l(data));
 	}
 }

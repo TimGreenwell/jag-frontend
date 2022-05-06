@@ -104,14 +104,14 @@ export default class Node extends EventTarget {
 		return true;//this.jag !== undefined;// && this.jag.hasValidURN;
 	}
 
-	newChild() {
+	async newChild() {
 		// @TODO: Show user feedback message when trying to create a child on an usaved jag.
 		if (!this.canHaveChildren)
 			return;
 
 		const child = new Node();
 		//NodeService.instance('idb-service').create(child);
-		StorageService.create(child,'node');
+		await StorageService.create(child,'node');
 		this.addChild(child);
 	}
 
@@ -169,10 +169,14 @@ export default class Node extends EventTarget {
 	}
 
 	async commitNameChange(view) {
+		console.log("mode/node - committing name change");
+		console.log(this);
 		if (this.linkStatus)
 			await this.syncJAG(view, false);
 		else
 			this.jag.name = view.name;
+		console.log(this);
+		await StorageService.update(this,'node');
 	}
 
 	syncView() {
