@@ -57,6 +57,7 @@ class Playground extends Popupable {
 
 		StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
 		StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
+		StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));
 		this.initGlobalEvents();
 	}
 
@@ -160,6 +161,12 @@ class Playground extends Popupable {
 		this.removeEventListener('mousemove', this._boundDragView);
 	}
 
+	fromClientToPlaygroundCoordinates(x, y) {
+		const px = x - this.offsetLeft;
+		const py = y - this.offsetTop;
+		return [px, py];
+	}
+
 	initGlobalEvents() {
 		// Turned this off temporarily.  Most keys have no function here.  They all work when
 		// a node inside is selected
@@ -183,18 +190,29 @@ class Playground extends Popupable {
 		this.addEventListener('drop', this.onImport.bind(this));
 	}
 
-	getSelectedAsJSON() {
-		if(this._selectedNodesSet.size == 0)
-			return undefined;
+	// getSelectedAsJSON() {
+	// 	if(this._selectedNodesSet.size == 0)
+	// 		return undefined;
+	//
+	// 	return this._selectedNodesSet.values().next().value.model.toJSON();
+	// }
 
-		return this._selectedNodesSet.values().next().value.model.toJSON();
-	}
+	// getSelectedURN() {
+	// 	if(this._selectedNodesSet.size == 0)
+	// 		return undefined;
+	//
+	// 	return this._selectedNodesSet.values().next().value.model.urn;
+	// }
 
-	getSelectedURN() {
-		if(this._selectedNodesSet.size == 0)
-			return undefined;
-
-		return this._selectedNodesSet.values().next().value.model.urn;
+	deleteJagNode(deadUrn){
+		this._activeNodesSet.forEach((node) => {
+			if (node.model.urn == deadUrn) {
+				const deadJagNode = node;
+				console.log("}}}}}}}}}}}}}}}}}}}}");
+				console.log(deadJagNode)
+				console.log("}}}}}}}}}}}}}}}}}}}}");
+			}
+		})
 	}
 
 	updateJagNode(updatedJagModel) {
@@ -223,7 +241,7 @@ class Playground extends Popupable {
 		this._selectedNodesSet.clear();
 	}
 
-	clearNodeSet(jagNodeSet) {
+	clearPlayground(jagNodeSet) {                 // clearNodeSet
 		for (let e of jagNodeSet) {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
@@ -273,16 +291,9 @@ class Playground extends Popupable {
 		this._checkBounds();
 	}
 
-	clearPlayground() {
 
-		this.clearNodeSet(this._activeNodesSet);
-	}
+xxx
 
-	fromClientToPlaygroundCoordinates(x, y) {
-		const px = x - this.offsetLeft;
-		const py = y - this.offsetTop;
-		return [px, py];
-	}
 
 	handleRefresh({ model, model_set, refreshed = new Set() }) {
 		const margin = 50;
@@ -293,7 +304,8 @@ class Playground extends Popupable {
 
 				if (root == node) {
 					const [x, y] = node.getPosition();
-
+					console.log("++1++");
+					console.log(selectedJagDescendants);
 					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
 
 					const tree = node.getTree();
@@ -320,7 +332,7 @@ class Playground extends Popupable {
 			if (e.ctrlKey) {
 				this.clearPlayground();
 			} else {
-				this.clearNodeSet(this._selectedNodesSet);
+				this.clearPlayground(this._selectedNodesSet);
 			}
 		} else if (e.key == 'ArrowLeft') {
 			if (this._canMoveView.left) {
@@ -469,10 +481,10 @@ class Playground extends Popupable {
 		return node;
 	}
 
-	_traverseJagNodeTree(currentParentJag, descendantJagMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+	_traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
 		// if no child...  addNode
 		// else proceed with the current child
-		const node = childURN || this.createJagNode(currentParentJag, isExpanded);
+		const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
 
 		if (context) {
 			if (context.name) node.setContextualName(context.name);
@@ -481,10 +493,13 @@ class Playground extends Popupable {
 
 		node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
-		if (!currentParentJag.children)
+		if (!currentParentJagNode.children)
 			return node;
 
-		const preferred_size = this._getNodePreferredHeight(currentParentJag, descendantJagMap);
+		console.log("----------")
+		console.log(descendantJagNodeMap);
+
+		const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);
 
 		// assume all children have same height as the parent.
 		const node_height = node.clientHeight + margin;
@@ -498,12 +513,12 @@ class Playground extends Popupable {
 			childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
 		}
 
-		currentParentJag.children.forEach((child) => {
-			const def = descendantJagMap.get(child.urn);
-			const local_preferred_size = this._getNodePreferredHeight(def, descendantJagMap);
+		currentParentJagNode.children.forEach((child) => {
+			const currentChildJagNode = descendantJagNodeMap.get(child.urn);
+			const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
 			y_offset += (local_preferred_size * node_height) / 2;
 
-			const sub_node = this._traverseJagNodeTree(def, descendantJagMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+			const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
 			y_offset += (local_preferred_size * node_height) / 2;
 
 			if (!childrenMap.has(child.id)) {
@@ -519,7 +534,7 @@ class Playground extends Popupable {
 		for (const [id, child] of childrenMap.entries()) {
 			let actual = false;
 
-			for (const actual_child of currentParentJag.children) {
+			for (const actual_child of currentParentJagNode.children) {
 				if (actual_child.id == id) {
 					actual = true;
 					break;
@@ -543,21 +558,26 @@ class Playground extends Popupable {
 	_addJagNodeTree(selectedJag, selectedJagDescendants = [], isExpanded = false) {
 		const margin = 50;
 		const height = this.clientHeight;
+		console.log("++++");
+		console.log(selectedJagDescendants);
 		const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height/2);
 		this._checkBounds(node.getTree());
 	}
 
 	handleLibraryListItemSelected({model: selectedJag, model_set: selectedJagDescendants = [], expanded: isExpanded = false}) {
+		console.log("ppppppppp")
 		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
 
-	_getNodePreferredHeight(item, model_set) {
-		if (!item.children || item.children.length === 0)
+	_getNodePreferredHeight(jagNode, jagNodeMap) {
+		if (!jagNode.children || jagNode.children.length === 0)
 			return 1;
 
-		return item.children.reduce((cut_set_size, child) => {
-			const def = model_set.get(child.urn);
-			return cut_set_size + (def ? this._getNodePreferredHeight(def, model_set) : 0);
+		return jagNode.children.reduce((cut_set_size, child) => {
+			console.log("######");
+			console.log(jagNodeMap);
+			const def = jagNodeMap.get(child.urn);
+			return cut_set_size + (def ? this._getNodePreferredHeight(def, jagNodeMap) : 0);
 		}, 0);
 	}
 
@@ -586,12 +606,9 @@ class Playground extends Popupable {
 			}
 
 			node.setTranslation(x_start, y_offset);
-
 			let edge = this._createEdge(root_node);
 			edge.setNodeEnd(node);
-
 			this._generateSubGoals(node, subgoal.item);
-
 			x_start += 175;
 		});
 	}

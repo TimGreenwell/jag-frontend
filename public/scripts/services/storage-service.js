@@ -113,6 +113,7 @@ export default class StorageService extends Observable{
         // @TODO if sync - update all storages
         const description = createdModel.toJSON();
         await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
+        console.log("${schema}-storage-created             ----------------------------------------------------")
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, description: description});
     }
 
@@ -131,9 +132,6 @@ export default class StorageService extends Observable{
         console.log("done sending it");
         this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, description: description});
     }
-
-
-
 
 
     /**
