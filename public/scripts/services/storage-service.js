@@ -142,7 +142,7 @@ export default class StorageService extends Observable{
     static delete(id, schema = this._schema) {
         //SchemaManager.getKey(schema)
         this.__SERVICES.get(this._preferredStorage).delete(id,schema);
-        this.notify(`${schema}-storage-removed`,id);
+        this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, description: id});
     }
 }
 

@@ -34,10 +34,6 @@ export default class SharedObservable extends SharedService{
 	}
 
 	static confirmStorageChange({topic, schema, description}){
-		console.log("a) " + topic);
-		console.log("b) " + schema);
-		console.log("c " + description);
-		console.log(description);
 		this.sharedWorker.port.postMessage({topic: topic,schema: schema, description: description});
 	}
 
@@ -45,10 +41,7 @@ export default class SharedObservable extends SharedService{
 		let schema = message.data.schema;
 		let topic = message.data.topic;
 		let description = message.data.description;
-		console.log(description);
 		const newModel = await SchemaManager.deserialize(schema, description);
-		console.log("++");
-		console.log(newModel);
 		this.notifySubscribers(topic, newModel);
 	}
 

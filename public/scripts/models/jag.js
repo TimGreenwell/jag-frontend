@@ -76,6 +76,8 @@ export default class JAG extends EventTarget {
 
 		// Copy bindings for the instance if provided, else create a new set.
 		this._bindings = new Set(bindings);
+
+		this._isPublished = false;
 	}
 
 	static fromJSON(json) {
@@ -153,6 +155,14 @@ export default class JAG extends EventTarget {
 
 	get bindings() {
 		return [...this._bindings];
+	}
+
+	get isPublished() {
+		return this._isPublished;
+	}
+
+	set isPublished(bool) {
+		this._isPublished = bool;
 	}
 
 	isValid() {
@@ -247,7 +257,6 @@ export default class JAG extends EventTarget {
 					child.name = name;
 		//			this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children-meta", "extra": { "children": this._children } }}));
 				}
-
 				break;
 			}
 		}

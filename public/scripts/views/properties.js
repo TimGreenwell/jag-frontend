@@ -10,15 +10,16 @@
 import JAG from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
 import UndefinedJAG from '../models/undefined.js';
+import InputValidator from '../utils/validation.js';
 import FormUtils from '../utils/forms.js';
 
 customElements.define('jag-properties', class extends HTMLElement {
 
     constructor() {
         super();
-        this._model = undefined;
-        this._input_elements = new Map();
-        this._output_elements = new Map();
+        this._JagModel = undefined;
+        this._consumesMap = new Map();
+        this._producesMap = new Map();
         this._initUI();
         this._initHandlers();
         StorageService.subscribe("jag-storage-updated", this.handleStorageUpdate.bind(this)); // only case is when selected playground item is updated by the jag-ia updates.
@@ -38,7 +39,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._boundDefine = function (e) {
             const model = e.detail.model;
 
-            this._model = model;
+            this._JagModel = model;
 
             this._updateProperties();
         }.bind(this);
@@ -47,42 +48,46 @@ customElements.define('jag-properties', class extends HTMLElement {
     handleStorageUpdate(newJagModel) {
         console.log("properties view getting updated!");
         console.log(newJagModel);
-        if (newJagModel.urn == this._urn) {
-            this._model = newJagModel;
+        if (newJagModel.urn == this._urnInput) {
+            this._JagModel = newJagModel;
             this._updateProperties();
         }
     }
 
     handleSelectionUpdate(selection) {
-        if (this._model) {
-            if (this._model instanceof UndefinedJAG) {
-                this._model.removeEventListener('define', this._boundDefine);
+        if (this._JagModel) {
+            if (this._JagModel instanceof UndefinedJAG) {
+                this._JagModel.removeEventListener('define', this._boundDefine);
             } else {
-                this._model.removeEventListener('update', this._boundUpdate);
+                this._JagModel.removeEventListener('update', this._boundUpdate);
             }
 
             this._node = undefined;
-            this._model = undefined;
+            this._JagModel = undefined;
         }
 
         this._clearProperties();
 
         if (selection.size == 1) {
-            const firstValue = selection.values().next().value;
-
-            if (firstValue._model) {         // why wouldnt this have a model(node)?
-                this._node = firstValue;
-                this._model = this._node.model;
-
+            const selectedNodeModel = selection.values().next().value;
+            console.log(selectedNodeModel)
+            console.log("()()(3)");
+            console.log(selection);
+            if (selectedNodeModel._model) {         // why wouldnt this have a model(node)?
+                console.log("()(2)()");
+                this._node = selectedNodeModel;
+                this._JagModel = this._node.model;
+                console.log("(4)()()");
                 this._updateProperties();
-
-                if (this._model instanceof UndefinedJAG) {
-                    this._model.addEventListener('define', this._boundDefine);
+                console.log("()(5)()");
+                if (this._JagModel instanceof UndefinedJAG) {
+                    this._JagModel.addEventListener('define', this._boundDefine);
                 } else {
-                    this._model.addEventListener('update', this._boundUpdate);
+                    this._JagModel.addEventListener('update', this._boundUpdate);
                 }
             }
         } else {
+            console.log("(1)()()");
             this._enableProperties(false);
         }
     }
@@ -90,16 +95,15 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _updateProperties() {
 
-        this._urn.value = this._model.urn
+        this._urnInput.value = this._JagModel.urn
+        this._nameInput.value = this._JagModel.name;
+        this._executionSelect.value = this._JagModel.execution || 'none';
+        this._operatorSelect.value = this._JagModel.operator || 'none';
+        this._descInput.value = this._JagModel.description;
+        this._name_ctxInput.value = this._node.getContextualName();
+        this._desc_ctxInput.value = this._node.getContextualDescription();
 
-        this._name.value = this._model.name;
-        this._name_ctx.value = this._node.getContextualName();
-        this._execution.value = this._model.execution || 'none';
-        this._operator.value = this._model.operator || 'none';
-        this._desc.value = this._model.description;
-        this._desc_ctx.value = this._node.getContextualDescription();
-
-        if (this._model instanceof UndefinedJAG) {
+        if (this._JagModel instanceof UndefinedJAG) {
             this._enableProperties(false);
         } else {
             this._enableProperties(true);
@@ -116,7 +120,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _addInput(e) {
-        if (this._model && !(this._model instanceof UndefinedJAG)) {
+        if (this._JagModel && !(this._JagModel instanceof UndefinedJAG)) {
             const name = window.prompt('Input name');
             if (name === null)
                 return;
@@ -130,12 +134,12 @@ customElements.define('jag-properties', class extends HTMLElement {
                 type: type
             };
 
-            this._model.addInput(input);
+            this._JagModel.addInput(input);
         }
     }
 
     _addOutput(e) {
-        if (this._model && !(this._model instanceof UndefinedJAG)) {
+        if (this._JagModel && !(this._JagModel instanceof UndefinedJAG)) {
             const name = window.prompt('Output name');
             if (name === null)
                 return;
@@ -149,7 +153,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 type: type
             };
 
-            this._model.addOutput(output);
+            this._JagModel.addOutput(output);
         }
     }
 
@@ -196,7 +200,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         }
 
-        this._model.addAnnotation(id, name, value);
+        this._JagModel.addAnnotation(id, name, value);
     }
 
     _addInputElement(id, input) {
@@ -216,7 +220,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             let label = node.id;
             if (node.id != 'this') {
                 label = node.model.name;
-                const order = this._model.getOrderForId(node.id);
+                const order = this._JagModel.getOrderForId(node.id);
                 if (order != 0) {
                     label += ` (${order})`;
                 }
@@ -246,7 +250,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             let label = node.id;
             if (node.id != 'this' && node.id != 'any') {
                 label = node.model.name;
-                const order = this._model.getOrderForId(node.id);
+                const order = this._JagModel.getOrderForId(node.id);
                 if (order != 0) {
                     label += ` (${order})`;
                 }
@@ -272,14 +276,14 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _findInputOptions() {
         // We can "input" a value into any of this node's children's inputs.
-        const options = this._model.getAvailableInputs();
+        const options = this._JagModel.getAvailableInputs();
 
         // We can also "input" a value to this node's outputs.
-        if (this._model.outputs.length > 0) {
+        if (this._JagModel.outputs.length > 0) {
             options.push({
                 id: 'this',
-                model: this._model,
-                inputs: this._model.outputs
+                model: this._JagModel,
+                inputs: this._JagModel.outputs
             });
         }
 
@@ -290,27 +294,27 @@ customElements.define('jag-properties', class extends HTMLElement {
         const options = [];
 
         // We can "output" a value from this node's inputs.
-        if (this._model.inputs.length > 0) {
+        if (this._JagModel.inputs.length > 0) {
             options.push({
                 id: 'this',
-                model: this._model,
-                outputs: this._model.inputs
+                model: this._JagModel,
+                outputs: this._JagModel.inputs
             });
         }
 
         // We can also "output" a value from this node's children's outputs.
-        this._model.getAvailableOutputs().forEach(node => options.push(node));
+        this._JagModel.getAvailableOutputs().forEach(node => options.push(node));
 
         // We can also opt to accept any output with a matching name based on all available outputs.
-        if (this._model.inputs.length > 0 && this._model.children.length > 0) {
+        if (this._JagModel.inputs.length > 0 && this._JagModel.children.length > 0) {
             const output_properties = new Set();
             const any_outputs = new Set();
 
-            for (const input of this._model.inputs) {
+            for (const input of this._JagModel.inputs) {
                 output_properties.add(input.name);
             }
 
-            for (const child of this._model.children) {
+            for (const child of this._JagModel.children) {
                 if (child.model) {
                     child.model.outputs.forEach((child_output) => {
                         if (output_properties.has(child_output.name)) {
@@ -337,13 +341,13 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._clearIO();
 
         // Create node input panel
-        for (let input of this._model.inputs) {
+        for (let input of this._JagModel.inputs) {
             const input_id = `${input.name}-inputs-property`;
             this._addInputElement(input_id, input.name);
         }
 
         // Create node output panel
-        for (let output of this._model.outputs) {
+        for (let output of this._JagModel.outputs) {
             const output_id = `${output.name}-outputs-property`;
             this._addOutputElement(output_id, output.name);
         }
@@ -379,7 +383,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const provider = output_option.value.split(":");
                     const consumer = input_option.value.split(":");
 
-                    this._model.addBinding({
+                    this._JagModel.addBinding({
                         consumer: {
                             id: consumer[0],
                             property: consumer[1]
@@ -409,7 +413,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const provider = output_option.value.split(':');
 
                     const this_inputs_names = new Set();
-                    this._model.inputs.forEach(input => this_inputs_names.add(input.name));
+                    this._JagModel.inputs.forEach(input => this_inputs_names.add(input.name));
 
                     // TODO: Check if type matches selected output type (probably need to get output type first)
                     if (provider[0] == 'this') {
@@ -418,17 +422,17 @@ customElements.define('jag-properties', class extends HTMLElement {
                         }
                     } else {
                         // TODO: Check if type matches selected output type (probably need to get output type first)
-                        this._model.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
+                        this._JagModel.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
 
-                        if (this._model.execution == JAG.EXECUTION.SEQUENTIAL) {
+                        if (this._JagModel.execution == JAG.EXECUTION.SEQUENTIAL) {
                             if (provider[0] == 'any') {
                                 const all_cumulative_outputs = new Set();
 
-                                this._model.inputs.forEach(input => all_cumulative_outputs.add(input.name));
+                                this._JagModel.inputs.forEach(input => all_cumulative_outputs.add(input.name));
 
                                 const valid_any_outputs_from_children = new Set();
 
-                                for (const child of this._model.children) {
+                                for (const child of this._JagModel.children) {
                                     if (valid_any_outputs_from_children.has(provider[1])) {
                                         child.model.inputs.forEach(input => valid_input_values_for_output.add(`${child.id}:${input.name}`));
                                     }
@@ -442,11 +446,11 @@ customElements.define('jag-properties', class extends HTMLElement {
                                     });
                                 }
                             } else {
-                                const order = this._model.getOrderForId(provider[0]);
+                                const order = this._JagModel.getOrderForId(provider[0]);
 
-                                for (const child of this._model.children) {
+                                for (const child of this._JagModel.children) {
                                     if (child.model) {
-                                        if (this._model.getOrderForId(child.id) > order) {
+                                        if (this._JagModel.getOrderForId(child.id) > order) {
                                             for (const input of child.model.inputs) {
                                                 // TODO: Check if type matches selected output type (probably need to get output type first)
                                                 valid_input_values_for_output.add(`${child.id}:${input.name}`);
@@ -472,13 +476,13 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const consumer = input_option.value.split(':');
 
                     // TODO: Check if types match selected output type (probably as a .filter before .map)
-                    let valid_for_input = new Set(this._model.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
+                    let valid_for_input = new Set(this._JagModel.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
                     toggleSelectValues(output_select_el, valid_for_input);
                 }
             }.bind(this));
         }
 
-        for (let binding of this._model.bindings) {
+        for (let binding of this._JagModel.bindings) {
             let binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
 
             let output_label = document.createElement("input");
@@ -487,7 +491,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             if (binding.provider.id == 'this' || binding.provider.id == 'any') {
                 output_label.value = `${binding.provider.id}:${binding.provider.property}`
             } else {
-                const provider_node = this._model.getCanonicalNode(binding.provider.id);
+                const provider_node = this._JagModel.getCanonicalNode(binding.provider.id);
 
                 let provider_name = binding.provider.id;
 
@@ -515,7 +519,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             if (binding.consumer.id == 'this' || binding.consumer.id == 'any') {
                 input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
             } else {
-                const consumer_node = this._model.getCanonicalNode(binding.consumer.id);
+                const consumer_node = this._JagModel.getCanonicalNode(binding.consumer.id);
 
                 let consumer_name = binding.consumer.id;
 
@@ -537,7 +541,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             remove.className = 'binding remove';
 
             remove.addEventListener('click', function (e) {
-                this._model.removeBinding(binding);
+                this._JagModel.removeBinding(binding);
             }.bind(this));
 
             binding_box.appendChild(remove);
@@ -549,8 +553,8 @@ customElements.define('jag-properties', class extends HTMLElement {
     _updateAnnotations() {
         this._clearAnnotations();
 
-        if (this._model.children.length > 0) {
-            for (const child of this._model.children) {
+        if (this._JagModel.children.length > 0) {
+            for (const child of this._JagModel.children) {
                 let child_name = child.id;
                 if (child.model) child_name = child.model.name;
 
@@ -574,7 +578,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 iterable_checkbox.type = "checkbox";
 
                 iterable_checkbox.addEventListener('change', function (e) {
-                    this._model.setIterable(child.id, iterable_checkbox.checked);
+                    this._JagModel.setIterable(child.id, iterable_checkbox.checked);
                 }.bind(this));
 
                 iterable_box.appendChild(iterable_checkbox);
@@ -624,7 +628,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                         remove.className = "annotation remove";
 
                         remove.addEventListener('click', function (e) {
-                            this._model.removeAnnotation(child.id, annotation[0]);
+                            this._JagModel.removeAnnotation(child.id, annotation[0]);
                         }.bind(this));
 
                         annotation_box.appendChild(remove);
@@ -637,6 +641,88 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         }
     }
+
+    async _updateURN(origURN, newURN) {
+        const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
+        const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
+        // Changing a URN is either a rename/move or a copy or just not allowed.
+        // Proposing we have a 'isPublished' tag.
+        // URN changes are renames until the JagModel is marked as 'isPublished'.
+        // After 'isPublished', URN changes are copies.
+
+
+        //  Is it a valid URN?
+        let isValid = InputValidator.isValidUrn(this._urnInput.value);
+        if (isValid) {
+            console.log("is valid - " + isValid);
+            let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isPublished'
+            console.log(origJagModel)
+            let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
+            console.log(urnAlreadyBeingUsed)
+            // Is the URN already taken?
+            if (urnAlreadyBeingUsed) {
+                console.log("is being used - " + urnAlreadyBeingUsed);
+                // Does user confirm an overwrite??
+                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
+                    let newJagModel = await StorageService.get(origURN, 'jag');
+
+                    // is the target JagModel published?
+                    if (newJagModel.isPublished) {
+                        // FAIL  - CANT OVERWRITE PUBLISHED JAGMODEL
+                    } else // target JagModel is NOT published
+                    { // is the original JagModel published?
+                        if (origJagModel.isPublished) {
+                            await this.deleteJagModel(newJagModel);
+                            await this.cloneJagModel(origJagModel, newURN)
+                        } else { /// the original JAGModel is not published
+                            await this.deleteJagModel(newJagModel);
+                            await this.cloneJagModel(origJagModel, newURN)
+                            await this.deleteJagModel(origJagModel);
+                        }
+
+                    }
+                } else {  // user says 'no' to overwrite
+                    // FAIL -- NOT OVERWRITING EXISTING JAGMODEL
+                }
+            } else {  // urn not already being used
+                // is the original JagModel published?
+                console.log("is published - " + origJagModel.isPublished);
+                if (origJagModel.isPublished) {
+                    console.log("(1)");
+                    await this.cloneJagModel(origJagModel, newURN)
+                } else {/// the original JAGModel is not published
+                    console.log("(2)");
+                    await this.cloneJagModel(origJagModel, newURN)
+                    await this.deleteJagModel(origJagModel);
+                }
+            }
+        }
+
+    }
+
+    async deleteJagModel(deadJagModel){
+        await StorageService.delete(deadJagModel.urn,'jag');
+        this._urnInput.classList.toggle("edited", false);
+        this._clearProperties();
+    }
+
+    async cloneJagModel(sourceJagModel, newURN) {
+        const description = sourceJagModel.toJSON();
+        description.urn = newURN;
+        const newJagModel = JAG.fromJSON(description);
+
+        // Update model references.
+        this._node.model = newJagModel; //?
+        this._JagModel = newJagModel;
+
+        await StorageService.create(newJagModel, 'jag');
+
+        // Remove unsaved box shadow on URN property input.
+        this._urnInput.classList.toggle("edited", false);
+
+        //  WHEN GOOD -->             this._JagModel.url = this._urnInput.value;
+    }
+
 
     _initUI() {
         const childOf_el = document.createElement('div');
@@ -663,41 +749,41 @@ customElements.define('jag-properties', class extends HTMLElement {
         leafNode_el.appendChild(this._leafNode);
 
         const name_el = FormUtils.createPropertyElement('name-property', 'Name');
-        this._name = FormUtils.createTextInput('name-property');
-        this._name.setAttribute("placeholder", "display name");
-        this._name.setAttribute("tabIndex", "0");
-        this._name.className = "direct-property";
-        name_el.appendChild(this._name);
+        this._nameInput = FormUtils.createTextInput('name-property');
+        this._nameInput.setAttribute("placeholder", "display name");
+        this._nameInput.setAttribute("tabIndex", "0");
+        this._nameInput.className = "direct-property";
+        name_el.appendChild(this._nameInput);
 
         const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
-        this._urn = FormUtils.createTextInput('urn-property');
-        this._urn.setAttribute("tabIndex", "1");
-        this._urn.className = "direct-property";
-        urn_el.appendChild(this._urn);
+        this._urnInput = FormUtils.createTextInput('urn-property');
+        this._urnInput.setAttribute("tabIndex", "1");
+        this._urnInput.className = "direct-property";
+        urn_el.appendChild(this._urnInput);
 
         const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
-        this._desc = document.createElement('textarea');
-        this._desc.setAttribute('id', 'desc-property');
-        this._desc.setAttribute('width', '100%');
-        this._desc.setAttribute('rows', '3');
-        this._desc.setAttribute("placeholder", "Enter your description of node here...");
-        this._desc.setAttribute("tabIndex", "2");
-        //this._desc = FormUtils.createTextInput('desc-property');
-        this._desc.className = "direct-property";
-        desc_el.appendChild(this._desc);
+        this._descInput = document.createElement('textarea');
+        this._descInput.setAttribute('id', 'desc-property');
+        this._descInput.setAttribute('width', '100%');
+        this._descInput.setAttribute('rows', '3');
+        this._descInput.setAttribute("placeholder", "Enter your description of node here...");
+        this._descInput.setAttribute("tabIndex", "2");
+        //this._descInput = FormUtils.createTextInput('desc-property');
+        this._descInput.className = "direct-property";
+        desc_el.appendChild(this._descInput);
 
         const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
-        this._name_ctx = FormUtils.createTextInput('name-ctx-property');
-        this._name_ctx.className = "contextual";
-        name_ctx_el.appendChild(this._name_ctx);
+        this._name_ctxInput = FormUtils.createTextInput('name-ctx-property');
+        this._name_ctxInput.className = "contextual";
+        name_ctx_el.appendChild(this._name_ctxInput);
 
         const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
-        this._desc_ctx = FormUtils.createTextInput('desc-ctx-property');
-        this._desc_ctx.className = "contextual";
-        desc_ctx_el.appendChild(this._desc_ctx);
+        this._desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
+        this._desc_ctxInput.className = "contextual";
+        desc_ctx_el.appendChild(this._desc_ctxInput);
 
         const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
-        this._execution = FormUtils.createSelect('execution-property', [{
+        this._executionSelect = FormUtils.createSelect('execution-property', [{
             value: JAG.EXECUTION.NONE,
             text: 'None'
         }, {
@@ -707,11 +793,11 @@ customElements.define('jag-properties', class extends HTMLElement {
             value: JAG.EXECUTION.PARALLEL,
             text: 'Parallel'
         }]);
-        this._execution.className = 'direct-property';
-        execution_el.appendChild(this._execution);
+        this._executionSelect.className = 'direct-property';
+        execution_el.appendChild(this._executionSelect);
 
         const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
-        this._operator = FormUtils.createSelect('operator-property', [{
+        this._operatorSelect = FormUtils.createSelect('operator-property', [{
             value: JAG.OPERATOR.NONE,
             text: 'None'
         }, {
@@ -721,8 +807,8 @@ customElements.define('jag-properties', class extends HTMLElement {
             value: JAG.OPERATOR.OR,
             text: 'Or'
         }]);
-        this._operator.className = 'direct-property';
-        operator_el.appendChild(this._operator);
+        this._operatorSelect.className = 'direct-property';
+        operator_el.appendChild(this._operatorSelect);
 
         // Create inputs area
         const inputs_el = FormUtils.createPropertyElement('inputs-property', 'Inputs');
@@ -789,91 +875,46 @@ customElements.define('jag-properties', class extends HTMLElement {
         this.appendChild(export_el);
     }
 
-    async _updateURN(newURN) {
-        //const idb_service = JAGService.instance('idb-service');
-        const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
-        const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
-
-        // dont think I need this anymore
-        // if(this._urn.value == this._model.urn) //??
-        //	return;}
-
-        // dont think I need this anymore
-        //if(!window.confirm("The URN has changed. Would you like to save this model to the new URN (" + this._urn.value + ")? (URN cannot be modified except to create a new model.)"))
-        //	return;
-
-        // Checks if new urn has a model associated to it and asks for permission to overwrite.
-        if (await StorageService.has(newURN, 'jag')) {
-            // Ask for confirmation
-            const overwrite = window.confirm(URL_RENAME_WARNING_POPUP);
-            if (!overwrite) {
-                // Reverts the urn to its original value and exits early.
-                this._urn.value = this._model.urn;
-                return;
-            }
-        }
-
-        // If we get there we can create/overwrite
-        // @TODO: replace with clone function (add to JAG model)
-        // @TODO: replace with clone function (add to JAG model)
-
-        const description = this._model.toJSON();
-        description.urn = newURN;
-        const new_model = JAG.fromJSON(description);
-
-        // Update model references.
-        this._node.model = new_model;
-        this._model = new_model;
-
-        if (!new_model.urn.match(regex)) {
-            // Store the updated model.
-            // @TODO: switch to update when avail.
-            await StorageService.create(new_model, 'jag');
-        }
-
-        // Remove unsaved box shadow on URN property input.
-        this._urn.classList.toggle("edited", false);
-    }
 
 
     _initHandlers() {
-        // this._urn.addEventListener('keyup', e => {
-        // 	this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
+        // this._urnInput.addEventListener('keyup', e => {
+        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._JagModel.urn);
         // });
 
-        //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._model.name = this._name.value;]
-        this._name.addEventListener('blur', async(e) => {  // get an error if the blur goes to a playground click on empty space.
-            this._model.name = this._name.value;
-            console.log("Going to update - this._model (schema jag) after a name change");
-            console.log(this._model)
-            await StorageService.update(this._model, 'jag');
+        //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._JagModel.name = this._nameInput.value;]
+        this._nameInput.addEventListener('blur', async(e) => {  // get an error if the blur goes to a playground click on empty space.
+            this._JagModel.name = this._nameInput.value;
+            console.log("Going to update - this._JagModel (schema jag) after a name change");
+            console.log(this._JagModel)
+            await StorageService.update(this._JagModel, 'jag');
         });
 
-        this._name.addEventListener('keyup', (e) => {
+        this._nameInput.addEventListener('keyup', (e) => {
             if (e.key == "Enter") {
                 e.preventDefault();
                 let inputs = this.querySelectorAll("input:enabled, textarea");
 
                 //current position in 'form'
-                const currentPosition = this._name.tabIndex;
+                const currentPosition = this._nameInput.tabIndex;
                 if (currentPosition < inputs.length - 1) {
                     inputs.item(currentPosition + 1).focus();
                 } else {
                     inputs.item(currentPosition).blur();
                 }
             } else {
-                this._model.name = this._name.value;
+                this._JagModel.name = this._nameInput.value;
             }
         });
 
 
-        this._urn.addEventListener('keyup', (e) => {
+        this._urnInput.addEventListener('keyup', (e) => {
             if (e.key == "Enter") {
                 e.preventDefault();
                 let inputs = this.querySelectorAll("input:enabled, textarea");
-                this._urn.classList.toggle('edited', this._urn.value != this._model.urn);
+                this._urnInput.classList.toggle('edited', this._urnInput.value != this._JagModel.urn);
                 //current position in 'form'
-                const currentPosition = this._urn.tabIndex;
+                const currentPosition = this._urnInput.tabIndex;
                 if (currentPosition < inputs.length - 1) {
                     inputs.item(currentPosition + 1).focus();
                 } else {
@@ -882,61 +923,61 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         });
 
-        this._urn.addEventListener('focusout', (e) => {
-            if (this._model.urn != this._urn.value) {
-                if (isValidUrl(this._urn.value)) {
-                    this._model.url = this._url.value;
-                    this._updateURN(this._urn.value);  // might be a rename
-                } else {
-                    window.alert("Invalid URL - Assigning unsavable temp.");
-                }
+        this._urnInput.addEventListener('focusout', (e) => {
+            if (this._JagModel.urn != this._urnInput.value) {
+                this._updateURN(this._JagModel.urn , this._urnInput.value);  // might be a rename
+
             }
         })
 
-        this._desc.addEventListener('blur', async (e) => {
-            console.log(this._model);
-            await StorageService.update(this._model, 'jag');
+
+
+
+
+        this._descInput.addEventListener('blur', async (e) => {
+            console.log(this._JagModel);
+            await StorageService.update(this._JagModel, 'jag');
         });
 
-        this._desc.addEventListener('keyup', (e) => {
+        this._descInput.addEventListener('keyup', (e) => {
             if (e.key == "Enter") {
                 e.preventDefault();
                 let inputs = this.querySelectorAll("input:enabled, textarea");
                 //current position in 'form'
-                const currentPosition = this._desc.tabIndex;
+                const currentPosition = this._descInput.tabIndex;
                 if (currentPosition < inputs.length - 1) {
                     inputs.item(currentPosition + 1).focus();
                 } else {
                     inputs.item(currentPosition).blur();
                 }
             } else {
-                this._model.description = this._desc.value;
+                this._JagModel.description = this._descInput.value;
             }
         });
 
 
-        this._name_ctx.addEventListener('keyup', async () => {
-            this._node.setContextualName(this._name_ctx.value);
-            await StorageService.update(this._model, 'jag');
+        this._name_ctxInput.addEventListener('keyup', async () => {
+            this._node.setContextualName(this._name_ctxInput.value);
+            await StorageService.update(this._JagModel, 'jag');
         });
 
-        this._desc_ctx.addEventListener('keyup', async () => {
-            this._node.setContextualDescription(this._desc_ctx.value);
-            await StorageService.update(this._model, 'jag');
+        this._desc_ctxInput.addEventListener('keyup', async () => {
+            this._node.setContextualDescription(this._desc_ctxInput.value);
+            await StorageService.update(this._JagModel, 'jag');
         });
 
-        this._execution.addEventListener('change', async  e => {
-            this._model.execution = this._execution.value;
-            await StorageService.update(this._model, 'jag');
+        this._executionSelect.addEventListener('change', async  e => {
+            this._JagModel.execution = this._executionSelect.value;
+            await StorageService.update(this._JagModel, 'jag');
         });
 
-        this._operator.addEventListener('change', async e => {
-            this._model.operator = this._operator.value;
-            await StorageService.update(this._model, 'jag');
+        this._operatorSelect.addEventListener('change', async e => {
+            this._JagModel.operator = this._operatorSelect.value;
+            await StorageService.update(this._JagModel, 'jag');
         });
 
         this._export.addEventListener('click', e => {
-            const node = this._model;
+            const node = this._JagModel;
             const json = JSON.stringify(node.toJSON());
             const a = document.createElement('a');
             const data = `data:application/json,${encodeURI(json)}`;
@@ -947,15 +988,15 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _clearProperties() {
-        this._urn.value = '';
-        this._name.value = '';
-        this._desc.value = '';
-        this._name_ctx.value = '';
-        this._desc_ctx.value = '';
-        this._execution.value = JAG.EXECUTION.NONE;
-        this._operator.value = JAG.OPERATOR.NONE;
+        this._urnInput.value = '';
+        this._nameInput.value = '';
+        this._descInput.value = '';
+        this._name_ctxInput.value = '';
+        this._desc_ctxInput.value = '';
+        this._executionSelect.value = JAG.EXECUTION.NONE;
+        this._operatorSelect.value = JAG.OPERATOR.NONE;
 
-        this._urn.classList.toggle("edited", false);
+        this._urnInput.classList.toggle("edited", false);
 
         this._clearIO();
         this._clearAnnotations();
@@ -966,12 +1007,12 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _clearIO() {
-        this._input_elements.clear();
+        this._consumesMap.clear();
         while (this._inputs.firstChild) {
             this._inputs.removeChild(this._inputs.firstChild);
         }
 
-        this._output_elements.clear();
+        this._producesMap.clear();
         while (this._outputs.firstChild) {
             this._outputs.removeChild(this._outputs.firstChild);
         }
@@ -988,33 +1029,33 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _enableProperties(enabled) {
-        this._urn.disabled = !enabled;
-        this._name.disabled = !enabled;
-        this._desc.disabled = !enabled;
-        this._name_ctx.disabled = !enabled;
-        this._desc_ctx.disabled = !enabled;
-        this._execution.disabled = !enabled;
-        this._operator.disabled = !enabled;
+        this._urnInput.disabled = !enabled;
+        this._nameInput.disabled = !enabled;
+        this._descInput.disabled = !enabled;
+        this._name_ctxInput.disabled = !enabled;
+        this._desc_ctxInput.disabled = !enabled;
+        this._executionSelect.disabled = !enabled;
+        this._operatorSelect.disabled = !enabled;
 
-        this._input_elements.disabled = !enabled;
-        this._output_elements.disabled = !enabled;
+        this._consumesMap.disabled = !enabled;
+        this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
 
-        if (this._node && this._node.getParent() != undefined && (enabled || this._model instanceof UndefinedJAG)) {
+        if (this._node && this._node.getParent() != undefined && (enabled || this._JagModel instanceof UndefinedJAG)) {
             this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
             this.classList.toggle('root-node', false);
-            this._name_ctx.disabled = false;
-            this._desc_ctx.disabled = false;
+            this._name_ctxInput.disabled = false;
+            this._desc_ctxInput.disabled = false;
         } else {
             this.classList.toggle('root-node', true);
-            this._name_ctx.disabled = true;
-            this._desc_ctx.disabled = true;
+            this._name_ctxInput.disabled = true;
+            this._desc_ctxInput.disabled = true;
         }
 
-        if (enabled || (!enabled && !this._model)) {
+        if (enabled || (!enabled && !this._JagModel)) {
             this.classList.toggle('defined-model', true);
             this.classList.toggle('non-leaf-node', true);
-        } else if (this._model instanceof UndefinedJAG) {
+        } else if (this._JagModel instanceof UndefinedJAG) {
             this.classList.toggle('defined-model', false);
 
             if (this._node.getParent()) {

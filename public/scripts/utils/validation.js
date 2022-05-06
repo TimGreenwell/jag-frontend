@@ -43,6 +43,27 @@ export default class JAGATValidation {
             JAGATValidation.validateBindings(bindings);
     }
 
+    static isValidUrn(urn) {
+        let isValid = true;
+        try {
+            if (!urn) {
+                throw new Error(`Must have a defined URN string of valid format.`);
+            }
+            if (typeof urn !== "string") {
+                throw new Error(`URN must be a string of valid format.`);
+            }
+            if (urn.match(/^[a-z0-9:-]*[a-z0-9]$/) == null) {
+                throw new Error('URN must be a valid format.');
+            }
+        } catch (e) {
+            // @TODO - Do we want to autofix? Alert?
+            isValid = false;
+        } finally {
+            return isValid;
+        }
+    }
+
+
     static validateURN(urn) {
         if (!urn)
             throw new Error(`Must have a URN string of valid format.`);
