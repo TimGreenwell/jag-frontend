@@ -221,15 +221,15 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.dispatchEvent(new CustomEvent('refresh', { detail: { model: this._model, refreshed: alreadyRefreshed } }));
 	}
 
-	getChildren() {
-		const all_children = new Set();
-
-		for (const out_edge of this._outs) {
-			all_children.add(out_edge.getNodeEnd());
-		}
-
-		return all_children;
-	}
+	// getChildren() {
+	// 	const all_children = new Set();
+	//
+	// 	for (const out_edge of this._outs) {
+	// 		all_children.add(out_edge.getNodeEnd());
+	// 	}
+	//
+	// 	return all_children;
+	// }
 
 	setContextualName(name) {
 		if (this._in) {

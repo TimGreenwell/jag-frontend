@@ -1,14 +1,14 @@
 /**
- * @file Analysis library for IA editor.
+ * @file AnalysisModel library for IA editor.
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
  * @version 0.16
  */
 
-//import AnalysisService from '../services/analysis.js';
+//import AnalysisService from '../services/analysis-model.js';
 import StorageService from "../services/storage-service.js";
-import Analysis from "../models/analysis.js";
+import AnalysisModel from "../models/analysis-model.js";
 import JAG from "../models/jag.js";
 
 customElements.define('analysis-library', class extends HTMLElement {
@@ -56,11 +56,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 	// }
 
 	updateListItem(updatedAnalysisModel, idx = -1) {
-		console.log("!!!!!!!!!!!!!!!!   going to update the Analyst Model !!!!!!!!!!!!!!!!!!!");
-		console.log(this._items);
+
 		for (let idx in this._items) {
-			console.log(this._items[idx].model.id);
-			console.log(updatedAnalysisModel.id);
 			if (this._items[idx].model.id == updatedAnalysisModel.id) {
 
 				const rootUrn = this._items[idx].element.querySelectorAll("pre").item(0).innerText;

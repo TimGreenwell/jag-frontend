@@ -11,7 +11,7 @@
 //import NodeService from './services/node.js';
 //import AgentService from './services/agent.js';
 //import TeamService from './services/team.js';
-//import AnalysisService from './services/analysis.js';
+//import AnalysisService from './services/analysis-model.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import IATable from './ui/ia-table.js';
 import AnalysisLibrary from './views/analysis-library.js';
@@ -78,7 +78,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 	body.appendChild(editor);
 
 	library.addEventListener('item-selected', (e) => {
-		table.analysis = e.detail.model;
+		console.log("THis kicks it off")
+		console.log("table.analysis = e.detail.model")
+		console.log(e.detail.model);
+		console.log("editor.team = e.detail.model.team")
+		console.log(e.detail.model.team)
+		table.analysisModel = e.detail.model;
 		editor.team = e.detail.model.team;
 	});
 

@@ -8,7 +8,7 @@
 'use strict';
 
 import AgentModel from '../models/agent.js';
-import Analysis from '../models/analysis.js';
+import AnalysisModel from '../models/analysis-model.js';
 import JAG from '../models/jag.js';
 import NodeModel from '../models/node.js';
 import TeamModel from '../models/team.js';
@@ -23,7 +23,7 @@ class IATable extends Popupable {
 
 		this.setPopupBounds(this);
 
-		this._analysis = undefined;
+		this._analysisModel = undefined;
 
 		this._domElements = {
 			name: undefined,
@@ -37,28 +37,79 @@ class IATable extends Popupable {
 
 		this._boundRefresh = this._refresh.bind(this);
 
+		StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
+		StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
+		StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
+
 	//	StorageService.subscribe("jag-storage-updated", this.updateNode.bind(this));
-//		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
+	//	StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 	}
 
 	// get analysisSelector() {
 	// 	return this._domElements.selector;
 	// }
 
+	async handleJagStorageUpdated(newJag, newJagUrn) {
+		console.log("On the handleJagStorageUpdate...............................................")
+		if (this.analysisModel) {
+			let upgradedAnalysisModel = this._analysisModel;
+			console.log("rootURN is ")
+			console.log(upgradedAnalysisModel.root.jag.urn)
+			let rootUrn = upgradedAnalysisModel.root.jag.urn;
+
+			console.log("")
+			const rootJagModel = await StorageService.get(rootUrn, 'jag');
+			console.log("New root Jag model is:")
+			console.log(rootJagModel)
+			const rootNodeModel = new NodeModel({jag: rootJagModel});
+			this.analysis.root =
+			console.log("New root node model is:")
+			console.log(rootNodeModel)
+		//	let updatedAnalysis = new AnalysisModel({name: analysisName, root: rootNodeModel});
+
+			console.log("building out jag nodes......");
+			await this._analysisModel.buildAnalysisJagNodes(rootNodeModel);
+
+			console.log(rootJagModel)
+		//await updatedAnalysis.buildDefaultTeam();
+
+
+		}
+  	}
+
+	handleJagStorageCreated(newJag, newJagUrn) {
+		console.log("Looks like we have a new JAG model to handle")
+		console.log(newJag)
+		console.log(newJagUrn)
+	}
+
+	handleAnalysisStorageCreated(newAnalysis, newAnalysisId) {
+		this.analysisModel = newAnalysis;
+	}
+
 	get analysisView() {
 		return this._domElements.analysis;
 	}
 
-	get analysis() {
-		return this._analysis;
+	get analysisModel() {
+		return this._analysisModel;
 	}
 
-	set analysis(newAnalysisModel) {
-		// remove current view if it exists
+	set analysis(newAnalysisModel){
+		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+	}
 
+	set analysisModel(newAnalysisModel) {
+		// remove current view if it exists
+         console.log("Setting a new analysis ")
+		console.log(newAnalysisModel)
 		if (this._domElements.analysis !== undefined) {
 			this.removeChild(this._domElements.analysis);
-			this._analysis.team.removeEventListener('update', this._boundRefresh);
+			this._analysisModel.team.removeEventListener('update', this._boundRefresh);
 			for (const agent of this._agents) {
 				agent.removeEventListener('update', this._boundRefresh);
 			}
@@ -66,17 +117,18 @@ class IATable extends Popupable {
 
 		if (newAnalysisModel) {
 			const analysisView = new AnalysisView(newAnalysisModel);
-			analysisView.initialize(this);
+			//analysisView.initialize();
+			this.appendChild(analysisView);
 
-			this._analysis = newAnalysisModel;
+			this._analysisModel = newAnalysisModel;
 			this._domElements.name.removeAttribute('disabled');
 			this._domElements.name.value = newAnalysisModel.name;
 			this._domElements.description.removeAttribute('disabled');
 			this._domElements.description.value = newAnalysisModel.description;
 			this._domElements.analysis = analysisView;
 
-			this._analysis.team.addEventListener('update', this._boundRefresh);
-			this._agents = this._analysis.team.agents;
+			this._analysisModel.team.addEventListener('update', this._boundRefresh);
+			this._agents = this._analysisModel.team.agents;
 			for (const agent of this._agents) {
 				agent.addEventListener('update', this._boundRefresh);
 			}
@@ -84,26 +136,41 @@ class IATable extends Popupable {
 	}
 
 	async create(analysisName, rootUrn) {
-		//const jag = await JAGService.instance('idb-service').get(root);
-		// @TODO straighten out parameter order between Indexed-DB and StorageService for 'get'
-		//const jag = await StorageService.getStorageInstance('idb-service').get('jag',root);
-		const rootJagModel = await StorageService.get(rootUrn,'jag');
-		const nodeModel = new NodeModel({jag: rootJagModel});
+		let rootJagModel;
+		if (await StorageService.has(rootUrn, 'jag')) {
+			rootJagModel = await StorageService.get(rootUrn, 'jag');
+		} else {
+			window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
+		}
+		const rootNodeModel = new NodeModel({jag: rootJagModel});
+		const analysisModel = new AnalysisModel({name: analysisName, root: rootNodeModel});
+		await analysisModel.buildAnalysisJagNodes(rootNodeModel);
+		await analysisModel.buildDefaultTeam();
+///////////////////
+//		if (this._team == undefined) {
+			analysisModel.team = new TeamModel();
+		console.log('Ab');
+		analysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
+		console.log('Ac');
+		analysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
+		console.log('Ad');
+			await Promise.all(analysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
+		console.log('Ae');
 
-		//await StorageService.create(nodeModel,'node');
-		const analysis = new Analysis({name: analysisName, root: nodeModel});
+		    await StorageService.create(analysisModel.team, 'team');
+		console.log('Af');
+//		}
+		////////////////////
 
-		await analysis.buildAnalysisJagNodes(nodeModel);
-		await analysis.buildDefaultTeam();
-		console.log("--");
-		console.log(analysis);
+		await StorageService.create(analysisModel, 'analysis');
+		console.log('Ag');
+		analysisModel.save();
+		console.log('Ah');
+		this._analysisModel = analysisModel;
+		console.log('Ai');
 
-		await StorageService.create(analysis,'analysis');
-
-		analysis.save();
-		this.analysis = analysis;
-
-	//	this.dispatchEvent(new CustomEvent('create-analysis', { detail: { analysis: analysis }}));
+		this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: analysisModel}}));
+		console.log('Aj');
 	}
 
 	_initUI() {
@@ -122,7 +189,7 @@ class IATable extends Popupable {
 		const $import_analysis = document.createElement('button');
 		const $analysis_file = document.createElement('input');
 
-		$new_analysis.innerText = 'Create Analysis';
+		$new_analysis.innerText = 'Create AnalysisModel';
 		$new_analysis.setAttribute('id', 'new-analysis');
 		$analysis_name_label.setAttribute('for', 'analysis-name');
 		$analysis_name_label.innerText = 'Name';
@@ -174,7 +241,7 @@ class IATable extends Popupable {
 	}
 
 	_refresh(e) {
-		this._domElements.analysis.layout();
+		this._domElements.analysisModel.layout();
 	}
 
 	_handleNewAnalysis() {
@@ -187,13 +254,13 @@ class IATable extends Popupable {
 	}
 
 	_handleAnalysisNameChange(event) {
-		this._analysis.name = event.target.value;
-		StorageService.update(this._analysis, 'analysis');
+		this._analysisModel.name = event.target.value;
+		StorageService.update(this._analysisModel, 'analysis');
 	}
 
 	_handleAnalysisDescriptionChange(event) {
-		this._analysis.description = event.target.value;
-		StorageService.update(this._analysis, 'analysis');
+		this._analysisModel.description = event.target.value;
+		StorageService.update(this._analysisModel, 'analysis');
 	}
 
 	_handleExportAnalysis() {
@@ -205,30 +272,30 @@ class IATable extends Popupable {
 		});
 	}
 
-	async _checkImportConflicts(analysis) {
+	async _checkImportConflicts(analysisModel) {
 		{
 			//const service = AnalysisService.instance('idb-service');
-			if (await StorageService.has(analysis.id,'analysis'))
+			if (await StorageService.has(analysisModel.id,'analysis'))
 				return true;
 		}
 
 		{
 			//const service = NodeService.instance('idb-service');
-			for (const node of analysis.nodes)
+			for (const node of analysisModel.nodes)
 				if (await StorageService.has(node.id,'node'))
 					return true;
 		}
 
 		{
 			//const service = TeamService.instance('idb-service');
-				for (const team of analysis.teams)
+				for (const team of analysisModel.teams)
 				if (await StorageService.has(team.id, 'team'))
 					return true;
 		}
 
 		{
 			//const service = AgentService.instance('idb-service');
-			for (const team of analysis.teams)
+			for (const team of analysisModel.teams)
 				for (const agent of team.agents)
 					if (await StorageService.has(agent.id, 'agent'))
 						return true;
@@ -243,11 +310,11 @@ class IATable extends Popupable {
 
 		const file = files[0];
 		const content = await file.text();
-		const analysis = JSON.parse(content);
+		const analysisModel = JSON.parse(content);
 
-		if (analysis.jags) {
+		if (analysisModel.jags) {
 			//const service = JAGService.instance('idb-service');
-			for (const jag of analysis.jags) {
+			for (const jag of analysisModel.jags) {
 				if (await StorageService.has(jag.urn, 'jag')) {
 					this.popup({
 						content: IATable.NOTICE_OVERWRITE_JAG,
@@ -262,7 +329,7 @@ class IATable extends Popupable {
 		this.popup({
 			content: IATable.NOTICE_OVERWRITE_ANALYSIS,
 			trackEl: this._domElements.import,
-			inputs: { table: this, analysis: analysis, conflict: await this._checkImportConflicts(analysis) },
+			inputs: { table: this, analysis: analysisModel, conflict: await this._checkImportConflicts(analysisModel) },
 			highlights: [this._domElements.import]
 		});
 	}
@@ -271,11 +338,11 @@ class IATable extends Popupable {
 		this._domElements.file.click();
 	}
 
-	_createAnalysisEntry(analysis) {
+	_createAnalysisEntry(analysisModel) {
 		const $option = document.createElement('option');
-		$option.setAttribute('value', analysis.id);
+		$option.setAttribute('value', analysisModel.id);
 
-		let name = analysis.name;
+		let name = analysisModel.name;
 		if(name === '')
 			name = IATable.FALLBACK_ANALYSIS_NAME;
 
@@ -285,15 +352,15 @@ class IATable extends Popupable {
 
 
 
-	async import(analysis) {
+	async import(analysisModel) {
 		{
 			//const service = NodeService.instance('idb-service');
 			// const service = StorageService.getStorageInstance('idb-service');
 
 			// Sort nodes with the least number of children first.
-			analysis.nodes.sort((a, b) => a.children.length - b.children.length);
+			analysisModel.nodes.sort((a, b) => a.children.length - b.children.length);
 
-			for (const node of analysis.nodes) {
+			for (const node of analysisModel.nodes) {
 				const model = await NodeModel.fromJSON(node);
 				//await service.create(model,'node');
 				await StorageService.create(model,'node');
@@ -307,7 +374,7 @@ class IATable extends Popupable {
 			//const agent_service = AgentService.instance('idb-service');
 			//const agent_service = StorageService.getStorageInstance('idb-service');
 
-			for (const team of analysis.teams) {
+			for (const team of analysisModel.teams) {
 				for (const agent of team.agents) {
 					await StorageService.create(AgentModel.fromJSON(agent),'agent');
 				}
@@ -321,12 +388,12 @@ class IATable extends Popupable {
 		//const service = AnalysisService.instance('idb-service');
 	//	const service = StorageService.getStorageInstance('idb-service');
 
-		const model = await Analysis.fromJSON({
-			id: analysis.id,
-			name: analysis.name,
-			root: analysis.root,
-			description: analysis.description || '',
-			teams: analysis.teams.map((team) => team.id)
+		const model = await AnalysisModel.fromJSON({
+			id: analysisModel.id,
+			name: analysisModel.name,
+			root: analysisModel.root,
+			description: analysisModel.description || '',
+			teams: analysisModel.teams.map((team) => team.id)
 		});
 
 		await StorageService.create(model,'analysis');
@@ -335,10 +402,10 @@ class IATable extends Popupable {
 	}
 
 	async export(static_jags) {
-		const analysis = this._analysis;
-		const json = analysis.toJSON();
+		const analysisModel= this._analysisModel;
+		const json = analysisModel.toJSON();
 
-		const root = analysis.root;
+		const root = analysisModel.root;
 		let children = [root];
 
 		const jags = [];
@@ -375,7 +442,7 @@ class IATable extends Popupable {
 		}
 
 		const teams = [];
-		for (let team of analysis.teams) {
+		for (let team of analysisModel.teams) {
 			const jteam = team.toJSON();
 
 			const agents = [];
@@ -391,7 +458,7 @@ class IATable extends Popupable {
 		const a = document.createElement('a');
 		const data = `data:application/json,${encodeURI(JSON.stringify(json))}`;
 		a.href = data;
-		a.download = `${analysis.name}.json`;
+		a.download = `${analysisModel.name}.json`;
 		a.click();
 	}
 }
@@ -404,7 +471,7 @@ IATable.POPUP_TYPES = {
 
 IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 	type: IATable.POPUP_TYPES.NOTICE,
-	name: "Create Analysis",
+	name: "Create AnalysisModel",
 	description: "Provide a name and root node to create a new analysis.",
 	properties: [
 		{ name: 'name', label: 'Name', type: 'text' },
@@ -429,7 +496,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 	],
 	actions: [
 		{ text: "Create", color: "white", bgColor: "green",
-			action: function ({inputs: {table}, outputs: {name, root}}) {  // analysis name and root URN
+			action: function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
 				table.create(name, root);  // table = ia-table (this)
 			}
 		},
@@ -457,12 +524,12 @@ IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
 
 IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 	type: IATable.POPUP_TYPES.NOTICE,
-	name: "Overwrite Analysis",
+	name: "Overwrite AnalysisModel",
 	description: "Data already exists for this analysis. Overwrite existing data?",
 	actions: [
 		{ text: "Overwrite", color: "black", bgColor: "red",
 			action: function ({inputs: {table, analysis}}) {
-				table.import(analysis);
+				table.import(analysisModel);
 			}
 		},
 		{ text: "Cancel", color: "white", bgColor: "black" }
@@ -474,7 +541,7 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
 	type: IATable.POPUP_TYPES.NOTICE,
 	name: "Overwrite JAGs",
-	description: ({inputs: {jag}}) => `The uploaded analysis contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
+	description: ({inputs: {jag}}) => `The uploaded analysisModel contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
 	actions: [
 		{ text: "Overwrite", color: "black", bgColor: "red",
 			action: async function ({inputs: {jag}}) {
@@ -487,7 +554,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
 });
 
 IATable.defaultUrn  = "us:ihmc:";
-IATable.FALLBACK_ANALYSIS_NAME = 'Analysis w/o name';
+IATable.FALLBACK_ANALYSIS_NAME = 'AnalysisModel w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';
 
 customElements.define('ia-table', IATable);

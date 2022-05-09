@@ -111,36 +111,60 @@ export default class StorageService extends Observable{
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
+        console.log('right before error?')
+        console.log(createdModel);
         const description = createdModel.toJSON();
-        await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-        console.log("${schema}-storage-created             ----------------------------------------------------")
-        this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, description: description});
+        const createdId = SchemaManager.getKeyValue(schema,description);
+        await this.__SERVICES.get(this._preferredStorage).create(schema, createdId, description);
+
+        this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: description });
     }
 
     /**
      * Updates an existing model with the specified content.
      * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
      */
-    static update(updatedModel, schema = this._schema) {
-        console.log("in storageservice")
-        console.log(updatedModel);
+    static async update(updatedModel, schema = this._schema) {
         //@TODO if sync - update all storages
         const description = updatedModel.toJSON();
-        console.log(description);
-        console.log("sending it to indexed db services");
-        this.__SERVICES.get(this._preferredStorage).update(schema, SchemaManager.getKeyValue(schema,description),description);
-        console.log("done sending it");
-        this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, description: description});
+        const updatedId = SchemaManager.getKeyValue(schema,description);
+        await this.__SERVICES.get(this._preferredStorage).update(schema, updatedId ,description);
+        this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: description});
     }
 
 
     /**
      * Removes the model with the existing urn from storage.
      */
-    static delete(id, schema = this._schema) {
+    static async delete(deletedId, schema = this._schema) {
         //SchemaManager.getKey(schema)
-        this.__SERVICES.get(this._preferredStorage).delete(id,schema);
-        this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, description: id});
+        let result = await this.__SERVICES.get(this._preferredStorage).delete(schema, deletedId);
+        this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
     }
+
+
+    static async replace(origId, newId, schema = this._schema) {
+        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
+        let keyField = await SchemaManager.getKey(schema);
+        description[keyField] = newId;
+
+        let result = await this.__SERVICES.get(this._preferredStorage).delete(schema, origId);
+
+        await this.__SERVICES.get(this._preferredStorage).create(schema, newId, description);
+        this.confirmStorageChange({topic:`${schema}-storage-replaced`,schema: schema, id: origId,  description: description});
+    }
+
+
+    // id2 will be an exact model copy of id1
+    static async clone(origId, cloneId, schema = this._schema) {
+        //SchemaManager.getKey(schema)
+        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
+        let index = SchemaManager.getKeyValue(schema,description);
+        description[index] = cloneId;
+        await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
+        this.confirmStorageChange({topic:`${schema}-storage-cloned`,schema: schema, id: cloneId, description: description});
+    }
+
+
 }
 

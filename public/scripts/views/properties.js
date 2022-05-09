@@ -13,6 +13,7 @@ import UndefinedJAG from '../models/undefined.js';
 import InputValidator from '../utils/validation.js';
 import FormUtils from '../utils/forms.js';
 
+
 customElements.define('jag-properties', class extends HTMLElement {
 
     constructor() {
@@ -46,13 +47,12 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     handleStorageUpdate(newJagModel) {
-        console.log("properties view getting updated!");
-        console.log(newJagModel);
         if (newJagModel.urn == this._urnInput) {
             this._jagModel = newJagModel;
             this._updateProperties();
         }
     }
+    // Called by user selecting one or more Nodes in the playground
 
     handleSelectionUpdate(selection) {
         if (this._jagModel) {
@@ -61,25 +61,16 @@ customElements.define('jag-properties', class extends HTMLElement {
             } else {
                 this._jagModel.removeEventListener('update', this._boundUpdate);
             }
-
             this._node = undefined;
             this._jagModel = undefined;
         }
-
         this._clearProperties();
-
         if (selection.size == 1) {
             const selectedNodeModel = selection.values().next().value;
-            console.log(selectedNodeModel)
-            console.log("()()(3)");
-            console.log(selection);
             if (selectedNodeModel._model) {         // why wouldnt this have a model(node)?
-                console.log("()(2)()");
                 this._node = selectedNodeModel;
                 this._jagModel = this._node.model;
-                console.log("(4)()()");
                 this._updateProperties();
-                console.log("()(5)()");
                 if (this._jagModel instanceof UndefinedJAG) {
                     this._jagModel.addEventListener('define', this._boundDefine);
                 } else {
@@ -87,7 +78,6 @@ customElements.define('jag-properties', class extends HTMLElement {
                 }
             }
         } else {
-            console.log("(1)()()");
             this._enableProperties(false);
         }
     }
@@ -654,14 +644,10 @@ customElements.define('jag-properties', class extends HTMLElement {
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(this._urnInput.value);
         if (isValid) {
-            console.log("is valid - " + isValid);
             let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isPublished'
-            console.log(origJagModel)
             let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
-            console.log(urnAlreadyBeingUsed)
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
-                console.log("is being used - " + urnAlreadyBeingUsed);
                 // Does user confirm an overwrite??
                 if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
                     let newJagModel = await StorageService.get(origURN, 'jag');
@@ -670,16 +656,13 @@ customElements.define('jag-properties', class extends HTMLElement {
                     if (newJagModel.isPublished) {
                         // FAIL  - CANT OVERWRITE PUBLISHED JAGMODEL
                     } else // target JagModel is NOT published
+
                     { // is the original JagModel published?
                         if (origJagModel.isPublished) {
-                            await this.deleteJagModel(newJagModel);
-                            await this.cloneJagModel(origJagModel, newURN)
+                            await StorageService.clone(origURN, newURN, 'jag');
                         } else { /// the original JAGModel is not published
-                            await this.deleteJagModel(newJagModel);
-                            await this.cloneJagModel(origJagModel, newURN)
-                            await this.deleteJagModel(origJagModel);
+                            await StorageService.replace(origURN, newURN, 'jag')
                         }
-
                     }
                 } else {  // user says 'no' to overwrite
                     // FAIL -- NOT OVERWRITING EXISTING JAGMODEL
@@ -688,18 +671,17 @@ customElements.define('jag-properties', class extends HTMLElement {
                 // is the original JagModel published?
                 console.log("is published - " + origJagModel.isPublished);
                 if (origJagModel.isPublished) {
-                    console.log("(1)");
                     await this.cloneJagModel(origJagModel, newURN)
                 } else {/// the original JAGModel is not published
-                     await this.cloneJagModel(origJagModel, newURN)
-                     await this.deleteJagModel(origJagModel);
-                  }
+                    await StorageService.replace(origURN, newURN, 'jag');
+                }
             }
         }
 
     }
 
     async deleteJagModel(deadJagModel){
+        this._jagModel = undefined;
         await StorageService.get(deadJagModel.urn,'jag');
 
 
@@ -712,16 +694,10 @@ customElements.define('jag-properties', class extends HTMLElement {
         const description = sourceJagModel.toJSON();
         description.urn = newURN;
         const newJagModel = JAG.fromJSON(description);
-
         // Update model references.
         this._node.model = newJagModel; //?
         this._jagModel = newJagModel;
-        console.log("!!!!!!!!!!!!!!");
-        console.log(sourceJagModel);
-        console.log(newJagModel);
-
         await StorageService.create(newJagModel, 'jag');
-
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 
@@ -889,10 +865,9 @@ customElements.define('jag-properties', class extends HTMLElement {
 
         //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._jagModel.name = this._nameInput.value;]
         this._nameInput.addEventListener('blur', async(e) => {  // get an error if the blur goes to a playground click on empty space.
+            if (this._jagModel) {
             this._jagModel.name = this._nameInput.value;
-            console.log("Going to update - this._jagModel (schema jag) after a name change");
-            console.log(this._jagModel)
-            await StorageService.update(this._jagModel, 'jag');
+            await StorageService.update(this._jagModel, 'jag');}
         });
 
         this._nameInput.addEventListener('keyup', (e) => {
@@ -928,20 +903,17 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         });
 
-        this._urnInput.addEventListener('focusout', (e) => {
+        this._urnInput.addEventListener('focusout', async (e) => {
             if (this._jagModel.urn != this._urnInput.value) {
-                this._updateURN(this._jagModel.urn , this._urnInput.value);  // might be a rename
-
+                await this._updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
+                this._jagModel = undefined;   //zzzz
             }
         })
 
-
-
-
-
         this._descInput.addEventListener('blur', async (e) => {
-            console.log(this._jagModel);
-            await StorageService.update(this._jagModel, 'jag');
+            if (this._jagModel) {
+            this._jagModel.description = this._descInput.value;
+            await StorageService.update(this._jagModel, 'jag');}
         });
 
         this._descInput.addEventListener('keyup', (e) => {
@@ -962,23 +934,31 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 
         this._name_ctxInput.addEventListener('keyup', async () => {
-            this._node.setContextualName(this._name_ctxInput.value);
-            await StorageService.update(this._jagModel, 'jag');
+            if (this._jagModel) {
+                this._node.setContextualName(this._name_ctxInput.value);
+                await StorageService.update(this._jagModel, 'jag');
+            }
         });
 
         this._desc_ctxInput.addEventListener('keyup', async () => {
-            this._node.setContextualDescription(this._desc_ctxInput.value);
-            await StorageService.update(this._jagModel, 'jag');
+            if (this._jagModel) {
+                this._node.setContextualDescription(this._desc_ctxInput.value);
+                await StorageService.update(this._jagModel, 'jag');
+            }
         });
 
         this._executionSelect.addEventListener('change', async  e => {
-            this._jagModel.execution = this._executionSelect.value;
-            await StorageService.update(this._jagModel, 'jag');
+            if (this._jagModel) {
+                this._jagModel.execution = this._executionSelect.value;
+                await StorageService.update(this._jagModel, 'jag');
+            }
         });
 
         this._operatorSelect.addEventListener('change', async e => {
-            this._jagModel.operator = this._operatorSelect.value;
-            await StorageService.update(this._jagModel, 'jag');
+            if (this._jagModel) {
+                this._jagModel.operator = this._operatorSelect.value;
+                await StorageService.update(this._jagModel, 'jag');
+            }
         });
 
         this._export.addEventListener('click', e => {

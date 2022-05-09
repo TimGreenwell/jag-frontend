@@ -1,5 +1,5 @@
 /**
- * @fileOverview Analysis cell component.
+ * @fileOverview AnalysisModel cell component.
  *
  * @author mvignati
  * @version 0.22

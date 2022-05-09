@@ -55,9 +55,11 @@ class Playground extends Popupable {
 		this._boundDragView = this.dragView.bind(this);
 		this._boundStopDragView = this.stopDragView.bind(this);
 
-		StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
+	   StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
 		StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
 		StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));
+		StorageService.subscribe("jag-storage-cloned", this._addJagNodeTree.bind(this));
+		StorageService.subscribe("jag-storage-replaced", this.replaceJagNode.bind(this));
 		this.initGlobalEvents();
 	}
 
@@ -205,17 +207,24 @@ class Playground extends Popupable {
 	// }
 
 	deleteJagNode(deadUrn){
+		console.log("Here in the delete zone");
+		console.log(this._activeNodesSet);
+
 		this._activeNodesSet.forEach((node) => {
 			if (node.model.urn == deadUrn) {
-				const deadJagNode = node;
-				console.log("}}}}}}}}}}}}}}}}}}}}");
-				console.log(deadJagNode)
-				console.log("}}}}}}}}}}}}}}}}}}}}");
 			}
 		})
 	}
 
-	updateJagNode(updatedJagModel) {
+	replaceJagNode(newJagModel, deadUrn){
+		this._activeNodesSet.forEach((node) => {
+			if (node.model.urn == deadUrn) {
+				node.model=newJagModel;
+			}
+		})
+	}
+
+	updateJagNode(updatedJagModel, updatedUrn) {
 		// Going to be more complicated than originally thought.
 		// 1) update activeNodeSet - replace existing node with this one.
 		// 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
@@ -241,7 +250,16 @@ class Playground extends Popupable {
 		this._selectedNodesSet.clear();
 	}
 
-	clearPlayground(jagNodeSet) {                 // clearNodeSet
+	handleDeleteSelected() {
+		console.log("handling the menu delete");
+		console.log(this._selectedNodesSet);
+		console.log("handling the menu delete");
+	}
+
+
+	clearPlayground(jagNodeSet = this._activeNodesSet) {                 // clearNodeSet
+		console.log("[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]")
+		console.log(jagNodeSet);
 		for (let e of jagNodeSet) {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
@@ -304,8 +322,7 @@ xxx
 
 				if (root == node) {
 					const [x, y] = node.getPosition();
-					console.log("++1++");
-					console.log(selectedJagDescendants);
+					console.log("Handling a Refresh (?)");
 					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
 
 					const tree = node.getTree();
@@ -330,7 +347,7 @@ xxx
 	onKeyDown(e) {
 		if (e.key == 'Delete') {
 			if (e.ctrlKey) {
-				this.clearPlayground();
+				this.clearPlayground(this._selectedNodesSet);  //??
 			} else {
 				this.clearPlayground(this._selectedNodesSet);
 			}
@@ -392,7 +409,7 @@ xxx
 			 const parentJag = this._created_edge._node_origin.model;
 			 const childJag = this._created_edge._node_end.model;
   			// parentJag.addChild(childJag);
-
+console.log("LOOK HERE TO SEE IF KIDS ARE GETTING ADDED");
 			await StorageService.update(parentJag, 'jag');
 
 		} else {
@@ -496,10 +513,7 @@ xxx
 		if (!currentParentJagNode.children)
 			return node;
 
-		console.log("----------")
-		console.log(descendantJagNodeMap);
-
-		const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);
+		const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
 
 		// assume all children have same height as the parent.
 		const node_height = node.clientHeight + margin;
@@ -507,7 +521,6 @@ xxx
 
 		const x_offset = x + node.clientWidth + margin;
 		let y_offset = y - preferred_height / 2;
-
 		const childrenMap = new Map();
 		for (const child_edge of node.getChildEdges()) {     //@TODO  what is this? -> getChildEdges.  Are edges stored or just node.chldren
 			childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
@@ -554,18 +567,17 @@ xxx
 		return node;
 	}
 
-
-	_addJagNodeTree(selectedJag, selectedJagDescendants = [], isExpanded = false) {
+      // add JagNodeTree ==
+	_addJagNodeTree(selectedJag, selectedJagDescendants = new Map(), isExpanded = false) {
+		//
+		// Lets just look
 		const margin = 50;
 		const height = this.clientHeight;
-		console.log("++++");
-		console.log(selectedJagDescendants);
 		const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height/2);
 		this._checkBounds(node.getTree());
 	}
 
-	handleLibraryListItemSelected({model: selectedJag, model_set: selectedJagDescendants = [], expanded: isExpanded = false}) {
-		console.log("ppppppppp")
+	handleLibraryListItemSelected({model: selectedJag, model_set: selectedJagDescendants = new Map(), expanded: isExpanded = false}) {
 		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
 
@@ -574,8 +586,6 @@ xxx
 			return 1;
 
 		return jagNode.children.reduce((cut_set_size, child) => {
-			console.log("######");
-			console.log(jagNodeMap);
 			const def = jagNodeMap.get(child.urn);
 			return cut_set_size + (def ? this._getNodePreferredHeight(def, jagNodeMap) : 0);
 		}, 0);

@@ -33,22 +33,38 @@ export default class SharedObservable extends SharedService{
 		this._subscribers.get(topic).delete(subscriber);
 	}
 
-	static confirmStorageChange({topic, schema, description}){
-		this.sharedWorker.port.postMessage({topic: topic,schema: schema, description: description});
+	static confirmStorageChange({topic, schema, id, description}){
+		this.sharedWorker.port.postMessage({topic: topic,schema: schema, id: id, description: description});
 	}
 
 	static async handleReceiveMessage(message) {
+console.log("Receiving message:.....");
+console.log(message.data.schema)
+		console.log(message.data.topic)
+		console.log(message.data.description)
+		console.log(message.data.id)
+
 		let schema = message.data.schema;
 		let topic = message.data.topic;
 		let description = message.data.description;
-		const newModel = await SchemaManager.deserialize(schema, description);
-		this.notifySubscribers(topic, newModel);
+		let id = message.data.id;
+		let dataModel = null;
+		if (description) {
+			dataModel = await SchemaManager.deserialize(schema, description);
+		}
+		this.notifySubscribers(topic, dataModel, id);
 	}
 
-	static notifySubscribers(topic, data) {
-		if(!this._subscribers.has(topic))
-			return;
-		this._subscribers.get(topic).forEach((l) => l(data));
-	}
+	static notifySubscribers(topic, dataModel, id) {
+		console.log("Notifying subscribers:.....");
+		console.log(topic)
+		if (this._subscribers.has(topic)){
+//			console.log("no subs - just returning");
+//		return;}
+		this._subscribers.get(topic).forEach((l) => {
+			console.log(topic + " to " + l.name);
+			l(dataModel, id);
+		});
+	}}
 }
 

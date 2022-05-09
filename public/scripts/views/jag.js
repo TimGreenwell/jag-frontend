@@ -6,17 +6,17 @@
  */
 
 // These are the table JAG blocks - contains autocomplete,
+// better name?  iaJagCell  1:1 based off atJagNodes
 
 'use strict';
 
-//import JAGService from '../services/jag.js';
 import StorageService from '../services/storage-service.js';
 import AutoComplete from '../ui/auto-complete.js';
 import JAGControls from '../ui/jag-controls.js';
 import AnalysisCell from './analysis-cell.js';
-import JAG from "../models/jag.js";
 import IaTable from "../ui/ia-table.js";
 
+// A Cell based off (model/Node)
 class JAGView extends AnalysisCell {
 
 	constructor(nodeModel) {
@@ -174,10 +174,8 @@ class JAGView extends AnalysisCell {
 
 	// This runs when the Name field of the IATABLE Jag node area loses focus.
 	_handleNameChange() {
-		console.log("view/jag - handling name change");
-		if(this.jag === undefined || this._elements.name.innerText !== this.jag.name) {
+		if((this.jag) && this._elements.name.innerText !== this.jag.name) {
              // if url is empty or valid then url becomes mutation of the name:
-			console.log("NAME HAS CHANGED");
 			const dirtyUrl = IaTable.defaultUrn + this.jag.name;
 			const possUrl = dirtyUrl.replace(' ','-').replace(/[^0-9a-zA-Z:-]+/g,"").toLowerCase();
 			const urn = possUrl;
@@ -219,9 +217,6 @@ class JAGView extends AnalysisCell {
 	// This updates as the user type in the names field of the IATABLE jag node area.
 	_handleNameInput(e) {
 			const name = e.target.innerText;
-			console.log("pppppppppppppppppppp");
-			console.log(this.nodeModel);
-		console.log(this._nodeModel);
 	}
 
 	_setLeafStatus() {

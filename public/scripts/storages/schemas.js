@@ -8,7 +8,7 @@
 
 import JAG from  '../models/jag.js';
 import Node from  '../models/node.js';
-import Analysis from  '../models/analysis.js';
+import AnalysisModel from '../models/analysis-model.js';
 import Agent from  '../models/agent.js';
 import Team from  '../models/team.js';
 
@@ -46,7 +46,7 @@ export default class Schemas {
 
 		const ANALYSIS_STORE = {
 			name: 'analysis',
-			deserialize: Analysis.fromJSON,
+			deserialize: AnalysisModel.fromJSON,
 			indexes: [
 				{
 					name: 'id-index',
@@ -110,6 +110,10 @@ export default class Schemas {
 	static getKeyValue(schema,obj) {
 		let key = Schemas.get(schema).indexes[0].property;
 		return(obj[key]);
+	}
+
+	static getKey(schema) {
+		return Schemas.get(schema).indexes[0].property;
 	}
 
 	static async deserialize(schema,description) {;

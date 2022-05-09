@@ -52,11 +52,7 @@ export default class IndexedDBUtils {
 			if (key)
 				request = object_store.put(value, key);
 			else
-			{	console.log("No key - ");
-			    console.log(store);
-				console.log(value);
-				console.log(key);
-				request = object_store.add(value);}
+			{request = object_store.add(value);}
 
 			request.addEventListener('success', event => {
 				resolve(event.target.result);
@@ -84,6 +80,19 @@ export default class IndexedDBUtils {
 		});
 	}
 
+	static delete2(db, store, key){
+		const request = db.transaction(store, 'readwrite').objectStore(store).delete(key);
+
+		request.onsuccess = ()=> {
+			console.log(`Student deleted, email: ${request.result}`);
+		}
+
+		request.onerror = (err)=> {
+			console.error(`Error to delete student: ${err}`)
+		}
+	}
+
+
 	//tlg
 	static delete(db, store, key) {
 		return new Promise((resolve,reject) => {
@@ -101,7 +110,6 @@ export default class IndexedDBUtils {
 		})
 	};
 
-
 	static getKey(db, store, key) {
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readonly');
@@ -109,7 +117,6 @@ export default class IndexedDBUtils {
 			const request = object_store.getKey(key);
 
 			request.addEventListener('success', event => {
-				console.log('IndexedDB Utils (getKey ' + key + ') successfully retrieved data');
 				resolve(event.target.result);
 			});
 

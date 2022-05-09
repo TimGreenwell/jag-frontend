@@ -5,6 +5,8 @@
  * @version 1.65
  */
 
+// These are the
+
 'use strict';
 
 import { UUIDv4 }  from '../utils/uuid.js';
@@ -13,6 +15,7 @@ import JAG from './jag.js';
 import StorageService from '../services/storage-service.js';
 import JAGATValidation from '../utils/validation.js';
 
+// node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
 	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
@@ -87,7 +90,7 @@ export default class Node extends EventTarget {
 	}
 
 	/**
-	 * Recursively get the left most leaf from this node
+	 * Recursively get the left(?) most leaf from this node
 	 */
 	get lastLeaf() {
 		if(this._children.length === 0)
@@ -104,8 +107,19 @@ export default class Node extends EventTarget {
 		return true;//this.jag !== undefined;// && this.jag.hasValidURN;
 	}
 
+
+	async save() {
+		if (await StorageService.has(this, 'node')){
+			await StorageService.update(this,'node');
+		}
+		else {
+		await StorageService.create(this,'node');}
+	}
+
+
+
 	async newChild() {
-		// @TODO: Show user feedback message when trying to create a child on an usaved jag.
+		// @TODO: Show user feedback message when trying to create a child on an unsaved jag.
 		if (!this.canHaveChildren)
 			return;
 
@@ -125,7 +139,7 @@ export default class Node extends EventTarget {
 			layout: layout
 		}}));
 
-		this.save();
+	//	this.save();
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
@@ -169,13 +183,10 @@ export default class Node extends EventTarget {
 	}
 
 	async commitNameChange(view) {
-		console.log("mode/node - committing name change");
-		console.log(this);
 		if (this.linkStatus)
 			await this.syncJAG(view, false);
 		else
 			this.jag.name = view.name;
-		console.log(this);
 		await StorageService.update(this,'node');
 	}
 
@@ -250,16 +261,6 @@ export default class Node extends EventTarget {
 
 			this._height = max_height + 1;
 		}
-	}
-
-	async save() {
-		//await NodeService.instance('idb-service').update(this);
-		await StorageService.update(this,'node');
-		//if(!this.hasValidURN)
-			//return;
-
-		// Replapce with JAGNodeService
-		// return JAGService.store(this);
 	}
 
 	toJSON() {

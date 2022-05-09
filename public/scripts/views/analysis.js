@@ -1,5 +1,5 @@
 /**
- * @fileOverview Analysis view.
+ * @fileOverview AnalysisModel view.
  *
  * @author mvignati
  * @version 2.50
@@ -18,41 +18,48 @@ class AnalysisView extends HTMLElement {
 
 	constructor(analysisModel, table) {
 		super();
-
-		this._model = analysisModel;
-		this._views = new Map();
-		this._column_headers = new Map();
-		this._leaf_set = new Array();
-
-		this._root = undefined;
+		this._analysisModel = analysisModel;
+		this._columnHeaderMap = new Map();
+		this._analysisJagRoot = undefined;   // or just use this._analysisModel.root;?
+		this._leafArray = new Array();
 		this._assessment_menu = undefined;
-	}
+		this._views = new Map();
 
-	initialize(table) {
-		// Appends this view to the specified ia-table
-		table.appendChild(this);
-
-		// Registers root view
-		this._root = this._model.root;
-
+		this._analysisJagRoot = this._analysisModel.root;   // or just use this._analysisModel.root everywhere..
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		this._initializeTree(this._root);
-
-		// TODO: temporary ugly fix
-		// this._views.get(this._root.id).model.syncJAG(this._views.get(this._root.id));
-
+		this._initializeTree(this._analysisJagRoot);
 		this.layout();
+
+	//	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
+
 	}
 
+	initialize() {
+		// Appends this view to the specified ia-table
+		// @todo why wouldnt the table just append this - overly dependent
+	//	table.appendChild(this);
+
+		// // Registers root view
+		// this._analysisJagRoot = this._analysisModel.root;
+		//
+		// this._initializeContextMenus();
+		// this._initializeStaticHeaders();
+		// this._initializeTree(this._analysisJagRoot);
+		//
+		// // TODO: temporary ugly fix
+		// // this._views.get(this._analysisJagRoot.id).model.syncJAG(this._views.get(this._analysisJagRoot.id));
+		//
+		// this.layout();
+	}
+
+	// If agent exists, get related assessment.  If not, create and return empty assessment.
 	getAssessments(agent) {
 		let agent_assessment_views = this._views.get(agent.id);
-
 		if(agent_assessment_views === undefined) {
 			agent_assessment_views = new Map();
 			this._views.set(agent.id, agent_assessment_views);
 		}
-
 		return agent_assessment_views;
 	}
 
@@ -63,7 +70,6 @@ class AnalysisView extends HTMLElement {
 			view = new AssessmentView(agent, node, this._assessment_menu);
 			agent_assessment_views.set(node.id, view);
 		}
-
 		return view;
 	}
 
@@ -119,16 +125,16 @@ class AnalysisView extends HTMLElement {
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-		this._root.update();
+		this._analysisJagRoot.update();
 		// Resets the leaf set.
-		this._leaf_set.length = 0;
+		this._leafArray.length = 0;
 
 		let height = -1;
 		let rows = 0;
 
-		this._layoutJAG(this._root, AnalysisView.HEADER_DEPTH, 0);
-		height = this._root.height;
-		rows = this._root.breadth;
+		this._layoutJAG(this._analysisJagRoot, AnalysisView.HEADER_DEPTH, 0);
+		height = this._analysisJagRoot.height;
+		rows = this._analysisJagRoot.breadth;
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
@@ -165,26 +171,24 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_initializeTree(node) {
-
 		this.attach({
 			target: node,
 			layout: false
 		});
-
 		node.children.forEach((child_node) => {
 			this._initializeTree(child_node);
 		});
 	}
 
 	_isNodeInTheLeafSet(node_id) {
-		return this._leaf_set.findIndex(leaf => leaf.id === node_id) !== -1;
+		return this._leafArray.findIndex(leaf => leaf.id === node_id) !== -1;
 	}
 
 	_layoutAssessments(col, row) {
 		const $assessments = document.createDocumentFragment();
 
 		let offset = 0;
-		const team = this._model.team;
+		const team = this._analysisModel.team;
 		for(let agent of team.agents) {
 			const assessments = this.getAssessments(agent);
 
@@ -194,8 +198,8 @@ class AnalysisView extends HTMLElement {
 					this.removeChild($assessment);
 
 			// Relayouts all assessment views for the current leaf set.
-			for(let i = 0 ; i < this._leaf_set.length ; i++) {
-				const node = this._leaf_set[i];
+			for(let i = 0 ; i < this._leafArray.length ; i++) {
+				const node = this._leafArray[i];
 				const $assessment = this.getAssessmentView(agent, node, assessments);
 				// Adds the current assessment view to the fragment if it is not already in the DOM.
 				if(!this.contains($assessment))
@@ -212,7 +216,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_layoutHeaders(level_count) {
-		for(let header of this._column_headers.values())
+		for(let header of this._columnHeaderMap.values())
 			if(this.contains(header))
 				this.removeChild(header);
 
@@ -220,37 +224,37 @@ class AnalysisView extends HTMLElement {
 
 		// Starts at 1 since the root header does not need to be updated and is never removed.
 		for (let i = 1 ; i < level_count ; i++) {
-			if(!this._column_headers.has(i))
+			if(!this._columnHeaderMap.has(i))
 				this._makeHeader(i, `Level ${i}`, i, 1);
 
-			const $column = this._column_headers.get(i);
+			const $column = this._columnHeaderMap.get(i);
 			$columns.appendChild($column);
 		}
 
 		let offset = 0;
-		const team = this._model.team;
+		const team = this._analysisModel.team;
 		const agent_count = team.agents.length;
 		const abs_offset = level_count + offset;
 
 		// Gets (and makes if necessary) the team header
-		if(!this._column_headers.has(team.id))
+		if(!this._columnHeaderMap.has(team.id))
 			this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
 		else
-			this._column_headers.get(team.id).innerText = team.name;
+			this._columnHeaderMap.get(team.id).innerText = team.name;
 
-		const $column = this._column_headers.get(team.id);
+		const $column = this._columnHeaderMap.get(team.id);
 		$column.colStart = abs_offset;
 		$columns.appendChild($column);
 
 		for (let i = abs_offset, agent_idx = 0 ; i < abs_offset + agent_count; i++, agent_idx++) {
 			const agent = team.agents[agent_idx];
 
-			if (!this._column_headers.has(agent.id))
+			if (!this._columnHeaderMap.has(agent.id))
 				this._makeHeader(agent.id, agent.name, i, 1);
 			else
-				this._column_headers.get(agent.id).innerText = agent.name;
+				this._columnHeaderMap.get(agent.id).innerText = agent.name;
 
-			const $column = this._column_headers.get(agent.id);
+			const $column = this._columnHeaderMap.get(agent.id);
 			$column.colStart = i;
 			$columns.appendChild($column);
 		}
@@ -276,7 +280,7 @@ class AnalysisView extends HTMLElement {
 
 			$view.style.setProperty('--col-end', '1 span');
 		} else {
-			this._leaf_set.push(node);
+			this._leafArray.push(node);
 			this._hideChildNodes(node);
 			$view.style.setProperty('--col-end', AnalysisView.JAG_SECTION_COLUMN_END);
 			//$view.style.setProperty('--col-end', '1 span');
@@ -289,7 +293,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_makeHeader(id, name, col, row, col_span, row_span) {
-		this._column_headers.set(id, new ColumnHeader(name, col, row, col_span, row_span));
+		this._columnHeaderMap.set(id, new ColumnHeader(name, col, row, col_span, row_span));
 	}
 
 	_showChildNodes(node, recurse = true) {

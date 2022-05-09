@@ -43,7 +43,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	updateItem(updatedJAGModel) {
 		for (let idx in this._libraryList) {
 			if (this._libraryList[idx].model.urn == updatedJAGModel.urn) {
-				console.log("nice!!");
+
 				this._libraryList[idx].model = updatedJAGModel;
 				this._libraryList[idx].element.id=updatedJAGModel.urn;
 				this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedJAGModel.name;

@@ -26,30 +26,37 @@ export default class IndexedDBStorage {
 	}
 
 	async all(schema) {
+		let storeName = SchemaManager.get(schema).name;
 		const cursor = await IndexedDBUtils.all(this._db, SchemaManager.get(schema).name);
 		return Array.from(cursor);
 	}
 
-	async get(schema, key) {
-		const description = await IndexedDBUtils.get(this._db, SchemaManager.get(schema).name, key);
+	async get(schema, keyValue) {
+		let storeName = SchemaManager.get(schema).name;
+		const description = await IndexedDBUtils.get(this._db, storeName , keyValue);
 		return description;
 	}
 
-	async has(schema, key) {
-		const result = await IndexedDBUtils.getKey(this._db, SchemaManager.get(schema).name, key);
+	async has(schema, keyValue) {
+		let storeName = SchemaManager.get(schema).name;
+		const result = await IndexedDBUtils.getKey(this._db, storeName, keyValue);
 		return result !== undefined;
 	}
 
-	async create(schema, key, description) {
-		return await IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
+	async create(schema, keyValue, description) {
+		let storeName = SchemaManager.get(schema).name;
+		return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
 	}
 
-	async update(schema, key, description) {
-		return await IndexedDBUtils.store(this._db, SchemaManager.get(schema).name, description, key);
+	async update(schema, keyValue, description) {
+		let storeName = SchemaManager.get(schema).name;
+		return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
 	}
 
-    async delete(id, schema) {
-		return await IndexedDBUtils.delete(this._db, SchemaManager.get(schema).name, id);
+    async delete(schema, keyValue) {
+		let storeName = SchemaManager.get(schema).name;
+		return await IndexedDBUtils.delete(this._db, storeName, keyValue);
+		//return await IndexedDBUtils.delete2(this._db, storeName, keyValue);
 	}
 
 }

@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-at';
 
+	//await StorageService.delete("us:ihmc:aaaa1234", 'jag')
+
 
 	const ide = new IDE();
 	const graph_service = new GraphService();
@@ -101,6 +103,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 		$playground._handleNewNodePopup(e);
 	});
     //////////////////////////////////////////////////////////////////////
+	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
+	// @TODO
+	$menu.addEventListener('delete-selected', (e) => {
+		$playground.handleDeleteSelected(e);
+	});
+	//////////////////////////////////////////////////////////////////////
 
 	// Event: 'item-selected' (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.

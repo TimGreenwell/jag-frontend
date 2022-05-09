@@ -1,6 +1,6 @@
 # Joint Activity Graph Authoring Tool (JAGAT)
 
-The Joint Activity Graph (JAG) is a concept created by Dr. Matt Johnson et. al. from the Florida Institute for Human and Machine Cognition (IHMC) in "Understanding Human-Autonomy Teaming through Interdependence Analysis" (2019). A JAG represents the ability of multiple agents in a human-machine or machine-machine team to work independent and interdependent of one another to accomplish a goal or task, and can be represented fundamentally as a tree with distinct, meaningful properties to HAT applications.
+The Joint Activity Graph (JAG) is a concept created by Dr. Matt Johnson et. al. from the Florida Institute for Human and Machine Cognition (IHMC) in "Understanding Human-Autonomy Teaming through Interdependence AnalysisModel" (2019). A JAG represents the ability of multiple agents in a human-machine or machine-machine team to work independent and interdependent of one another to accomplish a goal or task, and can be represented fundamentally as a tree with distinct, meaningful properties to HAT applications.
 
 ## Purpose
 
