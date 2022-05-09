@@ -80,17 +80,34 @@ export default class IndexedDBUtils {
 		});
 	}
 
-	static delete2(db, store, key){
+	static delete2(db, store, key){  //  only keeping this around to see if i like this format better...
 		const request = db.transaction(store, 'readwrite').objectStore(store).delete(key);
 
 		request.onsuccess = ()=> {
-			console.log(`Student deleted, email: ${request.result}`);
+			console.log(`SUCCESS: ${request.result}`);
 		}
 
 		request.onerror = (err)=> {
-			console.error(`Error to delete student: ${err}`)
+			console.error(`FAILED: ${err}`)
 		}
 	}
+
+	//tlg
+	static clear(db, store, key) {
+		return new Promise((resolve,reject) => {
+			const transaction = db.transaction(store, 'readwrite');
+			const object_store = transaction.objectStore(store);
+			const request = object_store.clear();
+
+			request.addEventListener('success', event => {
+				resolve(event.target.result);
+			});
+
+			request.addEventListener('error', event => {
+				reject(new Error(`Error while clearing store ${store}\nError: ${event.target.error}`));
+			});
+		})
+	};
 
 
 	//tlg
@@ -133,7 +150,6 @@ export default class IndexedDBUtils {
 			const request = object_store.getAll(query, count);
 
 			request.addEventListener('success', event => {
-				console.log('IndexedDB Utils (all) successfully retrieved data');
 				resolve(event.target.result);
 			});
 

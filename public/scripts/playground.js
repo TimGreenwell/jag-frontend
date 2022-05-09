@@ -207,8 +207,6 @@ class Playground extends Popupable {
 	// }
 
 	deleteJagNode(deadUrn){
-		console.log("Here in the delete zone");
-		console.log(this._activeNodesSet);
 
 		this._activeNodesSet.forEach((node) => {
 			if (node.model.urn == deadUrn) {
@@ -251,15 +249,12 @@ class Playground extends Popupable {
 	}
 
 	handleDeleteSelected() {
-		console.log("handling the menu delete");
+		console.log("Find this in Playground -- someting wrong enough to look now");
 		console.log(this._selectedNodesSet);
-		console.log("handling the menu delete");
 	}
 
 
 	clearPlayground(jagNodeSet = this._activeNodesSet) {                 // clearNodeSet
-		console.log("[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]")
-		console.log(jagNodeSet);
 		for (let e of jagNodeSet) {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
@@ -322,7 +317,6 @@ xxx
 
 				if (root == node) {
 					const [x, y] = node.getPosition();
-					console.log("Handling a Refresh (?)");
 					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
 
 					const tree = node.getTree();
@@ -409,7 +403,6 @@ xxx
 			 const parentJag = this._created_edge._node_origin.model;
 			 const childJag = this._created_edge._node_end.model;
   			// parentJag.addChild(childJag);
-console.log("LOOK HERE TO SEE IF KIDS ARE GETTING ADDED");
 			await StorageService.update(parentJag, 'jag');
 
 		} else {

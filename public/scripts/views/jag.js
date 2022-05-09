@@ -184,7 +184,7 @@ class JAGView extends AnalysisCell {
 
 			this.nodeModel.commitNameChange(this);
 		}
-		else{console.log("NAME DID NOT CHANGE OR WE ARE UNDEFINED")}
+		else{console.log("..")}
 
 
 

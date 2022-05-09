@@ -58,6 +58,7 @@ export default class AnalysisModel extends EventTarget {
 	}
 
 	async buildAnalysisJagNodes(newRootNodeModel) {
+		await StorageService.clear('node');
 		let currentNode = newRootNodeModel;
 		let children = newRootNodeModel.jag.children;
 
@@ -73,23 +74,25 @@ export default class AnalysisModel extends EventTarget {
 	}
 
 	static async fromJSON(json) {
+		console.log("Someones trying to 'fromJSON' an analysis-model")
 		const node_id = json.root;
 		//   ex  		const foundJAGModel = StorageService.get(targetURN, 'jag');
 		//const root = await NodeService.instance('idb-service').get(node_id);
-		const root = await StorageService.get(node_id, 'node');
+		const rootNode = await StorageService.get(node_id, 'node');
 		// Replace id by the actual model.
-		json.root = root;
+		json.root = rootNode;
 		const team_id = json.team;
 		//let team = await TeamService.instance('idb-service').get(team_id);
-		let team = await StorageService.get(team_id, 'team');
-		if (team == undefined) {
-			team = new TeamModel();
-			//await TeamService.instance('idb-service').create(team);
-			await StorageService.create(team, 'team');
+		let teamNode = await StorageService.get(team_id, 'team');
+		if (teamNode == undefined) {
+			console.log("Not finding the team model in the storage when deserializing Analysis")
+			teamNode = new TeamModel();
+			await StorageService.create(teamNode, 'team');
 		}
-		json.team = team;
+		json.team = teamNode;
 		const newAnalysis = new AnalysisModel(json);
-
+console.log("TH E NEW ANALYSIS LOOKS MAYBE RIGHT?")
+		console.log(newAnalysis)
 		return newAnalysis;
 	}
 
@@ -125,6 +128,10 @@ export default class AnalysisModel extends EventTarget {
 		return this._rootNodeModel;
 	}
 
+set root(newRootNodeModel) {
+		this._rootNodeModel = newRootNodeModel
+}
+
 	get team() {
 		return this._team;
 	}
@@ -135,8 +142,8 @@ export default class AnalysisModel extends EventTarget {
 
 	save() {
 		// THIS BEING USED ANYWHERE?
-
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
+console.log("(((DISPLATCHING UPDATE)) - doesnt seem to be problem but dont know what it does")
+		 this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
 	}
 
 	toJSON() {

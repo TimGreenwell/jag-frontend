@@ -90,8 +90,6 @@ export default class JAG extends EventTarget {
     }
 
     static fromJSON(json) {
-console.log("in fromJSON with");
-console.log(json);
 
         try {
             JAGATValidation.validateJAG(json);
@@ -174,8 +172,6 @@ console.log(json);
 
     isValid() {
         let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
-        console.log("testing...");
-        console.log(this._urn);
         if (this._urn.match(regex)) {
             return true;
         } else {

@@ -91,6 +91,7 @@ export default class Node extends EventTarget {
 
 	/**
 	 * Recursively get the left(?) most leaf from this node
+	 * tlg - Wht?  gets the last child's last child's lasts child... whatfer?
 	 */
 	get lastLeaf() {
 		if(this._children.length === 0)
@@ -197,7 +198,7 @@ export default class Node extends EventTarget {
 	/**
 	 * Synchronizes the display values with the underlying jag model.
 	 * Actions could be, load a new jag model, create a new jag model or change the name of the current jag.
-	 * tlg - @TODO think this obs - no more 'undefined JAGs'
+	 * tlg - if nodes are instances of a jag, why should their change affect the jag itself?
 	 */
 	async syncJAG(view, replace = true) {
 		const urn = view.urn;
@@ -280,23 +281,35 @@ export default class Node extends EventTarget {
 	static async fromJSON(json) {
 		// Replaces the id with the actual jag model.
 		//const jag = await JAGService.instance('idb-service').get(json.jag);
+
+		console.log("DESERIALIZATION -----------------------------------------    IN THE NODE PORTION")
+		console.log(json);
+
+		console.log("getting the model:")
 		const jag = await StorageService.get(json.jag,'jag');
-		json.jag = (jag != null) ? jag : undefined;
+		console.log(jag)
+		if (jag instanceof JAG) {
+			json.jag = jag;
+		}
+		else {
+			json.jag = undefined;
+		}
+		//json.jag = (jag != null) ? jag : undefined;
 
 		const node = new Node(json);
-
-		// @TODO: Can we lazy load these ?
-		const promisedChildren = json.children.map(async child_node_id => {
-			const child = await StorageService.get(child_node_id,'jag');
-			return child;
-		});
-
-		const children = await Promise.all(promisedChildren);
-		children.forEach(child => {
-			if(child === undefined)
-				child = new Node();
-			node.addChild(child);
-		});
+console.log("RETURNING THIS NODE")
+		// // @TODO: Can we lazy load these ?
+		// const promisedChildren = json.children.map(async child_node_id => {
+		// 	const child = await StorageService.get(child_node_id,'jag');
+		// 	return child;
+		// });
+		//
+		// const children = await Promise.all(promisedChildren);
+		// children.forEach(child => {
+		// 	if(child === undefined)
+		// 		child = new Node();
+		// 	node.addChild(child);
+		// });
 
 		return node;
 	}

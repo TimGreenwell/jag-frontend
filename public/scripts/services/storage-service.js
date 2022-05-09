@@ -73,8 +73,9 @@ export default class StorageService extends Observable{
      * @TODO : Please convert to descriptions.map...
      */
     static async all(schema = this._schema) {
+        console.log("Storage request --- get all data for " + schema);
         const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
-        const models = [];
+        //const models = [];
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
             return newModel;
@@ -87,6 +88,7 @@ export default class StorageService extends Observable{
      * Retrieves the jag model for the specified urn.
      */
     static async get(id, schema = this._schema) {
+        console.log("Storage request --- get item matching " + schema + " " + id);
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
         const model = await SchemaManager.deserialize(schema,description);
         return model;
@@ -104,6 +106,11 @@ export default class StorageService extends Observable{
         return await this.__SERVICES.get(this._preferredStorage).has(schema, urn);
     }
 
+    static async clear(schema = this._schema) {
+        console.log("Storage request --- clear everything in " + schema);
+        return await this.__SERVICES.get(this._preferredStorage).clear(schema);
+        this.confirmStorageChange({topic:`${schema}-storage-cleared`,schema: schema, id: null, description: null });
+    }
     /**
      * Creates a new jag with the specified model. This uses the urn property supplied in the model.
      */
@@ -111,10 +118,11 @@ export default class StorageService extends Observable{
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
-        console.log('right before error?')
-        console.log(createdModel);
         const description = createdModel.toJSON();
+        console.log("-->     " + schema + " --------------- " )
+        console.log(JSON.stringify(description))
         const createdId = SchemaManager.getKeyValue(schema,description);
+        console.log("Storage request --- create " + createdId + " in " + schema);
         await this.__SERVICES.get(this._preferredStorage).create(schema, createdId, description);
 
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: description });
@@ -125,9 +133,11 @@ export default class StorageService extends Observable{
      * @TODO: Identify if we want to allow partial updates. For now the whole model will be overwritten with the supplied data.
      */
     static async update(updatedModel, schema = this._schema) {
+
         //@TODO if sync - update all storages
         const description = updatedModel.toJSON();
         const updatedId = SchemaManager.getKeyValue(schema,description);
+        console.log("Storage request --- update " + updatedId + " in " + schema);
         await this.__SERVICES.get(this._preferredStorage).update(schema, updatedId ,description);
         this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: description});
     }
@@ -137,6 +147,7 @@ export default class StorageService extends Observable{
      * Removes the model with the existing urn from storage.
      */
     static async delete(deletedId, schema = this._schema) {
+        console.log("Storage request --- delete " + id + " in " + schema);
         //SchemaManager.getKey(schema)
         let result = await this.__SERVICES.get(this._preferredStorage).delete(schema, deletedId);
         this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
@@ -144,6 +155,7 @@ export default class StorageService extends Observable{
 
 
     static async replace(origId, newId, schema = this._schema) {
+        console.log("Storage request --- replace " + origId + " with " + newId + " in " + schema);
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
         let keyField = await SchemaManager.getKey(schema);
         description[keyField] = newId;
@@ -157,6 +169,7 @@ export default class StorageService extends Observable{
 
     // id2 will be an exact model copy of id1
     static async clone(origId, cloneId, schema = this._schema) {
+        console.log("Storage request --- clone " + origId + " to make " + cloneId + " in " + schema);
         //SchemaManager.getKey(schema)
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
         let index = SchemaManager.getKeyValue(schema,description);

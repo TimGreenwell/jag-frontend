@@ -22,8 +22,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 		this._initUI();
 		this._initListeners();
 		//StorageService.subscribe("jag-storage-updated", this.updateListItem.bind(this));  not needed until URN renames allowed
-		StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
-		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
+	//	StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
+	//	StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 
 		this.clearItems();
 		this.loadFromDB();
@@ -56,6 +56,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	// }
 
 	updateListItem(updatedAnalysisModel, idx = -1) {
+		console.log("Analysis Library (updateListItem) received NOTIFICATION for analysis-storage-updated")
 
 		for (let idx in this._items) {
 			if (this._items[idx].model.id == updatedAnalysisModel.id) {
@@ -77,6 +78,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	}
 
 	addListItem(model, idx = -1) {
+		console.log("Analysis Library (addListItem) received NOTIFICATION for analysis-storage-created")
 		console.log(model);
 		const id = model.urn || '';
 		const root = model.root.urn;

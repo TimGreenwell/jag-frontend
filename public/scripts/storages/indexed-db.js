@@ -48,6 +48,11 @@ export default class IndexedDBStorage {
 		return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
 	}
 
+	async clear(schema) {
+		let storeName = SchemaManager.get(schema).name;
+		return await IndexedDBUtils.clear(this._db, storeName);
+	}
+
 	async update(schema, keyValue, description) {
 		let storeName = SchemaManager.get(schema).name;
 		return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
