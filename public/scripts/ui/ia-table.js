@@ -48,43 +48,17 @@ class IATable extends Popupable {
     // 	return this._domElements.selector;
     // }
 
-    async handleJagStorageUpdated(newJag, newJagUrn) {
-        console.log("On the handleJagStorageUpdate...............................................")
-        if (this.analysisModel) {
-            console.log("in")
-            let currentAnalysisModel = this._analysisModel;
-            let rootUrn = currentAnalysisModel.root.jag.urn;
-            const rootJagModel = await StorageService.get(rootUrn, 'jag');
-            console.log("Setting up new Analysis with this JAG MODELRoot ")
-            console.log(rootJagModel)
-            const rootNodeModel = new NodeModel({jag: rootJagModel});
-            console.log("Got new Node Model for root")
-            currentAnalysisModel.root = rootNodeModel;
-            console.log(rootNodeModel)
-            this.analysisModel = new AnalysisModel({name: currentAnalysisModel.name, root: rootNodeModel});
-            console.log(currentAnalysisModel)
-            console.log("old ^ / v Brand new analysis Model");
-            console.log(this.analysisModel)
-            console.log("building out jag nodes......");
-            await this._analysisModel.buildAnalysisJagNodes(rootNodeModel);
 
-            console.log(rootJagModel)
-            //await updatedAnalysis.buildDefaultTeam();
-        }
-    }
 
 
 
 
     handleJagStorageCreated(newJag, newJagUrn) {
-        console.log("Looks like we have a new JAG model to handle")
+        console.log("WRITE THIS --  we have a new JAG model to handle")
         console.log(newJag)
         console.log(newJagUrn)
     }
 
-    handleAnalysisStorageCreated(newAnalysis, newAnalysisId) {
-        this.analysisModel = newAnalysis;
-    }
 
     get analysisView() {
         return this._domElements.analysis;
@@ -97,35 +71,47 @@ class IATable extends Popupable {
     set analysis(newAnalysisModel) {
         console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
         console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-        console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+        console.log("ccccccccccccccc NOBODY IS CALLING THIS ccccccccccccccccccccccccc");
         console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
         console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
     }
 
+    handleAnalysisStorageCreated(newAnalysis, newAnalysisId) {
+
+        this.analysisModel = newAnalysis;
+    }
+
+
+
     set analysisModel(newAnalysisModel) {
-        console.log(" Stupid overly complicated setter being called")
+        this._analysisModel = newAnalysisModel;
+
+        console.log(" XxXxXxXxXx    For some reason, this setter is also being used to change elements and set up analysisView as well.")
         // remove current view if it exists
         if (this._domElements.analysis !== undefined) {
-            console.log("CLEARNING")
+
+            console.log("CLEANING - in it")
+            console.log(this._domElements)
             this.removeChild(this._domElements.analysis);
-            this._analysisModel.team.removeEventListener('update', this._boundRefresh);
-            for (const agent of this._agents) {
-                agent.removeEventListener('update', this._boundRefresh);
-            }
+          //  this._analysisModel.team.removeEventListener('update', this._boundRefresh);
+          //  for (const agent of this._agents) {
+           //     agent.removeEventListener('update', this._boundRefresh);
+           // }
         }
         console.log("past clearing");
 
         if (newAnalysisModel) {
             const analysisView = new AnalysisView(newAnalysisModel);
-            //analysisView.initialize();
+            //analysisView.initialize(); // double checked - ok to delete
             this.appendChild(analysisView);
+            this._domElements.analysis = analysisView;
 
-            this._analysisModel = newAnalysisModel;
             this._domElements.name.removeAttribute('disabled');
             this._domElements.name.value = newAnalysisModel.name;
             this._domElements.description.removeAttribute('disabled');
             this._domElements.description.value = newAnalysisModel.description;
-            this._domElements.analysis = analysisView;
+
+
 
             this._analysisModel.team.addEventListener('update', this._boundRefresh);
             this._agents = this._analysisModel.team.agents;
@@ -143,9 +129,15 @@ class IATable extends Popupable {
             window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
         }
         const rootNodeModel = new NodeModel({jag: rootJagModel});
-        const newAnalysisModel = new AnalysisModel({name: analysisName, root: rootNodeModel});
-      //  await analysisModel.buildAnalysisJagNodes(rootNodeModel);
+       // await StorageService.create(rootNodeModel, 'node');
 
+
+        const newAnalysisModel = new AnalysisModel({name: analysisName, root: rootNodeModel});
+        await StorageService.clear('node');
+        // currently buildAnalysis builds and stores the mapset.
+        // @TODO return the node set and iterate through storing them here.  less dependence
+       /// await newAnalysisModel.buildAnalysisJagNodes(rootNodeModel);
+        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
         await newAnalysisModel.buildDefaultTeam();
 
 //		if (this._team == undefined) {
@@ -156,11 +148,38 @@ class IATable extends Popupable {
         await StorageService.create(newAnalysisModel.team, 'team');
 //		}
 
-        await StorageService.create(newAnalysisModel, 'analysis');
+
      //   newAnalysisModel.save();
-     //   this.analysisModel = newAnalysisModel;  //  < <<<  (not calling the setter...))
+        this.analysisModel = newAnalysisModel;  //  < <<<  (not calling the setter...))
      //   this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: this._analysisModel}}));
+        await StorageService.create(newAnalysisModel, 'analysis');
+        console.log("OUTGOINGOUTGOING")
+        console.log("OUTGOINGOUTGOING")
+        console.log("OUTGOINGOUTGOING")
+        console.log("OUTGOINGOUTGOING")
+        console.log("OUTGOINGOUTGOING")
+        console.log(newAnalysisModel)
     }
+
+
+
+
+    async handleJagStorageUpdated(newJag, newJagUrn) {
+        if (this.analysisModel) {
+            console.log("o   Handling the updated JAG STORAGE")
+            console.log(this.analysisModel)
+            console.log("o")
+            let currentAnalysisModel = this._analysisModel;
+            let rootUrn = currentAnalysisModel.root.jag.urn;
+            const rootJagModel = await StorageService.get(rootUrn, 'jag');
+            const rootNodeModel = new NodeModel({jag: rootJagModel});
+            currentAnalysisModel.root = rootNodeModel;
+            this.analysisModel = new AnalysisModel({name: currentAnalysisModel.name, root: rootNodeModel});
+            await this._analysisModel.buildAnalysisJagNodes(rootNodeModel);
+
+        }
+    }
+
 
     _initUI() {
         const $header = document.createElement('header');
@@ -230,7 +249,7 @@ class IATable extends Popupable {
     }
 
     _refresh(e) {
-        this._domElements.analysisModel.layout();
+        this._domElements.analysis.layout();
     }
 
     _handleNewAnalysis() {

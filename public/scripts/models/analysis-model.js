@@ -57,10 +57,10 @@ export default class AnalysisModel extends EventTarget {
 		}
 	}
 
-	async buildAnalysisJagNodes(newRootNodeModel) {
-		await StorageService.clear('node');
-		let currentNode = newRootNodeModel;
-		let children = newRootNodeModel.jag.children;
+	async buildAnalysisJagNodes(currentNode) { // this was newRootNodeModel
+
+	//	let currentNode = newRootNodeModel;     // this was uncommented
+		let children = currentNode.jag.children;// this was newRootNodeModel
 
 		await Promise.all(
 		children.map(async ({urn, id}) => {
@@ -71,28 +71,23 @@ export default class AnalysisModel extends EventTarget {
 		}))
 		this._nodeSet.add(currentNode);
 		await StorageService.create(currentNode,'node');
+
+
 	}
 
 	static async fromJSON(json) {
-		console.log("Someones trying to 'fromJSON' an analysis-model")
 		const node_id = json.root;
-		//   ex  		const foundJAGModel = StorageService.get(targetURN, 'jag');
-		//const root = await NodeService.instance('idb-service').get(node_id);
 		const rootNode = await StorageService.get(node_id, 'node');
 		// Replace id by the actual model.
 		json.root = rootNode;
 		const team_id = json.team;
-		//let team = await TeamService.instance('idb-service').get(team_id);
 		let teamNode = await StorageService.get(team_id, 'team');
 		if (teamNode == undefined) {
-			console.log("Not finding the team model in the storage when deserializing Analysis")
 			teamNode = new TeamModel();
 			await StorageService.create(teamNode, 'team');
 		}
 		json.team = teamNode;
 		const newAnalysis = new AnalysisModel(json);
-console.log("TH E NEW ANALYSIS LOOKS MAYBE RIGHT?")
-		console.log(newAnalysis)
 		return newAnalysis;
 	}
 
@@ -130,6 +125,10 @@ console.log("TH E NEW ANALYSIS LOOKS MAYBE RIGHT?")
 
 set root(newRootNodeModel) {
 		this._rootNodeModel = newRootNodeModel
+}
+
+get nodeSet() {
+		return this._nodeSet;
 }
 
 	get team() {

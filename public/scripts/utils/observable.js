@@ -40,14 +40,26 @@ export default class SharedObservable extends SharedService {
 
     static async handleReceiveMessage(message) {
         console.log("Message received from web worker, (" + message.data.id + "/" + message.data.topic + ") posting to all subscribers");
+
         let schema = message.data.schema;
         let topic = message.data.topic;
         let description = message.data.description;
         let id = message.data.id;
         let dataModel = null;
-        console.log("description to deserialize...");
+
+        if (schema == 'node') {
+            console.log("                              -      - -  -     -- -                     -- ")
+            console.log(message)
+            console.log(message.data)
+            console.log(message.data.description)
+        }
+
+        if (schema == 'analysis'){
+            console.log("hey");
+        }
+
+        console.log("Deserializing..." + schema);
         console.log(JSON.stringify(description))
-        console.log(schema)
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }

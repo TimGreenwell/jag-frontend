@@ -90,6 +90,8 @@ export default class StorageService extends Observable{
     static async get(id, schema = this._schema) {
         console.log("Storage request --- get item matching " + schema + " " + id);
         const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
+        console.log("Storage request --- get item matching " + schema + " VVVVV");
+        console.log(description);
         const model = await SchemaManager.deserialize(schema,description);
         return model;
 
@@ -119,7 +121,6 @@ export default class StorageService extends Observable{
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages
         const description = createdModel.toJSON();
-        console.log("-->     " + schema + " --------------- " )
         console.log(JSON.stringify(description))
         const createdId = SchemaManager.getKeyValue(schema,description);
         console.log("Storage request --- create " + createdId + " in " + schema);
@@ -136,6 +137,7 @@ export default class StorageService extends Observable{
 
         //@TODO if sync - update all storages
         const description = updatedModel.toJSON();
+        console.log(JSON.stringify(description))
         const updatedId = SchemaManager.getKeyValue(schema,description);
         console.log("Storage request --- update " + updatedId + " in " + schema);
         await this.__SERVICES.get(this._preferredStorage).update(schema, updatedId ,description);

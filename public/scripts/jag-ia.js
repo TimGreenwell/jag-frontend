@@ -78,11 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 	body.appendChild(editor);
 
 	library.addEventListener('item-selected', (e) => {
-		console.log("THis kicks it off")
-		console.log("table.analysis = e.detail.model")
-		console.log(e.detail.model);
-		console.log("editor.team = e.detail.model.team")
-		console.log(e.detail.model.team)
 		table.analysisModel = e.detail.model;
 		editor.team = e.detail.model.team;
 	});

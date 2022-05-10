@@ -22,8 +22,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 		this._initUI();
 		this._initListeners();
 		//StorageService.subscribe("jag-storage-updated", this.updateListItem.bind(this));  not needed until URN renames allowed
-	//	StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
-	//	StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
+		StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
+		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 
 		this.clearItems();
 		this.loadFromDB();
