@@ -76,10 +76,6 @@ class IATable extends Popupable {
         console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
     }
 
-    handleAnalysisStorageCreated(newAnalysis, newAnalysisId) {
-
-        this.analysisModel = newAnalysis;
-    }
 
 
 
@@ -121,6 +117,9 @@ class IATable extends Popupable {
         }
     }
 
+
+
+
     async create(analysisName, rootUrn) {
         let rootJagModel;
         if (await StorageService.has(rootUrn, 'jag')) {
@@ -148,35 +147,38 @@ class IATable extends Popupable {
         await StorageService.create(newAnalysisModel.team, 'team');
 //		}
 
-
      //   newAnalysisModel.save();
         this.analysisModel = newAnalysisModel;  //  < <<<  (not calling the setter...))
      //   this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: this._analysisModel}}));
         await StorageService.create(newAnalysisModel, 'analysis');
-        console.log("OUTGOINGOUTGOING")
-        console.log("OUTGOINGOUTGOING")
-        console.log("OUTGOINGOUTGOING")
-        console.log("OUTGOINGOUTGOING")
-        console.log("OUTGOINGOUTGOING")
+    }
+
+    async handleAnalysisStorageCreated(newAnalysisModel, newAnalysisId) {
+        await StorageService.clear('node');
+        console.log(newAnalysisModel)
+        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
+        console.log(newAnalysisModel)
+        this.analysisModel = newAnalysisModel;
         console.log(newAnalysisModel)
     }
 
 
 
-
     async handleJagStorageUpdated(newJag, newJagUrn) {
         if (this.analysisModel) {
+            let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
+            await StorageService.clear('node');
+            tempNewAnalysisModel
             console.log("o   Handling the updated JAG STORAGE")
-            console.log(this.analysisModel)
+            console.log(tempNewAnalysisModel)
             console.log("o")
-            let currentAnalysisModel = this._analysisModel;
-            let rootUrn = currentAnalysisModel.root.jag.urn;
+            let rootUrn = tempNewAnalysisModel.root.jag.urn;
             const rootJagModel = await StorageService.get(rootUrn, 'jag');
             const rootNodeModel = new NodeModel({jag: rootJagModel});
-            currentAnalysisModel.root = rootNodeModel;
-            this.analysisModel = new AnalysisModel({name: currentAnalysisModel.name, root: rootNodeModel});
-            await this._analysisModel.buildAnalysisJagNodes(rootNodeModel);
-
+            tempNewAnalysisModel.root = rootNodeModel;
+            await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
+            console.log(tempNewAnalysisModel)
+            this.analysisModel = tempNewAnalysisModel;
         }
     }
 

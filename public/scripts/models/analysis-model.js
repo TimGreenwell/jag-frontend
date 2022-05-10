@@ -8,7 +8,6 @@
 'use strict';
 
 import { UUIDv4 } from '../utils/uuid.js';
-
 import NodeModel from './node.js';
 import TeamModel from './team.js';
 import AgentModel from './agent.js';

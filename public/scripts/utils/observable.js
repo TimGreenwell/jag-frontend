@@ -34,12 +34,12 @@ export default class SharedObservable extends SharedService {
     }
 
     static confirmStorageChange({topic, schema, id, description}) {
-        console.log(" Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+        console.log("{} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
         this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
     }
 
     static async handleReceiveMessage(message) {
-        console.log("Message received from web worker, (" + message.data.id + "/" + message.data.topic + ") posting to all subscribers");
+        console.log("{} - - - Message received from web worker, (" + message.data.id + ") / (" + message.data.topic + ") posting to all subscribers");
 
         let schema = message.data.schema;
         let topic = message.data.topic;
@@ -47,19 +47,7 @@ export default class SharedObservable extends SharedService {
         let id = message.data.id;
         let dataModel = null;
 
-        if (schema == 'node') {
-            console.log("                              -      - -  -     -- -                     -- ")
-            console.log(message)
-            console.log(message.data)
-            console.log(message.data.description)
-        }
-
-        if (schema == 'analysis'){
-            console.log("hey");
-        }
-
-        console.log("Deserializing..." + schema);
-        console.log(JSON.stringify(description))
+        console.log("{} - - - " + JSON.stringify(description))
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }

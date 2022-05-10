@@ -28,8 +28,6 @@ export default class TeamModel extends EventTarget {
 		for (const agent_id of json.agents) {
 			//let agent = await AgentService.instance('idb-service').get(agent_id);
 			let agent = await StorageService.get(agent_id,'agent');
-			console.log(" FOUND AGENT " + agent_id);
-			console.log(agent);
 
 			if (agent == undefined) {
 				agent = new AgentModel();
@@ -105,8 +103,6 @@ export default class TeamModel extends EventTarget {
 			agents: this._agents.map(agent => agent.id),
 			performers: Array.from(this._performers)
 		};
-        console.log("TEAMS TOJSON out is looking LIKE ThiS")
-		console.log(JSON.stringify(json))
 		return json;
 	}
 

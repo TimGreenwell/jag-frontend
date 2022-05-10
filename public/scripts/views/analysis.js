@@ -28,11 +28,6 @@ class AnalysisView extends HTMLElement {
 		this._analysisJagRoot = this._analysisModel.root;   // or just use this._analysisModel.root everywhere..
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		console.log(this._analysisJagRoot)
-		console.log(this._analysisModel.nodeSet)
-		console.log("+++++++++++++++++++++++++++++++++")
-		console.log("+++++++++++++++++++++++++++++++++")
-		console.log("+++++++++++++++++++++++++++++++++")
 		this._initializeTree(this._analysisJagRoot);
 		this.layout();
 

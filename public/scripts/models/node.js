@@ -282,10 +282,7 @@ export default class Node extends EventTarget {
 		// Replaces the id with the actual jag model.
 		//const jag = await JAGService.instance('idb-service').get(json.jag);
 
-		console.log("DESERIALIZATION THE NODE ")
-		console.log(json);
 		const jag = await StorageService.get(json.jag,'jag');
-		console.log(jag)
 		if (jag instanceof JAG) {
 			json.jag = jag;
 		}
@@ -295,8 +292,6 @@ export default class Node extends EventTarget {
 		//json.jag = (jag != null) ? jag : undefined;
 
 		const node = new Node(json);
-		console.log(node);
-		console.log("Finsihsed DESERIALIZATION");
 
 		// // @TODO: Can we lazy load these ?
 		// const promisedChildren = json.children.map(async child_node_id => {
