@@ -41,6 +41,7 @@ export default class StorageService extends Observable{
         if (typeof this._preferredStorage == "undefined") {
             this._preferredStorage = id
         };
+        console.log("{} - IndexedDB Storage linked to StorageService")
     }
 
     static areStoragesSynced(){
@@ -57,6 +58,7 @@ export default class StorageService extends Observable{
 
     static setPreferredStorage(preferredStorage){
         this._preferredStorage=preferredStorage;
+        console.log("{} - StorageService's preferred storage set to: " + preferredStorage);
     }
 
     getSchema(){

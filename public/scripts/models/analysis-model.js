@@ -21,13 +21,15 @@ export default class AnalysisModel extends EventTarget {
 					name = AnalysisModel.DEFAULT_NAME,
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
 					root = new NodeModel({is_root: true}),
-					team
+		            rootUrn,
+					team,
 				} = {}) {
 		super();
 		this._id = id;
 		this._name = name;
 		this._description = description;
 		this._rootNodeModel = root;
+		this._rootUrn = rootUrn;
 		this._team = team;
 		this._nodeSet = new Set();
 	//	StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
@@ -75,7 +77,10 @@ export default class AnalysisModel extends EventTarget {
 	}
 
 	static async fromJSON(json) {
+		const rootUrn = json.rootUrn;
 		const node_id = json.root;
+		console.log("Reminder: if you are breaking here - its because a JAGModel change triggered a rebuild of the Nodes which destroyed your Analysis root reference.")
+        console.log("We really should be using jag model root reference")
 		const rootNode = await StorageService.get(node_id, 'node');
 		// Replace id by the actual model.
 		json.root = rootNode;
@@ -85,6 +90,7 @@ export default class AnalysisModel extends EventTarget {
 			teamNode = new TeamModel();
 			await StorageService.create(teamNode, 'team');
 		}
+
 		json.team = teamNode;
 		const newAnalysis = new AnalysisModel(json);
 		return newAnalysis;
@@ -151,6 +157,7 @@ console.log("(((DISPLATCHING UPDATE)) - doesnt seem to be problem but dont know 
 			name: this._name,
 			description: this._description,
 			root: this.root.id,
+			rootUrn: this.root.urn,
 			team: this._team.id
 		};
 

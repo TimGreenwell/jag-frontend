@@ -122,6 +122,9 @@ class IATable extends Popupable {
 
     async create(analysisName, rootUrn) {
         let rootJagModel;
+        console.log("--------------------------------------------------------------------------")
+        console.log(rootUrn)
+        console.log("--------------------------------------------------------------------------")
         if (await StorageService.has(rootUrn, 'jag')) {
             rootJagModel = await StorageService.get(rootUrn, 'jag');
         } else {
@@ -135,7 +138,6 @@ class IATable extends Popupable {
         await StorageService.clear('node');
         // currently buildAnalysis builds and stores the mapset.
         // @TODO return the node set and iterate through storing them here.  less dependence
-       /// await newAnalysisModel.buildAnalysisJagNodes(rootNodeModel);
         await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
         await newAnalysisModel.buildDefaultTeam();
 
@@ -165,21 +167,39 @@ class IATable extends Popupable {
 
 
     async handleJagStorageUpdated(newJag, newJagUrn) {
-        if (this.analysisModel) {
+
+
+     //   if (this.analysisModel) {
             let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
-            await StorageService.clear('node');
-            tempNewAnalysisModel
+
             console.log("o   Handling the updated JAG STORAGE")
             console.log(tempNewAnalysisModel)
             console.log("o")
+            // IMPORTANT - currently, any JAGModel storage update triggers a rebuild of the root and all nodes.
+            // IMPORTANT - This replaces all the nodes meaning earlier references are void.
+            // IMPORTANT - All stored Analysis have root node pointers and are now lost.
+            // SOLUTION - Scan through and update root references or have Analysis use JAGModel root (cleaner)
+            await StorageService.clear('node');
             let rootUrn = tempNewAnalysisModel.root.jag.urn;
             const rootJagModel = await StorageService.get(rootUrn, 'jag');
             const rootNodeModel = new NodeModel({jag: rootJagModel});
             tempNewAnalysisModel.root = rootNodeModel;
             await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
-            console.log(tempNewAnalysisModel)
+
+            // // SOLUTION2 - scan through all nodes and update those with a matching JAGModel URN.
+            // // SOLUTION2 - @TODO children added/deleted, (or self deleted)
+            // let allStoredNodes = await StorageService.all('node');
+            // console.log(allStoredNodes)
+            // allStoredNodes.forEach((jagCell) => {
+            //     if (jagCell.jag.urn == newJagUrn) {
+            //         jagCell.jag = newJag;
+            //         // Make sure any new children are linked somehow
+            //         // Make sure any deleted children are removed somehow
+            //     }
+            // })
+
             this.analysisModel = tempNewAnalysisModel;
-        }
+      //  }
     }
 
 
@@ -496,7 +516,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
                 for (const jag of jags) {
                     options.push({
                         'text': jag.urn,
-                        'value': jag.urn
+                        'value': jag.urn           //  think maybe this should only be jag.   kkkk
                     });
                 }
 

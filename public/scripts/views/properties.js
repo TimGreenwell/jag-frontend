@@ -52,6 +52,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             this._updateProperties();
         }
     }
+
     // Called by user selecting one or more Nodes in the playground
 
     handleSelectionUpdate(selection) {
@@ -640,7 +641,6 @@ customElements.define('jag-properties', class extends HTMLElement {
         // URN changes are renames until the JagModel is marked as 'isPublished'.
         // After 'isPublished', URN changes are copies.
 
-
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(this._urnInput.value);
         if (isValid) {
@@ -680,12 +680,12 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     }
 
-    async deleteJagModel(deadJagModel){
+    async deleteJagModel(deadJagModel) {
         this._jagModel = undefined;
-        await StorageService.get(deadJagModel.urn,'jag');
+        await StorageService.get(deadJagModel.urn, 'jag');
 
 
-        await StorageService.delete(deadJagModel.urn,'jag');
+        await StorageService.delete(deadJagModel.urn, 'jag');
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
     }
@@ -857,17 +857,17 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-
     _initHandlers() {
         // this._urnInput.addEventListener('keyup', e => {
         // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
         // });
 
         //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._jagModel.name = this._nameInput.value;]
-        this._nameInput.addEventListener('blur', async(e) => {  // get an error if the blur goes to a playground click on empty space.
+        this._nameInput.addEventListener('blur', async (e) => {  // get an error if the blur goes to a playground click on empty space.
             if (this._jagModel) {
-            this._jagModel.name = this._nameInput.value;
-            await StorageService.update(this._jagModel, 'jag');}
+                this._jagModel.name = this._nameInput.value;
+                await StorageService.update(this._jagModel, 'jag');
+            }
         });
 
         this._nameInput.addEventListener('keyup', (e) => {
@@ -906,14 +906,17 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._urnInput.addEventListener('focusout', async (e) => {
             if (this._jagModel.urn != this._urnInput.value) {
                 await this._updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
-                this._jagModel = undefined;   //zzzz
+                // this._jagModel = undefined;   //zzzz
             }
         })
 
         this._descInput.addEventListener('blur', async (e) => {
             if (this._jagModel) {
-            this._jagModel.description = this._descInput.value;
-            await StorageService.update(this._jagModel, 'jag');}
+                if (this._jagModel.description != this._descInput.value) {
+                    this._jagModel.description = this._descInput.value;
+                    await StorageService.update(this._jagModel, 'jag');
+                }
+            }
         });
 
         this._descInput.addEventListener('keyup', (e) => {
@@ -947,7 +950,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         });
 
-        this._executionSelect.addEventListener('change', async  e => {
+        this._executionSelect.addEventListener('change', async e => {
             if (this._jagModel) {
                 this._jagModel.execution = this._executionSelect.value;
                 await StorageService.update(this._jagModel, 'jag');

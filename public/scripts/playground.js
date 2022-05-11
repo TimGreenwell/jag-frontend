@@ -259,11 +259,9 @@ class Playground extends Popupable {
 			if (e instanceof Edge) {
 				const parent = e.getNodeOrigin();
 				const child = e.getNodeEnd();
-
 				if (!jagNodeSet.has(child)) {
 					if (!jagNodeSet.has(parent)) {
 						const child = e.getNodeEnd();
-
 						this.popup({
 							content: Playground.NOTICE_REMOVE_CHILD,
 							trackEl: child,
@@ -294,42 +292,15 @@ class Playground extends Popupable {
 						highlights: [n]
 					});
 				}
-
 				n.setSelected(false);
 			}
 		}
-
 		jagNodeSet.clear();
-
 		this._checkBounds();
 	}
 
 
-xxx
 
-
-	handleRefresh({ model, model_set, refreshed = new Set() }) {
-		const margin = 50;
-
-		for (let node of this._activeNodesSet) {
-			if (!refreshed.has(node) && node.model === model) {
-				const root = node.getRoot();
-
-				if (root == node) {
-					const [x, y] = node.getPosition();
-					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
-
-					const tree = node.getTree();
-
-					for (const node of tree) {
-						refreshed.add(node);
-					}
-				} else {
-					root.refresh(refreshed);
-				}
-			}
-		}
-	}
 
 	_createEdge(origin, id = undefined) {
 		const edge = new Edge(this._edges_container);
@@ -570,9 +541,36 @@ xxx
 		this._checkBounds(node.getTree());
 	}
 
+
 	handleLibraryListItemSelected({model: selectedJag, model_set: selectedJagDescendants = new Map(), expanded: isExpanded = false}) {
 		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
+
+
+
+	handleRefresh({ model, model_set, refreshed = new Set() }) {
+		const margin = 50;
+
+		for (let node of this._activeNodesSet) {
+			if (!refreshed.has(node) && node.model === model) {
+				const root = node.getRoot();
+
+				if (root == node) {
+					const [x, y] = node.getPosition();
+					this._traverseJagNodeTree(model, model_set, true, margin, x, y, node);
+
+					const tree = node.getTree();
+
+					for (const node of tree) {
+						refreshed.add(node);
+					}
+				} else {
+					root.refresh(refreshed);
+				}
+			}
+		}
+	}
+
 
 	_getNodePreferredHeight(jagNode, jagNodeMap) {
 		if (!jagNode.children || jagNode.children.length === 0)

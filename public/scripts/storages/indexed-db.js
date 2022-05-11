@@ -15,6 +15,7 @@ export default class IndexedDBStorage {
 		this._name = name;
 		this._version = version;
 		this._db = undefined;
+		console.log("{} - IndexedDB Storage initialized")
 	}
 
 	async init() {

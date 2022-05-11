@@ -30,9 +30,7 @@ class AnalysisView extends HTMLElement {
 		this._initializeStaticHeaders();
 		this._initializeTree(this._analysisJagRoot);
 		this.layout();
-
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
-
 	}
 
 	initialize() {
