@@ -27,7 +27,7 @@ export default class JAGModel {
 	}
 
 	static async fromURN(urn) {
-		const json = await JAGService.get(urn);
+		const json = await JAGService.get(urn, 'node');
 		return JAGModel.fromJSON(json);
 	}
 

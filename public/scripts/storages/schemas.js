@@ -3,8 +3,16 @@
  *
  * @author cwilber
  * @copyright Copyright © 2020 IHMC, all rights reserved.
- * @version 0.06
+ * @version 0.07
+ *
+ * Schema provides the necessary information describing a record
+ * being processed.  This includes the storename, keyfield and
+ * the deserialization function required.
+ * @TODO Not sure what unique is for.
+ * @TODO Should we incorporate a yml/xml config file?  Probably no benefit.
  */
+
+
 
 import JAG from  '../models/jag.js';
 import Node from  '../models/node.js';
@@ -103,7 +111,6 @@ export default class Schemas {
         if (schema in Schemas.SCHEMA_SET) {
             return Schemas.SCHEMA_SET[schema];
         }
-
         throw new Error("Schema '" + schema + "' does not exist.");
     }
 

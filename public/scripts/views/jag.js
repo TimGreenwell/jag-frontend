@@ -75,11 +75,13 @@ class JAGView extends AnalysisCell {
 	async _init() {
 		this.nodeModel.addEventListener('sync', this._sync.bind(this));
 		this._createDocument();
+//    tg - Both functions are equivalent but neither seem to be of any use.  this._elements is set to auto-complete.
+//    tg - possibly the '.suggestions.suggestions' is a mistake.
 
-		//JAGService.instance('idb-service').all()
-		const allJagModels = await StorageService.all('jag');
-		allJagModels.forEach(jagModel => this._elements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
+		StorageService.all('jag').then(jags => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
 
+//	const allJagModels = await StorageService.all('jag');
+//	allJagModels.forEach(() => this._elements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
 	}
 
 	_createDocument() {

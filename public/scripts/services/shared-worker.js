@@ -1,7 +1,13 @@
+/**
+ * SharedWorker.
+ * Single port with no processing or filtering.
+ */
+
+
 const browserInstances = [];
 
 onconnect = function(e) {
-    console.log("Worker making initial connection");
+    console.log("--Worker making initial connection--");
     const port = e.ports[0];
     browserInstances.push(port);
 

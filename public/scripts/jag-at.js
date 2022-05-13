@@ -25,7 +25,6 @@ import GraphService from './services/graph-service.js';       // ?? - seems unus
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
-import SharedService from "./services/shared-service.js";                 // Available storage option (REST to ???)
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -60,10 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
-	SharedService.senderId = 'jag-at';
-
-	//await StorageService.delete("us:ihmc:aaaa1234", 'jag')
-
+	StorageService.senderId = 'jag-at';
 
 	const ide = new IDE();
 	const graph_service = new GraphService();
