@@ -41,31 +41,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
 	await idb_storage.init();
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    //JAGService.createInstance('idb-service', idb_storage);
+	// @TODO: put this name in a default/configuration object globally accessible and frozen.
 	StorageService.addStorageInstance('idb-service', idb_storage);
 
 	// @TODO: this should be setup by the user (configuration file).
 	// Initializes a rest storage
-	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
-	//JAGService.createInstance('local-rest-service', rest_storage);
+	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:8080/api/v1');
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 
-	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
+	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 
 	SharedService.senderId = 'jag-ia';
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    //NodeService.createInstance('idb-service', idb_storage);
-
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//AgentService.createInstance('idb-service', idb_storage);
-
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//TeamService.createInstance('idb-service', idb_storage);
-
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//AnalysisService.createInstance('idb-service', idb_storage);
 
 	const body = document.querySelector('body');
 

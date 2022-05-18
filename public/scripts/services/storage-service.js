@@ -22,7 +22,7 @@ import SchemaManager from '../storages/schemas.js';
 export default class StorageService extends SharedObservable{
 
     static {
-        this.__SERVICES = new Map();         // map  {service name -> service instance}
+        this._storageInstancesMap = new Map();         // map  {service name -> service instance}
         this._preferredStorage = undefined;  // service instance for all reads
         this._storagesSynced = false;         // write to (all storages) or just (preferredStorage)
         this._schema = undefined;            // specific schema within Storage
@@ -32,19 +32,19 @@ export default class StorageService extends SharedObservable{
      * Retrieves a storage instance of the service if it exists.
      */
     static getStorageInstance(id) {
-        if(!this.__SERVICES.has(id))
+        if(!this._storageInstancesMap.has(id))
             throw new Error(`No service instance '${id}'.`);
-        return this.__SERVICES.get(id);
+        return this._storageInstancesMap.get(id);
     }
 
     /**
      * Register a new storage instance .
      */
     static addStorageInstance(id, instance) {
-        if ((typeof this.__SERVICES != 'undefined' ) && (this.__SERVICES.has(id))) {
+        if ((typeof this._storageInstancesMap != 'undefined' ) && (this._storageInstancesMap.has(id))) {
             throw new Error(`There already exists a service instance named ${id}.`)
         }
-        this.__SERVICES.set(id, instance);
+        this._storageInstancesMap.set(id, instance);
         if (typeof this._preferredStorage == "undefined") {
             this._preferredStorage = id
         }
@@ -108,7 +108,7 @@ export default class StorageService extends SharedObservable{
      */
     static async all(schema = this._schema) {
         console.log("{} - Storage request --- get all data for " + schema);
-        const descriptions = await this.__SERVICES.get(this._preferredStorage).all(schema);
+        const descriptions = await this._storageInstancesMap.get(this._preferredStorage).all(schema);
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
             return newModel;
@@ -123,7 +123,7 @@ export default class StorageService extends SharedObservable{
      */
     static async get(id, schema = this._schema) {
         console.log("{} - Storage request --- get item matching " + schema + " " + id);
-        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, id);
+        const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, id);
         const model = await SchemaManager.deserialize(schema,description);
         return model;
     }
@@ -133,7 +133,7 @@ export default class StorageService extends SharedObservable{
      * No notification made. (Not a storage change)
      */
     static async has(id, schema = this._schema) {
-        return await this.__SERVICES.get(this._preferredStorage).has(schema, id);
+        return await this._storageInstancesMap.get(this._preferredStorage).has(schema, id);
     }
 
     /**
@@ -143,7 +143,7 @@ export default class StorageService extends SharedObservable{
      */
     static async clear(schema = this._schema) {
         console.log("{} - Storage request --- clear everything in " + schema);
-        await this.__SERVICES.get(this._preferredStorage).clear(schema);
+        await this._storageInstancesMap.get(this._preferredStorage).clear(schema);
         this.confirmStorageChange({topic:`${schema}-storage-cleared`,schema: schema, id: null, description: null });
     }
 
@@ -159,7 +159,7 @@ export default class StorageService extends SharedObservable{
         const description = createdModel.toJSON();
         const createdId = SchemaManager.getKeyValue(schema,description);
         console.log("{} - Storage request --- create " + createdId + " in " + schema);
-        await this.__SERVICES.get(this._preferredStorage).create(schema, createdId, description);
+        await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, description);
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: description });
     }
 
@@ -171,7 +171,7 @@ export default class StorageService extends SharedObservable{
         const description = updatedModel.toJSON();
         const updatedId = SchemaManager.getKeyValue(schema,description);
         console.log("{} - Storage request --- update " + updatedId + " in " + schema);
-        await this.__SERVICES.get(this._preferredStorage).update(schema, updatedId ,description);
+        await this._storageInstancesMap.get(this._preferredStorage).update(schema, updatedId ,description);
         this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: description});
     }
 
@@ -182,7 +182,7 @@ export default class StorageService extends SharedObservable{
     static async delete(deletedId, schema = this._schema) {
         console.log("{} - Storage request --- delete " + id + " in " + schema);
         //SchemaManager.getKey(schema)
-        let result = await this.__SERVICES.get(this._preferredStorage).delete(schema, deletedId);
+        let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
         this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
     }
 
@@ -193,11 +193,11 @@ export default class StorageService extends SharedObservable{
      */
     static async replace(origId, newId, schema = this._schema) {
         console.log("{} - Storage request --- replace " + origId + " with " + newId + " in " + schema);
-        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
+        const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, origId);
         let keyField = await SchemaManager.getKey(schema);
         description[keyField] = newId;
-        let result = await this.__SERVICES.get(this._preferredStorage).delete(schema, origId);
-        await this.__SERVICES.get(this._preferredStorage).create(schema, newId, description);
+        let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, origId);
+        await this._storageInstancesMap.get(this._preferredStorage).create(schema, newId, description);
         this.confirmStorageChange({topic:`${schema}-storage-replaced`,schema: schema, id: origId,  description: description});
     }
 
@@ -208,10 +208,10 @@ export default class StorageService extends SharedObservable{
     static async clone(origId, cloneId, schema = this._schema) {
         console.log("{} - Storage request --- clone " + origId + " to make " + cloneId + " in " + schema);
         //SchemaManager.getKey(schema)
-        const description = await this.__SERVICES.get(this._preferredStorage).get(schema, origId);
+        const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, origId);
         let index = SchemaManager.getKeyValue(schema,description);
         description[index] = cloneId;
-        await this.__SERVICES.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
+        await this._storageInstancesMap.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
         this.confirmStorageChange({topic:`${schema}-storage-cloned`,schema: schema, id: cloneId, description: description});
     }
 

@@ -16,6 +16,7 @@ export default class RESTStorage {
 		this._name = name;
 		this._version = version;
 		this._endpoint = endpoint;
+		console.log("{} - Rest Storage Service initialized at (" + endpoint + ")");
 	}
 
 	async init() {

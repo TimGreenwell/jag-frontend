@@ -8,7 +8,10 @@
 
 export default class IndexedDBUtils {
 
-	static initStorage(id, version, stores) {
+	static initStorage(id, version, storesConfig) {
+		console.log(id)
+		console.log(version)
+		console.log(storesConfig)
 		return new Promise((resolve, reject) => {
 			const request = indexedDB.open(id, version);
 
@@ -25,20 +28,25 @@ export default class IndexedDBUtils {
 				console.log('updgrade', performance.now());
 				const db = event.target.result;
 				// After extensive testing, it seems that success waits for all store creation to be completed
-				stores.forEach(store => IndexedDBUtils.createStore(db, store));
+				storesConfig.forEach(storeConfig => IndexedDBUtils.createStore(db, storeConfig));
 			});
 		});
 	}
 
-	static createStore(db, { name, indexes, options }) {
+	static createStore(db, storeConfig ) {
+		console.log("===========+++")
+		console.log(storeConfig.name)
+		console.log(storeConfig.indexList)
+		console.log(storeConfig.indexList[0].property)
+		console.log(storeConfig.indexList[0].options.unique)
 			if(db.objectStoreNames.contains(name)) {
 				console.log(`Deleting existing object store : ${name}`);
 				db.deleteObjectStore(name);
 			}
 
-			const store = db.createObjectStore(name, options);
+			const store = db.createObjectStore(storeConfig.name, {keyPath: storeConfig.key});
 
-			indexes.forEach(({ name: index_name, property: index_property, options: index_options }) => {
+		storeConfig.indexList.forEach(({ name: index_name, property: index_property, options: index_options }) => {
 				store.createIndex(index_name, index_property, index_options);
 			});
 	}

@@ -26,37 +26,71 @@ export default class Schemas {
 	{
 		const JAG_STORE = {
 			name: 'jag',
-			rest: 'jagActivities',
+			key: 'urn',
 			deserialize: JAG.fromJSON,
-			index: 'urn'
+			rest: 'jagActivities',
+			indexList: [{
+					name: 'urn-index',
+					property: 'urn',
+					options: {
+						unique: true
+					}}]
 		};
 
 		const NODE_STORE = {
 			name: 'node',
-			rest: 'nodes',
+			key: 'id',
 			deserialize: Node.fromJSON,
-			index: 'id'
+			rest: 'nodes',
+			indexList: [{
+				name: 'id-index',
+				property: 'id',
+				options: {
+					unique: true
+				}
+			}]
 		};
 
 		const ANALYSIS_STORE = {
 			name: 'analysis',
-			rest: 'analyses',
+			key: 'id',
 			deserialize: AnalysisModel.fromJSON,
-			index: 'id'
+			rest: 'analyses',
+			indexList: [{
+				name: 'id-index',
+				property: 'id',
+				options: {
+					unique: true
+				}
+			}]
 		};
 
 		const AGENT_STORE = {
 			name: 'agent',
-			rest: 'agents',
+			key: 'id',
 			deserialize: Agent.fromJSON,
-			index: 'id'
+			rest: 'agents',
+			indexList: [{
+				name: 'id-index',
+				property: 'id',
+				options: {
+					unique: true
+				}
+			}]
 		};
 
 		const TEAM_STORE = {
 			name: 'team',
-			rest: 'teams',
+			key: 'id',
 			deserialize: Team.fromJSON,
-			index: 'id'
+			rest: 'teams',
+			indexList: [{
+				name: 'id-index',
+				property: 'id',
+				options: {
+					unique: true
+				}
+			}]
 		}
 
 		Schemas.SCHEMA_SET = {
@@ -79,17 +113,21 @@ export default class Schemas {
         throw new Error("Schema '" + schema + "' does not exist.");
     }
 
+	static getIndexedDb(schema) {
+		return Schemas.get(schema).indexedDb;
+	}
+
 	static getRest(schema) {
 		return Schemas.get(schema).rest;
 	}
 
 	static getKeyValue(schema,obj) {
-		let key = Schemas.get(schema).index;
+		let key = Schemas.get(schema).key;
 		return(obj[key]);
 	}
 
 	static getKey(schema) {
-		return Schemas.get(schema).index;
+		return Schemas.get(schema).key;
 	}
 
 	static async deserialize(schema,description) {;
