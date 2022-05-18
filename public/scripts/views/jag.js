@@ -5,8 +5,9 @@
  * @version 2.47
  */
 
-// These are the table JAG blocks - contains autocomplete,
-// better name?  iaJagCell  1:1 based off atJagNodes
+// These are the JAG Blocks found in the IA Table  (contains autocomplete)
+// Could use a better name => iaJagCell?  1:1 based off atJagNodes
+
 
 'use strict';
 

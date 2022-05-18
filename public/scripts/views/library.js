@@ -71,21 +71,22 @@ customElements.define('jag-library', class extends HTMLElement {
 				const name = newJAGModel.name;
 				const description = newJAGModel.description || '';
 
-				const $li = document.createElement('li');
-				$li.id = urn;
+				const li = document.createElement('li');
+				li.id = urn;
 				const h3 = document.createElement('h3');
 				h3.innerHTML = name;
 				const p = document.createElement('p');
 				p.innerHTML = description;
-				$li.appendChild(h3);
-				$li.appendChild(p);
 
-				let search_params =[];
+				li.appendChild(h3);
+				li.appendChild(p);
+
+				let search_params = [];
 				search_params.push(urn.toLowerCase());
 				search_params.push(name.toLowerCase());
 				search_params.push(description.toLowerCase());
 				this._libraryList.push({
-					element: $li,
+					element: li,
 					search_content: search_params.join(" "),
 					model: newJAGModel
 				});
@@ -108,7 +109,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 
 				// Send the newJAGModel and all its children through the dispatch
-				$li.addEventListener('click', (event) => {
+				li.addEventListener('click', (event) => {
 					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
 						console.log("clicked");
 						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
@@ -121,14 +122,14 @@ customElements.define('jag-library', class extends HTMLElement {
 					}.bind(this));
 				});
 
-				this._$list.appendChild($li);
+				this._$list.appendChild(li);
 				this._existingURNS.add(newJAGModel.urn);
-			//	model.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
-			} else
-			{ console.log ("ERROR -- unexpected type for newJAGModel [library-addItem]")}
-		}
-		else {
-			console.log ("ERROR -- URN already exists [library-addItem]")
+				//	model.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
+			} else {
+				console.log("ERROR -- unexpected type for newJAGModel [library-addItem]")
+			}
+		} else {
+			console.log("ERROR -- URN already exists [library-addItem]")
 		}
 	}
 

@@ -23,8 +23,7 @@ class AnalysisView extends HTMLElement {
 	//	this._analysisJagRoot = undefined;   // or just use this._analysisModel.root;?
 		this._leafArray = new Array();
 		this._assessment_menu = undefined;
-		this._views = new Map();
-
+		this._jagCellViewMap = new Map();
 		this._analysisJagRoot = this._analysisModel.root;   // or just use this._analysisModel.root everywhere..
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
@@ -35,7 +34,7 @@ class AnalysisView extends HTMLElement {
 
 	initialize() {
 		// Appends this view to the specified ia-table
-		// @todo why wouldnt the table just append this - overly dependent
+
 	//	table.appendChild(this);
 
 		// // Registers root view
@@ -46,17 +45,17 @@ class AnalysisView extends HTMLElement {
 		// this._initializeTree(this._analysisJagRoot);
 		//
 		// // TODO: temporary ugly fix
-		// // this._views.get(this._analysisJagRoot.id).model.syncJAG(this._views.get(this._analysisJagRoot.id));
+		// // this._jagCellViewMap.get(this._analysisJagRoot.id).model.syncJAG(this._jagCellViewMap.get(this._analysisJagRoot.id));
 		//
 		// this.layout();
 	}
 
 	// If agent exists, get related assessment.  If not, create and return empty assessment.
 	getAssessments(agent) {
-		let agent_assessment_views = this._views.get(agent.id);
+		let agent_assessment_views = this._jagCellViewMap.get(agent.id);
 		if(agent_assessment_views === undefined) {
 			agent_assessment_views = new Map();
-			this._views.set(agent.id, agent_assessment_views);
+			this._jagCellViewMap.set(agent.id, agent_assessment_views);
 		}
 		return agent_assessment_views;
 	}
@@ -72,11 +71,11 @@ class AnalysisView extends HTMLElement {
 	}
 
 	getNodeView(node) {
-		let view = this._views.get(node.id);
+		let view = this._jagCellViewMap.get(node.id);
 
 		if(view === undefined) {
 			view = new JAGView(node);
-			this._views.set(node.id, view);
+			this._jagCellViewMap.set(node.id, view);
 		}
 
 		return view;

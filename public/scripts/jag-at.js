@@ -14,8 +14,6 @@
  *
  */
 
-//a
-
 import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes
 import IDE from './ide.js';                                   // ?? - seems unused currently
 import Library from './views/library.js';                     // AT - Left view of available JAG Entities
@@ -29,26 +27,11 @@ import RESTStorage from './storages/rest.js';
 document.addEventListener('DOMContentLoaded', async () => {
 
 
-	// SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
-	// SharedService.senderId = 'jag-at';
-
-	//SharedService.worker.port.onmessage = handleNewMessage;
-
-	// function handleNewMessage({ data }) {
-	// 	console.log("Don't think I will need this handler - but checking out this new data");
-	// 	console.log({ data });
-	// }
-	//
-	// function postStorageMessage(command, paramList) {
-	// 	console.log("Posting new data from jagat");
-	// }
-
-
 	// Initializes local storage
 	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
 	await idb_storage.init();
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
+	// @TODO: put this name in a default/configuration object globally accessible and frozen.
 	// JAGService.createInstance('idb-service', idb_storage);
 	StorageService.addStorageInstance('idb-service', idb_storage);
 
@@ -56,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Initializes a rest storage
 	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
 	//JAGService.createInstance('local-rest-service', rest_storage);
+
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
@@ -65,17 +49,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const graph_service = new GraphService();
 
 	// Load DOM outer skeleton for Authoring Tool
-	const $body = document.querySelector('body');
-	const $library = new Library();
-	const $menu = new Menu();
-	const $playground = new Playground();
-	const $properties = new Properties();
+	const body = document.querySelector('body');
+	const library = new Library();
+	const menu = new Menu();
+	const playground = new Playground();
+	const properties = new Properties();
 
-	$body.appendChild($menu)
-	$body.appendChild($library);
-	$body.appendChild($playground);
-	$body.appendChild($properties);
-
+	body.appendChild(menu)
+	body.appendChild(library);
+	body.appendChild(playground);
+	body.appendChild(properties);
 
 	/**
 	 * EventListeners triggering action in different panel
@@ -87,51 +70,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 	 */
 
 	//////////////////////////////////////////////////////////////////////
-	// Event: 'clear-playground' - when menu clears nodes from playground
-	$menu.addEventListener('clear-playground', (e) => {
-		//$playground.handleMenuAction(e.detail);
-		$playground.clearPlayground();
+	// Event: 'clear-playground' - menu item selected to clear nodes from playground
+	menu.addEventListener('clear-playground', (e) => {
+		playground.clearPlayground();
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
 	// @TODO
-	$menu.addEventListener('add-new-node', (e) => {
-		$playground._handleNewNodePopup(e);
+	menu.addEventListener('add-new-node', (e) => {
+		playground._handleNewNodePopup(e);
 	});
     //////////////////////////////////////////////////////////////////////
-	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
+	// Event: 'delete item' - when menu or library adds a (new or existing) node to playground
 	// @TODO
-	$menu.addEventListener('delete-selected', (e) => {
-		$playground.handleDeleteSelected(e);
+	menu.addEventListener('delete-selected', (e) => {
+		playground.handleDeleteSelected(e);
 	});
 	//////////////////////////////////////////////////////////////////////
-
-	// Event: 'item-selected' (defined-node-added)
+	// Event: 'item-selected' from library (defined-node-added)
 	// @TODO Playgrounds handlers can be combined or merged.
-	$library.addEventListener('library-lineItem-selected', (e) => {
-
-		$playground.handleLibraryListItemSelected(e.detail);
+	library.addEventListener('library-lineItem-selected', (e) => {
+		playground.handleLibraryListItemSelected(e.detail);
 	});
+	//////////////////////////////////////////////////////////////////////
+	// Event: 'playground-nodes-selected' (playground-node-selected)
+	playground.addEventListener('playground-nodes-selected', (e) => {
+		properties.handleSelectionUpdate(e.detail);
+		//ide.handleSelectionUpdate(e.detail);
+	});
+
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
-	$library.addEventListener('refresh', (e) => {
-		$playground.handleRefresh(e.detail);
+	playground.addEventListener('refresh', (e) => {
+		library.refreshItem(e.detail.model, e.detail.refreshed);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'resources' (???)
 	graph_service.addEventListener('resources', (e) => {
-		$library.handleResourceUpdate(e.detail);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'playground-nodes-selected' (playground-node-selected)
-	$playground.addEventListener('playground-nodes-selected', (e) => {
-		$properties.handleSelectionUpdate(e.detail);
-		//ide.handleSelectionUpdate(e.detail);
+		library.handleResourceUpdate(e.detail);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
-	$playground.addEventListener('refresh', (e) => {
-		$library.refreshItem(e.detail.model, e.detail.refreshed);
+	library.addEventListener('refresh', (e) => {
+		playground.handleRefresh(e.detail);
 	});
-
 });

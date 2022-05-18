@@ -10,7 +10,6 @@
 'use strict';
 
 import { UUIDv4 }  from '../utils/uuid.js';
-
 import JAG from './jag.js';
 import StorageService from '../services/storage-service.js';
 import JAGATValidation from '../utils/validation.js';
@@ -33,7 +32,6 @@ export default class Node extends EventTarget {
 		this._height = 0;
 		this._children = Array();
 	}
-
 
 
 	get id() {
