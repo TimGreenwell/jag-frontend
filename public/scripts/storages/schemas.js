@@ -25,73 +25,38 @@ export default class Schemas {
 	static
 	{
 		const JAG_STORE = {
-			name: 'joint-activity-graph',
+			name: 'jag',
+			rest: 'jagActivities',
 			deserialize: JAG.fromJSON,
-			indexes: [
-				{
-					name: 'urn-index',
-					property: 'urn',
-					options: {
-						unique: true
-					}
-				}
-			]
+			index: 'urn'
 		};
 
 		const NODE_STORE = {
 			name: 'node',
+			rest: 'nodes',
 			deserialize: Node.fromJSON,
-			indexes: [
-				{
-					name: 'id-index',
-					property: 'id',
-					options: {
-						unique: true
-					}
-				}
-			]
+			index: 'id'
 		};
 
 		const ANALYSIS_STORE = {
 			name: 'analysis',
+			rest: 'analyses',
 			deserialize: AnalysisModel.fromJSON,
-			indexes: [
-				{
-					name: 'id-index',
-					property: 'id',
-					options: {
-						unique: true
-					}
-				}
-			]
+			index: 'id'
 		};
 
 		const AGENT_STORE = {
 			name: 'agent',
+			rest: 'agents',
 			deserialize: Agent.fromJSON,
-			indexes: [
-				{
-					name: 'id-index',
-					property: 'id',
-					options: {
-						unique: true
-					}
-				}
-			]
+			index: 'id'
 		};
 
 		const TEAM_STORE = {
 			name: 'team',
+			rest: 'teams',
 			deserialize: Team.fromJSON,
-			indexes: [
-				{
-					name: 'id-index',
-					property: 'id',
-					options: {
-						unique: true
-					}
-				}
-			]
+			index: 'id'
 		}
 
 		Schemas.SCHEMA_SET = {
@@ -114,13 +79,17 @@ export default class Schemas {
         throw new Error("Schema '" + schema + "' does not exist.");
     }
 
+	static getRest(schema) {
+		return Schemas.get(schema).rest;
+	}
+
 	static getKeyValue(schema,obj) {
-		let key = Schemas.get(schema).indexes[0].property;
+		let key = Schemas.get(schema).index;
 		return(obj[key]);
 	}
 
 	static getKey(schema) {
-		return Schemas.get(schema).indexes[0].property;
+		return Schemas.get(schema).index;
 	}
 
 	static async deserialize(schema,description) {;

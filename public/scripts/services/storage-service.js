@@ -132,8 +132,8 @@ export default class StorageService extends SharedObservable{
      * Check for existence of the schema-defined id.
      * No notification made. (Not a storage change)
      */
-    static async has(urn, schema = this._schema) {
-        return await this.__SERVICES.get(this._preferredStorage).has(schema, urn);
+    static async has(id, schema = this._schema) {
+        return await this.__SERVICES.get(this._preferredStorage).has(schema, id);
     }
 
     /**

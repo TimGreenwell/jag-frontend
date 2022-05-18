@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// @TODO: this should be setup by the user (configuration file).
 	// Initializes a rest storage
-	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
+	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:8080/api/v1');
 	//JAGService.createInstance('local-rest-service', rest_storage);
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
-	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
+	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
 

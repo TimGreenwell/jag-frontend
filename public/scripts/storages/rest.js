@@ -8,6 +8,7 @@
  */
 
 import RESTUtils from '../utils/rest.js';
+import SchemaManager from "./schemas.js";
 
 export default class RESTStorage {
 
@@ -26,36 +27,55 @@ export default class RESTStorage {
 		// TODO: ensure API version is compatible with endpoint?
 	}
 
-	async all() {
-		const keys = await RESTUtils.list(this._endpoint, __REST_PATHS.list);
+	async all(schema) {
+		console.log(schema);
+		const restAccess = SchemaManager.getRest(schema);
+		console.log(restAccess);
+		const path = __REST_PATHS.all.replace("{schema}", restAccess);
+		console.log(path);
+		const keys = await RESTUtils.all(this._endpoint + path);
+		console.log(keys);
 		return keys;
 	}
 
-	async get(urn) {
-		const description = await RESTUtils.get(this._endpoint, __REST_PATHS.read, urn);
+	async get(schema, id) {
+		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const description = await RESTUtils.get(this._endpoint + path);
 		return description;
 	}
 
-	async has(urn) {
-		const exists = await RESTUtils.check(this._endpoint, __REST_PATHS.check, urn);
+	async has(schema, id) {
+		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const exists = await RESTUtils.has(this._endpoint + path);
 		return exists;
 	}
 
-	async create(description) {
-		return await RESTUtils.create(this._endpoint, __REST_PATHS.create, description.urn, description);
+	async create(schema, id, description) {
+		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const outcome =  await RESTUtils.create(this._endpoint + path, description);
+		return outcome;
 	}
 
-	async update(description) {
-		return await RESTUtils.update(this._endpoint, __REST_PATHS.update, description.urn, description);
+	async update(schema, id, description) {
+		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const outcome = await RESTUtils.update(this._endpoint + path, description);
+		return outcome;
 	}
+
+	async delete(schema, id) {
+		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const outcome = await RESTUtils.delete(this._endpoint + path);
+		return outcome;
+	}
+
 }
 
 const __REST_PATHS = {
-	list: '/jags',
-	check: '/jags/{urn}',
-	create: '/jags/{urn}',
-	read: '/jags/{urn}',
-	update: '/jags/{urn}',
-	delete: '/jags/{urn}'
+	all: '/{schema}',
+	has: '/{schema}/{id}',
+	create: '/{schema}/{id}',
+	get: '/{schema}/{id}',
+	update: '/{schema}/{id}',
+	delete: '/{schema}/{id}'
 };
 
