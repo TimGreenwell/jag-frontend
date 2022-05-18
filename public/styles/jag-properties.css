@@ -1,17 +1,16 @@
 /* Properties panel */
 jag-properties {
 	width: 20%;
-	height: 100%;
+	height: 100%;   /* was 95% */
 	overflow-y: scroll;
-	z-index: 100;
-	background: var(--main-bg-darker);
-	color: var(--main-fg);
+	z-index: 100;       /* new */
+	background: var(--main-bg-darker);   /* new */
+	color: var(--main-fg);   /* new */
 }
 
 jag-properties textarea {
 	width: 100%;
 }
-
 
 jag-properties div {
 	padding: 0.75em;
@@ -28,33 +27,33 @@ jag-properties #childOf {
 	color: white;
 }
 
-jag-properties #undefinedJAG {
+jag-properties  #undefined-jag{  /* was #undefinedJAG */
 	background-color: red;
 	color: white;
 }
 
-jag-properties #leafNode {
+jag-properties #leaf-node {
 	background-color: green;
 	color: white;
 }
 
-jag-properties:not(.definedModel) .directProperty {
+jag-properties:not(.defined-model) .direct-property {
 	box-shadow: 0px 0px 5px red;
 }
 
-jag-properties:not(.rootNode) input.contextual {
+jag-properties:not(.root-node) input.contextual {
 	box-shadow: 0px 3px 5px blue;
 }
 
-jag-properties.rootNode .childOfNotice {
+jag-properties.root-node .child-of-notice {
 	display: none;
 }
 
-jag-properties.definedModel .undefinedJAGNotice {
+jag-properties.defined-model .undefined-jag-notice {
 	display: none;
 }
 
-jag-properties.nonLeafNode .leafNodeNotice {
+jag-properties.non-leaf-node .leaf-node-notice {
 	display: none;
 }
 

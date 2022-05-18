@@ -29,7 +29,7 @@ class AssessmentView extends AnalysisCell {
 	}
 
 	_init() {
-		this._setAssessment(this._agent.assessment(this._node));
+		this._setFillColorToAssessmentValue(this._agent.assessment(this._node));
 		this._agent.addEventListener('update', this._handleAgentUpdate.bind(this));
 		this.addEventListener('contextmenu', _ => {
 			this.addContextMenuListener(ContextMenu.SELECT_EVENT, this._processContextMenuChoice.bind(this));
@@ -49,7 +49,7 @@ class AssessmentView extends AnalysisCell {
 		this._agent.setAssessment(this._node.urn, result);
 	}
 
-	_setAssessment(assessment) {
+	_setFillColorToAssessmentValue(assessment) {
 		if (assessment === undefined)
 			return;
 
