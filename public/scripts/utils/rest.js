@@ -40,79 +40,58 @@ export default class RESTUtils {
 		throw new Error(`${error_prefix}: Unexpected response.`);
 	}
 
-	static async list(endpoint, uri) {
+	static async all(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri;
-
-		const details = {};
-
+		const details = { 'mode': 'no-cors' };
 		return await RESTUtils.request(url, details, 'Error listing JAGs');
 	}
 
-	static async check(endpoint, uri, urn) {
+	static async get(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri.replace('{urn}', urn);
-
-		const details = {
-			'method': 'HEAD'
-		};
-
-		return await RESTUtils.request(url, details, 'Error finding JAG', true, false);
-	}
-
-	static async create(endpoint, uri, urn, model) {
-		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri.replace('{urn}', urn);
-
-		const model_json_string = JSON.stringify(model);
-
-		const details = {
-			'method': 'POST',
-			'body': model_json_string,
-			'headers': {
-				'Content-Type': 'application/json'
-			}
-		};
-
-		return await RESTUtils.request(url, details, 'Error creating JAG');
-	}
-
-	static async get(endpoint, uri, urn) {
-		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri.replace('{urn}', urn);
-
-		const details = {};
-
+		const details = { 'mode': 'no-cors' };
 		return await RESTUtils.request(url, details, 'Error retrieving JAG');
 	}
 
-	static async update(endpoint, uri, urn, model) {
+	static async has(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri.replace('{urn}', urn);
-
-		// TODO: ensure URN in model matches URN in request
-		// TODO: implement PATCH for changing URN?
-		const model_json_string = JSON.stringify(model);
-
 		const details = {
-			'method': 'PUT',
-			'body': model_json_string,
+			'method': 'HEAD',
+			'mode': 'no-cors'
+		};
+		return await RESTUtils.request(url, details, 'Error finding JAG', true, false);
+	}
+
+	static async create(url, description) {
+		const details = {
+			'method': 'POST',
+			'body': description,
 			'headers': {
 				'Content-Type': 'application/json'
 			}
 		};
+		return await RESTUtils.request(url, details, 'Error creating JAG');
+	}
 
+	static async update(url, description) {
+		// TODO: safely join URL paths (perhaps Node package?)
+		// TODO: ensure URN in model matches URN in request
+		// TODO: implement PATCH for changing URN?
+
+		const details = {
+			'method': 'PUT',
+			'body': description,
+			'headers': {
+				'Content-Type': 'application/json'
+			}
+		};
 		return await RESTUtils.request(url, details, 'Error updating JAG');
 	}
 
-	static async delete(endpoint, uri, urn) {
+	static async delete(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const url = endpoint + uri.replace('{urn}', urn);
-
 		const details = {
 			'method': 'DELETE'
 		};
-
 		return await RESTUtils.request(url, details, 'Error deleting JAG');
 	}
 
