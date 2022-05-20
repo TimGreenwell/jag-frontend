@@ -18,17 +18,20 @@ import JAGATValidation from '../utils/validation.js';
  */
 export default class JAG extends EventTarget {
 
-    constructor({
-                    urn,
+    constructor({   urn,
                     name,
                     description = '',
-                    connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE},
-                    inputs = undefined,
-                    outputs = undefined,
-                    children = undefined,
-                    bindings = undefined
+                    connector,
+                    inputs,
+                    outputs,
+                    children,
+                    bindings
                 }) {
         super();
+
+        if (!connector) {
+            connector =  {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};   // important for null (def values above useless)
+        }
 
         // All string properties can be copied.
         /**
@@ -90,6 +93,9 @@ export default class JAG extends EventTarget {
     }
 
     static fromJSON(json) {
+       // let jagDescriptor = JSON.parse(json)
+console.log("000000000000000")
+        console.log(json);
 
         try {
             JAGATValidation.validateJAG(json);
@@ -515,6 +521,9 @@ export default class JAG extends EventTarget {
 
 
     toJSON() {
+        const test = {'key' : 'value'};
+        console.log(test);
+
         const json = {
             urn: this._urn,
             name: this._name,
@@ -529,13 +538,13 @@ export default class JAG extends EventTarget {
             children: [],
             bindings: []
         };
-
+console.log(json);
         this._children.forEach((child) => {
             let descriptor = {
                 urn: child.urn,
                 id: child.id
             };
-
+            console.log(json);
             if (child.name) descriptor.name = child.name;
             if (child.description) descriptor.description = child.description;
 
@@ -546,22 +555,22 @@ export default class JAG extends EventTarget {
                     descriptor.annotations[annotation[0]] = annotation[1];
                 }
             }
-
+            console.log(json);
             if (child.iterable) {
                 descriptor.iterable = true;
             }
 
             json.children.push(descriptor);
         });
-
+        console.log(json);
         this._inputs.forEach(input => {
             json.inputs.push(input);
         });
-
+        console.log(json);
         this._outputs.forEach(output => {
             json.outputs.push(output);
         });
-
+        console.log(json);
         this._bindings.forEach(binding => {
             json.bindings.push({
                 consumer: {
@@ -574,8 +583,10 @@ export default class JAG extends EventTarget {
                 }
             });
         });
-
-        return json;
+console.log("0");
+console.log(json);
+        console.log(JSON.stringify(json));
+        return JSON.stringify(json);
     }
 }
 

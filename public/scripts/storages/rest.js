@@ -29,54 +29,58 @@ export default class RESTStorage {
 	}
 
 	async all(schema) {
-		console.log(schema);
-		const restAccess = SchemaManager.getRest(schema);
-		console.log(restAccess);
-		const path = __REST_PATHS.all.replace("{schema}", restAccess);
-		console.log(path);
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.all.replace("{urlHandle}", urlHandle);
 		const keys = await RESTUtils.all(this._endpoint + path);
-		console.log(keys);
 		return keys;
 	}
 
 	async get(schema, id) {
-		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
-		const description = await RESTUtils.get(this._endpoint + path);
-		return description;
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.get.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		return await RESTUtils.get(this._endpoint + path);
 	}
 
 	async has(schema, id) {
-		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.has.replace("{urlHandle}", urlHandle).replace("{id}",id);
 		const exists = await RESTUtils.has(this._endpoint + path);
 		return exists;
 	}
 
 	async create(schema, id, description) {
-		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
-		const outcome =  await RESTUtils.create(this._endpoint + path, description);
-		return outcome;
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.create.replace("{urlHandle}", urlHandle);
+		const reply =  await RESTUtils.create(this._endpoint + path, description);
+		return reply;
 	}
 
 	async update(schema, id, description) {
-		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
-		const outcome = await RESTUtils.update(this._endpoint + path, description);
-		return outcome;
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.update.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		console.log("8888888888888888")
+		console.log(path);
+		console.log(this._endpoint + path);
+		console.log(description);
+		const reply = await RESTUtils.update(this._endpoint + path, description);
+		return reply;
 	}
 
 	async delete(schema, id) {
-		const path = __REST_PATHS.all.replace("{schema}", schema).replace("{id}",id);
-		const outcome = await RESTUtils.delete(this._endpoint + path);
-		return outcome;
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.delete.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		const reply = await RESTUtils.delete(this._endpoint + path);
+		return reply;
 	}
 
 }
 
 const __REST_PATHS = {
-	all: '/{schema}',
-	has: '/{schema}/{id}',
-	create: '/{schema}/{id}',
-	get: '/{schema}/{id}',
-	update: '/{schema}/{id}',
-	delete: '/{schema}/{id}'
+	all: '/{urlHandle}',
+	get: '/{urlHandle}/{id}',
+	has: '/{urlHandle}/{id}',
+	create: '/{urlHandle}',
+	update: '/{urlHandle}/{id}',
+	delete: '/{urlHandle}/{id}'
 };
 

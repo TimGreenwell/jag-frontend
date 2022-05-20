@@ -109,6 +109,9 @@ export default class StorageService extends SharedObservable{
     static async all(schema = this._schema) {
         console.log("{} - Storage request --- get all data for " + schema);
         const descriptions = await this._storageInstancesMap.get(this._preferredStorage).all(schema);
+        console.log("final reply")
+        console.log(descriptions)
+
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
             return newModel;
@@ -157,7 +160,8 @@ export default class StorageService extends SharedObservable{
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const description = createdModel.toJSON();
-        const createdId = SchemaManager.getKeyValue(schema,description);
+        console.log(description)
+        const createdId = SchemaManager.getKeyValue(schema,createdModel);       // this is not needed in Rest -- in indexed?
         console.log("{} - Storage request --- create " + createdId + " in " + schema);
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, description);
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: description });
@@ -168,8 +172,12 @@ export default class StorageService extends SharedObservable{
      * Notification (object updated, id of object updated)
      */
     static async update(updatedModel, schema = this._schema) {
+        console.log("777777777777")
+        console.log(updatedModel)
+
         const description = updatedModel.toJSON();
-        const updatedId = SchemaManager.getKeyValue(schema,description);
+        console.log(description);
+        const updatedId = SchemaManager.getKeyValue(schema,updatedModel);
         console.log("{} - Storage request --- update " + updatedId + " in " + schema);
         await this._storageInstancesMap.get(this._preferredStorage).update(schema, updatedId ,description);
         this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: description});

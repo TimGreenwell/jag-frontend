@@ -9,38 +9,25 @@
 import JAG from '../models/jag.js';
 
 export default class JAGATValidation {
-    static validateJAG(json) {
-		const {
-			'urn': urn,
-			'name': name,
-			'connector': connector,
-			'description': description,
-			'inputs': inputs,
-			'outputs': outputs,
-			'children': children,
-			'bindings': bindings,
-        } = json;
+    static validateJAG(jagDescriptor) {
 
-        JAGATValidation.validateURN(urn);
+        console.log(jagDescriptor);
+        console.log(jagDescriptor.urn);
 
-        JAGATValidation.validateName(name);
-
-        JAGATValidation.validateDescription(description);
-
-        if (connector !== undefined)
-            JAGATValidation.validateConnector(connector);
-
-        if (inputs !== undefined)
-            JAGATValidation.validateInputs(inputs);
-
-        if (outputs !== undefined)
-            JAGATValidation.validateOutputs(outputs);
-
-        if (children !== undefined)
-            JAGATValidation.validateChildren(children);
-
-        if (bindings !== undefined)
-            JAGATValidation.validateBindings(bindings);
+        JAGATValidation.validateURN(jagDescriptor.urn);
+        JAGATValidation.validateName(jagDescriptor.name);
+        JAGATValidation.validateDescription(jagDescriptor.description);
+        console.log(jagDescriptor.connector)
+        if (jagDescriptor.connector)
+            JAGATValidation.validateConnector(jagDescriptor.connector);
+        if (jagDescriptor.inputs)
+            JAGATValidation.validateInputs(jagDescriptor.inputs);
+        if (jagDescriptor.outputs)
+            JAGATValidation.validateOutputs(jagDescriptor.outputs);
+        if (jagDescriptor.children)
+            JAGATValidation.validateChildren(jagDescriptor.children);
+        if (jagDescriptor.bindings)
+            JAGATValidation.validateBindings(jagDescriptor.bindings);
     }
 
     static isValidUrn(urn) {
@@ -49,12 +36,15 @@ export default class JAGATValidation {
             if (!urn) {
                 throw new Error(`Must have a defined URN string of valid format.`);
             }
+            console.log("1");
             if (typeof urn !== "string") {
                 throw new Error(`URN must be a string of valid format.`);
             }
+            console.log("1");
             if (urn.match(/^[a-z0-9:-]*[a-z0-9]$/) == null) {
                 throw new Error('URN must be a valid format.');
             }
+            console.log("1");
         } catch (e) {
             // @TODO - Do we want to autofix? Alert?
             isValid = false;

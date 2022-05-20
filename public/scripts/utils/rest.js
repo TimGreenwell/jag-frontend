@@ -10,15 +10,28 @@
 export default class RESTUtils {
 
 	static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
+
+console.log("just checking")
+		console.log(url)
+		console.log(details)
+
 		const response = await fetch(url, details).catch((error_message) => {
+			console.log("inside")
+			console.log(response.status)
 			throw new Error(`${error_prefix}: ${error_message}`);
 		});
+		console.log("...")
+		console.log(response)
 
 		if (response.status == 200) {
 			if (ok_fallback) return ok_fallback;
 
 			try {
-				return await response.json();
+				console.log("successful grab anser");
+				let gg = await response.json();
+				console.log(response);
+				console.log(gg);
+				return gg;
 			} catch {
 				throw new Error(`${error_prefix}: Response was not a valid JSON object.`);
 			}
@@ -42,57 +55,55 @@ export default class RESTUtils {
 
 	static async all(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const details = { 'mode': 'no-cors' };
-		return await RESTUtils.request(url, details, 'Error listing JAGs');
+		const details = {};
+		let reply =  await RESTUtils.request(url, details, 'Error listing JAGs');
+		return reply;
 	}
 
 	static async get(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const details = { 'mode': 'no-cors' };
-		return await RESTUtils.request(url, details, 'Error retrieving JAG');
+		const options = { };
+		return await RESTUtils.request(url, options, 'Error retrieving JAG');
 	}
 
 	static async has(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const details = {
+		const options = {
 			'method': 'HEAD',
-			'mode': 'no-cors'
 		};
-		return await RESTUtils.request(url, details, 'Error finding JAG', true, false);
+		return await RESTUtils.request(url, options, 'Error finding JAG', true, false);
 	}
 
 	static async create(url, description) {
-		const details = {
+		const options = {
 			'method': 'POST',
 			'body': description,
 			'headers': {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'mode': 'cors'
 			}
 		};
-		return await RESTUtils.request(url, details, 'Error creating JAG');
+		return await RESTUtils.request(url, options, 'Error creating JAG');
 	}
 
 	static async update(url, description) {
-		// TODO: safely join URL paths (perhaps Node package?)
-		// TODO: ensure URN in model matches URN in request
-		// TODO: implement PATCH for changing URN?
-
-		const details = {
+		const options = {
 			'method': 'PUT',
 			'body': description,
 			'headers': {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'mode': 'cors'
 			}
 		};
-		return await RESTUtils.request(url, details, 'Error updating JAG');
+		return await RESTUtils.request(url, options, 'Error updating JAG');
 	}
 
 	static async delete(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
-		const details = {
+		const options = {
 			'method': 'DELETE'
 		};
-		return await RESTUtils.request(url, details, 'Error deleting JAG');
+		return await RESTUtils.request(url, options, 'Error deleting JAG');
 	}
 
 }

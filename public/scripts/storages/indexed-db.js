@@ -29,12 +29,16 @@ export default class IndexedDBStorage {
 	async all(schema) {
 		let storeName = SchemaManager.get(schema).name;
 		const cursor = await IndexedDBUtils.all(this._db, SchemaManager.get(schema).name);
-		return Array.from(cursor);
+		console.log("DESCRIPTION>")
+		console.log(cursor)
+		console.log(Array.from(cursor))
+		return cursor;
 	}
 
 	async get(schema, keyValue) {
 		let storeName = SchemaManager.get(schema).name;
 		const description = await IndexedDBUtils.get(this._db, storeName , keyValue);
+
 		return description;
 	}
 

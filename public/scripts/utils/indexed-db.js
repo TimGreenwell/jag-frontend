@@ -37,8 +37,10 @@ export default class IndexedDBUtils {
 		console.log("===========+++")
 		console.log(storeConfig.name)
 		console.log(storeConfig.indexList)
+		console.log(storeConfig.key)
 		console.log(storeConfig.indexList[0].property)
 		console.log(storeConfig.indexList[0].options.unique)
+
 			if(db.objectStoreNames.contains(name)) {
 				console.log(`Deleting existing object store : ${name}`);
 				db.deleteObjectStore(name);
@@ -52,13 +54,19 @@ export default class IndexedDBUtils {
 	}
 
 	static store(db, store, value, key) {
+		console.log("=v=")
+		console.log(store)
+		console.log(value)
+		console.log(key)
+		console.log("=^=")
 
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readwrite');
 			const object_store = transaction.objectStore(store);
 			let request;
 			if (key)
-				request = object_store.put(value, key);
+			//	request = object_store.put(value, key);
+			{request = object_store.add(value);}
 			else
 			{request = object_store.add(value);}
 
