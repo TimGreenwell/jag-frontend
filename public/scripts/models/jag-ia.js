@@ -87,7 +87,8 @@ export default class JAGModel {
 	}
 
 	toJSON() {
-		return {
+
+		const json =  {
 			urn: this._urn,
 			name: this._name,
 			description: this._description,
@@ -97,6 +98,7 @@ export default class JAGModel {
 			outputs: this._outputs,
 			children: this._children
 		};
+			return json;
 	}
 
 	_replaceChild(index, urn) {

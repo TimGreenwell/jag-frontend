@@ -41,7 +41,7 @@ export default class Schemas {
 			name: 'node',
 			key: 'id',
 			deserialize: Node.fromJSON,
-			rest: 'nodes',
+			rest: 'jagCells',
 			indexList: [{
 				name: 'id-index',
 				property: 'id',

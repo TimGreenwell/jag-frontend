@@ -9,9 +9,6 @@
 export default class IndexedDBUtils {
 
 	static initStorage(id, version, storesConfig) {
-		console.log(id)
-		console.log(version)
-		console.log(storesConfig)
 		return new Promise((resolve, reject) => {
 			const request = indexedDB.open(id, version);
 
@@ -33,32 +30,24 @@ export default class IndexedDBUtils {
 		});
 	}
 
-	static createStore(db, storeConfig ) {
-		console.log("===========+++")
-		console.log(storeConfig.name)
-		console.log(storeConfig.indexList)
-		console.log(storeConfig.key)
-		console.log(storeConfig.indexList[0].property)
-		console.log(storeConfig.indexList[0].options.unique)
+	static createStore(db, storeConfig) {
+		if (db.objectStoreNames.contains(name)) {
+			console.log(`Deleting existing object store : ${name}`);
+			db.deleteObjectStore(name);
+		}
 
-			if(db.objectStoreNames.contains(name)) {
-				console.log(`Deleting existing object store : ${name}`);
-				db.deleteObjectStore(name);
-			}
+		const store = db.createObjectStore(storeConfig.name, {keyPath: storeConfig.key});
 
-			const store = db.createObjectStore(storeConfig.name, {keyPath: storeConfig.key});
-
-		storeConfig.indexList.forEach(({ name: index_name, property: index_property, options: index_options }) => {
-				store.createIndex(index_name, index_property, index_options);
-			});
+		storeConfig.indexList.forEach(({name: index_name, property: index_property, options: index_options}) => {
+			store.createIndex(index_name, index_property, index_options);
+		});
 	}
 
 	static store(db, store, value, key) {
-		console.log("=v=")
+		console.log(db)
 		console.log(store)
 		console.log(value)
 		console.log(key)
-		console.log("=^=")
 
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readwrite');
@@ -66,7 +55,7 @@ export default class IndexedDBUtils {
 			let request;
 			if (key)
 			//	request = object_store.put(value, key);
-			{request = object_store.add(value);}
+			{request = object_store.put(value);}         //worked good as add(value) with rest
 			else
 			{request = object_store.add(value);}
 

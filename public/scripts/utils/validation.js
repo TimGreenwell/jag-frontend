@@ -11,9 +11,6 @@ import JAG from '../models/jag.js';
 export default class JAGATValidation {
     static validateJAG(jagDescriptor) {
 
-        console.log(jagDescriptor);
-        console.log(jagDescriptor.urn);
-
         JAGATValidation.validateURN(jagDescriptor.urn);
         JAGATValidation.validateName(jagDescriptor.name);
         JAGATValidation.validateDescription(jagDescriptor.description);
@@ -36,15 +33,12 @@ export default class JAGATValidation {
             if (!urn) {
                 throw new Error(`Must have a defined URN string of valid format.`);
             }
-            console.log("1");
             if (typeof urn !== "string") {
                 throw new Error(`URN must be a string of valid format.`);
             }
-            console.log("1");
             if (urn.match(/^[a-z0-9:-]*[a-z0-9]$/) == null) {
                 throw new Error('URN must be a valid format.');
             }
-            console.log("1");
         } catch (e) {
             // @TODO - Do we want to autofix? Alert?
             isValid = false;

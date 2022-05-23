@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	await rest_storage.init();
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 
-	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
+	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
 

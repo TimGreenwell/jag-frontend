@@ -85,16 +85,12 @@ class IATable extends Popupable {
         console.log(" XxXxXxXxXx    For some reason, this setter is also being used to change elements and set up analysisView as well.")
         // remove current view if it exists
         if (this._domElements.analysis !== undefined) {
-
-            console.log("CLEANING - in it")
-            console.log(this._domElements)
             this.removeChild(this._domElements.analysis);
           //  this._analysisModel.team.removeEventListener('update', this._boundRefresh);
           //  for (const agent of this._agents) {
            //     agent.removeEventListener('update', this._boundRefresh);
            // }
         }
-        console.log("past clearing");
 
         if (newAnalysisModel) {
             const analysisView = new AnalysisView(newAnalysisModel);
@@ -125,11 +121,14 @@ class IATable extends Popupable {
         console.log("--------------------------------------------------------------------------")
         console.log(rootUrn)
         console.log("--------------------------------------------------------------------------")
-        if (await StorageService.has(rootUrn, 'jag')) {
+        // if (await StorageService.has(rootUrn, 'jag')) {
+            console.log("--------------------------------------------------------------------------")
+            console.log("--------------------------------------------------------------------------")
+
             rootJagModel = await StorageService.get(rootUrn, 'jag');
-        } else {
-            window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
-        }
+        // } else {
+        //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
+        // }
         const rootNodeModel = new NodeModel({jag: rootJagModel});
        // await StorageService.create(rootNodeModel, 'node');
 
@@ -157,11 +156,8 @@ class IATable extends Popupable {
 
     async handleAnalysisStorageCreated(newAnalysisModel, newAnalysisId) {
         await StorageService.clear('node');
-        console.log(newAnalysisModel)
         await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
-        console.log(newAnalysisModel)
         this.analysisModel = newAnalysisModel;
-        console.log(newAnalysisModel)
     }
 
 
@@ -171,10 +167,6 @@ class IATable extends Popupable {
 
      //   if (this.analysisModel) {
             let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
-
-            console.log("o   Handling the updated JAG STORAGE")
-            console.log(tempNewAnalysisModel)
-            console.log("o")
             // IMPORTANT - currently, any JAGModel storage update triggers a rebuild of the root and all nodes.
             // IMPORTANT - This replaces all the nodes meaning earlier references are void.
             // IMPORTANT - All stored Analysis have root node pointers and are now lost.

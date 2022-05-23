@@ -79,7 +79,6 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 	addListItem(model, idx = -1) {
 		console.log("Analysis Library (addListItem) received NOTIFICATION for analysis-storage-created")
-		console.log(model);
 		const id = model.urn || '';
 		const root = model.root.urn;
 		const name = model.name;

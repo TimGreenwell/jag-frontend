@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:8080/api/v1');
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 
-	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
+	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 
 	SharedService.senderId = 'jag-ia';

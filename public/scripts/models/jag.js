@@ -93,19 +93,28 @@ export default class JAG extends EventTarget {
     }
 
     static fromJSON(json) {
-       // let jagDescriptor = JSON.parse(json)
-console.log("000000000000000")
-        console.log(json);
-
-        try {
-            JAGATValidation.validateJAG(json);
-        } catch (e) {
-            throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+        if (Array.isArray(json)) {
+            let jagList = json.map(function(element){
+                try {
+                    JAGATValidation.validateJAG(element);
+                } catch (e) {
+                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+                }
+                return new JAG(element);
+            })
+            return jagList;
         }
-
-        return new JAG(json);
-        // @TODO: explode the json definition to use the constructor below
-        //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
+            else
+        {
+            try {
+                JAGATValidation.validateJAG(json);
+            } catch (e) {
+                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+            }
+            return new JAG(json);
+            // @TODO: explode the json definition to use the constructor below
+            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
+        }
     }
 
     get urn() {
@@ -521,9 +530,6 @@ console.log("000000000000000")
 
 
     toJSON() {
-        const test = {'key' : 'value'};
-        console.log(test);
-
         const json = {
             urn: this._urn,
             name: this._name,
@@ -538,13 +544,11 @@ console.log("000000000000000")
             children: [],
             bindings: []
         };
-console.log(json);
         this._children.forEach((child) => {
             let descriptor = {
                 urn: child.urn,
                 id: child.id
             };
-            console.log(json);
             if (child.name) descriptor.name = child.name;
             if (child.description) descriptor.description = child.description;
 
@@ -555,22 +559,18 @@ console.log(json);
                     descriptor.annotations[annotation[0]] = annotation[1];
                 }
             }
-            console.log(json);
             if (child.iterable) {
                 descriptor.iterable = true;
             }
 
             json.children.push(descriptor);
         });
-        console.log(json);
         this._inputs.forEach(input => {
             json.inputs.push(input);
         });
-        console.log(json);
         this._outputs.forEach(output => {
             json.outputs.push(output);
         });
-        console.log(json);
         this._bindings.forEach(binding => {
             json.bindings.push({
                 consumer: {
@@ -583,10 +583,8 @@ console.log(json);
                 }
             });
         });
-console.log("0");
-console.log(json);
-        console.log(JSON.stringify(json));
-        return JSON.stringify(json);
+
+          return json
     }
 }
 

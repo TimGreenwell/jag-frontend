@@ -111,7 +111,6 @@ customElements.define('jag-library', class extends HTMLElement {
 				// Send the newJAGModel and all its children through the dispatch
 				li.addEventListener('click', (event) => {
 					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
-						console.log("clicked");
 						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
 							detail: {
 								model: newJAGModel,

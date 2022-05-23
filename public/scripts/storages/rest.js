@@ -31,14 +31,19 @@ export default class RESTStorage {
 	async all(schema) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.all.replace("{urlHandle}", urlHandle);
-		const keys = await RESTUtils.all(this._endpoint + path);
-		return keys;
+		const all = await RESTUtils.all(this._endpoint + path);
+		console.log("alaalalalalalalala")
+		console.log(all)
+		return all;
 	}
 
 	async get(schema, id) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.get.replace("{urlHandle}", urlHandle).replace("{id}",id);
-		return await RESTUtils.get(this._endpoint + path);
+		const getById =  await RESTUtils.get(this._endpoint + path);
+		console.log("gotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyid")
+		console.log(getById)
+		return getById;
 	}
 
 	async has(schema, id) {
@@ -48,21 +53,17 @@ export default class RESTStorage {
 		return exists;
 	}
 
-	async create(schema, id, description) {
+	async create(schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.create.replace("{urlHandle}", urlHandle);
-		const reply =  await RESTUtils.create(this._endpoint + path, description);
+		const reply =  await RESTUtils.create(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;
 	}
 
-	async update(schema, id, description) {
+	async update(schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.update.replace("{urlHandle}", urlHandle).replace("{id}",id);
-		console.log("8888888888888888")
-		console.log(path);
-		console.log(this._endpoint + path);
-		console.log(description);
-		const reply = await RESTUtils.update(this._endpoint + path, description);
+		const reply = await RESTUtils.update(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;
 	}
 
@@ -70,6 +71,14 @@ export default class RESTStorage {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.delete.replace("{urlHandle}", urlHandle).replace("{id}",id);
 		const reply = await RESTUtils.delete(this._endpoint + path);
+		return reply;
+	}
+
+	async clear(schema) {
+		console.log("sanity 1");
+		const urlHandle = SchemaManager.getRest(schema);
+		const path = __REST_PATHS.clear.replace("{urlHandle}", urlHandle);
+		const reply = await RESTUtils.clear(this._endpoint + path);
 		return reply;
 	}
 
@@ -81,6 +90,7 @@ const __REST_PATHS = {
 	has: '/{urlHandle}/{id}',
 	create: '/{urlHandle}',
 	update: '/{urlHandle}/{id}',
-	delete: '/{urlHandle}/{id}'
+	delete: '/{urlHandle}/{id}',
+	clear: '/{urlHandle}'
 };
 

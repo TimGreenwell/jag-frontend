@@ -56,19 +56,17 @@ export default class SharedObservable extends SharedService {
      */
     static async handleReceiveMessage(message) {
         console.log("{} - - - Message received from web worker, (" + message.data.id + ") / (" + message.data.topic + ") posting to all subscribers");
-        console.log()
         let schema = message.data.schema;
         let topic = message.data.topic;
         let description = message.data.description;
         let id = message.data.id;
         let dataModel = null;
-        console.log(description)
-        let descriptorObj = JSON.parse(description);
-        console.log(descriptorObj)
+       // let descriptorObj = JSON.parse(description);                 // only for rest :(
         console.log("{} - - - " + JSON.stringify(description))
-        if (descriptorObj) {
-            dataModel = await SchemaManager.deserialize(schema, descriptorObj);
+        if (description) {
+            dataModel = await SchemaManager.deserialize(schema, description);
         }
+        console.log("notifying subscribers of a node delete")
         this.notifySubscribers(topic, dataModel, id);
     }
 
@@ -82,6 +80,8 @@ export default class SharedObservable extends SharedService {
                 callBack(dataModel, id);
             });
         }
+        else
+        {console.log("No subscribers to : " + topic)}
     }
 }
 

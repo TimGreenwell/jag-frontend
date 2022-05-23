@@ -11,26 +11,15 @@ export default class RESTUtils {
 
 	static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
 
-console.log("just checking")
-		console.log(url)
-		console.log(details)
 
 		const response = await fetch(url, details).catch((error_message) => {
-			console.log("inside")
-			console.log(response.status)
 			throw new Error(`${error_prefix}: ${error_message}`);
 		});
-		console.log("...")
-		console.log(response)
-
 		if (response.status == 200) {
 			if (ok_fallback) return ok_fallback;
 
 			try {
-				console.log("successful grab anser");
 				let gg = await response.json();
-				console.log(response);
-				console.log(gg);
 				return gg;
 			} catch {
 				throw new Error(`${error_prefix}: Response was not a valid JSON object.`);
@@ -70,15 +59,20 @@ console.log("just checking")
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = {
 			'method': 'HEAD',
+			'headers': {
+				'mode': 'cors'
+			}
 		};
 		return await RESTUtils.request(url, options, 'Error finding JAG', true, false);
 	}
 
 	static async create(url, description) {
+	//	const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		const options = {
 			'method': 'POST',
 			'body': description,
 			'headers': {
+	//			'x-xsrf-token': csrfToken,
 				'Content-Type': 'application/json',
 				'mode': 'cors'
 			}
@@ -91,6 +85,7 @@ console.log("just checking")
 			'method': 'PUT',
 			'body': description,
 			'headers': {
+		//		'x-xsrf-token': csrfToken,
 				'Content-Type': 'application/json',
 				'mode': 'cors'
 			}
@@ -99,11 +94,45 @@ console.log("just checking")
 	}
 
 	static async delete(url) {
+		const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = {
-			'method': 'DELETE'
+			'method': 'DELETE',
+			'headers': {
+				'x-xsrf-token': csrfToken
+			}
 		};
 		return await RESTUtils.request(url, options, 'Error deleting JAG');
 	}
+
+
+	static async clear(url) {
+		//const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+		// TODO: safely join URL paths (perhaps Node package?)
+		const options = {
+			'method': 'DELETE',
+			'headers': {
+				'mode': 'cors',
+			//	'x-xsrf-token': csrfToken
+			}
+		};
+		return await RESTUtils.request(url, options, 'Error clearing JAG');
+	}
+
+	static  getCookie(name) {
+		if (!document.cookie) {
+			return null;
+		}
+
+		const xsrfCookies = document.cookie.split(';')
+			.map(c => c.trim())
+			.filter(c => c.startsWith(name + '='));
+
+		if (xsrfCookies.length === 0) {
+			return null;
+		}
+		return decodeURIComponent(xsrfCookies[0].split('=')[1]);
+	}
+
 
 }
