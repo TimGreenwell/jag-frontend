@@ -22,7 +22,6 @@ export default class IndexedDBUtils {
 			});
 
 			request.addEventListener('upgradeneeded', event => {
-				console.log('updgrade', performance.now());
 				const db = event.target.result;
 				// After extensive testing, it seems that success waits for all store creation to be completed
 				storesConfig.forEach(storeConfig => IndexedDBUtils.createStore(db, storeConfig));
@@ -32,7 +31,6 @@ export default class IndexedDBUtils {
 
 	static createStore(db, storeConfig) {
 		if (db.objectStoreNames.contains(name)) {
-			console.log(`Deleting existing object store : ${name}`);
 			db.deleteObjectStore(name);
 		}
 
@@ -44,11 +42,6 @@ export default class IndexedDBUtils {
 	}
 
 	static store(db, store, value, key) {
-		console.log(db)
-		console.log(store)
-		console.log(value)
-		console.log(key)
-
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(store, 'readwrite');
 			const object_store = transaction.objectStore(store);

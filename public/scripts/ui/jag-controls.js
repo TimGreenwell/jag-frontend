@@ -37,7 +37,7 @@ class JAGControls extends HTMLElement {
 		});
 
 		this._remove.addEventListener('click', () => {
-			this._node.delete();
+			this._node.prune(this._node); // was delete ...
 			this._node.dispatchEvent(new CustomEvent('update'));
 		});
 	}

@@ -22,7 +22,7 @@ export default class Node extends EventTarget {
 		this._id = id;                       // An assigned unique ID given at construction
 		this._jag = jag;                     // The Jag Model representing this node
 		this._is_root = is_root;
-		this._children = Array();            // Links to children
+		this._children = Array();            // Links to children []
 		this._parent = undefined;            // Link to parent
 		this._isValid = false;               // passes validation. //? even needed?
 
@@ -59,6 +59,9 @@ export default class Node extends EventTarget {
 	set children(value) {
 		this._children = value;
 	}
+	hasChildren(node = this) {
+		return (node.childCount !== 0);
+	}
 	get parent() {
 		return this._parent;
 	}
@@ -84,6 +87,11 @@ export default class Node extends EventTarget {
 	}
 	set collapsed(collapsed) {
 		this._collapsed = collapsed;
+	}
+	toggleCollapse() {
+		this.collapsed = !this.collapsed;
+		// 2 dispatches here - 1 listener in views/Analysis
+		this.dispatchEvent(new CustomEvent('layout'));
 	}
 	get breadth() {
 		return this._breadth;
@@ -116,14 +124,18 @@ export default class Node extends EventTarget {
 		return this._children[this._children.length - 1].lastLeaf;
 	}
 
+	isRootNode(node) {
+		return node.parent === undefined;
+	}
+
+
+
 	// Number of children for a particular node.
 	get childCount() {
 		return this._children.length;
 	}
 
 	get canHaveChildren() {
-		console.log(this.jag.urn)
-		console.log(JAGATValidation.isValidUrn(this.jag.urn))
 		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
 	}
 
@@ -136,13 +148,10 @@ export default class Node extends EventTarget {
 		await StorageService.create(this,'node');}
 	}
 
-
-
 	async newChild() {
 		// @TODO: Show user feedback message when trying to create a child on an unsaved jag.
 		if (!this.canHaveChildren)
 			return;
-
 		const child = new Node();
 //		await StorageService.create(child,'node');
 		this.addChild(child);
@@ -163,59 +172,63 @@ export default class Node extends EventTarget {
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
-	async deleteChild(child) {
-		const index = this._children.indexOf(child);
-		this._children.splice(index, 1);
+	// async deleteLeafNode
+	async deleteLeafNode(leaf) {
 
-		if (child._isValid) {
-			await StorageService.delete(child,'node');
-			await StorageService.update(this, 'node');
+		if (!this.isRootNode(leaf)) {
+			const index = leaf.parent.children.indexOf(leaf);
+			leaf.parent.children.splice(index, 1);
+	//		await StorageService.update(leaf.parent, 'node');
+		}
+
+		if (JAGATValidation.isValidUrn(leaf.jag.urn)) {
+			await StorageService.delete(leaf.id,'node');
 		} else {
 			// 6 dispatchers here - Only Listener in views/Jag
 			this.dispatchEvent(new CustomEvent('sync'));
 		}
 	}
 
-	deleteAllChildren(children) {
-		console.log(this.children);
+	 deleteAllChildren(childList) {
 	//	const safe_children_list = this.children.slice();
-		children.forEach(async child => {
-			console.log(child);
-			console.log(this.children);
-			child.deleteAllChildren(child.children);
-			console.log(child);
-			console.log(this.children);
+		 childList.forEach(async child => {
+			this.deleteAllChildren(child.children);
 			// 2 Dispatchers here - only listener in views/Analysis
 			this.dispatchEvent(new CustomEvent('detach', { detail: {
-				target: child,
-				layout: false
-			}}));
-			await this.deleteChild(child)
+					target: child,
+					layout: false
+				}}));
+			await this.deleteLeafNode(child)
+			 // 6 dispatchers here - Only Listener in views/Jag
+			 this.dispatchEvent(new CustomEvent('sync'));
 		});
-		console.log(this.children);
-		this._children = [];
+	}
+
+     clip(node = this) {
+
+	 }
+
+    async prune(node = this) {
+		this.deleteAllChildren(node.children);
+
+		if (!this.isRootNode(node)) {
+			await this.deleteLeafNode(node);
+		}
+		// 2 Dispatchers here - only listener in views/Analysis
+		this.dispatchEvent(new CustomEvent('detach', { detail: {
+				target: this
+			}}));
 		// 6 dispatchers here - Only Listener in views/Jag
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
-	delete() {
-		this.deleteAllChildren(this.children);
-		this.parent.deleteChild(this);
-		// 2 Dispatchers here - only listener in views/Analysis
-		this.dispatchEvent(new CustomEvent('detach', { detail: {
-			target: this
-		}}));
+	delete(node = this) {
+       this.prune(node);
 	}
 
-	unlink() {
-		this._link_status = false;
-	}
 
-	toggleCollapse() {
-		this.collapsed = !this.collapsed;
-		// 2 dispatches here - 1 listener in views/Analysis
-		this.dispatchEvent(new CustomEvent('layout'));
-	}
+
+
 
 	async commitNameChange(view) {
 		if (this.linkStatus)
@@ -224,7 +237,6 @@ export default class Node extends EventTarget {
 			this.jag.name = view.name;
 		await StorageService.update(this,'node');
 	}
-
 
 
 	/**
@@ -269,32 +281,30 @@ export default class Node extends EventTarget {
 		}
 
 		this._updateJAG(jag);
-
 		const valid = true;//this.jag.hasValidURN;
 		view.valid = valid;
 		if(valid)
-			this.unlink();
+			this.link_status = false;
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
 
-	update() {
-		this._breadth = 1;
-		this._height = 0;
+	//  This should be shifted to the view --- doesn't belong in the model.
 
-		if(this._children.length !== 0 && !this._collapsed)
+	update(node = this) {
+		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
+		node._height = 0;     // depth of tree  (skipping collapsed nodes)
+		if(node.hasChildren(this) && !node._collapsed)
 		{
-			this._breadth = 0;
+			node._breadth = 0;
 			let max_height = 0;
-
-			for(let child of this._children) {
+			this.children.forEach(child => {
 				child.update();
-				this._breadth += child.breadth;
+				node._breadth += child.breadth;
 				max_height = Math.max(max_height, child.height);
-			}
-
-			this._height = max_height + 1;
+			})
+			node._height = max_height + 1;
 		}
 	}
 
@@ -306,9 +316,7 @@ export default class Node extends EventTarget {
 			link_status: this._link_status,
 			collapsed: this._collapsed
 		};
-
 		json.children = this._children.map(child => child.id);
-
 		return json;
 	}
 

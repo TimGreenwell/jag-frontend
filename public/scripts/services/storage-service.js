@@ -144,7 +144,6 @@ export default class StorageService extends SharedObservable{
     static async clear(schema = this._schema) {
         console.log("{} - Storage request --- clear everything in " + schema);
         await this._storageInstancesMap.get(this._preferredStorage).clear(schema);
-        console.log("{} - cleared ----------------------------------");
         this.confirmStorageChange({topic:`${schema}-storage-cleared`,schema: schema, id: null, description: null });
     }
 
@@ -180,7 +179,7 @@ export default class StorageService extends SharedObservable{
      * Notification (null, id of object deleted)
      */
     static async delete(deletedId, schema = this._schema) {
-        console.log("{} - Storage request --- delete " + id + " in " + schema);
+        console.log("{} - Storage request --- delete " + deletedId + " in " + schema);
         //SchemaManager.getKey(schema)
         let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
         this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
@@ -213,7 +212,5 @@ export default class StorageService extends SharedObservable{
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
         this.confirmStorageChange({topic:`${schema}-storage-cloned`,schema: schema, id: cloneId, description: description});
     }
-
-
 }
 

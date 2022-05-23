@@ -62,11 +62,10 @@ export default class SharedObservable extends SharedService {
         let id = message.data.id;
         let dataModel = null;
        // let descriptorObj = JSON.parse(description);                 // only for rest :(
-        console.log("{} - - - " + JSON.stringify(description))
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }
-        console.log("notifying subscribers of a node delete")
+        console.log("Notifying subscribers of (" + topic + ")")
         this.notifySubscribers(topic, dataModel, id);
     }
 

@@ -20,14 +20,14 @@ class AnalysisView extends HTMLElement {
 		super();
 		this._analysisModel = analysisModel;
 		this._columnHeaderMap = new Map();
-	//	this._analysisJagRoot = undefined;   // or just use this._analysisModel.root;?
+	//	this._analysisJagRoot = undefined;   // or just use this._analysisModel.root;?   <- yes, agreed
 		this._leafArray = new Array();
 		this._assessment_menu = undefined;
 		this._jagCellViewMap = new Map();
 		this._analysisJagRoot = this._analysisModel.root;   // or just use this._analysisModel.root everywhere..
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		this._initializeTree(this._analysisJagRoot);
+		this._initializeTree(this._analysisModel.root);
 		this.layout();
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
 	}
@@ -42,10 +42,10 @@ class AnalysisView extends HTMLElement {
 		//
 		// this._initializeContextMenus();
 		// this._initializeStaticHeaders();
-		// this._initializeTree(this._analysisJagRoot);
+		// this._initializeTree(this._analysisModel.root);
 		//
 		// // TODO: temporary ugly fix
-		// // this._jagCellViewMap.get(this._analysisJagRoot.id).model.syncJAG(this._jagCellViewMap.get(this._analysisJagRoot.id));
+		// // this._jagCellViewMap.get(this._analysisModel.root.id).model.syncJAG(this._jagCellViewMap.get(this._analysisModel.root.id));
 		//
 		// this.layout();
 	}
@@ -122,7 +122,7 @@ class AnalysisView extends HTMLElement {
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-		this._analysisJagRoot.update();
+		this._analysisModel.root.update();
 		// Resets the leaf set.
 		this._leafArray.length = 0;
 
