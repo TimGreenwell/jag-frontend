@@ -19,51 +19,81 @@ export default class Node extends EventTarget {
 
 	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
 		super();
-		this._id = id;
-		this._jag = jag;
-		this._color = color;
-		this._link_status = link_status;
-		this._collapsed = collapsed;
+		this._id = id;                       // An assigned unique ID given at construction
+		this._jag = jag;                     // The Jag Model representing this node
 		this._is_root = is_root;
+		this._children = Array();            // Links to children
+		this._parent = undefined;            // Link to parent
 
-		// Transient properties
-		this._parent = undefined;
-		this._breadth = 1;
-		this._height = 0;
-		this._children = Array();
+		this._link_status = link_status;
+		this._color = color;                 // Derived color
+
+		this._collapsed = collapsed;         // Analysis dependent condition
+		this._breadth = 1;                   // Analysis dependent condition  -- Should move to Analysis eventually
+		this._height = 0;                    // Analysis dependent condition
 	}
-
 
 	get id() {
 		return this._id;
 	}
-
+	set id(value) {
+		this._id = value;
+	}
+	get jag() {
+		return this._jag;
+	}
+	set jag(value) {
+		this._jag = value;
+	}
+	get isRoot()  {
+		return this._is_root;
+	}
+	set is_root(value) {
+		this._is_root = value;
+	}
 	get children() {
 		return this._children;
 	}
-
-	get breadth() {
-		return this._breadth;
+	set children(value) {
+		this._children = value;
+	}
+	get parent() {
+		return this._parent;
+	}
+	set parent(parent) {
+		this._parent = parent;
 	}
 
-	get height() {
-		return this._height;
+	get linkStatus() {
+		return this._link_status;
+	}
+	set link_status(value) {
+		this._link_status = value;
+	}
+	get color() {
+		return this._color;
+	}
+	set color(value) {
+		this._color = value;
 	}
 
 	get collapsed() {
 		return this._collapsed;
 	}
-
 	set collapsed(collapsed) {
 		this._collapsed = collapsed;
 	}
-
-	get isRoot()  {
-		return this._is_root;
+	get breadth() {
+		return this._breadth;
 	}
-
-	get jag() {
-		return this._jag;
+	set breadth(value) {
+		this._breadth = value;
+	}
+	get height() {
+		return this._height;
+	}
+	set height(value) {
+		this._height = value;
 	}
 
 	get name() {
@@ -72,19 +102,6 @@ export default class Node extends EventTarget {
 
 	get urn() {
 		return (this.jag === undefined) ? '' : this.jag.urn;
-	}
-
-
-	get linkStatus() {
-		return this._link_status;
-	}
-
-	get parent() {
-		return this._parent;
-	}
-
-	set parent(parent) {
-		this._parent = parent;
 	}
 
 	/**
