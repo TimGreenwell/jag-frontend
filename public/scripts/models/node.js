@@ -24,6 +24,8 @@ export default class Node extends EventTarget {
 		this._is_root = is_root;
 		this._children = Array();            // Links to children
 		this._parent = undefined;            // Link to parent
+		this._isValid = false;               // passes validation. //? even needed?
+
 
 		this._link_status = link_status;
 		this._color = color;                 // Derived color
@@ -111,16 +113,18 @@ export default class Node extends EventTarget {
 	get lastLeaf() {
 		if(this._children.length === 0)
 			return this;
-
 		return this._children[this._children.length - 1].lastLeaf;
 	}
 
+	// Number of children for a particular node.
 	get childCount() {
 		return this._children.length;
 	}
 
 	get canHaveChildren() {
-		return true;//this.jag !== undefined;// && this.jag.hasValidURN;
+		console.log(this.jag.urn)
+		console.log(JAGATValidation.isValidUrn(this.jag.urn))
+		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
 	}
 
 
@@ -140,8 +144,7 @@ export default class Node extends EventTarget {
 			return;
 
 		const child = new Node();
-		//NodeService.instance('idb-service').create(child);
-		await StorageService.create(child,'node');
+//		await StorageService.create(child,'node');
 		this.addChild(child);
 	}
 
@@ -149,41 +152,56 @@ export default class Node extends EventTarget {
 		child.parent = this;
 		this._children.push(child);
 
+		// Only Dispatcher & Only Listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('attach', { detail: {
 			target: child,
 			reference: this,
 			layout: layout
 		}}));
 
-	//	this.save();
+		// 6 dispatchers here - Only Listener in views/Jag
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
-	deleteChild(child) {
+	async deleteChild(child) {
 		const index = this._children.indexOf(child);
 		this._children.splice(index, 1);
 
-		this.save();
-		this.dispatchEvent(new CustomEvent('sync'));
+		if (child._isValid) {
+			await StorageService.delete(child,'node');
+			await StorageService.update(this, 'node');
+		} else {
+			// 6 dispatchers here - Only Listener in views/Jag
+			this.dispatchEvent(new CustomEvent('sync'));
+		}
 	}
 
-	deleteAllChildren() {
-		const safe_children_list = this.children.slice();
-		safe_children_list.forEach(child => {
-			child.deleteAllChildren();
+	deleteAllChildren(children) {
+		console.log(this.children);
+	//	const safe_children_list = this.children.slice();
+		children.forEach(async child => {
+			console.log(child);
+			console.log(this.children);
+			child.deleteAllChildren(child.children);
+			console.log(child);
+			console.log(this.children);
+			// 2 Dispatchers here - only listener in views/Analysis
 			this.dispatchEvent(new CustomEvent('detach', { detail: {
 				target: child,
 				layout: false
 			}}));
+			await this.deleteChild(child)
 		});
-
+		console.log(this.children);
 		this._children = [];
+		// 6 dispatchers here - Only Listener in views/Jag
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 	delete() {
-		this.deleteAllChildren();
+		this.deleteAllChildren(this.children);
 		this.parent.deleteChild(this);
+		// 2 Dispatchers here - only listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('detach', { detail: {
 			target: this
 		}}));
@@ -194,7 +212,8 @@ export default class Node extends EventTarget {
 	}
 
 	toggleCollapse() {
-		this._collapsed = !this._collapsed;
+		this.collapsed = !this.collapsed;
+		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
@@ -206,9 +225,7 @@ export default class Node extends EventTarget {
 		await StorageService.update(this,'node');
 	}
 
-	syncView() {
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
+
 
 	/**
 	 * Synchronizes the display values with the underlying jag model.
@@ -224,7 +241,8 @@ export default class Node extends EventTarget {
 		try {
 			JAGATValidation.validateURN(urn);
 		} catch (e) {
-			this.syncView();
+			// 6 dispatchers here - Only Listener in views/Jag
+			this.dispatchEvent(new CustomEvent('sync'));
 			return;
 		}
 
@@ -245,7 +263,8 @@ export default class Node extends EventTarget {
 			// If the jag already exists we want to abort unless replace is set to true.
 			//@TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
 			// Potentially we could ask the user if s/he wants to load the existing jag.
-			this.syncView();
+			// 6 dispatchers here - Only Listener in views/Jag
+			this.dispatchEvent(new CustomEvent('sync'));
 			return;
 		}
 
@@ -255,7 +274,7 @@ export default class Node extends EventTarget {
 		view.valid = valid;
 		if(valid)
 			this.unlink();
-
+		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
@@ -340,7 +359,8 @@ export default class Node extends EventTarget {
 		this.save();
 		this.deleteAllChildren();
 		await this._createChildren();
-		this.syncView();
+		// 6 dispatchers here - Only Listener in views/Jag
+		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
 }
