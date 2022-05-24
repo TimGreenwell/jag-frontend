@@ -7,7 +7,7 @@
  */
 
 import {UUIDv4} from '../utils/uuid.js';
-import JAGATValidation from '../utils/validation.js';
+import ValidationUtility from "../utils/validation.js";
 
 /**
  * Joint Activity Graph (JAG) model.
@@ -18,7 +18,8 @@ import JAGATValidation from '../utils/validation.js';
  */
 export default class JAG extends EventTarget {
 
-    constructor({   urn,
+    constructor({
+                    urn,
                     name,
                     description = '',
                     connector,
@@ -30,7 +31,7 @@ export default class JAG extends EventTarget {
         super();
 
         if (!connector) {
-            connector =  {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};   // important for null (def values above useless)
+            connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};   // important for null (def values above useless)
         }
 
         // All string properties can be copied.
@@ -92,30 +93,6 @@ export default class JAG extends EventTarget {
         this._isPublished = false;
     }
 
-    static fromJSON(json) {
-        if (Array.isArray(json)) {
-            let jagList = json.map(function(element){
-                try {
-                    JAGATValidation.validateJAG(element);
-                } catch (e) {
-                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
-                }
-                return new JAG(element);
-            })
-            return jagList;
-        }
-            else
-        {
-            try {
-                JAGATValidation.validateJAG(json);
-            } catch (e) {
-                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
-            }
-            return new JAG(json);
-            // @TODO: explode the json definition to use the constructor below
-            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
-        }
-    }
 
     get urn() {
         return this._urn;
@@ -520,6 +497,30 @@ export default class JAG extends EventTarget {
     }
 
 
+    static fromJSON(json) {
+        if (Array.isArray(json)) {
+            let jagList = json.map(function (element) {
+                try {
+                    ValidationUtility.validateJAG(element);
+                } catch (e) {
+                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+                }
+                return new JAG(element);
+            })
+            return jagList;
+        } else {
+            try {
+                ValidationUtility.validateJAG(json);
+            } catch (e) {
+                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+            }
+            return new JAG(json);
+            // @TODO: explode the json definition to use the constructor below
+            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
+        }
+    }
+
+
     // static _createModel(description) {
     // 	const model = JAG.fromJSON(description);
     // 	// Listen to update events to commit the change in storage.
@@ -584,8 +585,58 @@ export default class JAG extends EventTarget {
             });
         });
 
-          return json
+        return json
     }
+
+
+    // async updateURN(origURN, newURN) {
+    //     const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
+    //     const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
+    //     // Changing a URN is either a rename/move or a copy or just not allowed.
+    //     // Proposing we have a 'isPublished' tag.
+    //     // URN changes are renames until the JagModel is marked as 'isPublished'.
+    //     // After 'isPublished', URN changes are copies.
+    //
+    //     //  Is it a valid URN?
+    //     let isValid  = ValidationUtility.isValidUrn(newURN);
+    //     if (isValid) {
+    //         let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isPublished'
+    //         let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
+    //         // Is the URN already taken?
+    //         if (urnAlreadyBeingUsed) {
+    //             // Does user confirm an over-write??
+    //             if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
+    //                 let newJagModel = await StorageService.get(origURN, 'jag');
+    //
+    //                 // is the target JagModel published?
+    //                 if (newJagModel.isPublished) {
+    //                     // FAIL  - CANT OVERWRITE PUBLISHED JAG-MODEL
+    //                 } else // target JagModel is NOT published
+    //
+    //                 { // is the original JagModel published?
+    //                     if (origJagModel.isPublished) {
+    //                         await StorageService.clone(origURN, newURN, 'jag');
+    //                     } else { /// the original JAGModel is not published
+    //                         await StorageService.replace(origURN, newURN, 'jag')
+    //                     }
+    //                 }
+    //             } else {  // user says 'no' to overwrite
+    //                 // FAIL -- NOT OVERWRITING EXISTING JAG-MODEL
+    //             }
+    //         } else {  // urn not already being used
+    //             // is the original JagModel published?
+    //             console.log("is published - " + origJagModel.isPublished);
+    //             if (origJagModel.isPublished) {
+    //                 await this.cloneJagModel(origJagModel, newURN)
+    //             } else {/// the original JAGModel is not published
+    //                 await StorageService.replace(origURN, newURN, 'jag');
+    //             }
+    //         }
+    //     }
+    //
+    // }
+
+
 }
 
 JAG.EXECUTION = {

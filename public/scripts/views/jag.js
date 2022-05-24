@@ -16,6 +16,8 @@ import AutoComplete from '../ui/auto-complete.js';
 import JAGControls from '../ui/jag-controls.js';
 import AnalysisCell from './analysis-cell.js';
 import IaTable from "../ui/ia-table.js";
+import InputValidator from "../utils/validation";
+import JAG from "../models/jag";
 
 // A Cell based off (model/Node)
 class JAGView extends AnalysisCell {
@@ -225,6 +227,35 @@ class JAGView extends AnalysisCell {
 	_setLeafStatus() {
 		this.classList.toggle('leaf', this.nodeModel.childCount === 0);
 	}
+
+
+
+
+
+	async deleteJagModel(deadJagModel) {
+		this._jagModel = undefined;
+		await StorageService.get(deadJagModel.urn, 'jag');
+
+
+		await StorageService.delete(deadJagModel.urn, 'jag');
+		this._urnInput.classList.toggle("edited", false);
+		this._clearProperties();
+	}
+
+	async cloneJagModel(sourceJagModel, newURN) {
+		const description = sourceJagModel.toJSON();
+		description.urn = newURN;
+		const newJagModel = JAG.fromJSON(description);
+		// Update model references.
+		this._node.model = newJagModel; //?
+		this._jagModel = newJagModel;
+		await StorageService.create(newJagModel, 'jag');
+		// Remove unsaved box shadow on URN property input.
+		this._urnInput.classList.toggle("edited", false);
+
+		//  WHEN GOOD -->             this._jagModel.url = this._urnInput.value;
+	}
+
 
 
 }

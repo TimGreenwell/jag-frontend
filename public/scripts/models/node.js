@@ -174,15 +174,15 @@ export default class Node extends EventTarget {
 
 	// async deleteLeafNode
 	async deleteLeafNode(leaf) {
-
+		console.log("Has entered the deathroom")
 		if (!this.isRootNode(leaf)) {
 			const index = leaf.parent.children.indexOf(leaf);
 			leaf.parent.children.splice(index, 1);
-	//		await StorageService.update(leaf.parent, 'node');
+			await StorageService.update(leaf.parent, 'node');
 		}
 
 		if (JAGATValidation.isValidUrn(leaf.jag.urn)) {
-			await StorageService.delete(leaf.id,'node');
+			await StorageService.delete(leaf.id, 'node');
 		} else {
 			// 6 dispatchers here - Only Listener in views/Jag
 			this.dispatchEvent(new CustomEvent('sync'));
@@ -190,9 +190,8 @@ export default class Node extends EventTarget {
 	}
 
 	 deleteAllChildren(childList) {
-	//	const safe_children_list = this.children.slice();
 		 childList.forEach(async child => {
-			this.deleteAllChildren(child.children);
+			this.deleteAllChildren([...child.children]);
 			// 2 Dispatchers here - only listener in views/Analysis
 			this.dispatchEvent(new CustomEvent('detach', { detail: {
 					target: child,
@@ -209,7 +208,7 @@ export default class Node extends EventTarget {
 	 }
 
     async prune(node = this) {
-		this.deleteAllChildren(node.children);
+		this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified
 
 		if (!this.isRootNode(node)) {
 			await this.deleteLeafNode(node);
@@ -222,8 +221,14 @@ export default class Node extends EventTarget {
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
-	delete(node = this) {
-       this.prune(node);
+	async delete(node = this) {
+		console.log("------------------------------------------------------------")
+		console.log("------------------------------------------------------------")
+		console.log("-----FUCK  FUCK FUCK    - LOOK AT TYHIS NOWWWWWW.--------------")
+		console.log("------------------------------------------------------------")
+		console.log("------------------------------------------------------------")
+
+       await this.prune(node);
 	}
 
 

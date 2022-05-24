@@ -14,11 +14,14 @@
 
 
 
-import JAG from  '../models/jag.js';
+
 import Node from  '../models/node.js';
 import AnalysisModel from '../models/analysis-model.js';
+import JagModel from "../models/jag.js";
 import Agent from  '../models/agent.js';
 import Team from  '../models/team.js';
+
+
 
 export default class Schemas {
 
@@ -27,7 +30,7 @@ export default class Schemas {
 		const JAG_STORE = {
 			name: 'jag',
 			key: 'urn',
-			deserialize: JAG.fromJSON,
+			deserialize: JagModel.fromJSON,
 			rest: 'jagActivities',
 			indexList: [{
 					name: 'urn-index',
@@ -112,10 +115,6 @@ export default class Schemas {
         }
         throw new Error("Schema '" + schema + "' does not exist.");
     }
-
-	static getIndexedDb(schema) {
-		return Schemas.get(schema).indexedDb;
-	}
 
 	static getRest(schema) {
 		return Schemas.get(schema).rest;

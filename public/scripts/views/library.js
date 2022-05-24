@@ -23,6 +23,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 		StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
 		StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
+		StorageService.subscribe("jag-storage-replaced", this.replaceItem.bind(this));
 
 		this.clearLibraryList();
 		this.loadFromDB();
@@ -35,10 +36,18 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._existingURNS.clear();
 	}
 
-	// Add the <li id='urn'>
-	//           <h3> 'name' </h3>
-	//           <p> 'description'
-	//         </li>
+	removeLibraryListItem(urn) {
+		for (let item of this._libraryList) {
+			if (item.element.id == urn) {
+				this._$list.removeChild(item.element);
+			}
+		}
+		this._libraryList = this._libraryList.filter(function (item) {
+			return item.element.id != urn;
+		});
+		this._existingURNS.delete(urn);
+
+	}
 
 	updateItem(updatedJAGModel) {
 		for (let idx in this._libraryList) {
@@ -58,11 +67,14 @@ customElements.define('jag-library', class extends HTMLElement {
 		}
 	}
 
-
 	// Adding an item in library:
 	//     1)   Build <li> element for list (also holds search content and JAG model[why?])
 	//     2)   Attach 'update' and 'refresh' and 'copy' listeners
 	//     3)   Attach 'click' to <li> to dispatch 'library-lineItem-selected'
+	// Add the <li id='urn'>
+	//           <h3> 'name' </h3>
+	//           <p> 'description'
+	//         </li>
 
 	addItem(newJAGModel, idx = -1) {
 		if (!this._existingURNS.has(newJAGModel.urn)) {
@@ -130,6 +142,11 @@ customElements.define('jag-library', class extends HTMLElement {
 		} else {
 			console.log("ERROR -- URN already exists [library-addItem]")
 		}
+	}
+
+	replaceItem(newJAGModel, replacedUrn) {
+		this.removeLibraryListItem(replacedUrn);
+		this.addItem(newJAGModel);
 	}
 
 
