@@ -8,6 +8,7 @@
 'use strict';
 
 import AgentModel from '../models/agent.js';
+import NodeController from "../controllers/nodeController.js";
 import DOMUtils from '../utils/dom.js';
 import ContextMenu from '../ui/context-menu.js';
 import ColumnHeader from './column-header.js';
@@ -88,7 +89,7 @@ class AnalysisView extends HTMLElement {
 
 		// Finds the element representing the left most leaf in the tree.
 		if(reference === null)
-			reference = target.lastLeaf;
+			reference = NodeController.lastLeaf(target);
 
 		const $target = this.getNodeView(target);
 		const $reference = this.getNodeView(reference);

@@ -16,8 +16,8 @@ import AutoComplete from '../ui/auto-complete.js';
 import JAGControls from '../ui/jag-controls.js';
 import AnalysisCell from './analysis-cell.js';
 import IaTable from "../ui/ia-table.js";
-import InputValidator from "../utils/validation";
-import JAG from "../models/jag";
+import InputValidator from "../utils/validation.js";
+import JAG from "../models/jag.js";
 
 // A Cell based off (model/Node)
 class JAGView extends AnalysisCell {

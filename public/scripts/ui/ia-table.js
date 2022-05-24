@@ -137,7 +137,9 @@ class IATable extends Popupable {
         await StorageService.clear('node');
         // currently buildAnalysis builds and stores the mapset.
         // @TODO return the node set and iterate through storing them here.  less dependence
-        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
+ // !!!!!!!!!!!!!!!!!!!!!!! TRYING TO ELIMINATE THE        buildAnalysisJagNodes
+//        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
+
         await newAnalysisModel.buildDefaultTeam();
 
 //		if (this._team == undefined) {
@@ -154,16 +156,19 @@ class IATable extends Popupable {
         await StorageService.create(newAnalysisModel, 'analysis');
     }
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Trying to eliminate the buildAnalysisJagNodes
     async handleAnalysisStorageCreated(newAnalysisModel, newAnalysisId) {
-        await StorageService.clear('node');
-        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
-        this.analysisModel = newAnalysisModel;
+        console.log("**********  Calling handleAnalysisStorageCreated for no reason..... *****************")
+        console.log(newAnalysisModel)
+        console.log(newAnalysisId)
+       // await StorageService.clear('node');
+       // await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
+       // this.analysisModel = newAnalysisModel;
     }
 
 
 
     async handleJagStorageUpdated(newJag, newJagUrn) {
-
 
      //   if (this.analysisModel) {
             let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
@@ -171,12 +176,16 @@ class IATable extends Popupable {
             // IMPORTANT - This replaces all the nodes meaning earlier references are void.
             // IMPORTANT - All stored Analysis have root node pointers and are now lost.
             // SOLUTION - Scan through and update root references or have Analysis use JAGModel root (cleaner)
-            await StorageService.clear('node');
+
+
+     //       await StorageService.clear('node');
             let rootUrn = tempNewAnalysisModel.root.jag.urn;
             const rootJagModel = await StorageService.get(rootUrn, 'jag');
             const rootNodeModel = new NodeModel({jag: rootJagModel});
             tempNewAnalysisModel.root = rootNodeModel;
-            await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
+
+
+            //       await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
 
             // // SOLUTION2 - scan through all nodes and update those with a matching JAGModel URN.
             // // SOLUTION2 - @TODO children added/deleted, (or self deleted)

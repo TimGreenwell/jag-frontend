@@ -11,18 +11,17 @@
 
 const SNAP_SIZE = 5.0;
 import JAG from '../models/jag.js';
-import UndefinedJAG from '../models/undefined.js';   //  @todo remove if possible
 
 customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(model, expanded) {
 		super();
+
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
 
 		this._boundUpdateHandler = this._updateHandler.bind(this);
-		this._boundDefineModel = this._defineModel.bind(this);
 		this._boundDrag = this._drag.bind(this);
 		this._boundMouseUp = this._mouseUp.bind(this);
 		this._boundNodeDrag = ((e) => {
@@ -32,37 +31,27 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._initUI();
 		this._initHandlers();
+
 		this.model = model;
-		this.visible = true;
 		this.expanded = expanded;
+		this.visible = true;
+
 	}
 
-	// TODO: Find a better way to deal with changing URN so model is a private property
-	set model(model) {
+	set model(model) {           // another complex set
 		if (this._model) {
-			if (this._model instanceof UndefinedJAG) {
-				this._model.removeEventListener('define', this._boundDefineModel);
-			} else {
-				this._model.removeEventListener('update', this._boundUpdateHandler);
-			}
+			this._model.removeEventListener('update', this._boundUpdateHandler);
 		}
-
 		this._model = model;
-
-		if (this._model instanceof UndefinedJAG) {
-			this._model.addEventListener('define', this._boundDefineModel);
-		} else {
-			this._model.addEventListener('update', this._boundUpdateHandler);
-		}
+		this._model.addEventListener('update', this._boundUpdateHandler);
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
 	}
-
 	get model() {
 		return this._model;
 	}
-
+    //complex set expanded
 	set expanded(expanded) {
 		this._expanded = expanded;
 
@@ -84,11 +73,11 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._$expand.style.visibility = "hidden";
 		}
 	}
-
 	get expanded() {
 		return this._expanded;
 	}
 
+	//complex set visible
 	set visible(visible) {
 		this._visible = visible;
 
@@ -108,10 +97,10 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: visible }));
 	}
-
 	get visible() {
 		return this._visible;
 	}
+
 
 	isAtomic() {
 		// If there are upstream nodes, check for atomicity.

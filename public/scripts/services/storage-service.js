@@ -156,8 +156,9 @@ export default class StorageService extends SharedObservable{
         // Service instance creating a model become implicitly responsible for handling updates to that model.
         // Multiple instances can be attached to a single model instance.
         // @TODO if sync - update all storages (not implemented - need additional storages for testing)
+        const createdId = SchemaManager.getKeyValue(schema,createdModel);   // this is not needed - just the log
+        console.log("{} - Storage request --- create " + createdId + " in " + schema);
         const jsonObj = createdModel.toJSON();
-        const createdId = SchemaManager.getKeyValue(schema,createdModel);       // this is not needed in Rest -- in indexed?
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: jsonObj });
     }

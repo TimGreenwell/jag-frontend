@@ -30,44 +30,15 @@ export default class JAG extends EventTarget {
                 }) {
         super();
 
+        // All string properties can be copied.
+        this._urn = urn;
+        this._name = name;
+        this._description = description;
+
         if (!connector) {
             connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};   // important for null (def values above useless)
         }
-
-        // All string properties can be copied.
-        /**
-         * @name JAG#urn
-         * @type {String}
-         * @default undefined
-         */
-        this._urn = urn;
-
-        /**
-         * @name JAG#name
-         * @type {String}
-         * @default undefined
-         */
-        this._name = name;
-
-        /**
-         * @name JAG#description
-         * @type {String}
-         * @default ''
-         */
-        this._description = description;
-
-        /**
-         * @name JAG#execution
-         * @type {String}
-         * @default JAG.EXECUTION.NONE
-         */
         this._execution = connector.execution;
-
-        /**
-         * @name JAG#operator
-         * @type {String}
-         * @default JAG.OPERATOR.NONE
-         */
         this._operator = connector.operator;
 
         // Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
@@ -82,95 +53,46 @@ export default class JAG extends EventTarget {
                 for (let annotation in child.annotations) {
                     annotations.set(annotation, child.annotations[annotation]);
                 }
-
                 child.annotations = annotations;
             }
         }
 
         // Copy bindings for the instance if provided, else create a new set.
         this._bindings = new Set(bindings);
-
         this._isPublished = false;
     }
-
 
     get urn() {
         return this._urn;
     }
 
     set name(name) {
-        if (this._name != name) {
             this._name = name;
-        }
     }
-
     get name() {
         return this._name;
     }
 
-    set execution(type) {
-        if (this._execution != type) {
-            this._execution = type;
-        }
-    }
-
-    get execution() {
-        return this._execution;
-    }
-
-    set operator(type) {
-        if (this._operator != type) {
-            this._operator = type;
-        }
-    }
-
-    get operator() {
-        return this._operator;
-    }
-
     set description(description) {
-        if (this._description != description) {
             this._description = description;
-        }
     }
-
     get description() {
         return this._description;
     }
 
+    set connector(value) {
+        this._connector = value;
+    }
+    get connector() {
+        return this._connector;
+    }
+
+    set inputs(value) {
+        this._inputs = value;
+    }
     get inputs() {
         return [...this._inputs];
     }
-
-    get outputs() {
-        return [...this._outputs];
-    }
-
-    get children() {
-        return [...this._children];
-    }
-
-    get bindings() {
-        return [...this._bindings];
-    }
-
-    get isPublished() {
-        return this._isPublished;
-    }
-
-    set isPublished(bool) {
-        this._isPublished = bool;
-    }
-
-    isValid() {
-        let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
-        if (this._urn.match(regex)) {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
     /**
      * Adds the given input to the inputs of this JAG.
      * Dispatches an update.
@@ -181,6 +103,12 @@ export default class JAG extends EventTarget {
         this._inputs.push(input);
     }
 
+    set outputs(value) {
+        this._outputs = value;
+    }
+    get outputs() {
+        return [...this._outputs];
+    }
     /**
      * Adds the given output to the outputs of this JAG.
      * Dispatches an update.
@@ -190,6 +118,48 @@ export default class JAG extends EventTarget {
     addOutput(output) {
         this._outputs.push(output);
     }
+
+    set children(value) {
+        this._children = value;
+    }
+    get children() {
+        return [...this._children];
+    }
+
+
+    set bindings(value) {
+        this._bindings = value;
+    }
+    get bindings() {
+        return [...this._bindings];
+    }
+
+    set execution(type) {
+            this._execution = type;
+    }
+    get execution() {
+        return this._execution;
+    }
+
+    set operator(type) {
+            this._operator = type;
+    }
+    get operator() {
+        return this._operator;
+    }
+
+    set isPublished(bool) {
+        this._isPublished = bool;
+    }
+    get isPublished() {
+        return this._isPublished;
+    }
+
+
+    isValid() {
+        let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
+        return !!this._urn.match(regex);
+    };
 
     /**
      * Adds the given JAG as a child to this JAG.
@@ -202,16 +172,14 @@ export default class JAG extends EventTarget {
      * @param {String} id ID for child, if it exists.
      * @returns {String} UUIDv4 string of the child.
      */
-    addChild(child, id = undefined) {
-        if (id == undefined) {
+    addChild(child, id = undefined) {  // Add UUIDv4 default here
+        if (id === undefined) {
             this._children.push({
                 id: id = UUIDv4(),
                 urn: child.urn,
                 model: child
             });
-
         }
-
         return id;
     }
 
@@ -223,17 +191,14 @@ export default class JAG extends EventTarget {
      */
     removeChild(child) {
         for (let index in this._children) {
-            if (this._children[index].id == child.id) {
+            if (this._children[index].id === child.id) {
                 this._children.splice(index, 1);
                 break;
             }
         }
-
         for (let binding of this._bindings)
             if (binding.provider.id == child.id || binding.consumer.id == child.id)
                 this.removeBinding(binding);
-
-        //	this.dispatchEvent(new CustomEvent('update', { "detail": { "urn": this._urn, "property": "children", "extra": { "children": this._children, "operator": this._operator, "execution": this._execution } } }));
     }
 
     /**
@@ -265,11 +230,12 @@ export default class JAG extends EventTarget {
                 if (child.description != description) {
                     child.description = description;
                 }
-
                 break;
             }
         }
     }
+
+
 
     /**
      * Gets the ID, JAG, property name and type of all possible inputs to the child with the given ID.
@@ -330,7 +296,6 @@ export default class JAG extends EventTarget {
                 }
             }
         }
-
         return availableInputs;
     }
 
@@ -357,22 +322,7 @@ export default class JAG extends EventTarget {
         return availableOutputs;
     }
 
-    /**
-     * Gets the child of this JAG with the given ID.
-     *
-     * @param {String} id
-     * @returns {{id:String,model:JAG}} Child of this JAG with the given ID.
-     */
-    getCanonicalNode(id) {
-        if (id === 'this')
-            return {id: 'this', model: this};
 
-        for (let child of this._children)
-            if (child.id == id)
-                return child;
-
-        return undefined;
-    }
 
     /**
      * Adds the given binding to the bindings of this JAG.
@@ -428,6 +378,25 @@ export default class JAG extends EventTarget {
         if (this._bindings.delete(binding)) {
 
         }
+    }
+
+
+    /**
+     * Gets the child of this JAG with the given ID.
+     *
+     * @param {String} id
+     * @returns {{id:String,model:JAG}} Child of this JAG with the given ID.
+     */
+    getCanonicalNode(id) {
+
+        if (id === 'this')
+            return {id: 'this', model: this};
+
+        for (let child of this._children)
+            if (child.id == id)
+                return child;
+
+        return undefined;
     }
 
     /**
@@ -520,16 +489,6 @@ export default class JAG extends EventTarget {
         }
     }
 
-
-    // static _createModel(description) {
-    // 	const model = JAG.fromJSON(description);
-    // 	// Listen to update events to commit the change in storage.
-    // //	model.addEventListener('update', this._handleUpdate.bind(this));
-    // 	// @TODO: store model in cache
-    // 	return model;
-    // }
-
-
     toJSON() {
         const json = {
             urn: this._urn,
@@ -587,55 +546,6 @@ export default class JAG extends EventTarget {
 
         return json
     }
-
-
-    // async updateURN(origURN, newURN) {
-    //     const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
-    //     const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
-    //     // Changing a URN is either a rename/move or a copy or just not allowed.
-    //     // Proposing we have a 'isPublished' tag.
-    //     // URN changes are renames until the JagModel is marked as 'isPublished'.
-    //     // After 'isPublished', URN changes are copies.
-    //
-    //     //  Is it a valid URN?
-    //     let isValid  = ValidationUtility.isValidUrn(newURN);
-    //     if (isValid) {
-    //         let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isPublished'
-    //         let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
-    //         // Is the URN already taken?
-    //         if (urnAlreadyBeingUsed) {
-    //             // Does user confirm an over-write??
-    //             if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
-    //                 let newJagModel = await StorageService.get(origURN, 'jag');
-    //
-    //                 // is the target JagModel published?
-    //                 if (newJagModel.isPublished) {
-    //                     // FAIL  - CANT OVERWRITE PUBLISHED JAG-MODEL
-    //                 } else // target JagModel is NOT published
-    //
-    //                 { // is the original JagModel published?
-    //                     if (origJagModel.isPublished) {
-    //                         await StorageService.clone(origURN, newURN, 'jag');
-    //                     } else { /// the original JAGModel is not published
-    //                         await StorageService.replace(origURN, newURN, 'jag')
-    //                     }
-    //                 }
-    //             } else {  // user says 'no' to overwrite
-    //                 // FAIL -- NOT OVERWRITING EXISTING JAG-MODEL
-    //             }
-    //         } else {  // urn not already being used
-    //             // is the original JagModel published?
-    //             console.log("is published - " + origJagModel.isPublished);
-    //             if (origJagModel.isPublished) {
-    //                 await this.cloneJagModel(origJagModel, newURN)
-    //             } else {/// the original JAGModel is not published
-    //                 await StorageService.replace(origURN, newURN, 'jag');
-    //             }
-    //         }
-    //     }
-    //
-    // }
-
 
 }
 

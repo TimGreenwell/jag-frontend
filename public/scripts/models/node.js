@@ -21,7 +21,7 @@ export default class Node extends EventTarget {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._jag = jag;                     // The Jag Model representing this node
-		this._is_root = is_root;
+		this._isRoot = is_root;
 		this._children = Array();            // Links to children []
 		this._parent = undefined;            // Link to parent
 		this._isValid = false;               // passes validation. //? even needed?
@@ -48,11 +48,16 @@ export default class Node extends EventTarget {
 		this._jag = value;
 	}
 	get isRoot()  {
-		return this._is_root;
-	}
-	set is_root(value) {
-		this._is_root = value;
-	}
+		return this._isRoot;
+	}            // not related to Analysis root node,
+	set isRoot(value) {
+		this._isRoot = value;
+	}        // isRoot is set explicitly
+
+	isRootNode() {
+		return this.parent === undefined;
+	}         // is determined by lack of parent.
+
 	get children() {
 		return this._children;
 	}
@@ -62,6 +67,7 @@ export default class Node extends EventTarget {
 	hasChildren(node = this) {
 		return (node.childCount !== 0);
 	}
+
 	get parent() {
 		return this._parent;
 	}
@@ -72,9 +78,10 @@ export default class Node extends EventTarget {
 	get linkStatus() {
 		return this._link_status;
 	}
-	set link_status(value) {
+	set linkStatus(value) {
 		this._link_status = value;
 	}
+
 	get color() {
 		return this._color;
 	}
@@ -99,6 +106,7 @@ export default class Node extends EventTarget {
 	set breadth(value) {
 		this._breadth = value;
 	}
+
 	get height() {
 		return this._height;
 	}
@@ -114,19 +122,9 @@ export default class Node extends EventTarget {
 		return (this.jag === undefined) ? '' : this.jag.urn;
 	}
 
-	/**
-	 * Recursively get the left(?) most leaf from this node
-	 * tlg - Wht?  gets the last child's last child's lasts child... whatfer?
-	 */
-	get lastLeaf() {
-		if(this._children.length === 0)
-			return this;
-		return this._children[this._children.length - 1].lastLeaf;
-	}
 
-	isRootNode(node) {
-		return node.parent === undefined;
-	}
+
+
 
 
 
@@ -172,67 +170,6 @@ export default class Node extends EventTarget {
 		this.dispatchEvent(new CustomEvent('sync'));
 	}
 
-	// async deleteLeafNode
-	async deleteLeafNode(leaf) {
-		console.log("Has entered the deathroom")
-		if (!this.isRootNode(leaf)) {
-			const index = leaf.parent.children.indexOf(leaf);
-			leaf.parent.children.splice(index, 1);
-			await StorageService.update(leaf.parent, 'node');
-		}
-
-		if (JAGATValidation.isValidUrn(leaf.jag.urn)) {
-			await StorageService.delete(leaf.id, 'node');
-		} else {
-			// 6 dispatchers here - Only Listener in views/Jag
-			this.dispatchEvent(new CustomEvent('sync'));
-		}
-	}
-
-	 deleteAllChildren(childList) {
-		 childList.forEach(async child => {
-			this.deleteAllChildren([...child.children]);
-			// 2 Dispatchers here - only listener in views/Analysis
-			this.dispatchEvent(new CustomEvent('detach', { detail: {
-					target: child,
-					layout: false
-				}}));
-			await this.deleteLeafNode(child)
-			 // 6 dispatchers here - Only Listener in views/Jag
-			 this.dispatchEvent(new CustomEvent('sync'));
-		});
-	}
-
-     clip(node = this) {
-
-	 }
-
-    async prune(node = this) {
-		this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified
-
-		if (!this.isRootNode(node)) {
-			await this.deleteLeafNode(node);
-		}
-		// 2 Dispatchers here - only listener in views/Analysis
-		this.dispatchEvent(new CustomEvent('detach', { detail: {
-				target: this
-			}}));
-		// 6 dispatchers here - Only Listener in views/Jag
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
-
-	async delete(node = this) {
-		console.log("------------------------------------------------------------")
-		console.log("------------------------------------------------------------")
-		console.log("-----FUCK  FUCK FUCK    - LOOK AT TYHIS NOWWWWWW.--------------")
-		console.log("------------------------------------------------------------")
-		console.log("------------------------------------------------------------")
-
-       await this.prune(node);
-	}
-
-
-
 
 
 	async commitNameChange(view) {
@@ -242,7 +179,6 @@ export default class Node extends EventTarget {
 			this.jag.name = view.name;
 		await StorageService.update(this,'node');
 	}
-
 
 	/**
 	 * Synchronizes the display values with the underlying jag model.

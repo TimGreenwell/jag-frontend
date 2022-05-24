@@ -58,10 +58,8 @@ export default class AnalysisModel extends EventTarget {
 	}
 
 	async buildAnalysisJagNodes(currentNode) { // this was newRootNodeModel
-
 	//	let currentNode = newRootNodeModel;     // this was uncommented
 		let children = currentNode.jag.children;// this was newRootNodeModel
-
 		await Promise.all(
 		children.map(async ({urn, id}) => {
 			const childJagModel = await StorageService.get(urn, 'jag');
@@ -71,8 +69,6 @@ export default class AnalysisModel extends EventTarget {
 		}))
 		this._nodeSet.add(currentNode);
 		await StorageService.create(currentNode,'node');
-
-
 	}
 
 	static async fromJSON(json) {

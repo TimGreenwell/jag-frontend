@@ -7,6 +7,8 @@
 
 'use strict';
 
+import NodeController from "../controllers/nodeController.js";
+
 class JAGControls extends HTMLElement {
 
 	constructor(node) {
@@ -37,7 +39,7 @@ class JAGControls extends HTMLElement {
 		});
 
 		this._remove.addEventListener('click', () => {
-			this._node.prune(this._node); // was delete ...
+			NodeController.prune(this._node); // was delete ...
 			this._node.dispatchEvent(new CustomEvent('update'));
 		});
 	}
