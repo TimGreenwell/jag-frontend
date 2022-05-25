@@ -23,9 +23,55 @@ export default class NodeController {
     }
 
 
+
+    static handleJagStorageCreated(updatedJagModel, updatedJagUrn) {
+        //  Update Jag Model has arrived.
+    }
+// What generates a new node:
+    //1) A new created Jag also creates a new root/childless node.
+    //2) Clicking on the AT Library creates a new root node. (possible children)
+    //3) Creating new activity in IA Table creates a new node and maybe new jag (if new urn)
+    //   Creating things in IA Table is wierd. What if new urn? what if same urn but new name?
+    //4) Cloning another node.  This also creates new Jag.
+    //
+    // Node extends Jag?
+    // AT Node extends Node
+    // IA Node extends Node
+    //
+    // What generates new jag
+    //1)The popup jag creater.  This also generates node (playground listens to jag creation)
+    //2)Cloning an existing node.
+    //3) Creating new activity with new urn in IA Table
+    //
+    //bonus: renaming a node creates a new node and jag but only changes the urn.
+
+
     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         //  Update Jag Model has arrived.
-}
+
+        _nodeModelList.forEach(node => {
+            // if updated Jag is already represented by current node(s)
+            // find each node that matches -->
+            // --> add updated Jag to node's jag placeholder
+            // --> add or remove node children to match updated Jag
+            if (updatedJagModel.urn == node.jag.urn) {
+                node.jag = updatedJagModel;
+                let jagKids = updatedJagModel.children;
+                let nodeKids = node.children;
+                let kidsToAdd = jagKids.filter(jagKid => !nodeKids.find(nodeKid => jagKid["id"] === nodeKid["id"]))
+                console.log(kidsToAdd)
+                let kidsToRemove = nodeKids.filter(nodeKid => !jagKids.find(jagKid => nodeKid["id"] === jagKid["id"]))
+                console.log(kidsToRemove)
+            }
+            if (updatedJagModel.children.contains(node.id)){
+                node.parent = updatedJagModel;
+                node.isRoot = false;
+            }
+
+        })
+    }
+
+
 
     static get nodeModelList() {
         return this._jagModelList;
