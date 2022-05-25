@@ -38,7 +38,7 @@ class IATable extends Popupable {
 
         StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
-        StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
+        // StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));   -- not needed -- right?
 
         //	StorageService.subscribe("jag-storage-updated", this.updateNode.bind(this));
         //	StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
@@ -55,6 +55,7 @@ class IATable extends Popupable {
 
     handleJagStorageCreated(newJag, newJagUrn) {
         console.log("WRITE THIS --  we have a new JAG model to handle")
+        console.log(" n/m  -- ia table should not care about a new jag -- only a jag update.")
         console.log(newJag)
         console.log(newJagUrn)
     }
@@ -129,12 +130,16 @@ class IATable extends Popupable {
         // } else {
         //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
         // }
-        const rootNodeModel = new NodeModel({jag: rootJagModel});
+
+        const rootNodeModel = rootUrn;
+        //tlg   const rootNodeModel = new NodeModel({jag: rootJagModel});
+
+
        // await StorageService.create(rootNodeModel, 'node');
 
 
         const newAnalysisModel = new AnalysisModel({name: analysisName, root: rootNodeModel});
-        await StorageService.clear('node');
+    //tlg    await StorageService.clear('node');
         // currently buildAnalysis builds and stores the mapset.
         // @TODO return the node set and iterate through storing them here.  less dependence
  // !!!!!!!!!!!!!!!!!!!!!!! TRYING TO ELIMINATE THE        buildAnalysisJagNodes

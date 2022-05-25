@@ -9,7 +9,7 @@
 
 import JAG from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
-import UndefinedJAG from '../models/undefined.js';
+//import UndefinedJAG from '../models/undefined.js';
 import FormUtils from '../utils/forms.js';
 import JagController from '../controllers/jagController.js';
 
@@ -57,11 +57,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     handleSelectionUpdate(selection) {
         if (this._jagModel) {
-            if (this._jagModel instanceof UndefinedJAG) {
-                this._jagModel.removeEventListener('define', this._boundDefine);
-            } else {
+            // if (this._jagModel instanceof UndefinedJAG) {
+            //     this._jagModel.removeEventListener('define', this._boundDefine);
+            // } else {
                 this._jagModel.removeEventListener('update', this._boundUpdate);
-            }
+            // }
             this._node = undefined;
             this._jagModel = undefined;
         }
@@ -72,11 +72,11 @@ customElements.define('jag-properties', class extends HTMLElement {
                 this._node = selectedNodeModel;
                 this._jagModel = this._node.model;
                 this._updateProperties();
-                if (this._jagModel instanceof UndefinedJAG) {
-                    this._jagModel.addEventListener('define', this._boundDefine);
-                } else {
+                // if (this._jagModel instanceof UndefinedJAG) {
+                //     this._jagModel.addEventListener('define', this._boundDefine);
+                // } else {
                     this._jagModel.addEventListener('update', this._boundUpdate);
-                }
+                // }
             }
         } else {
             this._enableProperties(false);
@@ -94,13 +94,13 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._name_ctxInput.value = this._node.getContextualName();
         this._desc_ctxInput.value = this._node.getContextualDescription();
 
-        if (this._jagModel instanceof UndefinedJAG) {
-            this._enableProperties(false);
-        } else {
+        // if (this._jagModel instanceof UndefinedJAG) {
+        //     this._enableProperties(false);
+        // } else {
             this._enableProperties(true);
             this._updateIO();
             this._updateAnnotations();
-        }
+        // }
 
         for (const input of this.querySelectorAll("input")) {
             input.title = input.value;
@@ -111,7 +111,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _addInput(e) {
-        if (this._jagModel && !(this._jagModel instanceof UndefinedJAG)) {
+        if (this._jagModel) { //} && !(this._jagModel instanceof UndefinedJAG)) {
             const name = window.prompt('Input name');
             if (name === null)
                 return;
@@ -130,7 +130,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _addOutput(e) {
-        if (this._jagModel && !(this._jagModel instanceof UndefinedJAG)) {
+        if (this._jagModel) { //} && !(this._jagModel instanceof UndefinedJAG)) {
             const name = window.prompt('Output name');
             if (name === null)
                 return;
@@ -982,7 +982,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
 
-        if (this._node && this._node.getParent() != undefined && (enabled || this._jagModel instanceof UndefinedJAG)) {
+        if (this._node && this._node.getParent() != undefined && (enabled)) {//} || this._jagModel instanceof UndefinedJAG)) {
             this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
             this.classList.toggle('root-node', false);
             this._name_ctxInput.disabled = false;
@@ -996,13 +996,14 @@ customElements.define('jag-properties', class extends HTMLElement {
         if (enabled || (!enabled && !this._jagModel)) {
             this.classList.toggle('defined-model', true);
             this.classList.toggle('non-leaf-node', true);
-        } else if (this._jagModel instanceof UndefinedJAG) {
-            this.classList.toggle('defined-model', false);
-
-            if (this._node.getParent()) {
-                this.classList.toggle('non-leaf-node', false);
-            }
         }
+        // else if (this._jagModel instanceof UndefinedJAG) {
+        //     this.classList.toggle('defined-model', false);
+        //
+        //     if (this._node.getParent()) {
+        //         this.classList.toggle('non-leaf-node', false);
+        //     }
+        // }
     }
 });
 

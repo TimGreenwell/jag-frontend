@@ -45,7 +45,7 @@ export default class NodeController {
     //
     //bonus: renaming a node creates a new node and jag but only changes the urn.
 
-
+    // Can a Jag update generate/remove a Node? Not directly - if a Jag adds (or removes a child)
     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         //  Update Jag Model has arrived.
 

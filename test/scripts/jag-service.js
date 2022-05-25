@@ -6,8 +6,8 @@
  * @version 0.05
  */
 import '/scripts/mocha.js';
-import JAG from '/src-scripts/models/jag.js';
-import JAGService from '/src-scripts/services/jag.js';
+import JAG from '/src-scripts/models/jag-cell.js';
+import JAGService from '/src-scripts/services/jag-cell.js';
 import IndexedDBStorage from '/src-scripts/storages/indexed-db.js';
 import BasicMapStorage from '/scripts/utils/map-storage.js';
 

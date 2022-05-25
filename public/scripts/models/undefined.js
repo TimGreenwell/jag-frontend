@@ -6,7 +6,7 @@
 //  * @version 0.2
 //  */
 //
-// import JAG from '../models/jag.js';
+// import JAG from '../models/jag-cell.js';
 //
 // export default class UndefinedJAG extends EventTarget {
 //

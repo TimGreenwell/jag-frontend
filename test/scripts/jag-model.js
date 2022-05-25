@@ -6,7 +6,7 @@
  * @version 0.66
  */
 import '/scripts/mocha.js';
-import JAG from '/src-scripts/models/jag.js';
+import JAG from '/src-scripts/models/jag-cell.js';
 import { UUIDv4 } from '/src-scripts/utils/uuid.js';
 
 function validJAG({ description = undefined, inputs = undefined, outputs = undefined, children = undefined, bindings = undefined } = {}) {

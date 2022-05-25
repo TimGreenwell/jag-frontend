@@ -19,13 +19,16 @@ export default class AnalysisModel extends EventTarget {
 					id = UUIDv4(),
 					name = AnalysisModel.DEFAULT_NAME,
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
-					root = new NodeModel({is_root: true}),
+					root,     //tlg = new NodeModel({is_root: true}),
 		            rootUrn,
 					team,
 				} = {}) {
 		super();
 		this._id = id;
 		this._name = name;
+
+		rootUrn = root;
+
 		this._description = description;
 		this._rootNodeModel = root;
 		this._rootUrn = rootUrn;
@@ -76,9 +79,10 @@ export default class AnalysisModel extends EventTarget {
 		const node_id = json.root;
 		console.log("Reminder: if you are breaking here - its because a JAGModel change triggered a rebuild of the Nodes which destroyed your Analysis root reference.")
         console.log("We really should be using jag model root reference")
-		const rootNode = await StorageService.get(node_id, 'node');
+//tlg		const rootNode = await StorageService.get(node_id, 'node');
 		// Replace id by the actual model.
 		json.root = rootNode;
+		json.root = json.rootUrn
 		const team_id = json.team;
 		let teamNode = await StorageService.get(team_id, 'team');
 		if (teamNode == undefined) {

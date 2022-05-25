@@ -14,7 +14,6 @@ export default class JAGATValidation {
         JAGATValidation.validateURN(jagDescriptor.urn);
         JAGATValidation.validateName(jagDescriptor.name);
         JAGATValidation.validateDescription(jagDescriptor.description);
-        console.log(jagDescriptor.connector)
         if (jagDescriptor.connector)
             JAGATValidation.validateConnector(jagDescriptor.connector);
         if (jagDescriptor.inputs)

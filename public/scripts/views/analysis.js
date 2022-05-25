@@ -11,9 +11,9 @@ import AgentModel from '../models/agent.js';
 import NodeController from "../controllers/nodeController.js";
 import DOMUtils from '../utils/dom.js';
 import ContextMenu from '../ui/context-menu.js';
-import ColumnHeader from './column-header.js';
-import AssessmentView from './assessment.js';
-import JAGView from './jag.js';
+import ColumnHeader from './column-header-cell.js';
+import AssessmentView from './assessment-cell.js';
+import JAGView from './jag-cell.js';
 
 class AnalysisView extends HTMLElement {
 

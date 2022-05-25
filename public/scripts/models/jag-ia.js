@@ -7,7 +7,7 @@
 
 'use strict';
 
-import JAGService from '../services/jag.js'
+import JAGService from '../services/jag-cell.js'
 
 export default class JAGModel {
 
