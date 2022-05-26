@@ -24,6 +24,7 @@ export default class DOMUtils {
 		return element;
 	}
 
+	// Select the text in $node
 	static selectNodeText($node) {
 		const selection = window.getSelection();
 		const range = document.createRange();

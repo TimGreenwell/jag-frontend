@@ -22,7 +22,7 @@ export default class Node extends EventTarget {
 		this._id = id;                       // An assigned unique ID given at construction
 		this._jag = jag;                     // The Jag Model representing this node
 
-		this._children = new Set();            // Links to actual children [objects]
+		this._children = new Array();            // Links to actual children [objects]
 		this._parent = undefined;            // Link to parent object
 //		this._isValid = false;               // passes validation. //? even needed?
 
@@ -47,31 +47,32 @@ export default class Node extends EventTarget {
 	set jag(value) {
 		this._jag = value;
 	}
+	hasChildren() {
+		return (this.children.length !== 0);
+	}
 	get children() {
 		return this._children;
 	}
 	set children(value) {
 		this._children = value;
 	}
-	get canHaveChildren() {
-		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
-	}
 	addChild(node){
 		if (this.canHaveChildren) {
 			const child = new Node();
-			this._children.add(node);
+			this._children.push(node);
 			node.parent = this;
 		} else {
 			alert("Node must first be assigned a valid URN")
 		}
 	}
-
-
-
-
-	hasChildren(node = this) {
-		return (node.childCount !== 0);
+	getLastChild(){
+		return this._children[this.children.length - 1]
 	}
+	get canHaveChildren() {
+		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
+	}
+
+
 
 	get parent() {
 		return this._parent;

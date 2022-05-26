@@ -23,6 +23,7 @@ import GraphService from './services/graph-service.js';       // ?? - seems unus
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
+import Controller from "./controllers/controller.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
+	Controller.initializeSubscriptions();
 
 	const ide = new IDE();
 	const graph_service = new GraphService();

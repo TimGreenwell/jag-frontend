@@ -14,6 +14,7 @@ import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/team.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
+import Controller from "./controllers/controller.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
+	Controller.initializeSubscriptions();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');

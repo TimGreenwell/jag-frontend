@@ -26,6 +26,8 @@ class JAGView extends AnalysisCell {
 
 	constructor(nodeModel) {
 		super();
+		console.log("In jagcell constructor");
+		console.log(nodeModel)
 		this._nodeModel = nodeModel;
 
 		this._elements = {
@@ -34,7 +36,7 @@ class JAGView extends AnalysisCell {
 			suggestions: undefined
 		};
 
-		this._init();
+		this._createDocument();
 	}
 
 	get nodeModel() {
@@ -75,21 +77,11 @@ class JAGView extends AnalysisCell {
 	}
 
 
-	async _init() {
-		this.nodeModel.addEventListener('sync', this._sync.bind(this));
-		this._createDocument();
-//    tg - Both functions are equivalent but neither seem to be of any use.  this._elements is set to auto-complete.
-//    tg - possibly the '.suggestions.suggestions' is a mistake.
-		await StorageService.all('jag').then(jags => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
-//	const allJagModels = await StorageService.all('jag');
-//	allJagModels.forEach(() => this._elements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
-	}
-
-
 // Sync view to existing model values.    -ok
 	_sync() {
 		this.urn = this.nodeModel.urn;                                   //   this = jagView
 		this.name = this.nodeModel.name;
+		console.log("syncing");
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());
 	}
 
@@ -279,7 +271,9 @@ class JAGView extends AnalysisCell {
 	//  This should be shifted to the view --- doesn't belong in the model.
 
 
-	_createDocument() {
+	async _createDocument() {
+		this.nodeModel.addEventListener('sync', this._sync.bind(this));
+
 		const $controls = new JAGControls(this.nodeModel);
 		const $header = document.createElement('header');
 		const $name = document.createElement('h1');
@@ -287,6 +281,9 @@ class JAGView extends AnalysisCell {
 		const $suggestions = new AutoComplete();
 		const $fold = document.createElement('div');
 
+
+		console.log("jag-cell --- create-document")
+		console.log(this.nodeModel);
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());  // Am I a leaf?
 
 		$name.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to Controller for Jag updating.
@@ -322,6 +319,11 @@ class JAGView extends AnalysisCell {
 		this._elements.urn = $urn;
 		this._elements.name = $name;
 		this._elements.suggestions = $suggestions;
+
+		//    tg - Both functions are equivalent but neither seem to be of any use.  this._elements is set to auto-complete.
+		//    tg - possibly the '.suggestions.suggestions' is a mistake.
+		await StorageService.all('jag').then(jags => this._elements.suggestions.suggestions = jags.map(jag => jag.urn));
+       //	allJagModels.forEach(() => this._elements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
 	}
 
 

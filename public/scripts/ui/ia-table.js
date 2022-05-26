@@ -15,6 +15,7 @@ import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
+import Controller from "../controllers/controller.js";
 
 class IATable extends Popupable {
 
@@ -23,7 +24,7 @@ class IATable extends Popupable {
 
         this.setPopupBounds(this);
 
-        this._analysisModel = undefined;
+        this._analysisModel = new AnalysisModel();
 
         this._domElements = {
             name: undefined,
@@ -47,11 +48,6 @@ class IATable extends Popupable {
     // get analysisSelector() {
     // 	return this._domElements.selector;
     // }
-
-
-
-
-
 
     handleJagStorageCreated(newJag, newJagUrn) {
         console.log("WRITE THIS --  we have a new JAG model to handle")
@@ -87,24 +83,21 @@ class IATable extends Popupable {
         // remove current view if it exists
         if (this._domElements.analysis !== undefined) {
             this.removeChild(this._domElements.analysis);
-          //  this._analysisModel.team.removeEventListener('update', this._boundRefresh);
-          //  for (const agent of this._agents) {
-           //     agent.removeEventListener('update', this._boundRefresh);
-           // }
         }
 
         if (newAnalysisModel) {
+            console.log(" XxXxXxXxXx 000")
+            console.log(newAnalysisModel)
             const analysisView = new AnalysisView(newAnalysisModel);
-            //analysisView.initialize(); // double checked - ok to delete
+            console.log(" XxXxXxXxXx aaa")
             this.appendChild(analysisView);
+            console.log(" XxXxXxXxXx bbb")
             this._domElements.analysis = analysisView;
-
+            console.log(" XxXxXxXxXx cc")
             this._domElements.name.removeAttribute('disabled');
             this._domElements.name.value = newAnalysisModel.name;
             this._domElements.description.removeAttribute('disabled');
             this._domElements.description.value = newAnalysisModel.description;
-
-
 
             this._analysisModel.team.addEventListener('update', this._boundRefresh);
             this._agents = this._analysisModel.team.agents;
@@ -117,48 +110,26 @@ class IATable extends Popupable {
 
 
 
-    async create(analysisName, rootUrn) {
-        let rootJagModel;
-        console.log("--------------------------------------------------------------------------")
-        console.log(rootUrn)
-        console.log("--------------------------------------------------------------------------")
+    async createAnalysis(analysisName, rootUrn) {
         // if (await StorageService.has(rootUrn, 'jag')) {
-            console.log("--------------------------------------------------------------------------")
-            console.log("--------------------------------------------------------------------------")
 
-            rootJagModel = await StorageService.get(rootUrn, 'jag');
-        // } else {
+        let rootJagModel = await StorageService.get(rootUrn, 'jag');
         //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
-        // }
-
-        const rootNodeModel = rootUrn;
         //tlg   const rootNodeModel = new NodeModel({jag: rootJagModel});
-
-
-       // await StorageService.create(rootNodeModel, 'node');
-
-
-        const newAnalysisModel = new AnalysisModel({name: analysisName, root: rootNodeModel});
-    //tlg    await StorageService.clear('node');
+        const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});
         // currently buildAnalysis builds and stores the mapset.
-        // @TODO return the node set and iterate through storing them here.  less dependence
- // !!!!!!!!!!!!!!!!!!!!!!! TRYING TO ELIMINATE THE        buildAnalysisJagNodes
-//        await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
-
-        await newAnalysisModel.buildDefaultTeam();
-
-//		if (this._team == undefined) {
+        newAnalysisModel.rootNodeModel = await Controller.buildAnalysisJagNodes(rootUrn);
         newAnalysisModel.team = new TeamModel();
         newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
         newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
         await Promise.all(newAnalysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
         await StorageService.create(newAnalysisModel.team, 'team');
-//		}
-
-     //   newAnalysisModel.save();
+        console.log(newAnalysisModel)
         this.analysisModel = newAnalysisModel;  //  < <<<  (not calling the setter...))
-     //   this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: this._analysisModel}}));
+        console.log("xxxx2xxxxxx")
         await StorageService.create(newAnalysisModel, 'analysis');
+        console.log("xxxxx3xxxxxx")
+        console.log(this.analysisModel)
     }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Trying to eliminate the buildAnalysisJagNodes
@@ -534,7 +505,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
         {
             text: "Create", color: "white", bgColor: "green",
             action: function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
-                table.create(name, root);  // table = ia-table (this)
+                table.createAnalysis(name, root);  // table = ia-table (this)
             }
         },
         {text: "Cancel", color: "black", bgColor: "white"}

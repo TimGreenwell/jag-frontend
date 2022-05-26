@@ -12,28 +12,50 @@ import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JagModel from "../models/jag.js";
 import JAGATValidation from "../utils/validation.js";
+import NodeModel from "../models/node.js";
 
 export default class Controller {
+
+
     static _jagModelList = new Set();
-
-
     static _nodeModelList = new Set();
+    static currentAnalysis = undefined;
+
     static {
+
+    }
+
+
+    get jagModelList() {
+        return this._jagModelList;
+    }
+    set jagModelList(jagModel) {
+        this._jagModelList = jagModel;
+    }
+    static addJagModel(jagModel) {
+        this._jagModelList.add(jagModel)
+    }
+    static get nodeModelList() {
+        return this.nodeModelList;
+    }
+    static set nodeModelList(nodeModel) {
+        this.nodeModelList = nodeModel;
+    }
+    static addNodeModel(nodeModel) {
+        this._nodeModelList.add(nodeModel)
+    }
+
+    static initializeSubscriptions() {
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
     }
 
 
-    static get jagModelList() {
-        return this._jagModelList;
-    }
-    static set jagModelList(value) {
-        this._jagModelList = value;
-    }
-    static addJagModel(jagModel) {
-        this._jagModelList.add(jagModel)
-    }
-
+    /**
+     *                              JAG PERFORMER SECTION - Outgoing DATA
+     * @param newJagModel
+     * @returns {Promise<void>}
+     */
 
     static async createJagModel(newJagModel) {
         if (newJagModel.isValid()) {
@@ -96,8 +118,11 @@ export default class Controller {
     }
 
 
-
-
+    /**
+     *                                    JAG Performer - Incoming DATA
+     * @param updatedJagModel
+     * @param updatedJagUrn
+     */
 
     static handleJagStorageCreated(updatedJagModel, updatedJagUrn) {
         //  Update Jag Model has arrived.
@@ -121,61 +146,129 @@ export default class Controller {
     //bonus: renaming a node creates a new node and jag but only changes the urn.
 
     // Can a Jag update generate/remove a Node? Not directly - if a Jag adds (or removes a child)
+
+
+    /**
+     *   The Activity Cells shown in the IATable are represented in a Node Model Tree.
+     *   Why? Need the id, like the parent/child object links
+     *   @TODO
+     *   1) We assume the representing node model tree is non-permanent
+     *   - no data is particular to a certain node that cannot be derived again from the original JAG element
+     *   list.  In fact, that might be the best way to handle any JAG changes (complete rebuild)
+     *   - Possible to surgically alter the tree (slightly better performance vs code maintenance)
+     *   - There is no requirement to save to database.
+     *   2) We assume the node model tree contains info particular to this instantiation of
+     *   the JAG vs other possible instantiations.
+     *   - In this case we cannot rebuild from the JAG list, we need a permanent storage for the tree
+     *     and must surgically alter the tree as JAG changes are presented.
+     *   - Also need a way for the users to choose not only a URN but which instance of URN - maybe
+     *     the entire path from root to target urn (or pick graphically)
+     *
+     *  Going with Option 1 - rebuild (with experimental surgical alternative, just in case they change their mind.)
+     *
+     * @param updatedJagModel
+     * @param updatedJagUrn
+     */
+
     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-        //  Update Jag Model has arrived.
-
-        _nodeModelList.forEach(node => {
-            // if updated Jag is already represented by current node(s)
-            // find each node that matches -->
-            // --> add updated Jag to node's jag placeholder
-            // --> add or remove node children to match updated Jag
-            if (updatedJagModel.urn == node.jag.urn) {
-                node.jag = updatedJagModel;
-                let jagKids = updatedJagModel.children;
-                let nodeKids = node.children;
-                let kidsToAdd = jagKids.filter(jagKid => !nodeKids.find(nodeKid => jagKid["id"] === nodeKid["id"]))
-                console.log(kidsToAdd)
-                let kidsToRemove = nodeKids.filter(nodeKid => !jagKids.find(jagKid => nodeKid["id"] === jagKid["id"]))
-                console.log(kidsToRemove)
-            }
-            if (updatedJagModel.children.contains(node.id)){
-                node.parent = updatedJagModel;
-                node.isRoot = false;
-            }
-
-        })
-    }
-
-
-
-    static get nodeModelList() {
-        return this._jagModelList;
-    }
-    static set nodeModelList(value) {
-        this._jagModelList = value;
-    }
-    static addNodeModel(nodeModel) {
-        this._nodeModelList.add(nodeModel)
-    }
-
-
-    static async createNodeModel(newNodeModel) {
-        if (newNodeModel.isValid()) {
-            await StorageService.create(newNodeModel, 'node');
-        } else {
-            window.alert("Invalid URN");
+        // update the jag listing
+        if (this.currentAnalysis) {
+            this._jagModelList.forEach(jagModel => {
+                if (jagModel.urn == updatedJagUrn) {
+                    jagModel = updatedJagModel
+                }
+            })
+            // get refreshed nodeModelList
+            this._nodeModelList = this.buildAnalysisJagNodes(this.currentAnalysis.rootUrn);
         }
     }
 
-    /**
-     * Recursively get the left(?) most leaf from this node
-     * tlg - Wht?  gets the last child's last child's lasts child... whatfer?
-     */
-    static lastLeaf(node) {
-        if(node.children.length === 0)
-            return this;
-        return this.lastLeaf(node.children[node.children.length - 1]);
+    static handleJagStorageCreated(createdJagModel, updatedJagUrn) {
+        if (this.currentAnalysis) {
+            this._jagModelList.add(createdJagModel);
+
+            this._nodeModelList = this.buildAnalysisJagNodes(this.currentAnalysis.rootUrn)
+        }
     }
+
+    // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
+    static async buildAnalysisJagNodes(newRootJagUrn) {
+        const nodeStack = [];
+        const resultStack = [];
+        const rootJagModel = await StorageService.get(newRootJagUrn, 'jag');
+        const rootNodeModel = new NodeModel({jag: rootJagModel, is_root: true});
+       // returnedNodeSet.clear();
+        nodeStack.push(rootNodeModel);
+        while (nodeStack.length != 0) {
+            let currentNode = nodeStack.pop();
+            for (const child of currentNode.jag.children) {
+                const childJagModel = await StorageService.get(child.urn, 'jag');
+                const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+                currentNode.addChild(childNodeModel, true);
+                nodeStack.push(childNodeModel);
+            }
+            resultStack.push(currentNode);
+        }
+        return resultStack.shift();
+    }
+
+    // // Put in a URN - Get a NodeModel Tree back. - recursion method... needs modification for URN statt node.
+    // async buildAnalysisJagNodes(currentNode) { // this was newRootNodeModel
+    //     //	let currentNode = newRootNodeModel;     // this was uncommented
+    //     let children = currentNode.jag.children;// this was newRootNodeModel
+    //     await Promise.all(
+    //         children.map(async ({urn, id}) => {
+    //             const childJagModel = await StorageService.get(urn, 'jag');  // can replace this once laziness is going
+    //             const childNodeModel = new NodeModel({jag: childJagModel});
+    //             currentNode.addChild(childNodeModel, true);
+    //             await this.buildAnalysisJagNodes(childNodeModel);
+    //         }))
+    //     this._nodeSet.add(currentNode);
+    //     await StorageService.create(currentNode,'node');
+    // }
+
+
+//  The surgical method for handling new Jag Updates
+//     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+//         //  Update Jag Model has arrived.
+//         this._nodeModelList.forEach(node => {
+//             // if updated Jag is already represented by current node(s)
+//             // find each node that matches -->
+//             // --> add updated Jag to node's jag placeholder
+//             // --> add or remove node children to match updated Jag
+//             if (updatedJagModel.urn == node.jag.urn) {
+//                 node.jag = updatedJagModel;
+//                 let jagKids = updatedJagModel.children;
+//                 let nodeKids = node.children;
+//                 let kidsToAdd = jagKids.filter(jagKid => !nodeKids.find(nodeKid => jagKid["id"] === nodeKid["id"]))
+//                 console.log(kidsToAdd)
+//                 let kidsToRemove = nodeKids.filter(nodeKid => !jagKids.find(jagKid => nodeKid["id"] === jagKid["id"]))
+//                 console.log(kidsToRemove)
+//             }
+//             if (updatedJagModel.children.contains(node.id)){
+//                 node.parent = updatedJagModel;
+//                 node.isRoot = false;
+//             }
+//         })
+//     }
+
+
+    //     static async createNodeModel(newNodeModel) {
+    static async saveNodeModel(newNodeModel) {
+        if (await StorageService.has(newNodeModel, 'node')) {
+            await StorageService.update(newNodeModel, 'node');
+        } else {
+            if (newNodeModel.isValid()) {
+                await StorageService.create(newNodeModel, 'node');
+            } else {
+                window.alert("Invalid URN");
+            }
+        }
+
+    }
+
+
+
 
 
     // async deleteLeafNode
@@ -275,13 +368,7 @@ export default class Controller {
     }
 
 
-    static async save() {
-        if (await StorageService.has(this, 'node')){
-            await StorageService.update(this,'node');
-        }
-        else {
-            await StorageService.create(this,'node');}
-    }
+
 
 
 

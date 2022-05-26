@@ -8,12 +8,12 @@
 'use strict';
 
 import AgentModel from '../models/agent.js';
-import NodeController from "../controllers/nodeController.js";
+import Controller from "../controllers/controller.js";
 import DOMUtils from '../utils/dom.js';
 import ContextMenu from '../ui/context-menu.js';
 import ColumnHeader from './column-header-cell.js';
 import AssessmentView from './assessment-cell.js';
-import JAGView from './jag-cell.js';
+import JagCell from './jag-cell.js';
 
 class AnalysisView extends HTMLElement {
 
@@ -21,14 +21,14 @@ class AnalysisView extends HTMLElement {
 		super();
 		this._analysisModel = analysisModel;
 		this._columnHeaderMap = new Map();
-	//	this._analysisJagRoot = undefined;   // or just use this._analysisModel.root;?   <- yes, agreed
 		this._leafArray = new Array();
 		this._assessment_menu = undefined;
-		this._jagCellViewMap = new Map();
-		this._analysisJagRoot = this._analysisModel.root;   // or just use this._analysisModel.root everywhere..
+		this.idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		this._initializeTree(this._analysisModel.root);
+		console.log("analysisModel.rootUrn = " + this._analysisModel.rootUrn)
+
+		this._initializeTree(this._analysisModel.rootNodeModel);
 		this.layout();
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
 	}
@@ -46,17 +46,17 @@ class AnalysisView extends HTMLElement {
 		// this._initializeTree(this._analysisModel.root);
 		//
 		// // TODO: temporary ugly fix
-		// // this._jagCellViewMap.get(this._analysisModel.root.id).model.syncJAG(this._jagCellViewMap.get(this._analysisModel.root.id));
+		// // this.idToTableCellMap.get(this._analysisModel.root.id).model.syncJAG(this.idToTableCellMap.get(this._analysisModel.root.id));
 		//
 		// this.layout();
 	}
 
 	// If agent exists, get related assessment.  If not, create and return empty assessment.
 	getAssessments(agent) {
-		let agent_assessment_views = this._jagCellViewMap.get(agent.id);
+		let agent_assessment_views = this.idToTableCellMap.get(agent.id);
 		if(agent_assessment_views === undefined) {
 			agent_assessment_views = new Map();
-			this._jagCellViewMap.set(agent.id, agent_assessment_views);
+			this.idToTableCellMap.set(agent.id, agent_assessment_views);
 		}
 		return agent_assessment_views;
 	}
@@ -71,40 +71,60 @@ class AnalysisView extends HTMLElement {
 		return view;
 	}
 
-	getNodeView(node) {
-		let view = this._jagCellViewMap.get(node.id);
-
-		if(view === undefined) {
-			view = new JAGView(node);
-			this._jagCellViewMap.set(node.id, view);
+	
+	// Get the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
+	getMappedJagCell(node) {
+		let jagCell = this.idToTableCellMap.get(node.id);
+		if(jagCell == undefined) {
+			console.log("node " + node.id + " not yet mapped.... mapping")
+			jagCell = new JagCell(node);
+			this.idToTableCellMap.set(node.id, jagCell);
 		}
-
-		return view;
+		return jagCell;
 	}
 
-	attach({target, reference = null, layout = true, select = true } = {}) {
-		target.addEventListener('layout', this.layout.bind(this));
-		target.addEventListener('attach', this._handleAttach.bind(this));
-		target.addEventListener('detach', this._handleDetach.bind(this));
+	attach({targetNode, reference = null, layout = true, select = true } = {}) {
+		console.log("000 Inside the attach with node:")
+		console.log(targetNode)
+		targetNode.addEventListener('layout', this.layout.bind(this));
+		targetNode.addEventListener('attach', this._handleAttach.bind(this));
+		targetNode.addEventListener('detach', this._handleDetach.bind(this));
+		console.log("000 Attached events")
+		// Finds the element representing the table's bottom row (succession of youngest children)
+		if(reference == null) {
+			console.log("...")
+			reference = this.findTableBottomNode(targetNode);
+			console.log(reference)
+		}
+		console.log("000 Reference is:")
+		console.log(reference)
 
-		// Finds the element representing the left most leaf in the tree.
-		if(reference === null)
-			reference = NodeController.lastLeaf(target);
+		const $targetCell = this.getMappedJagCell(targetNode);
+		console.log("000 $targetCell is:")
+		console.log($targetCell)
+		const $referenceCell = this.getMappedJagCell(reference);
+		console.log("000 $referenceCell is:")
+		console.log($referenceCell)
 
-		const $target = this.getNodeView(target);
-		const $reference = this.getNodeView(reference);
-
-		this.insertBefore($target, $reference.nextSibling);
-		if(select) this.selectName($target);
+		this.insertBefore($targetCell, $referenceCell.nextSibling);
+		console.log("000 Inserted")
+		if(select) {
+			// Giving --> dom.js:32 addRange(): The given range isn't in document.
+			this.selectElementNameText($targetCell);
+		}
+		console.log("--")
 		if(layout) this.layout();
+		console.log("000 Done")
 	}
 
 	_handleAttach(e) {
+		console.log("_handleAttach -- parameter got renamed to targetNode");
+		console.log(e)
 		this.attach(e.detail);
 	}
 
 	detach({target, layout = true } = {}) {
-		const $target = this.getNodeView(target);
+		const $target = this.getMappedJagCell(target);
 		this.removeChild($target);
 		if(layout) this.layout();
 	}
@@ -113,8 +133,22 @@ class AnalysisView extends HTMLElement {
 		this.detach(e.detail);
 	}
 
-	selectName(child) {
+	selectElementNameText(child) {
+		console.log("+++++++++")
+		console.log(child)
+		console.log(child.nameElement)
 		DOMUtils.selectNodeText(child.nameElement);
+	}
+
+	/**
+	 * Finds the activity on the bottom of the graph
+	 * Gets the last child's last child's lasts child...  used for a reference when building view.
+	 */
+	findTableBottomNode(node) {
+		while (node.hasChildren()) {
+			node = node.getLastChild()
+		}
+		return node;
 	}
 
 	layout() {
@@ -130,9 +164,9 @@ class AnalysisView extends HTMLElement {
 		let height = -1;
 		let rows = 0;
 
-		this._layoutJAG(this._analysisJagRoot, AnalysisView.HEADER_DEPTH, 0);
-		height = this._analysisJagRoot.height;
-		rows = this._analysisJagRoot.breadth;
+		this._layoutJAG(this._analysisModel.root, AnalysisView.HEADER_DEPTH, 0);
+		height = this._analysisModel.root.height;
+		rows = this._analysisModel.root.breadth;
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
@@ -168,12 +202,17 @@ class AnalysisView extends HTMLElement {
 		this.appendChild(new ColumnHeader(AnalysisView.JAG_SECTION_ROOT_HEADER_NAME, 0, 1));
 	}
 
+	// Prefix traversal. okay
 	_initializeTree(node) {
+		console.log("_initializeTree")
+		console.log(node);
 		this.attach({
-			target: node,
+			targetNode: node,
 			layout: false
 		});
 		node.children.forEach((child_node) => {
+			console.log("b")
+			console.log(node);
 			this._initializeTree(child_node);
 		});
 	}
@@ -264,7 +303,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_layoutJAG(node, row, col) {
-		const $view = this.getNodeView(node);
+		const $view = this.getMappedJagCell(node);
 
 		if(node.children.length !== 0 && !node.collapsed)
 		{
@@ -296,7 +335,7 @@ class AnalysisView extends HTMLElement {
 
 	_showChildNodes(node, recurse = true) {
 		for(let child of node.children) {
-			const $view = this.getNodeView(child);
+			const $view = this.getMappedJagCell(child);
 			$view.show();
 
 			if(recurse)
@@ -306,7 +345,7 @@ class AnalysisView extends HTMLElement {
 
 	_hideChildNodes(node, recurse = true) {
 		for(let child of node.children) {
-			const $view = this.getNodeView(child);
+			const $view = this.getMappedJagCell(child);
 			$view.hide();
 
 			if(recurse)
@@ -319,7 +358,8 @@ class AnalysisView extends HTMLElement {
 	update(node = this) {
 		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
 		node._height = 0;     // depth of tree  (skipping collapsed nodes)
-		if(node.hasChildren(this) && !node._collapsed)
+		cosole.log("? analysis xxx")
+		if(node.hasChildren() && !node._collapsed)
 		{
 			node._breadth = 0;
 			let max_height = 0;
