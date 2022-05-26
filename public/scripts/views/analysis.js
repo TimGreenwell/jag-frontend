@@ -314,6 +314,27 @@ class AnalysisView extends HTMLElement {
 		}
 	}
 
+
+
+	update(node = this) {
+		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
+		node._height = 0;     // depth of tree  (skipping collapsed nodes)
+		if(node.hasChildren(this) && !node._collapsed)
+		{
+			node._breadth = 0;
+			let max_height = 0;
+			this.children.forEach(child => {
+				child.update();
+				node._breadth += child.breadth;
+				max_height = Math.max(max_height, child.height);
+			})
+			node._height = max_height + 1;
+		}
+	}
+
+
+
+
 }
 
 AnalysisView.JAG_SECTION_ROOT_HEADER_NAME = 'Root';

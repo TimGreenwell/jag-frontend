@@ -11,7 +11,7 @@ import JAG from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
 //import UndefinedJAG from '../models/undefined.js';
 import FormUtils from '../utils/forms.js';
-import JagController from '../controllers/jagController.js';
+import Controller from '../controllers/controller.js';
 
 
 customElements.define('jag-properties', class extends HTMLElement {
@@ -859,7 +859,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
         this._urnInput.addEventListener('focusout', async (e) => {
             if (this._jagModel.urn != this._urnInput.value) {
-                      await JagController.updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
+                      await Controller.updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
             }
         })
 

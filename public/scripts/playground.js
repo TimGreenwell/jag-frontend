@@ -12,7 +12,7 @@ import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import JAG from "./models/jag.js";
-import JagController from "./controllers/jagController.js";
+import Controller from "./controllers/controller.js";
 
 class Playground extends Popupable {
 
@@ -679,7 +679,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
                 const newJAG = new JAG({urn: popurn, name: popname, description: popdescription});
-                await JagController.createJagModel(newJAG);
+                await Controller.createJagModel(newJAG);
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
