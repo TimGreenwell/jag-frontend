@@ -9,6 +9,7 @@
 
 export default class DOMUtils {
 
+
 	static create(description) {
 		const element = document.createElement(description.type);
 		for(let attribute in description.attributes)
@@ -26,12 +27,22 @@ export default class DOMUtils {
 
 	// Select the text in $node
 	static selectNodeText($node) {
+		console.log("VVVVVVVVVVVVVVVVVVVVVVVVVV")
+		console.log($node)
+
 		const selection = window.getSelection();
+		console.log("a")
 		const range = document.createRange();
+		console.log("b")
 		selection.removeAllRanges();
+		console.log("c")
 		range.selectNodeContents($node);
-		selection.addRange(range);
+		console.log("d")
+		selection.addRange(range);      // <    dom.js:41 addRange(): The given range isn't in document.
+		console.log(selection)
+		console.log(range)
+		console.log("e")
+		console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 	}
 
 }
-

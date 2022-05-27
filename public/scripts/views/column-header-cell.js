@@ -65,7 +65,7 @@ class ColumnHeader extends AnalysisCell {
 		this.innerText = this._name;
 
 		this._update();
-		this.addEventListener('wheel', handleMouseWheel);
+		this.addEventListener('wheel', handleMouseWheel, {passive: true} );
 	}
 
 	_update() {

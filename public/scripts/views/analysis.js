@@ -23,7 +23,7 @@ class AnalysisView extends HTMLElement {
 		this._columnHeaderMap = new Map();
 		this._leafArray = new Array();
 		this._assessment_menu = undefined;
-		this.idToTableCellMap = new Map();
+		this._idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
 		console.log("analysisModel.rootUrn = " + this._analysisModel.rootUrn)
@@ -46,17 +46,17 @@ class AnalysisView extends HTMLElement {
 		// this._initializeTree(this._analysisModel.root);
 		//
 		// // TODO: temporary ugly fix
-		// // this.idToTableCellMap.get(this._analysisModel.root.id).model.syncJAG(this.idToTableCellMap.get(this._analysisModel.root.id));
+		// // this._idToTableCellMap.get(this._analysisModel.root.id).model.syncJAG(this._idToTableCellMap.get(this._analysisModel.root.id));
 		//
 		// this.layout();
 	}
 
 	// If agent exists, get related assessment.  If not, create and return empty assessment.
 	getAssessments(agent) {
-		let agent_assessment_views = this.idToTableCellMap.get(agent.id);
+		let agent_assessment_views = this._idToTableCellMap.get(agent.id);
 		if(agent_assessment_views === undefined) {
 			agent_assessment_views = new Map();
-			this.idToTableCellMap.set(agent.id, agent_assessment_views);
+			this._idToTableCellMap.set(agent.id, agent_assessment_views);
 		}
 		return agent_assessment_views;
 	}
@@ -74,11 +74,11 @@ class AnalysisView extends HTMLElement {
 	
 	// Get the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
 	getMappedJagCell(node) {
-		let jagCell = this.idToTableCellMap.get(node.id);
+		let jagCell = this._idToTableCellMap.get(node.id);
 		if(jagCell == undefined) {
 			console.log("node " + node.id + " not yet mapped.... mapping")
 			jagCell = new JagCell(node);
-			this.idToTableCellMap.set(node.id, jagCell);
+			this._idToTableCellMap.set(node.id, jagCell);
 		}
 		return jagCell;
 	}
@@ -107,7 +107,8 @@ class AnalysisView extends HTMLElement {
 		console.log($referenceCell)
 
 		this.insertBefore($targetCell, $referenceCell.nextSibling);
-		console.log("000 Inserted")
+		console.log("000 Inserted-------------------------->")
+		console.log($referenceCell.parent)
 		if(select) {
 			// Giving --> dom.js:32 addRange(): The given range isn't in document.
 			this.selectElementNameText($targetCell);
@@ -134,10 +135,11 @@ class AnalysisView extends HTMLElement {
 	}
 
 	selectElementNameText(child) {
-		console.log("+++++++++")
+		console.log("vvvvvvvvvvvvvvvvvvvvvvvvvv")
 		console.log(child)
 		console.log(child.nameElement)
 		DOMUtils.selectNodeText(child.nameElement);
+		console.log("^^^^^^^^^^^^^^^^^^^^^^^^^")
 	}
 
 	/**
@@ -157,16 +159,16 @@ class AnalysisView extends HTMLElement {
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-		this._analysisModel.root.update();
+		//this._analysisModel.rootNodeModel.update();  //mmmmm
 		// Resets the leaf set.
 		this._leafArray.length = 0;
 
 		let height = -1;
 		let rows = 0;
 
-		this._layoutJAG(this._analysisModel.root, AnalysisView.HEADER_DEPTH, 0);
-		height = this._analysisModel.root.height;
-		rows = this._analysisModel.root.breadth;
+		this._layoutJAG(this._analysisModel.rootNodeModel, AnalysisView.HEADER_DEPTH, 0);
+		height = this._analysisModel.rootNodeModel.height;
+		rows = this._analysisModel.rootNodeModel.breadth;
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
@@ -203,6 +205,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	// Prefix traversal. okay
+	// For every node in tree - Attach it.  (Attach = put it in map)
 	_initializeTree(node) {
 		console.log("_initializeTree")
 		console.log(node);

@@ -80,7 +80,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	addListItem(model, idx = -1) {
 		console.log("Analysis Library (addListItem) received NOTIFICATION for analysis-storage-created")
 		const id = model.urn || '';
-		const root = model.root.urn;
+		const root = model.rootUrn;
 		const name = model.name;
 		const description = model.description || '';
 

@@ -87,21 +87,12 @@ export default class AnalysisModel extends EventTarget {
 
 
 	static async fromJSON(json) {
-		const rootUrn = json.rootUrn;
-		const node_id = json.root;
-		console.log("Reminder: if you are breaking here - its because a JAGModel change triggered a rebuild of the Nodes which destroyed your Analysis root reference.")
-        console.log("We really should be using jag model root reference")
-//tlg		const rootNode = await StorageService.get(node_id, 'node');
-		// Replace id by the actual model.
-		json.root = rootNode;
-		json.root = json.rootUrn
 		const team_id = json.team;
 		let teamNode = await StorageService.get(team_id, 'team');
 		if (teamNode == undefined) {
 			teamNode = new TeamModel();
 			await StorageService.create(teamNode, 'team');
 		}
-
 		json.team = teamNode;
 		const newAnalysis = new AnalysisModel(json);
 		return newAnalysis;
@@ -119,11 +110,9 @@ export default class AnalysisModel extends EventTarget {
 			id: this._id,
 			name: this._name,
 			description: this._description,
-			root: this.root.id,
-			rootUrn: this.root.urn,
+			rootUrn: this._rootUrn,
 			team: this._team.id
 		};
-
 		return json;
 	}
 
