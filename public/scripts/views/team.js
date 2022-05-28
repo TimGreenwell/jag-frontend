@@ -11,8 +11,9 @@ import FormUtils from '../utils/forms.js';
 
 customElements.define('team-editor', class extends HTMLElement {
 
-	constructor() {
+	constructor(controller) {
 		super();
+		this._controller = controller;
 		this._team = undefined;
 		this._agent = undefined;
 		this._initUI();

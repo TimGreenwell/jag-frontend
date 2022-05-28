@@ -56,7 +56,7 @@ export default class Node extends EventTarget {
 	set children(value) {
 		this._children = value;
 	}
-	addChild(node){
+	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
 			const child = new Node();
 			this._children.push(node);

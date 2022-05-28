@@ -7,8 +7,6 @@
 
 'use strict';
 
-import Controller from "../controllers/controller.js";
-
 class JAGControls extends HTMLElement {
 
 	constructor(node) {
@@ -35,7 +33,9 @@ class JAGControls extends HTMLElement {
 
 	_initListeners() {
 		this._add_child.addEventListener('click', () => {
-			this._node.newChild();
+			console.log("see the click");
+			this.dispatchEvent(new CustomEvent('local-node-addchild', {bubbles: true, composed: true, detail: {node: this._node}}));
+		//	this._node.newChild();
 		});
 
 		this._remove.addEventListener('click', () => {

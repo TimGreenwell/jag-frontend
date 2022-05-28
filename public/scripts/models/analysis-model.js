@@ -31,6 +31,7 @@ export default class AnalysisModel extends EventTarget {
 		this._team = team;
 
 		this._rootNodeModel = undefined;  //  created when analysis built by user. Controller.buildAnalysisJagNodes(rootUrn);
+		                                  //  or when click in analysis library
 
 
 	//	StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
@@ -84,6 +85,17 @@ export default class AnalysisModel extends EventTarget {
 	// async buildDefaultTeam() {
 	//
 	// }
+	findNode(id){
+		const searchStack = []
+		searchStack.push(this._rootNodeModel)
+		while (searchStack.length != 0) {
+			let currentNode = searchStack.pop();
+			if (currentNode.id == id) {
+				return currentNode;
+			}
+			currentNode.children.forEach(child => searchStack.push(child))
+		}
+	}
 
 
 	static async fromJSON(json) {

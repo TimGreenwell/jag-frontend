@@ -8,8 +8,9 @@
 
 customElements.define('jag-menu', class extends HTMLElement {
 
-    constructor() {
+    constructor(controller) {
         super();
+        this._controller = controller
         this.$leftLiDiv = null;
         this.$rightLiDiv = null;
         this._initUI();

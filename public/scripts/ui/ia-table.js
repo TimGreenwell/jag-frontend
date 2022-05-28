@@ -15,13 +15,12 @@ import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from '../views/analysis.js';
-import Controller from "../controllers/controller.js";
+
 
 class IATable extends Popupable {
 
     constructor() {
         super();
-
         this.setPopupBounds(this);
 
         this._analysisModel = new AnalysisModel();
@@ -37,8 +36,8 @@ class IATable extends Popupable {
 
         this._boundRefresh = this._refresh.bind(this);
 
-        StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
-        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
+      //  StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
+     //   StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
         // StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));   -- not needed -- right?
 
         //	StorageService.subscribe("jag-storage-updated", this.updateNode.bind(this));
@@ -52,8 +51,6 @@ class IATable extends Popupable {
     handleJagStorageCreated(newJag, newJagUrn) {
         console.log("WRITE THIS --  we have a new JAG model to handle")
         console.log(" n/m  -- ia table should not care about a new jag -- only a jag update.")
-        console.log(newJag)
-        console.log(newJagUrn)
     }
 
 
@@ -74,31 +71,26 @@ class IATable extends Popupable {
     }
 
 
-
-
     set analysisModel(newAnalysisModel) {
         this._analysisModel = newAnalysisModel;
+    }
 
-        console.log(" XxXxXxXxXx    For some reason, this setter is also being used to change elements and set up analysisView as well.")
+    displayAnalysis() {
         // remove current view if it exists
         if (this._domElements.analysis !== undefined) {
             this.removeChild(this._domElements.analysis);
         }
 
-        if (newAnalysisModel) {
-            console.log(" XxXxXxXxXx 000")
-            console.log(newAnalysisModel)
-            const analysisView = new AnalysisView(newAnalysisModel);
-            console.log(" XxXxXxXxXx aaa")
+        if (this._analysisModel) {
+            // Create and append a new Analysis View to this structure (not sure is iatable is a mis-name)
+            let analysisView = new AnalysisView(this._analysisModel);/////////////////////////////////////////////////////////////////// <<<<new
             this.appendChild(analysisView);
-            console.log(" XxXxXxXxXx bbb")
             this._domElements.analysis = analysisView;
-            console.log(" XxXxXxXxXx cc")
+            // Enable name and description (@TODO - this might make more sense in a separate panel (like AT Properties)
             this._domElements.name.removeAttribute('disabled');
-            this._domElements.name.value = newAnalysisModel.name;
+            this._domElements.name.value = this._analysisModel.name;
             this._domElements.description.removeAttribute('disabled');
-            this._domElements.description.value = newAnalysisModel.description;
-
+            this._domElements.description.value = this._analysisModel.description;
             this._analysisModel.team.addEventListener('update', this._boundRefresh);
             this._agents = this._analysisModel.team.agents;
             for (const agent of this._agents) {
@@ -109,34 +101,8 @@ class IATable extends Popupable {
 
 
 
-
-    async createAnalysis(analysisName, rootUrn) {
-        // if (await StorageService.has(rootUrn, 'jag')) {
-
-        let rootJagModel = await StorageService.get(rootUrn, 'jag');
-        //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
-        //tlg   const rootNodeModel = new NodeModel({jag: rootJagModel});
-        const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});
-        // currently buildAnalysis builds and stores the mapset.
-        newAnalysisModel.rootNodeModel = await Controller.buildAnalysisJagNodes(rootUrn);
-        newAnalysisModel.team = new TeamModel();
-        newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
-        newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
-        await Promise.all(newAnalysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
-        await StorageService.create(newAnalysisModel.team, 'team');
-        console.log(newAnalysisModel)
-        this.analysisModel = newAnalysisModel;  //  < <<<  (not calling the setter...))
-        console.log("xxxx2xxxxxx")
-        await StorageService.create(newAnalysisModel, 'analysis');
-        console.log("xxxxx3xxxxxx")
-        console.log(this.analysisModel)
-    }
-
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Trying to eliminate the buildAnalysisJagNodes
     async handleAnalysisStorageCreated(newAnalysisModel, newAnalysisId) {
-        console.log("**********  Calling handleAnalysisStorageCreated for no reason..... *****************")
-        console.log(newAnalysisModel)
-        console.log(newAnalysisId)
        // await StorageService.clear('node');
        // await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
        // this.analysisModel = newAnalysisModel;
@@ -144,40 +110,7 @@ class IATable extends Popupable {
 
 
 
-    async handleJagStorageUpdated(newJag, newJagUrn) {
 
-     //   if (this.analysisModel) {
-            let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
-            // IMPORTANT - currently, any JAGModel storage update triggers a rebuild of the root and all nodes.
-            // IMPORTANT - This replaces all the nodes meaning earlier references are void.
-            // IMPORTANT - All stored Analysis have root node pointers and are now lost.
-            // SOLUTION - Scan through and update root references or have Analysis use JAGModel root (cleaner)
-
-
-     //       await StorageService.clear('node');
-            let rootUrn = tempNewAnalysisModel.root.jag.urn;
-            const rootJagModel = await StorageService.get(rootUrn, 'jag');
-            const rootNodeModel = new NodeModel({jag: rootJagModel});
-            tempNewAnalysisModel.root = rootNodeModel;
-
-
-            //       await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
-
-            // // SOLUTION2 - scan through all nodes and update those with a matching JAGModel URN.
-            // // SOLUTION2 - @TODO children added/deleted, (or self deleted)
-            // let allStoredNodes = await StorageService.all('node');
-            // console.log(allStoredNodes)
-            // allStoredNodes.forEach((jagCell) => {
-            //     if (jagCell.jag.urn == newJagUrn) {
-            //         jagCell.jag = newJag;
-            //         // Make sure any new children are linked somehow
-            //         // Make sure any deleted children are removed somehow
-            //     }
-            // })
-
-            this.analysisModel = tempNewAnalysisModel;
-      //  }
-    }
 
 
     _initUI() {
@@ -504,8 +437,9 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
     actions: [
         {
             text: "Create", color: "white", bgColor: "green",
-            action: function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
-                table.createAnalysis(name, root);  // table = ia-table (this)
+            action: async function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
+                // let id = await this._controller.createAnalysis(name,root);
+                this.dispatchEvent(new CustomEvent('local-analysis-created', {detail: {name: name, rootUrn: root}}));
             }
         },
         {text: "Cancel", color: "black", bgColor: "white"}

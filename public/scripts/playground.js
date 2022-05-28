@@ -12,12 +12,12 @@ import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import JAG from "./models/jag.js";
-import Controller from "./controllers/controller.js";
 
 class Playground extends Popupable {
 
-    constructor() {
+    constructor(controller) {
         super();
+        this._controller = controller
         this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this._edges_container.setAttribute('version', '1.1');
         this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -679,7 +679,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
                 const newJAG = new JAG({urn: popurn, name: popname, description: popdescription});
-                await Controller.createJagModel(newJAG);
+                await this._controller.createJagModel(newJAG);
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

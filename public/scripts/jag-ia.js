@@ -16,6 +16,7 @@ import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import Controller from "./controllers/controller.js";
 
+
 document.addEventListener('DOMContentLoaded', async () => {
 
 	// Initializes local storage
@@ -32,28 +33,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
-	Controller.initializeSubscriptions();
+
+	let controller = new Controller();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
-	const table = new IATable();
+	const iaTable = new IATable();
 	const library = new AnalysisLibrary();
 	const editor = new TeamEditor();
 	body.appendChild(library);
-	body.appendChild(table);
+	body.appendChild(iaTable);
 	body.appendChild(editor);
+	controller.library = library;
+	controller.iaTable = iaTable;
+	controller.editor = editor;
+	controller.initializeHandlers();
 
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' -
 	library.addEventListener('item-selected', (e) => {
-		table.analysisModel = e.detail.model;
+		controller.displayAnalysis(e.detail.model.id);
 		editor.team = e.detail.model.team;
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'create-analysis' -
-	table.addEventListener('create-analysis', (e) => {
+	iaTable.addEventListener('create-analysis', (e) => {
 	//	library.addItem(e.detail.analysis, 0);
-		editor.team = e.detail.analysis.team;
+		///////////////////////////////////////////////editor.team = e.detail.analysis.team;
 	});
 });

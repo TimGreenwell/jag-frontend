@@ -12,8 +12,9 @@ import StorageService from '../services/storage-service.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
-	constructor() {
+	constructor(controller) {
 		super();
+		this._controller = controller;
 		this._libraryList = [];                         // <li> elements holding model.name & description + (search context) + model
 		this._existingURNS = new Set();                // Set of URNs in _libraryList
         // Build outer structure inside <jag-library> (search input & ol for nodes)

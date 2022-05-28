@@ -16,8 +16,9 @@ import Controller from '../controllers/controller.js';
 
 customElements.define('jag-properties', class extends HTMLElement {
 
-    constructor() {
+    constructor(controller) {
         super();
+        this._controller = controller
         this._jagModel = undefined;
         this._consumesMap = new Map();
         this._producesMap = new Map();

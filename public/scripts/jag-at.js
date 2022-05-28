@@ -41,17 +41,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
-	Controller.initializeSubscriptions();
+	let controller = new Controller();
 
 	const ide = new IDE();
 	const graph_service = new GraphService();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
-	const library = new Library();
-	const menu = new Menu();
-	const playground = new Playground();
-	const properties = new Properties();
+	const library = new Library(controller);
+	const menu = new Menu(controller);
+	const playground = new Playground(controller);
+	const properties = new Properties(controller);
 	body.appendChild(menu)
 	body.appendChild(library);
 	body.appendChild(playground);

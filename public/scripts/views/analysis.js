@@ -8,7 +8,6 @@
 'use strict';
 
 import AgentModel from '../models/agent.js';
-import Controller from "../controllers/controller.js";
 import DOMUtils from '../utils/dom.js';
 import ContextMenu from '../ui/context-menu.js';
 import ColumnHeader from './column-header-cell.js';
@@ -26,8 +25,6 @@ class AnalysisView extends HTMLElement {
 		this._idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		console.log("analysisModel.rootUrn = " + this._analysisModel.rootUrn)
-
 		this._initializeTree(this._analysisModel.rootNodeModel);
 		this.layout();
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
@@ -76,7 +73,6 @@ class AnalysisView extends HTMLElement {
 	getMappedJagCell(node) {
 		let jagCell = this._idToTableCellMap.get(node.id);
 		if(jagCell == undefined) {
-			console.log("node " + node.id + " not yet mapped.... mapping")
 			jagCell = new JagCell(node);
 			this._idToTableCellMap.set(node.id, jagCell);
 		}
@@ -84,43 +80,22 @@ class AnalysisView extends HTMLElement {
 	}
 
 	attach({targetNode, reference = null, layout = true, select = true } = {}) {
-		console.log("000 Inside the attach with node:")
-		console.log(targetNode)
-		targetNode.addEventListener('layout', this.layout.bind(this));
-		targetNode.addEventListener('attach', this._handleAttach.bind(this));
-		targetNode.addEventListener('detach', this._handleDetach.bind(this));
-		console.log("000 Attached events")
+
 		// Finds the element representing the table's bottom row (succession of youngest children)
 		if(reference == null) {
-			console.log("...")
 			reference = this.findTableBottomNode(targetNode);
-			console.log(reference)
 		}
-		console.log("000 Reference is:")
-		console.log(reference)
-
 		const $targetCell = this.getMappedJagCell(targetNode);
-		console.log("000 $targetCell is:")
-		console.log($targetCell)
 		const $referenceCell = this.getMappedJagCell(reference);
-		console.log("000 $referenceCell is:")
-		console.log($referenceCell)
-
 		this.insertBefore($targetCell, $referenceCell.nextSibling);
-		console.log("000 Inserted-------------------------->")
-		console.log($referenceCell.parent)
 		if(select) {
 			// Giving --> dom.js:32 addRange(): The given range isn't in document.
 			this.selectElementNameText($targetCell);
 		}
-		console.log("--")
 		if(layout) this.layout();
-		console.log("000 Done")
 	}
 
 	_handleAttach(e) {
-		console.log("_handleAttach -- parameter got renamed to targetNode");
-		console.log(e)
 		this.attach(e.detail);
 	}
 
@@ -135,11 +110,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	selectElementNameText(child) {
-		console.log("vvvvvvvvvvvvvvvvvvvvvvvvvv")
-		console.log(child)
-		console.log(child.nameElement)
 		DOMUtils.selectNodeText(child.nameElement);
-		console.log("^^^^^^^^^^^^^^^^^^^^^^^^^")
 	}
 
 	/**
@@ -180,6 +151,26 @@ class AnalysisView extends HTMLElement {
 		this.style.setProperty('--rows', rows);
 	}
 
+
+	update(node = this) {
+		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
+		node._height = 0;     // depth of tree  (skipping collapsed nodes)
+		console.log("? analysis xxx")
+		if(node.hasChildren() && !node._collapsed)
+		{
+			node._breadth = 0;
+			let max_height = 0;
+			this.children.forEach(child => {
+				child.update();
+				node._breadth += child.breadth;
+				max_height = Math.max(max_height, child.height);
+			})
+			node._height = max_height + 1;
+		}
+	}
+
+
+
 	_initializeContextMenus() {
 		this._assessment_menu = new ContextMenu();
 
@@ -207,15 +198,11 @@ class AnalysisView extends HTMLElement {
 	// Prefix traversal. okay
 	// For every node in tree - Attach it.  (Attach = put it in map)
 	_initializeTree(node) {
-		console.log("_initializeTree")
-		console.log(node);
 		this.attach({
 			targetNode: node,
 			layout: false
 		});
 		node.children.forEach((child_node) => {
-			console.log("b")
-			console.log(node);
 			this._initializeTree(child_node);
 		});
 	}
@@ -353,25 +340,6 @@ class AnalysisView extends HTMLElement {
 
 			if(recurse)
 				this._hideChildNodes(child);
-		}
-	}
-
-
-
-	update(node = this) {
-		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
-		node._height = 0;     // depth of tree  (skipping collapsed nodes)
-		cosole.log("? analysis xxx")
-		if(node.hasChildren() && !node._collapsed)
-		{
-			node._breadth = 0;
-			let max_height = 0;
-			this.children.forEach(child => {
-				child.update();
-				node._breadth += child.breadth;
-				max_height = Math.max(max_height, child.height);
-			})
-			node._height = max_height + 1;
 		}
 	}
 

@@ -13,9 +13,9 @@ import JAG from "../models/jag.js";
 
 customElements.define('analysis-library', class extends HTMLElement {
 
-	constructor() {
+	constructor(controller) {
 		super();
-
+		this._controller = controller
 		this._items = [];
 		this._defined = new Set();
 

@@ -26,8 +26,6 @@ class JAGView extends AnalysisCell {
 
 	constructor(nodeModel) {
 		super();
-		console.log("In jagcell constructor");
-		console.log(nodeModel)
 		this._nodeModel = nodeModel;
 
 		this._elements = {
@@ -81,7 +79,6 @@ class JAGView extends AnalysisCell {
 	_sync() {
 		this.urn = this.nodeModel.urn;                                   //   this = jagView
 		this.name = this.nodeModel.name;
-		console.log("syncing");
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());
 	}
 
@@ -281,9 +278,6 @@ class JAGView extends AnalysisCell {
 		const $suggestions = new AutoComplete();
 		const $fold = document.createElement('div');
 
-
-		console.log("jag-cell --- create-document")
-		console.log(this.nodeModel);
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());  // Am I a leaf?
 
 		$name.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to Controller for Jag updating.
