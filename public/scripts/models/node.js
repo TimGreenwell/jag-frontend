@@ -24,15 +24,16 @@ export default class Node extends EventTarget {
 
 		this._children = new Array();            // Links to actual children [objects]
 		this._parent = undefined;            // Link to parent object
-//		this._isValid = false;               // passes validation. //? even needed?
-
 
 		this._link_status = link_status;     // dont know what this is.
 		this._color = color;                 // Derived color
 		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
 
-		this._breadth = 1;                   // Analysis dependent condition  -- Should move to Analysis eventually
-		this._height = 0;                    // Analysis dependent condition  -- Should move to Analysis eventually
+		this._breadth = 1;                   // Analysis dependent condition
+		this._height = 0;
+		this._leafCount = 1;
+		this._treeDepth = 0;
+
 	}
 
 	get id() {
@@ -61,6 +62,10 @@ export default class Node extends EventTarget {
 			const child = new Node();
 			this._children.push(node);
 			node.parent = this;
+			this.incrementDepth(1);
+			if (this.numOfChildren>1){
+				this.incrementLeafCount();
+			}
 		} else {
 			alert("Node must first be assigned a valid URN")
 		}
@@ -72,7 +77,25 @@ export default class Node extends EventTarget {
 		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
 	}
 
+	get numOfChildren() {
+		return (this._children.length);
+	}
 
+    incrementDepth(depthCount){
+		if (depthCount > this._treeDepth) {
+			this._treeDepth = depthCount;
+			if (this.parent){
+				this.parent.incrementDepth(depthCount + 1);
+			}
+		}
+	}
+
+	incrementLeafCount() {
+		this._leafCount = this._leafCount + 1;
+		if (this.parent){
+			this.parent.incrementLeafCount();
+		}
+	}
 
 	get parent() {
 		return this._parent;
@@ -120,6 +143,15 @@ export default class Node extends EventTarget {
 		this._height = value;
 	}
 
+
+	get treeDepth() {
+		return this._treeDepth;
+	}
+
+	get leafCount() {
+		return this._leafCount;
+	}
+
 	get name() {
 		return (this.jag === undefined) ? Node.DEFAULT_JAG_NAME : this.jag.name;
 	}
@@ -141,6 +173,30 @@ export default class Node extends EventTarget {
 
 
 
+// //@TODO: This function is doing two things - assigning breadth(numOfLeaves) and height(treeDepth)
+	// Also being called on every node during each display/redisply.
+	// Suggest separate function for each functionality
+	// Suggest done once on entire tree after change instead of on each node during each redisplay.
+	// Or maybe better to adjust on init and after each structural change
+
+	update() {
+		this._breadth = 1;
+		this._height = 0;
+
+		if(this._children.length !== 0 && !this._collapsed)
+		{
+			this._breadth = 0;
+			let max_height = 0;
+
+			for(let child of this._children) {
+				child.update();
+				this._breadth += child.breadth;
+				max_height = Math.max(max_height, child.height);
+			}
+
+			this._height = max_height + 1;
+		}
+	}
 
 	toJSON() {
 		const json = {

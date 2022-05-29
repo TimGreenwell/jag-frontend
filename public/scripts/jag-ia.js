@@ -14,7 +14,7 @@ import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/team.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
-import Controller from "./controllers/controller.js";
+import ControllerIA from "./controllers/controllerIA.js";
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -34,28 +34,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
 
-	let controller = new Controller();
+	let controller = new ControllerIA();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
 	const iaTable = new IATable();
-	const library = new AnalysisLibrary();
+	const analysisLibrary = new AnalysisLibrary();
 	const editor = new TeamEditor();
-	body.appendChild(library);
+	body.appendChild(analysisLibrary);
 	body.appendChild(iaTable);
 	body.appendChild(editor);
-	controller.library = library;
+	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
 	controller.editor = editor;
 	controller.initializeHandlers();
+	await controller.initializeCache();
 
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'item-selected' -
-	library.addEventListener('item-selected', (e) => {
-		controller.displayAnalysis(e.detail.model.id);
-		editor.team = e.detail.model.team;
-	});
+
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'create-analysis' -
 	iaTable.addEventListener('create-analysis', (e) => {

@@ -19,7 +19,7 @@ import IaTable from "../ui/ia-table.js";
 import InputValidator from "../utils/validation.js";
 import JAG from "../models/jag.js";
 import JAGATValidation from "../utils/validation.js";
-import Controller from "../controllers/controller.js";
+import ControllerIA from "../controllers/controllerIA.js";
 
 // A Cell based off (model/Node)
 class JAGView extends AnalysisCell {
@@ -87,7 +87,7 @@ class JAGView extends AnalysisCell {
 		if (this.urn === this.nodeModel.urn)
 			return;
 		this._elements.suggestions.hide();
-		Controller.updateURN(this.urn, this.nodeModel.urn);  // orig, new
+		ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
 	}
 
 	_handleURNEdit(e) {
@@ -127,7 +127,7 @@ class JAGView extends AnalysisCell {
 			const newName = this._elements.name.innerText;
 			this.jag.name = newName;
 			if (JAGATValidation.isValidUrn(this._elements.urn.innerText)) {
-				await Controller.saveJag(this.jag);
+				await ControllerIA.saveJag(this.jag);
 				// Maybe I should update a node object and pass that up to the controller.  More uniform?
 			} else {
 				// if url is empty or valid then url becomes mutation of the name:
@@ -137,7 +137,7 @@ class JAGView extends AnalysisCell {
 				this._elements.urn.innerText = autoUrn;
 				// was commitNameChange(this)
 				this.jag.urn = autoUrn;
-				await Controller.saveJag(this.jag);
+				await ControllerIA.saveJag(this.jag);
 			}
 		}
 		this._elements.urn.innerText.focus();
@@ -154,10 +154,10 @@ class JAGView extends AnalysisCell {
 				this._elements.name.blur();
 
 				if(e.shiftKey)
-					this.nodeModel.addChild(new NodeModel());   // shift to controller (Controller.addNewNode(nodeModel))
+					this.nodeModel.addChild(new NodeModel());   // shift to controller (ControllerIA.addNewNode(nodeModel))
 				if(e.ctrlKey) {
 					if (this.nodeModel.parent !== undefined)
-						this.nodeModel.parent.addChild(new NodeModel());  // shift to controller (Controller.addNewNode(nodeModel.parent))
+						this.nodeModel.parent.addChild(new NodeModel());  // shift to controller (ControllerIA.addNewNode(nodeModel.parent))
 					else
 						console.log('Can\'t add siblings to root');
 				}
@@ -280,14 +280,14 @@ class JAGView extends AnalysisCell {
 
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());  // Am I a leaf?
 
-		$name.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to Controller for Jag updating.
+		$name.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to ControllerIA for Jag updating.
 		$name.addEventListener('keydown', this._handleNameEdit.bind(this)); // poorly named -- adds child or sibling depending on keypress
 		$name.addEventListener('input', this._handleNameInput.bind(this));  // no idea.. view thing.  needed?
 		$name.setAttribute('contenteditable', '');
 		$name.setAttribute('spellcheck', 'false');
 		$name.innerText = this.nodeModel.name;
 
-		$urn.addEventListener('blur', this._handleURNChange.bind(this));  // pass urn change to Controller.updateURN
+		$urn.addEventListener('blur', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
 		$urn.addEventListener('keydown', this._handleURNEdit.bind(this)); // handles the suggestions
 		$urn.addEventListener('input', this._handleURNInput.bind(this));  // filters suggestions
 		$urn.setAttribute('contenteditable', '');

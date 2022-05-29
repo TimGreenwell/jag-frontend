@@ -15,9 +15,8 @@ import JAG from "./models/jag.js";
 
 class Playground extends Popupable {
 
-    constructor(controller) {
+    constructor() {
         super();
-        this._controller = controller
         this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this._edges_container.setAttribute('version', '1.1');
         this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -678,8 +677,8 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
-                const newJAG = new JAG({urn: popurn, name: popname, description: popdescription});
-                await this._controller.createJagModel(newJAG);
+
+                this.dispatchEvent(new CustomEvent('local-jag-created', {detail: {urn: popurn, name: popname, description: popdescription}}));
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

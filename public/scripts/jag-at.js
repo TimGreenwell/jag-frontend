@@ -23,7 +23,7 @@ import GraphService from './services/graph-service.js';       // ?? - seems unus
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
-import Controller from "./controllers/controller.js";
+import ControllerAT from "./controllers/controllerAT.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -41,21 +41,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
-	let controller = new Controller();
+	let controller = new ControllerAT();
 
 	const ide = new IDE();
 	const graph_service = new GraphService();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
-	const library = new Library(controller);
-	const menu = new Menu(controller);
-	const playground = new Playground(controller);
-	const properties = new Properties(controller);
+	const library = new Library();
+	const menu = new Menu();
+	const playground = new Playground();
+	const properties = new Properties();
 	body.appendChild(menu)
 	body.appendChild(library);
 	body.appendChild(playground);
 	body.appendChild(properties);
+	controller.menu = menu;
+	controller.library = library;
+	controller.playground = playground;
+	controller.properties = properties;
+	controller.initializeHandlers();
+	await controller.initializeCache();
 
 	/**
 	 * EventListeners triggering action in different panel

@@ -27,20 +27,19 @@ class JAGControls extends HTMLElement {
 		this.appendChild(this._add_child);
 
 		// Only show the remove icon if not root.
-		if(!this._node.isRoot)
+		if(!this._node.isRoot())
 			this.appendChild(this._remove);
 	}
 
 	_initListeners() {
 		this._add_child.addEventListener('click', () => {
-			console.log("see the click");
 			this.dispatchEvent(new CustomEvent('local-node-addchild', {bubbles: true, composed: true, detail: {node: this._node}}));
-		//	this._node.newChild();
 		});
 
 		this._remove.addEventListener('click', () => {
-			controller.prune(this._node); // was delete ...
-			this._node.dispatchEvent(new CustomEvent('update'));
+			this.dispatchEvent(new CustomEvent('local-node-prunechild', {bubbles: true, composed: true, detail: {node: this._node}}));
+			//controller.prune(this._node); // was delete ...
+			//this._node.dispatchEvent(new CustomEvent('update'));
 		});
 	}
 

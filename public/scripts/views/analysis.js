@@ -126,11 +126,14 @@ class AnalysisView extends HTMLElement {
 
 	layout() {
 		// level_count changes width of level 1's box
-
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-		//this._analysisModel.rootNodeModel.update();  //mmmmm
+
+		//this._analysisModel.rootNodeModel.update();  //@TODO - either break this in two functions: getNumOfLeaves(breadth) & getTreeDepth(height)
+
+
+
 		// Resets the leaf set.
 		this._leafArray.length = 0;
 
@@ -138,36 +141,38 @@ class AnalysisView extends HTMLElement {
 		let rows = 0;
 
 		this._layoutJAG(this._analysisModel.rootNodeModel, AnalysisView.HEADER_DEPTH, 0);
-		height = this._analysisModel.rootNodeModel.height;
-		rows = this._analysisModel.rootNodeModel.breadth;
+
+
+		height = this._analysisModel.rootNodeModel.treeDepth;
+		rows = this._analysisModel.rootNodeModel.leafCount;
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
 
 
 		this._layoutAssessments(level_count, AnalysisView.HEADER_DEPTH);
-		this.style.setProperty('--jag-columns', level_count);
-		this.style.setProperty('--team-columns', agent_count);
-		this.style.setProperty('--rows', rows);
+		this.style.setProperty('--jag-columns', level_count.toString());
+		this.style.setProperty('--team-columns', agent_count.toString());
+		this.style.setProperty('--rows', rows.toString());
 	}
 
 
-	update(node = this) {
-		node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
-		node._height = 0;     // depth of tree  (skipping collapsed nodes)
-		console.log("? analysis xxx")
-		if(node.hasChildren() && !node._collapsed)
-		{
-			node._breadth = 0;
-			let max_height = 0;
-			this.children.forEach(child => {
-				child.update();
-				node._breadth += child.breadth;
-				max_height = Math.max(max_height, child.height);
-			})
-			node._height = max_height + 1;
-		}
-	}
+	// update(node = this) {
+	// 	node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
+	// 	node._height = 0;     // depth of tree  (skipping collapsed nodes)
+	// 	console.log("? analysis xxx")
+	// 	if(node.hasChildren() && !node._collapsed)
+	// 	{
+	// 		node._breadth = 0;
+	// 		let max_height = 0;
+	// 		this.children.forEach(child => {
+	// 			child.update();
+	// 			node._breadth += child.breadth;
+	// 			max_height = Math.max(max_height, child.height);
+	// 		})
+	// 		node._height = max_height + 1;
+	// 	}
+	// }
 
 
 
@@ -302,7 +307,8 @@ class AnalysisView extends HTMLElement {
 
 			for(let child of node._children) {
 				this._layoutJAG(child, local_row, col + 1);
-				local_row+= child.breadth;
+				//local_row+= child.breadth;
+				local_row+= child.leafCount;
 			}
 
 			$view.style.setProperty('--col-end', '1 span');
@@ -316,7 +322,8 @@ class AnalysisView extends HTMLElement {
 		// Position the item properly
 		$view.style.setProperty('--col-start', col + 1);
 		$view.style.setProperty('--row-start', row + 1);
-		$view.style.setProperty('--row-end', `${node.breadth} span`);
+	//	$view.style.setProperty('--row-end', `${node.breadth} span`);
+		$view.style.setProperty('--row-end', `${node.leafCount} span`);
 	}
 
 	_makeHeader(id, name, col, row, col_span, row_span) {

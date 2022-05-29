@@ -10,7 +10,7 @@
 import { UUIDv4 } from '../utils/uuid.js';
 import TeamModel from './team.js';
 import StorageService from '../services/storage-service.js';
-import Controller from "../controllers/controller.js";
+import ControllerIA from "../controllers/controllerIA.js";
 
 export default class AnalysisModel extends EventTarget {
 
@@ -30,7 +30,7 @@ export default class AnalysisModel extends EventTarget {
 		this._rootUrn = rootUrn;
 		this._team = team;
 
-		this._rootNodeModel = undefined;  //  created when analysis built by user. Controller.buildAnalysisJagNodes(rootUrn);
+		this._rootNodeModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisJagNodes(rootUrn);
 		                                  //  or when click in analysis library
 
 

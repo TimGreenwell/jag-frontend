@@ -1,5 +1,5 @@
 /**
- * @fileOverview Jag Controller.
+ * @fileOverview Jag ControllerIA.
  *
  * @author IHMC
  * @version 0.01
@@ -7,90 +7,105 @@
 
 'use strict';
 
-
 import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
-import JagModel from "../models/jag.js";
 import JAGATValidation from "../utils/validation.js";
 import NodeModel from "../models/node.js";
 import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
-import IATable from "../ui/ia-table.js";
-import iaTable from "../ui/ia-table.js";
 
-export default class Controller {
+export default class ControllerIA {
 
     constructor() {
 
-        this._jagModelList = new Set();
-        this._nodeModelList = new Set();
-        this.currentAnalysis = undefined;
-        //   StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
-        //   StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
-        this._iaTable = new IATable();
 
-        this._library = null;
-        this._iaTable = null;
-        this._editor = null;
+        this._analysisLibrary = null;           // HTMLElement
+        this._editor = null;                    // HTML Element
+        this._iaTable = null;                   // HTMLElement extending Popupable
+
+        this._jagModelMap = new Map();         // All JAGs - should be in sync with storage
+        this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
+        this._currentAnalysis = undefined;       // type: AnalysisModel
 
 
-
+           StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
+           StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
     }
 
 
-
-
-    get library() {
-        return this._library;
-    }
-    set library(value) {
-        this._library = value;
-    }
-    get iaTable() {
-        return this._iaTable;
-    }
-    set iaTable(value) {
-        this._iaTable = value;
-    }
-    get editor() {
-        return this._editor;
+    set analysisLibrary(value) {
+        this._analysisLibrary = value;
     }
     set editor(value) {
         this._editor = value;
     }
-
-
-    get jagModelList() {
-        return this._jagModelList;
+    set iaTable(value) {
+        this._iaTable = value;
     }
 
-    set jagModelList(jagModel) {
-        this._jagModelList = jagModel;
+    set library(value) {
+        this._library = value;
+    }
+    set menu(value) {
+        this._menu = value;
+    }
+    set playground(value) {
+        this._playground = value;
+    }
+    set properties(value) {
+        this._properties = value;
     }
 
+
+    get jagModelMap() {
+        return this._jagModelMap;
+    }
+    set jagModelMap(newJagModelMap) {
+        this._jagModelMap = newJagModelMap;
+    }
     addJagModel(jagModel) {
-        this._jagModelList.add(jagModel)
+        this._jagModelMap.set(jagModel.urn, jagModel)
     }
 
-    get nodeModelList() {
+    get nodeModelMap() {
         return this.nodeModelList;
     }
-
-    set nodeModelList(nodeModel) {
-        this.nodeModelList = nodeModel;
+    set nodeModelMap(newNodeModelMap) {
+        this.nodeModelList = newNodeModelList;
+    }
+    addNodeModel(newNodeModel) {
+        this._nodeModelMap.set(newNodeModel.id, newNodeModel)
     }
 
-    addNodeModel(nodeModel) {
-        this._nodeModelList.add(nodeModel)
+    get currentAnalysis() {
+        return this._currentAnalysis;
+    }
+    set currentAnalysis(newAnalysisModel) {
+        this._currentAnalysis = newAnalysisModel;
+    }
+
+    async initializeCache(){
+        let allJags = await StorageService.all('jag')
+        allJags.forEach(jag => this.addJagModel(jag))
+        let allNodes = await StorageService.all('node')
+        allNodes.forEach(node => this.addNodeModel(node))
     }
 
     initializeHandlers(){
         this._iaTable.addEventListener('local-analysis-created', this.localAnalysisCreatedHandler.bind(this));  // popup create
-
-      //  document.addEventListener('local-node-addchild', this.localNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)
+        this._iaTable.addEventListener('local-node-addchild', this.localNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)
+        this._iaTable.addEventListener('local-node-prunechild', this.localNodePruneChildHandler.bind(this));
+        this._analysisLibrary.addEventListener('library-analysis-selected', this.libraryAnalysisSelected.bind(this));
 
     }
+
+    async libraryAnalysisSelected(event) {
+        this._currentAnalysis = event.detail.model;
+        await this.displayAnalysis(event.detail.model.id);
+        this._editor.team = event.detail.model.team;
+    }
+
     async localAnalysisCreatedHandler(event){
         let eventDetail = event.detail;
         let name = eventDetail.name;
@@ -99,26 +114,62 @@ export default class Controller {
         await this.displayAnalysis(id)
     }
     async localNodeAddChildHandler(event){
-        console.log("in the handler")
-
         let eventDetail = event.detail;
-        let id = eventDetail.id;
         let node = eventDetail.node;
-        console.log(node);
-     //   let node = this._iaTable.analysisModel.findNode(id)
         if (node.canHaveChildren) {
-            //let analysisModel = this._iaTable.analysisModel;
             const child = new NodeModel();
             child.parent = node;
             node.addChild(child)
-         //   await this.displayAnalysis(this.currentAnalysis.id)
             this._iaTable.displayAnalysis();
         } else {
             alert("Node must first be assigned a valid URN")
         }
-        // this._iaTable.analysisModel = analysisModel;
-        // this._iaTable.displayAnalysis();
     }
+
+    // A Prune (or any delete) is a potentially significant change.
+    // Going to just update parent.  Actually prune node?
+    // After a quick check we are not pruning the head.
+    async localNodePruneChildHandler(event) {
+        let eventDetail = event.detail;
+        let node = eventDetail.node;
+        let parentJag = eventDetail.node.parent.jag
+        let childJag = eventDetail.node.jag
+
+        let index = 0;
+        let found = false;
+        console.log("Parent Jag's children was: ")
+        console.log(parentJag.children)
+        while ((index < parentJag.children.length) && (!found)) {
+                        if (parentJag.children[index].urn === childJag.urn) {
+                            parentJag.children.splice(index, 1);
+                            found = true;
+                        }
+                    }
+        console.log("Parent Jag's children now: ")
+        console.log(parentJag.children)
+        await StorageService.update(parentJag, "jag")
+    }
+     /// OBSOLETE but might be used later
+    ///  The surgical method of deleting a node and all its children
+    // Does not scour for other occurrences of other identical parent jags
+    async prune(node) {
+        this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified
+
+        if (node.isRoot()) {
+            await this.deleteLeafNode(node);
+        }
+        // 2 Dispatchers here - only listener in views/Analysis
+        this.dispatchEvent(new CustomEvent('detach', {
+            detail: {
+                target: this
+            }
+        }));
+        // 6 dispatchers here - Only Listener in views/Jag
+        this.dispatchEvent(new CustomEvent('sync'));
+    }
+
+
+
 
     // addChild(node){                          // from nodemodel --originall called when the +sign is clicked.
     //     if (this.canHaveChildren) {
@@ -139,11 +190,7 @@ export default class Controller {
      */
 
     async createJagModel(newJagModel) {
-        if (newJagModel.isValid()) {
-            await StorageService.create(newJagModel, 'jag');
-        } else {
-            window.alert("Invalid URN");
-        }
+        console.log("I got moved to AT --- do I need to be in a ControllerCommon? ->              extends controller?")
     }
 
 // This is an identical copy (hopefully) of the URN updater found in views/Properties
@@ -205,8 +252,21 @@ export default class Controller {
      * @param updatedJagUrn
      */
 
-    handleJagStorageCreated(updatedJagModel, updatedJagUrn) {
-        //  Update Jag Model has arrived.
+
+    handleJagStorageCreated(createdJagModel, updatedJagUrn) {
+
+    }
+
+    async handleJagStorageCreated(updatedJagModel, updatedJagUrn) {
+        this.addJagModel(updatedJagModel);
+        // thought below is to surgically add it to the node tree - if its in the currentAnalysis
+        // until then, just drawing the whole thing.
+        if (this._currentAnalysis) {
+            // this._nodeModelList = this.buildAnalysisJagNodes(this._currentAnalysis.rootUrn)
+        }
+
+        await this.displayAnalysis(this._currentAnalysis.id);
+
     }
 
 // What generates a new node:
@@ -255,26 +315,52 @@ export default class Controller {
     // two sources: 1) user just created a analysis with popup
     //              2) user clicked analysis from analysis-library
 
-    handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-        // update the jag listing
-        if (this.currentAnalysis) {
-            this._jagModelList.forEach(jagModel => {
-                if (jagModel.urn == updatedJagUrn) {
-                    jagModel = updatedJagModel
-                }
-            })
-            // get refreshed nodeModelList
-            this._nodeModelList = this.buildAnalysisJagNodes(this.currentAnalysis.rootUrn);
+    async handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+        // 1) update the jag listing
+        // 2) if urn is in current Analysis.nodeModel tree then a) redraw or b) surjury
+        let origJagModel = this.jagModelMap.get(updatedJagUrn);  // Get original data from cache
+        this.addJagModel(updatedJagModel);                       // Update cache to current
+        let newKids = updatedJagModel.children.map(entry => {
+            return entry.urn
+        })
+        let oldKids = origJagModel.children.map(entry => {
+            return entry.urn
+        });
+        let kidsToAdd = newKids.filter(newKid => !oldKids.find(oldKid => newKid === oldKid))
+        if (kidsToAdd.length != 0) {
+            console.log("Children were added")
         }
+        let kidsToRemove = oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
+        if (kidsToRemove.length != 0) {
+            console.log("Children were deleted")
+        }
+        if  ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
+            console.log("No structure change")
+        }
+
+        await this.displayAnalysis(this._currentAnalysis.id);
+
+
     }
 
-    handleJagStorageCreated(createdJagModel, updatedJagUrn) {
-        if (this.currentAnalysis) {
-            this._jagModelList.add(createdJagModel);
 
-            this._nodeModelList = this.buildAnalysisJagNodes(this.currentAnalysis.rootUrn)
-        }
-    }
+    //  The surgical method for handling new Jag Updates
+//     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+//         //  Update Jag Model has arrived.
+//         this._nodeModelList.forEach(node => {
+//             if (updatedJagModel.urn == node.jag.urn) {
+//                 node.jag = updatedJagModel;
+
+//             }
+//             if (updatedJagModel.children.contains(node.id)){
+//                 node.parent = updatedJagModel;
+//                 node.isRoot = false;
+//             }
+//         })
+//     }
+
+
+
 
     // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
     async buildAnalysisJagNodes(newRootJagUrn) {
@@ -322,39 +408,7 @@ export default class Controller {
         this._iaTable.displayAnalysis();
     }
 
-    // transported from IA TABLE - I think it can die.  Have controller subscribe to JAG change instead.
-    // Remember - JAG change only updates the data - and only the views when it matters
-    async handleJagStorageUpdated2(newJag, newJagUrn) {
 
-        //   if (this.analysisModel) {
-        let tempNewAnalysisModel = this._analysisModel;    // @TODO Change this when we seperate the analysis setter.
-        // IMPORTANT - currently, any JAGModel storage update triggers a rebuild of the root and all nodes.
-        // IMPORTANT - This replaces all the nodes meaning earlier references are void.
-        // IMPORTANT - All stored Analysis have root node pointers and are now lost.
-        // SOLUTION - Scan through and update root references or have Analysis use JAGModel root (cleaner)
-        //       await StorageService.clear('node');
-        let rootUrn = tempNewAnalysisModel.root.jag.urn;
-        const rootJagModel = await StorageService.get(rootUrn, 'jag');
-        const rootNodeModel = new NodeModel({jag: rootJagModel});
-        tempNewAnalysisModel.root = rootNodeModel;
-
-        //       await tempNewAnalysisModel.buildAnalysisJagNodes(tempNewAnalysisModel.root);
-
-        // // SOLUTION2 - scan through all nodes and update those with a matching JAGModel URN.
-        // // SOLUTION2 - @TODO children added/deleted, (or self deleted)
-        // let allStoredNodes = await StorageService.all('node');
-        // console.log(allStoredNodes)
-        // allStoredNodes.forEach((jagCell) => {
-        //     if (jagCell.jag.urn == newJagUrn) {
-        //         jagCell.jag = newJag;
-        //         // Make sure any new children are linked somehow
-        //         // Make sure any deleted children are removed somehow
-        //     }
-        // })
-
-        this.analysisModel = tempNewAnalysisModel;
-        //  }
-    }
 
 
     // // Put in a URN - Get a NodeModel Tree back. - recursion method... needs modification for URN statt node.
@@ -373,29 +427,7 @@ export default class Controller {
     // }
 
 
-//  The surgical method for handling new Jag Updates
-//     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-//         //  Update Jag Model has arrived.
-//         this._nodeModelList.forEach(node => {
-//             // if updated Jag is already represented by current node(s)
-//             // find each node that matches -->
-//             // --> add updated Jag to node's jag placeholder
-//             // --> add or remove node children to match updated Jag
-//             if (updatedJagModel.urn == node.jag.urn) {
-//                 node.jag = updatedJagModel;
-//                 let jagKids = updatedJagModel.children;
-//                 let nodeKids = node.children;
-//                 let kidsToAdd = jagKids.filter(jagKid => !nodeKids.find(nodeKid => jagKid["id"] === nodeKid["id"]))
-//                 console.log(kidsToAdd)
-//                 let kidsToRemove = nodeKids.filter(nodeKid => !jagKids.find(jagKid => nodeKid["id"] === jagKid["id"]))
-//                 console.log(kidsToRemove)
-//             }
-//             if (updatedJagModel.children.contains(node.id)){
-//                 node.parent = updatedJagModel;
-//                 node.isRoot = false;
-//             }
-//         })
-//     }
+
 
 
     //     static async createNodeModel(newNodeModel) {
@@ -414,7 +446,7 @@ export default class Controller {
 
 
     // async deleteLeafNode
-    static async deleteLeafNode(leaf) {
+    async deleteLeafNode(leaf) {
         if (!leaf.isRootNode()) {
             const index = leaf.parent.children.indexOf(leaf);
             leaf.parent.children.splice(index, 1);
@@ -429,7 +461,7 @@ export default class Controller {
         }
     }
 
-    static deleteAllChildren(childList) {
+    deleteAllChildren(childList) {
         childList.forEach(async child => {
             this.deleteAllChildren([...child.children]);
             // 2 Dispatchers here - only listener in views/Analysis
@@ -449,21 +481,6 @@ export default class Controller {
 
     }
 
-    static async prune(node = this) {
-        this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified
-
-        if (node.isRootNode()) {
-            await this.deleteLeafNode(node);
-        }
-        // 2 Dispatchers here - only listener in views/Analysis
-        this.dispatchEvent(new CustomEvent('detach', {
-            detail: {
-                target: this
-            }
-        }));
-        // 6 dispatchers here - Only Listener in views/Jag
-        this.dispatchEvent(new CustomEvent('sync'));
-    }
 
 
     async _createChildren() {

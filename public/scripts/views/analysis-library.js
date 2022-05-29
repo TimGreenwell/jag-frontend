@@ -119,7 +119,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 		});
 
 		li.addEventListener('click', (event) => {
-			this.dispatchEvent(new CustomEvent('item-selected', {
+			this.dispatchEvent(new CustomEvent('library-analysis-selected', {
 				detail: {
 					model: model
 				}
