@@ -299,7 +299,8 @@ class JAGView extends AnalysisCell {
 		else
 			this.classList.add('unsaved');
 
-		$fold.addEventListener('click', () => this.nodeModel.toggleCollapse());
+		$fold.addEventListener('click', () =>
+			this.dispatchEvent(new CustomEvent('local-collapse-toggled', {bubbles: true, composed: true, detail: {node: this._nodeModel}})))
 		$fold.classList.add('fold-button');
 
 		$header.appendChild($name);

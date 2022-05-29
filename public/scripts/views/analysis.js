@@ -30,6 +30,15 @@ class AnalysisView extends HTMLElement {
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
 	}
 
+
+	get analysisModel() {
+		return this._analysisModel;
+	}
+
+	set analysisModel(value) {
+		this._analysisModel = value;
+	}
+
 	initialize() {
 		// Appends this view to the specified ia-table
 

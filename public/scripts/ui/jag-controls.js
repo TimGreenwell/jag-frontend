@@ -38,8 +38,6 @@ class JAGControls extends HTMLElement {
 
 		this._remove.addEventListener('click', () => {
 			this.dispatchEvent(new CustomEvent('local-node-prunechild', {bubbles: true, composed: true, detail: {node: this._node}}));
-			//controller.prune(this._node); // was delete ...
-			//this._node.dispatchEvent(new CustomEvent('update'));
 		});
 	}
 

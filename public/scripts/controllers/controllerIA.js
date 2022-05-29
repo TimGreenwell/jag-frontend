@@ -97,6 +97,22 @@ export default class ControllerIA {
         this._iaTable.addEventListener('local-node-addchild', this.localNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)
         this._iaTable.addEventListener('local-node-prunechild', this.localNodePruneChildHandler.bind(this));
         this._analysisLibrary.addEventListener('library-analysis-selected', this.libraryAnalysisSelected.bind(this));
+        this._iaTable.addEventListener('local-collapse-toggled', this.localCollapseToggledHandler.bind(this));
+
+
+    }
+
+    localCollapseToggledHandler(event) {
+        console.log("see the toggle");
+
+        let eventDetail = event.detail;
+        console.log(event)
+        let node = eventDetail.node;
+        console.log(node)
+        node.toggleCollapse();             //  -- think this is going to be moved to an Analysis array if we want it saved.
+        // just initialize tree would be nice - but think it needs to start from scratch.
+        // earlier version of this just call a 'layout'event - whats that?
+        this._iaTable.analysisView.layout();
 
     }
 
@@ -130,23 +146,33 @@ export default class ControllerIA {
     // Going to just update parent.  Actually prune node?
     // After a quick check we are not pruning the head.
     async localNodePruneChildHandler(event) {
+        console.log("(((((((((((((((((((((((((((((((((((((()))))))))))))))))))))))))))))))))))))))")
         let eventDetail = event.detail;
         let node = eventDetail.node;
         let parentJag = eventDetail.node.parent.jag
         let childJag = eventDetail.node.jag
+        let parentJagChildren = parentJag.children;
 
         let index = 0;
         let found = false;
         console.log("Parent Jag's children was: ")
-        console.log(parentJag.children)
-        while ((index < parentJag.children.length) && (!found)) {
-                        if (parentJag.children[index].urn === childJag.urn) {
-                            parentJag.children.splice(index, 1);
+        console.log(parentJagChildren)
+        while ((index < parentJagChildren.length) && (!found)) {
+            console.log("inwhile - index = " + index)
+            console.log(parentJagChildren[index].urn)
+            console.log(childJag.urn)
+                        if (parentJagChildren[index].urn === childJag.urn) {
+                            console.log(index)
+                            console.log(parentJagChildren.splice(index,1));
                             found = true;
                         }
+                        else{++index}
                     }
+        console.log(parentJagChildren)
+        parentJag.children = parentJagChildren;
         console.log("Parent Jag's children now: ")
         console.log(parentJag.children)
+
         await StorageService.update(parentJag, "jag")
     }
      /// OBSOLETE but might be used later
@@ -264,8 +290,8 @@ export default class ControllerIA {
         if (this._currentAnalysis) {
             // this._nodeModelList = this.buildAnalysisJagNodes(this._currentAnalysis.rootUrn)
         }
-
-        await this.displayAnalysis(this._currentAnalysis.id);
+if (this._currentAnalysis) {
+        await this.displayAnalysis(this._currentAnalysis.id);}
 
     }
 
@@ -338,7 +364,9 @@ export default class ControllerIA {
             console.log("No structure change")
         }
 
-        await this.displayAnalysis(this._currentAnalysis.id);
+        if (this._currentAnalysis) {
+            await this.displayAnalysis(this._currentAnalysis.id);
+        }
 
 
     }
