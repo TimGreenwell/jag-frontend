@@ -8,7 +8,6 @@
 
 import JAG from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
-//import UndefinedJAG from '../models/undefined.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
@@ -21,12 +20,11 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._initListeners();
 
 
-		StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
-		StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
-		StorageService.subscribe("jag-storage-replaced", this.replaceItem.bind(this));
+		// StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
+		// StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
+		// StorageService.subscribe("jag-storage-replaced", this.replaceItem.bind(this));
 
 		this.clearLibraryList();
-		this.loadFromDB();
 	};
 
 	clearLibraryList() {
@@ -76,7 +74,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	//           <p> 'description'
 	//         </li>
 
-	addItem(newJAGModel, idx = -1) {
+	addItem(newJAGModel) {
 		if (!this._existingURNS.has(newJAGModel.urn)) {
 			if (newJAGModel instanceof JAG) {
 				const urn = newJAGModel.urn || '';
@@ -162,9 +160,8 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	async loadFromDB() {
-		const jags = await StorageService.all('jag');
-		jags.forEach(jag => this.addItem(jag));
+	addListItems(jagModelArray) {
+		jagModelArray.forEach(jagModel => this.addItem(jagModel));
 	}
 
 	_initUI() {
@@ -199,6 +196,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	// why is this here -- why not a master list of JAG models with functions like this so
 	// everyone can use.
+	// UPDATE - they now want the graph to be permanent.  This means a tree of nodes which will become permanent.
 
 	async _getChildModels(parentJAGModel, childrenJAGMap) {
 		if(!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
@@ -247,24 +245,3 @@ export default customElements.get('jag-library');
 //      ( Line items added later by addItems )
 //   </ol>
 // </jag-library>
-
-////////////////////////////////////////////////
-
-// async _createItem(e) {                       // ??
-// 	this.addItem(e.detail.model);               //  part of the 'copy' listener.  has no dispatcher - looks obs
-// }
-
-// Not sure of the reason for this.
-// Callback for listener on 'define'
-// Listener attached during (addItem) when incoming JAG model is typeof undefinedJAG
-// async _defineItem(e) {
-// 	for (let idx in this._libraryList) {
-// 		if (this._libraryList[idx].model.urn == e.detail.urn) {
-// 			this._libraryList.splice(idx, 1);
-// 			break;
-// 		}
-// 	}
-// 	const model = e.detail.model;
-// 	this.addItem(model);
-// 	await this.refreshItem(model);
-// }

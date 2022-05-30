@@ -14,12 +14,14 @@
  *
  */
 
-import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes
-import IDE from './ide.js';                                   // ?? - seems unused currently
+import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
 import Library from './views/library.js';                     // AT - Left view of available JAG Entities
 import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
 import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
+
+import IDE from './ide.js';                                   // ?? - seems unused currently
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
+
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
@@ -43,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.senderId = 'jag-at';
 	let controller = new ControllerAT();
 
+	// @TODO - I need to better understand these two
 	const ide = new IDE();
 	const graph_service = new GraphService();
 
@@ -60,47 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 	controller.library = library;
 	controller.playground = playground;
 	controller.properties = properties;
-	controller.initializeHandlers();
-	await controller.initializeCache();
+	await controller.initialize();
 
-	/**
-	 * EventListeners triggering action in different panel
-	 * Event: 'item-selected' (menu-item-selected) or (library-item-selected)
-	 *        menu:'clear'      detail": { "action": "clear" }
-	 *        library:<JAGentity>  detail: {model: model, model_set: all_models, expanded: event.shiftKey}
-	 * @TODO Add more menu events (New Node, Clear Workspace, Delete Node, ...)
-	 * @TODO Move library selection to its own unique event (after 'New' to moved to menu)
-	 */
-
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'clear-playground' - menu item selected to clear nodes from playground
-	menu.addEventListener('clear-playground', (e) => {
-		playground.clearPlayground();
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
-	// @TODO
-	menu.addEventListener('add-new-node', (e) => {
-		playground._handleNewNodePopup(e);
-	});
-    //////////////////////////////////////////////////////////////////////
-	// Event: 'delete item' - when menu or library adds a (new or existing) node to playground
-	// @TODO
-	menu.addEventListener('delete-selected', (e) => {
-		playground.handleDeleteSelected(e);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'item-selected' from library (defined-node-added)
-	// @TODO Playgrounds handlers can be combined or merged.
-	library.addEventListener('library-lineItem-selected', (e) => {
-		playground.handleLibraryListItemSelected(e.detail);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'playground-nodes-selected' (playground-node-selected)
-	playground.addEventListener('playground-nodes-selected', (e) => {
-		properties.handleSelectionUpdate(e.detail);
-		//ide.handleSelectionUpdate(e.detail);
-	});
+	// The below really belong in the AT Controller - but I need to understand them better
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)

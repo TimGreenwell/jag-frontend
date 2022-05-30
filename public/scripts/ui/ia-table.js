@@ -195,12 +195,12 @@ class IATable extends Popupable {
 
     _handleAnalysisNameChange(event) {
         this._analysisModel.name = event.target.value;
-        StorageService.update(this._analysisModel, 'analysis');
+        this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
     _handleAnalysisDescriptionChange(event) {
         this._analysisModel.description = event.target.value;
-        StorageService.update(this._analysisModel, 'analysis');
+        this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
     _handleExportAnalysis() {
@@ -258,7 +258,7 @@ class IATable extends Popupable {
                 if (await StorageService.has(jag.urn, 'jag')) {
                     this.popup({
                         content: IATable.NOTICE_OVERWRITE_JAG,
-                        trackEl: this._domElements.import,
+                        trackEl: this._domElements.import,                  // To separate: put popups in iatable function.  bring rest up.
                         inputs: {jag: jag},
                         highlights: [this._domElements.import]
                     });

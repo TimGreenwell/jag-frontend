@@ -56,11 +56,11 @@ class Playground extends Popupable {
         this._boundDragView = this.dragView.bind(this);
         this._boundStopDragView = this.stopDragView.bind(this);
 
-        StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
-        StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
-        StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));
-        StorageService.subscribe("jag-storage-cloned", this._addJagNodeTree.bind(this));
-        StorageService.subscribe("jag-storage-replaced", this.replaceJagNode.bind(this));
+        // StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
+        // StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
+        // StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));
+        // StorageService.subscribe("jag-storage-cloned", this._addJagNodeTree.bind(this));
+        // StorageService.subscribe("jag-storage-replaced", this.replaceJagNode.bind(this));
         this.initGlobalEvents();
     }
 
@@ -89,9 +89,9 @@ class Playground extends Popupable {
 		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
 
-	handleDeleteSelected() {
-		console.log("Find this in Playground -- someting wrong enough to look now");
-		console.log(this._selectedNodeSet);
+	handleDeleteSelected() {  // you get this on the menu click 'delete node'    @TODO
+        console.log("When implemented.. these nodes will be pruned:")
+		console.log(this._selectedNodeSet)
 	}
 
 	clearPlayground(jagNodeSet = this._activeNodeSet) {                 // clearNodeSet
@@ -587,7 +587,8 @@ class Playground extends Popupable {
             const parentJag = this._created_edge._node_origin.model;
             const childJag = this._created_edge._node_end.model;
             // parentJag.addChild(childJag);
-            await StorageService.update(parentJag, 'jag');
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: parentJag}}));
+           // await StorageService.update(parentJag, 'jag');
 
         } else {
             this.cancelEdge();
@@ -615,7 +616,7 @@ class Playground extends Popupable {
         this.popup({
             content: Playground.NOTICE_CREATE_JAG,
             trackEl: this,
-            inputs: {event: e},
+            inputs: {},//event: e},
             highlights: [initiator]
         });
     }

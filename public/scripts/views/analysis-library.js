@@ -26,7 +26,6 @@ customElements.define('analysis-library', class extends HTMLElement {
 		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
 
 		this.clearItems();
-		this.loadFromDB();
 	}
 
 	clearItems() {
@@ -133,9 +132,8 @@ customElements.define('analysis-library', class extends HTMLElement {
 		model.addEventListener('copy', this._createItem.bind(this));
 	}
 
-	async loadFromDB() {
-		const analyses = await StorageService.all('analysis');
-		analyses.forEach(analysis => this.addListItem(analysis));
+	addListItems(analysisModelArray) {
+		analysisModelArray.forEach(analysisModel => this.addListItem(analysisModel));
 	}
 
 	_initUI() {

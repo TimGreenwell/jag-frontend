@@ -8,11 +8,7 @@
  */
 
 import JAG from '../models/jag.js';
-import StorageService from '../services/storage-service.js';
-//import UndefinedJAG from '../models/undefined.js';
 import FormUtils from '../utils/forms.js';
-import ControllerIA from '../controllers/controllerIA.js';
-
 
 customElements.define('jag-properties', class extends HTMLElement {
 
@@ -23,7 +19,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._producesMap = new Map();
         this._initUI();
         this._initHandlers();
-        StorageService.subscribe("jag-storage-updated", this.handleStorageUpdate.bind(this)); // only case is when selected playground item is updated by the jag-ia updates.
+      //  StorageService.subscribe("jag-storage-updated", this.handleStorageUpdate.bind(this)); // only case is when selected playground item is updated by the jag-ia updates.
+
 
         this._boundUpdate = function (e) {
             const property = e.detail.property;
@@ -46,8 +43,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         }.bind(this);
     }
 
-    handleStorageUpdate(newJagModel) {
-        if (newJagModel.urn == this._urnInput) {
+    handleStorageUpdate(newJagModel, newJagUrn) {
+        if (newJagUrn == this._urnInput) {
             this._jagModel = newJagModel;
             this._updateProperties();
         }
@@ -93,21 +90,13 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._descInput.value = this._jagModel.description;
         this._name_ctxInput.value = this._node.getContextualName();
         this._desc_ctxInput.value = this._node.getContextualDescription();
-
-        // if (this._jagModel instanceof UndefinedJAG) {
-        //     this._enableProperties(false);
-        // } else {
             this._enableProperties(true);
             this._updateIO();
             this._updateAnnotations();
-        // }
-
         for (const input of this.querySelectorAll("input")) {
             input.title = input.value;
             input.onchange = () => input.title = input.value;
         }
-
-
     }
 
     _addInput(e) {
@@ -453,7 +442,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                         }
                     }
 
-                    toggleSelectValues(input_select_el, valid_input_values_for_output);
+                    FormUtils.toggleSelectValues(input_select_el, valid_input_values_for_output);
                 }
 
                 this._previous_value = output_option.value;
@@ -468,7 +457,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
                     // TODO: Check if types match selected output type (probably as a .filter before .map)
                     let valid_for_input = new Set(this._jagModel.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
-                    toggleSelectValues(output_select_el, valid_for_input);
+                    FormUtils.toggleSelectValues(output_select_el, valid_for_input);
                 }
             }.bind(this));
         }
@@ -634,12 +623,9 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-    async deleteJagModel(deadJagModel) {
+    deleteJagModel(deadJagModel) {
+        this.dispatchEvent(new CustomEvent('local-jag-deleted', {bubbles: true, composed: true, detail: {node: deadJagModel.urn}}));
         this._jagModel = undefined;
-        await StorageService.get(deadJagModel.urn, 'jag');
-
-
-        await StorageService.delete(deadJagModel.urn, 'jag');
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
     }
@@ -651,7 +637,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Update model references.
         this._node.model = newJagModel; //?
         this._jagModel = newJagModel;
-        await StorageService.create(newJagModel, 'jag');
+        this.dispatchEvent(new CustomEvent('local-jag-created', {bubbles: true, composed: true, detail: {node: newJagModel}}));
+        //await StorageService.create(newJagModel, 'jag');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 
@@ -820,7 +807,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._nameInput.addEventListener('blur', async (e) => {  // get an error if the blur goes to a playground click on empty space.
             if (this._jagModel) {
                 this._jagModel.name = this._nameInput.value;
-                await StorageService.update(this._jagModel, 'jag');
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
             }
         });
 
@@ -859,15 +846,20 @@ customElements.define('jag-properties', class extends HTMLElement {
 
         this._urnInput.addEventListener('focusout', async (e) => {
             if (this._jagModel.urn != this._urnInput.value) {
-                      await ControllerIA.updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
+                this.dispatchEvent(new CustomEvent('local-urn-renamed', {detail: {newUrn: this._jagModel.urn, originalUrn:  this._urnInput.value }}));
+                    //  await ControllerIA.updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
             }
         })
 
         this._descInput.addEventListener('blur', async (e) => {
+            console.log("1")
             if (this._jagModel) {
+                console.log("2")
                 if (this._jagModel.description != this._descInput.value) {
+                    console.log("3")
                     this._jagModel.description = this._descInput.value;
-                    await StorageService.update(this._jagModel, 'jag');
+                    this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
+                    console.log("4")
                 }
             }
         });
@@ -892,28 +884,28 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._name_ctxInput.addEventListener('keyup', async () => {
             if (this._jagModel) {
                 this._node.setContextualName(this._name_ctxInput.value);
-                await StorageService.update(this._jagModel, 'jag');
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
             }
         });
 
         this._desc_ctxInput.addEventListener('keyup', async () => {
             if (this._jagModel) {
                 this._node.setContextualDescription(this._desc_ctxInput.value);
-                await StorageService.update(this._jagModel, 'jag');
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
             }
         });
 
         this._executionSelect.addEventListener('change', async e => {
             if (this._jagModel) {
                 this._jagModel.execution = this._executionSelect.value;
-                await StorageService.update(this._jagModel, 'jag');
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
             }
         });
 
         this._operatorSelect.addEventListener('change', async e => {
             if (this._jagModel) {
                 this._jagModel.operator = this._operatorSelect.value;
-                await StorageService.update(this._jagModel, 'jag');
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
             }
         });
 

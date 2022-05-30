@@ -14,19 +14,20 @@ import NodeModel from "../models/node.js";
 import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
+// should need JagModel once I can create Jag by giving valid URN
 
 export default class ControllerIA {
 
     constructor() {
-
-
         this._analysisLibrary = null;           // HTMLElement
         this._editor = null;                    // HTML Element
         this._iaTable = null;                   // HTMLElement extending Popupable
 
         this._jagModelMap = new Map();         // All JAGs - should be in sync with storage
         this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
+        this._analysisModelMap = new Map();    // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
+
 
 
            StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
@@ -43,20 +44,6 @@ export default class ControllerIA {
     set iaTable(value) {
         this._iaTable = value;
     }
-
-    set library(value) {
-        this._library = value;
-    }
-    set menu(value) {
-        this._menu = value;
-    }
-    set playground(value) {
-        this._playground = value;
-    }
-    set properties(value) {
-        this._properties = value;
-    }
-
 
     get jagModelMap() {
         return this._jagModelMap;
@@ -78,6 +65,16 @@ export default class ControllerIA {
         this._nodeModelMap.set(newNodeModel.id, newNodeModel)
     }
 
+    get analysisModelMap() {
+        return this._analysisModelMap;
+    }
+    set analysisModelMap(value) {
+        this._analysisModelMap = value;
+    }
+    addAnalysisModel(newAnalysisModel) {
+        this._analysisModelMap.set(newAnalysisModel.id, newAnalysisModel)
+    }
+
     get currentAnalysis() {
         return this._currentAnalysis;
     }
@@ -85,21 +82,44 @@ export default class ControllerIA {
         this._currentAnalysis = newAnalysisModel;
     }
 
+
+    async initialize() {
+        await this.initializeCache();
+        this.initializePanels();
+        this.initializeHandlers();
+    }
+
     async initializeCache(){
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag))
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => this.addNodeModel(node))
+        let allAnalyses = await StorageService.all('analysis')
+        allAnalyses.forEach(analysis => this.addNodeModel(analysis))
+    }
+
+    initializePanels() {
+        this._analysisLibrary.addListItems([...this._analysisModelMap.values()])
     }
 
     initializeHandlers(){
         this._iaTable.addEventListener('local-analysis-created', this.localAnalysisCreatedHandler.bind(this));  // popup create
+        this._iaTable.addEventListener('local-analysis-updated', this.localAnalysisUpdatedHandler.bind(this));  // jag structure updates
         this._iaTable.addEventListener('local-node-addchild', this.localNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)
         this._iaTable.addEventListener('local-node-prunechild', this.localNodePruneChildHandler.bind(this));
-        this._analysisLibrary.addEventListener('library-analysis-selected', this.libraryAnalysisSelected.bind(this));
         this._iaTable.addEventListener('local-collapse-toggled', this.localCollapseToggledHandler.bind(this));
 
+        this._analysisLibrary.addEventListener('library-analysis-selected', this.libraryAnalysisSelected.bind(this));
 
+
+    }
+
+    async localAnalysisUpdatedHandler(event) {
+        console.log("-- updating --")
+        const eventDetail = event.detail;
+        const updatedAnalysisModel = eventDetail.node;
+        console.log(updatedAnalysisModel)
+        await StorageService.update(updatedAnalysisModel, 'analysis');
     }
 
     localCollapseToggledHandler(event) {
