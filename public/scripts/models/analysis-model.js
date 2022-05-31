@@ -101,10 +101,10 @@ export default class AnalysisModel extends EventTarget {
 	static async fromJSON(json) {
 		const team_id = json.team;
 		let teamNode = await StorageService.get(team_id, 'team');
-		if (teamNode == undefined) {
-			teamNode = new TeamModel();
-			await StorageService.create(teamNode, 'team');
-		}
+		// if (teamNode == undefined) {
+		// 	teamNode = new TeamModel();
+		// 	await StorageService.create(teamNode, 'team');
+		// }
 		json.team = teamNode;
 		const newAnalysis = new AnalysisModel(json);
 		return newAnalysis;

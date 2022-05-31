@@ -7,9 +7,10 @@
 
 'use strict';
 
+import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JAG from "../models/jag.js";
-import InputValidator from "../utils/validation.js";
+
 
 export default class ControllerAT {
 
@@ -24,14 +25,12 @@ export default class ControllerAT {
         this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
-
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
         StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
     }
-
 
     set menu(value) {
         this._menu = value;

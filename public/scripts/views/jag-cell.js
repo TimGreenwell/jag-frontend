@@ -75,7 +75,7 @@ class JAGView extends AnalysisCell {
 	}
 
 
-// Sync view to existing model values.    -ok
+// Sync view to existing model values.    -ok syncsyncsyncsyncsyncsync
 	_sync() {
 		this.urn = this.nodeModel.urn;                                   //   this = jagView
 		this.name = this.nodeModel.name;
@@ -263,9 +263,6 @@ class JAGView extends AnalysisCell {
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
-
-
-	//  This should be shifted to the view --- doesn't belong in the model.
 
 
 	async _createDocument() {
