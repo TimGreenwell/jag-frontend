@@ -37,6 +37,8 @@ class JAGView extends AnalysisCell {
 		this._createDocument();
 	}
 
+
+
 	get nodeModel() {
 		return this._nodeModel;
 	}
@@ -84,13 +86,40 @@ class JAGView extends AnalysisCell {
 
 	// Handlers
 	_handleURNChange(e) {
-		if (this.urn === this.nodeModel.urn)
-			return;
-		this._elements.suggestions.hide();
-		ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
+		console.log("jjj")
+		console.log(this.nodeModel)
+		console.log(this.urn)
+		console.log(this.nodeModel.urn)
+		if (this.urn !== this.nodeModel.urn) {
+			this._elements.suggestions.hide();
+			// Is the current URN valid?  (A rename involves more than the initial create)
+			if (JAGATValidation.isValidUrn(this.nodeModel.urn)) {
+				this.dispatchEvent(new CustomEvent('local-urn-updated', {
+					bubbles: true,
+					composed: true,
+					detail: {originalUrn: this.urn, newUrn: this.nodeModel.urn}
+				}));
+				//ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
+			} else {
+				this.dispatchEvent(new CustomEvent('local-jag-created', {
+					bubbles: true,
+					composed: true,
+					detail: {urn: this.urn, name: this.name}
+				}));
+				console.log("Dispatching for parent update")
+				parent = this.nodeModel.parent.jag;
+				let id = parent.addChild(this.urn);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {
+					bubbles: true,
+					composed: true,
+					detail: {jag: parent}
+				}));
+			}
+		}
 	}
 
 	_handleURNEdit(e) {
+		console.log("kkk");
 		switch(e.key) {
 			case 'Enter':
 				e.preventDefault();
@@ -127,7 +156,8 @@ class JAGView extends AnalysisCell {
 			const newName = this._elements.name.innerText;
 			this.jag.name = newName;
 			if (JAGATValidation.isValidUrn(this._elements.urn.innerText)) {
-				await ControllerIA.saveJag(this.jag);
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));
+				//await ControllerIA.saveJag(this.jag);
 				// Maybe I should update a node object and pass that up to the controller.  More uniform?
 			} else {
 				// if url is empty or valid then url becomes mutation of the name:
@@ -137,10 +167,11 @@ class JAGView extends AnalysisCell {
 				this._elements.urn.innerText = autoUrn;
 				// was commitNameChange(this)
 				this.jag.urn = autoUrn;
-				await ControllerIA.saveJag(this.jag);
+				//await ControllerIA.saveJag(this.jag);
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));  // should not be this.jag?
 			}
 		}
-		this._elements.urn.innerText.focus();
+	//	this._elements.urn.innerText.focus();   // @TODO -- started getting an error on this.. distraction.
 		// Maybe I can wait on above statement until URN field blurs.
 		// Currently, it updates on name change and again on url change.  No big deal though.
 	}

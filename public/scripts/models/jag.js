@@ -27,7 +27,7 @@ export default class JAG extends EventTarget {
                     outputs,
                     children,
                     bindings
-                }) {
+                } ) {
         super();
 
         // All string properties can be copied.
@@ -173,7 +173,7 @@ export default class JAG extends EventTarget {
      * @returns {String} UUIDv4 string of the child.
      */
     addChild(child, id = undefined) {  // Add UUIDv4 default here
-        if (id === undefined) {
+        if (id === undefined) {   // <-- prob obs now
             this._children.push({
                 id: id = UUIDv4(),
                 urn: child.urn,
@@ -467,6 +467,8 @@ export default class JAG extends EventTarget {
 
 
     static fromJSON(json) {
+        console.log("what we got.................")
+        console.log(json)
         if (Array.isArray(json)) {
             let jagList = json.map(function (element) {
                 try {

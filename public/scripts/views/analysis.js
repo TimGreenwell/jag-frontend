@@ -89,6 +89,9 @@ class AnalysisView extends HTMLElement {
 	}
 
 	attach({targetNode, reference = null, layout = true, select = true } = {}) {
+		// When would there ever be a different 'reference'
+		// Ideally, layout only on last call.
+		// select isnt working.. range error.
 
 		// Finds the element representing the table's bottom row (succession of youngest children)
 		if(reference == null) {
@@ -138,10 +141,7 @@ class AnalysisView extends HTMLElement {
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-
 		//this._analysisModel.rootNodeModel.update();  //@TODO - either break this in two functions: getNumOfLeaves(breadth) & getTreeDepth(height)
-
-
 
 		// Resets the leaf set.
 		this._leafArray.length = 0;
@@ -164,26 +164,6 @@ class AnalysisView extends HTMLElement {
 		this.style.setProperty('--team-columns', agent_count.toString());
 		this.style.setProperty('--rows', rows.toString());
 	}
-
-
-	// update(node = this) {
-	// 	node._breadth = 1;    // number of leaves = height of table (skipping collapsed nodes)
-	// 	node._height = 0;     // depth of tree  (skipping collapsed nodes)
-	// 	console.log("? analysis xxx")
-	// 	if(node.hasChildren() && !node._collapsed)
-	// 	{
-	// 		node._breadth = 0;
-	// 		let max_height = 0;
-	// 		this.children.forEach(child => {
-	// 			child.update();
-	// 			node._breadth += child.breadth;
-	// 			max_height = Math.max(max_height, child.height);
-	// 		})
-	// 		node._height = max_height + 1;
-	// 	}
-	// }
-
-
 
 	_initializeContextMenus() {
 		this._assessment_menu = new ContextMenu();

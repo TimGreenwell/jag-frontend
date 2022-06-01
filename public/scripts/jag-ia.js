@@ -47,8 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
 	controller.editor = editor;
-	controller.initializeHandlers();
-	await controller.initializeCache();
+	await controller.initialize();
 
 
 	//////////////////////////////////////////////////////////////////////

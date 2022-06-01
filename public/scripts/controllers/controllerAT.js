@@ -80,6 +80,7 @@ export default class ControllerAT {
 
     async initializeCache() {
         let allJags = await StorageService.all('jag')
+        allJags.forEach(jag => this.addJagModel(jag));
         console.log(allJags);
     }
 
@@ -100,7 +101,7 @@ export default class ControllerAT {
         this._menu.addEventListener('clear-playground', this.clearPlaygroundHandler.bind(this));  // Event: 'clear-playground' - menu item selected to clear nodes from playground
         this._menu.addEventListener('delete-selected', this.deleteSelectedHandler.bind(this));
 
-        this._library.addEventListener('library-lineItem-selected', this.deleteSelectedHandler.bind(this));
+        this._library.addEventListener('library-lineItem-selected', this.libraryLineItemSelectedHandler.bind(this));
     }
 
     libraryLineItemSelectedHandler(event) {
@@ -108,8 +109,10 @@ export default class ControllerAT {
         this._playground.handleLibraryListItemSelected(eventDetail);
     }
 
-    deleteSelectedHandler() {
-        this._playground.handleDeleteSelected(e);
+    deleteSelectedHandler(event) {
+        console.log(event)
+        console.log("---- Delete Selected ---               ( I dont think we want a real pruning.")
+        this._playground.handleDeleteSelected(event);
     }
 
     clearPlaygroundHandler() {
