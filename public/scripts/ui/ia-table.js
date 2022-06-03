@@ -23,7 +23,7 @@ class IATable extends Popupable {
         super();
         this.setPopupBounds(this);
 
-        this._analysisModel = new AnalysisModel();
+        this._analysisModel = null;
 
         this._domElements = {
             name: undefined,

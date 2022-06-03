@@ -86,6 +86,7 @@ export default class ControllerIA {
     }
 
     async initialize() {
+        JagModel.setDefaulturn = "us:ihmc:"
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -288,7 +289,7 @@ export default class ControllerIA {
 //         //  Update Jag Model has arrived.
 //         this._nodeModelList.forEach(node => {
 //             if (updatedJagModel.urn == node.jag.urn) {
-//                 node.jag = updatedJagModel;
+//                 node.jag = updatedJagModel;defaultUrn
 //             }
 //             if (updatedJagModel.children.contains(node.id)){
 //                 node.parent = updatedJagModel;
@@ -314,6 +315,8 @@ export default class ControllerIA {
         this.addAnalysisModel(createdAnalysisModel);
 
         if (this._iaTable.analysisModel){
+            console.log("hhhhhhhhhhhhhhhhhhhhhhhHHH")
+            console.log(this._iaTable.analysisModel)
         analysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(createdAnalysisModel.rootUrn);
         this._iaTable.analysisModel = analysisModel;
         this._iaTable.displayAnalysis();

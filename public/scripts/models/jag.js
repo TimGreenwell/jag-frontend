@@ -62,6 +62,14 @@ export default class JAG extends EventTarget {
         this._isPublished = false;
     }
 
+    get defaultUrn() {
+        return this._defaultUrn;
+    }
+
+    set defaultUrn(defaultUrn){
+        this._defaultUrn = defaultUrn;
+    }
+
     get urn() {
         return this._urn;
     }
@@ -467,8 +475,6 @@ export default class JAG extends EventTarget {
 
 
     static fromJSON(json) {
-        console.log("what we got.................")
-        console.log(json)
         if (Array.isArray(json)) {
             let jagList = json.map(function (element) {
                 try {

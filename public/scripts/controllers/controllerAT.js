@@ -9,7 +9,7 @@
 
 import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
-import JAG from "../models/jag.js";
+import JagModel from "../models/jag.js";
 
 
 export default class ControllerAT {
@@ -21,7 +21,7 @@ export default class ControllerAT {
         this._playground = null;
         this._properties = null;
 
-        this._jagModelMap = new Map();         // All JAGs - should be in sync with storage
+        this._jagModelMap = new Map();         // All JagModels - should be in sync with storage
         this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
@@ -73,6 +73,7 @@ export default class ControllerAT {
     }
 
     async initialize() {
+        JagModel.setDefaultUrn = "us:ihmc:"
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -135,9 +136,9 @@ export default class ControllerAT {
         const urn = eventDetail.urn;
         const description = eventDetail.description;
         const name = eventDetail.name;
-        const newJAG = new JAG({urn: urn, name: name, description: description});
-        if (newJAG.isValid()) {
-            await StorageService.create(newJAG, 'jag');
+        const newJagModel = new JagModel({urn: urn, name: name, description: description});
+        if (newJagModel.isValid()) {
+            await StorageService.create(newJagModel, 'jag');
         } else {
             window.alert("Invalid URN");
         }
@@ -188,25 +189,25 @@ export default class ControllerAT {
 
                     // is the target JagModel published?
                     if (newJagModel.isPublished) {
-                        // FAIL  - CANT OVERWRITE PUBLISHED JAG-MODEL
+                        // FAIL  - CANT OVERWRITE PUBLISHED JagModel
                     } else // target JagModel is NOT published
 
                     { // is the original JagModel published?
                         if (origJagModel.isPublished) {
                             await StorageService.clone(originalUrn, newUrn, 'jag');
-                        } else { /// the original JAGModel is not published
+                        } else { /// the original JagModel is not published
                             await StorageService.replace(originalUrn, newUrn, 'jag')
                         }
                     }
                 } else {  // user says 'no' to overwrite
-                    // FAIL -- NOT OVERWRITING EXISTING JAG-MODEL
+                    // FAIL -- NOT OVERWRITING EXISTING JagModel
                 }
             } else {  // urn not already being used
                 // is the original JagModel published?
                 console.log("is published - " + origJagModel.isPublished);
                 if (origJagModel.isPublished) {
                     await this.cloneJagModel(origJagModel, newUrn)
-                } else {/// the original JAGModel is not published
+                } else {/// the original JagModel is not published
                     await StorageService.replace(originalUrn, newUrn, 'jag');
                 }
             }
@@ -229,7 +230,7 @@ export default class ControllerAT {
 
     handleJagStorageCreated(createdJagModel, createdJagUrn) {
         this._playground._addJagNodeTree(createdJagModel, createdJagUrn);         // update the graph node view on update
-        this._library.addItem(createdJagModel);                                   // Add JAG list item to Library
+        this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
     }
 
     handleJagStorageDeleted(deletedJagUrn) {
@@ -242,7 +243,7 @@ export default class ControllerAT {
 
     handleJagStorageReplaced(newJagModel, replacedJagUrn) {
         this._playground.replaceJagNode(newJagModel, replacedJagUrn)
-        this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JAG list item in library
+        this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in library
     }
 
 

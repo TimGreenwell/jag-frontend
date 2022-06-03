@@ -5,14 +5,12 @@
  * @version 1.65
  */
 
-// These are the
-
 'use strict';
 
 import { UUIDv4 }  from '../utils/uuid.js';
-import JAG from './jag.js';
+import JagModel from './jag.js';
 import StorageService from '../services/storage-service.js';
-import JAGATValidation from '../utils/validation.js';
+import Validation from '../utils/validation.js';
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
@@ -29,8 +27,6 @@ export default class Node extends EventTarget {
 		this._color = color;                 // Derived color
 		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
 
-		this._breadth = 1;                   // Analysis dependent condition
-		this._height = 0;
 		this._leafCount = 1;
 		this._treeDepth = 0;
 
@@ -48,14 +44,14 @@ export default class Node extends EventTarget {
 	set jag(value) {
 		this._jag = value;
 	}
-	hasChildren() {
-		return (this.children.length !== 0);
-	}
 	get children() {
 		return this._children;
 	}
 	set children(value) {
 		this._children = value;
+	}
+	hasChildren() {
+		return (this.children.length !== 0);
 	}
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
@@ -63,7 +59,7 @@ export default class Node extends EventTarget {
 			this._children.push(node);
 			node.parent = this;
 			this.incrementDepth(1);
-			if (this.numOfChildren>1){
+			if (this.childCount>1){
 				this.incrementLeafCount();
 			}
 		} else {
@@ -74,27 +70,10 @@ export default class Node extends EventTarget {
 		return this._children[this.children.length - 1]
 	}
 	get canHaveChildren() {
-		return ((this.jag !== undefined) && (JAGATValidation.isValidUrn(this.jag.urn)));
+		return ((this.jag !== undefined) && (Validation.isValidUrn(this.jag.urn)));
 	}
-
-	get numOfChildren() {
-		return (this._children.length);
-	}
-
-    incrementDepth(depthCount){
-		if (depthCount > this._treeDepth) {
-			this._treeDepth = depthCount;
-			if (this.parent){
-				this.parent.incrementDepth(depthCount + 1);
-			}
-		}
-	}
-
-	incrementLeafCount() {
-		this._leafCount = this._leafCount + 1;
-		if (this.parent){
-			this.parent.incrementLeafCount();
-		}
+	get childCount() {
+		return this._children.length;
 	}
 
 	get parent() {
@@ -144,59 +123,37 @@ export default class Node extends EventTarget {
 	}
 
 
+    incrementDepth(depthCount){
+		if (depthCount > this._treeDepth) {
+			this._treeDepth = depthCount;
+			if (this.parent){
+				this.parent.incrementDepth(depthCount + 1);
+			}
+		}
+	}
+	incrementLeafCount() {
+		this._leafCount = this._leafCount + 1;
+		if (this.parent){
+			this.parent.incrementLeafCount();
+		}
+	}
 	get treeDepth() {
 		return this._treeDepth;
 	}
-
 	get leafCount() {
 		return this._leafCount;
 	}
 
 	get name() {
-		return (this.jag === undefined) ? Node.DEFAULT_JAG_NAME : this.jag.name;
+		return (this.jag === undefined) ? JagModel.defaultName : this.jag.name;
 	}
 	get urn() {
-		return (this.jag === undefined) ? Node.default_urn : this.jag.urn;
+		return (this.jag === undefined) ? JagModel.defaultUrn : this.jag.urn;
 	}
-
 
 	isRoot() {
 		return this.parent === undefined;
 	}         // is determined by lack of parent.
-
-
-	// Number of children for a particular node.
-	get childCount() {
-		return this._children.length;
-	}
-
-
-
-
-// //@TODO: This function is doing two things - assigning breadth(numOfLeaves) and height(treeDepth)
-	// Also being called on every node during each display/redisply.
-	// Suggest separate function for each functionality
-	// Suggest done once on entire tree after change instead of on each node during each redisplay.
-	// Or maybe better to adjust on init and after each structural change
-
-	update() {
-		this._breadth = 1;
-		this._height = 0;
-
-		if(this._children.length !== 0 && !this._collapsed)
-		{
-			this._breadth = 0;
-			let max_height = 0;
-
-			for(let child of this._children) {
-				child.update();
-				this._breadth += child.breadth;
-				max_height = Math.max(max_height, child.height);
-			}
-
-			this._height = max_height + 1;
-		}
-	}
 
 	toJSON() {
 		const json = {
@@ -209,13 +166,12 @@ export default class Node extends EventTarget {
 		json.children = this._children.map(child => child.id);
 		return json;
 	}
-
 	static async fromJSON(json) {
 		// Replaces the id with the actual jag model.
 		//const jag = await JAGService.instance('idb-service').get(json.jag);
 
 		const jag = await StorageService.get(json.jag,'jag');
-		if (jag instanceof JAG) {
+		if (jag instanceof JagModel) {
 			json.jag = jag;
 		}
 		else {
@@ -242,9 +198,8 @@ export default class Node extends EventTarget {
 	}
 
 
-
 }
 
-Node.DEFAULT_JAG_NAME = 'Activity';
+Node.DEFAULT_JAG_NAME = '';
 Node.default_urn = 'us:ihmc:';
 

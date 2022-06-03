@@ -29,8 +29,8 @@ class JAGView extends AnalysisCell {
 		this._nodeModel = nodeModel;
 
 		this._elements = {
-			urn: undefined,
-			name: undefined,
+			urn: nodeModel.urn,
+			name: nodeModel.name,
 			suggestions: undefined
 		};
 
@@ -47,25 +47,27 @@ class JAGView extends AnalysisCell {
 	}
 
 	//////  Elements and Element Values
-	get urn() {
+	get urnElementEntry() {
 		return this._elements.urn.innerText;
 	}
-	set urn(urn) {
+	set urnElementEntry(urn) {
 		this._elements.urn.innerText = urn;
 	}
 	get urnElement() {
 		return this._elements.urn;
 	}
-	get name() {
+
+	get nameElementEntry() {
 		return this._elements.name.innerText.trim();
 	}
-	set name(name) {
+	set nameElementEntry(name) {
 		this._elements.name.innerText = name;
 	}
 	get nameElement() {
 		return this._elements.name;
 	}
-    //////  Element Properties
+
+    //////  classList Properties
 	set valid(valid) {
 		this.classList.toggle('unsaved', !valid);
 	}
@@ -77,10 +79,10 @@ class JAGView extends AnalysisCell {
 	}
 
 
-// Sync view to existing model values.    -ok syncsyncsyncsyncsyncsync
-	_sync() {
-		this.urn = this.nodeModel.urn;                                   //   this = jagView
-		this.name = this.nodeModel.name;
+// Sync view to existing model values.
+	_syncViewToModel() {
+		this.urnElementEntry = this.nodeModel.urn;
+		this.nameElementEntry = this.nodeModel.name;
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());
 	}
 
@@ -88,33 +90,34 @@ class JAGView extends AnalysisCell {
 	_handleURNChange(e) {
 		console.log("jjj")
 		console.log(this.nodeModel)
-		console.log(this.urn)
+		console.log(this.urnElementEntry)
 		console.log(this.nodeModel.urn)
-		if (this.urn !== this.nodeModel.urn) {
+		if (this.urnElementEntry !== this.nodeModel.urn) {
 			this._elements.suggestions.hide();
 			// Is the current URN valid?  (A rename involves more than the initial create)
 			if (JAGATValidation.isValidUrn(this.nodeModel.urn)) {
 				this.dispatchEvent(new CustomEvent('local-urn-updated', {
 					bubbles: true,
 					composed: true,
-					detail: {originalUrn: this.urn, newUrn: this.nodeModel.urn}
+					detail: {originalUrn: this.nodeModel.urn, newUrn: this.urnElementEntry}
 				}));
 				//ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
 			} else {
 				this.dispatchEvent(new CustomEvent('local-jag-created', {
 					bubbles: true,
 					composed: true,
-					detail: {urn: this.urn, name: this.name}
+					detail: {urn: this.urnElementEntry, name: this.nameElementEntry}
 				}));
 				console.log("Dispatching for parent update")
 				parent = this.nodeModel.parent.jag;
-				let id = parent.addChild(this.urn);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+				let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
 				this.dispatchEvent(new CustomEvent('local-jag-updated', {
 					bubbles: true,
 					composed: true,
 					detail: {jag: parent}
 				}));
 			}
+			this.nodeModel.urn = this.urnElementEntry
 		}
 	}
 
@@ -125,12 +128,12 @@ class JAGView extends AnalysisCell {
 				e.preventDefault();
 				const selected = this._elements.suggestions.selected;
 				if (selected !== undefined)
-					this._elements.urn.innerText = selected
+					this.urnElementEntry = selected
 				this._elements.urn.blur();
 				this._elements.suggestions.hide();
 				break;
 			case 'Escape':
-				this._elements.urn.innerText = this.jag.urn;
+				this.urnElementEntry = this.nodeModel.urn;
 				this._elements.urn.blur();
 				break;
 			case 'ArrowDown':
@@ -146,16 +149,16 @@ class JAGView extends AnalysisCell {
 
 	_handleURNInput(e) {
 		const $suggestions = this._elements.suggestions;
-		$suggestions.filter(this._elements.urn.innerText);
+		$suggestions.filter(this.urnElementEntry);
 	}
 
 
 	// This runs when the Name field of the IATABLE Jag node area loses focus.
 	async _handleNameChange() {
-		if ((this.jag) && (this._elements.name.innerText !== this.jag.name)) {
-			const newName = this._elements.name.innerText;
+		if ((this.jag) && (this.nameElementEntry !== this.nodeModel.name)) {
+			const newName = this.nameElementEntry;
 			this.jag.name = newName;
-			if (JAGATValidation.isValidUrn(this._elements.urn.innerText)) {
+			if (JAGATValidation.isValidUrn(this.urnElementEntry)) {
 				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));
 				//await ControllerIA.saveJag(this.jag);
 				// Maybe I should update a node object and pass that up to the controller.  More uniform?
@@ -164,14 +167,14 @@ class JAGView extends AnalysisCell {
                 //	const dirtyUrl = IaTable.defaultUrn + this.jag.name;
 				const dirtyUrn = this.nodeModel.default_urn + newName;
 				const autoUrn = dirtyUrn.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
-				this._elements.urn.innerText = autoUrn;
+				this.urnElementEntry = autoUrn;
 				// was commitNameChange(this)
 				this.jag.urn = autoUrn;
 				//await ControllerIA.saveJag(this.jag);
 				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));  // should not be this.jag?
 			}
 		}
-	//	this._elements.urn.innerText.focus();   // @TODO -- started getting an error on this.. distraction.
+	//	this.urnElementEntry.focus();   // @TODO -- started getting an error on this.. distraction.
 		// Maybe I can wait on above statement until URN field blurs.
 		// Currently, it updates on name change and again on url change.  No big deal though.
 	}
@@ -297,23 +300,27 @@ class JAGView extends AnalysisCell {
 
 
 	async _createDocument() {
-		this.nodeModel.addEventListener('sync', this._sync.bind(this));
+		this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
 
 		const $controls = new JAGControls(this.nodeModel);
 		const $header = document.createElement('header');
 		const $name = document.createElement('h1');
+		const $nameInput = document.createElement("input");
+		$nameInput.setAttribute("type", "text")
+		$name.appendChild($nameInput)
 		const $urn = document.createElement('h2');
 		const $suggestions = new AutoComplete();
 		const $fold = document.createElement('div');
 
 		this.classList.toggle('leaf', !this.nodeModel.hasChildren());  // Am I a leaf?
 
-		$name.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to ControllerIA for Jag updating.
-		$name.addEventListener('keydown', this._handleNameEdit.bind(this)); // poorly named -- adds child or sibling depending on keypress
-		$name.addEventListener('input', this._handleNameInput.bind(this));  // no idea.. view thing.  needed?
-		$name.setAttribute('contenteditable', '');
-		$name.setAttribute('spellcheck', 'false');
-		$name.innerText = this.nodeModel.name;
+		$nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to ControllerIA for Jag updating.
+		$nameInput.addEventListener('keydown', this._handleNameEdit.bind(this)); // poorly named -- adds child or sibling depending on keypress
+		$nameInput.addEventListener('input', this._handleNameInput.bind(this));  // no idea.. view thing.  needed?
+		//$name.setAttribute('contenteditable', '');
+		//$name.setAttribute('spellcheck', 'false');
+		//$name.innerText = this.nodeModel.name;
+		$nameInput.placeholder="Ddddd"
 
 		$urn.addEventListener('blur', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
 		$urn.addEventListener('keydown', this._handleURNEdit.bind(this)); // handles the suggestions
