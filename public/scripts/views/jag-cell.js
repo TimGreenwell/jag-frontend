@@ -307,8 +307,11 @@ class JAGView extends AnalysisCell {
 		const $name = document.createElement('h1');
 		const $nameInput = document.createElement("input");
 		$nameInput.setAttribute("type", "text")
-		$name.appendChild($nameInput)
+
 		const $urn = document.createElement('h2');
+		const $urnInput = document.createElement("input");
+		$urnInput.setAttribute("type", "text")
+
 		const $suggestions = new AutoComplete();
 		const $fold = document.createElement('div');
 
@@ -317,30 +320,35 @@ class JAGView extends AnalysisCell {
 		$nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and auto-urn up to ControllerIA for Jag updating.
 		$nameInput.addEventListener('keydown', this._handleNameEdit.bind(this)); // poorly named -- adds child or sibling depending on keypress
 		$nameInput.addEventListener('input', this._handleNameInput.bind(this));  // no idea.. view thing.  needed?
-		//$name.setAttribute('contenteditable', '');
-		//$name.setAttribute('spellcheck', 'false');
-		//$name.innerText = this.nodeModel.name;
-		$nameInput.placeholder="Ddddd"
+		let placeholder = "activity"
+		$nameInput.placeholder=placeholder
+		$nameInput.style.width = placeholder.length + "ch"
 
 		$urn.addEventListener('blur', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
 		$urn.addEventListener('keydown', this._handleURNEdit.bind(this)); // handles the suggestions
 		$urn.addEventListener('input', this._handleURNInput.bind(this));  // filters suggestions
-		$urn.setAttribute('contenteditable', '');
-		$urn.setAttribute('spellcheck', 'false');
-		$urn.setAttribute('tabindex', '-1');
+		placeholder = "urn"
+		$urnInput.placeholder=placeholder
+		$urnInput.style.width = placeholder.length + "ch"
 
-		if(this._nodeModel.jag !== undefined)// && this._nodeModel.jag.hasValidURN)
-			$urn.innerText = this.nodeModel.urn;
-		else
+
+		if (this._nodeModel.jag !== undefined)// && this._nodeModel.jag.hasValidURN) {
+		{
+			$urn.innerText = this._nodeModel.urn;
+			$nameInput.setAttribute('value',this._nodeModel.name ) ;
+		} else {
 			this.classList.add('unsaved');
+		}
 
 		$fold.addEventListener('click', () =>
 			this.dispatchEvent(new CustomEvent('local-collapse-toggled', {bubbles: true, composed: true, detail: {node: this._nodeModel}})))
 		$fold.classList.add('fold-button');
 
+		$name.appendChild($nameInput)
+		$urn.appendChild($urnInput)
 		$header.appendChild($name);
 		$header.appendChild($controls);
-
+		$urn.appendChild($urnInput)
 		this.appendChild($header);
 		this.appendChild($urn);
 		this.appendChild($suggestions);
