@@ -26,6 +26,12 @@ export default class JAGATValidation {
             JAGATValidation.validateBindings(jagDescriptor.bindings);
     }
 
+
+    isValid() {
+        let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
+        return !!this._urn.match(regex);
+    };
+
     static isValidUrn(urn) {
         let isValid = true;
         try {

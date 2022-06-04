@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
 	playground.addEventListener('refresh', (e) => {
-		library.refreshItem(e.detail.model, e.detail.refreshed);
+		library.refreshItem(e.detail.jagModel, e.detail.refreshed);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'resources' (???)

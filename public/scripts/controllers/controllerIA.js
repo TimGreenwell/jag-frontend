@@ -317,8 +317,8 @@ export default class ControllerIA {
         if (this._iaTable.analysisModel){
             console.log("hhhhhhhhhhhhhhhhhhhhhhhHHH")
             console.log(this._iaTable.analysisModel)
-        analysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(createdAnalysisModel.rootUrn);
-        this._iaTable.analysisModel = analysisModel;
+            createdAnalysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(createdAnalysisModel.rootUrn);
+        this._iaTable.analysisModel = createdAnalysisModel;
         this._iaTable.displayAnalysis();
     }}
 

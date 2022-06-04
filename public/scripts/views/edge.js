@@ -6,7 +6,7 @@
  * @version 0.87
  */
 
-import JAG from '../models/jag.js';
+import JagModel from '../models/jag.js';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
@@ -185,7 +185,7 @@ export default class Edge extends EventTarget {
 
 	_updateStrokeDash(operator) {
 		// OR edges are dashed.
-		if (operator == JAG.OPERATOR.OR) {
+		if (operator == JagModel.OPERATOR.OR) {
 			this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
 		// AND edges are solid.
 		} else {
@@ -247,7 +247,7 @@ export default class Edge extends EventTarget {
 		this._parent.removeEventListener('click', this._boundHandleSelection);
 
 		if (this._node_origin != undefined) {
-			this._node_origin.model.removeEventListener('update', this._boundUpdateHandler);
+			this._node_origin.jagModel.removeEventListener('update', this._boundUpdateHandler);
 			this._node_origin.removeOutEdge(this, this._childId);
 		}
 
@@ -265,7 +265,7 @@ export default class Edge extends EventTarget {
 
 	setNodeOrigin(node) {
 		this._node_origin = node;
-		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to model
+		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
 
 		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
 		this._updateStroke(this._node_origin.isAtomic());
@@ -303,23 +303,23 @@ export default class Edge extends EventTarget {
 
 	setNodeEnd(node) {
 		this._node_end = node;
-		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to model
+		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to jagModel
 
-		const origin_model = this._node_origin.model;
+		const origin_jagModel = this._node_origin.jagModel;
 
-		origin_model.addEventListener('update', this._boundUpdateHandler);
+		origin_jagModel.addEventListener('update', this._boundUpdateHandler);
 
 		this._childId = this._node_origin.completeOutEdge(this, this._childId); // Note: this does multiple things:
 		// - Adds edge to graphical node's 'outs'
 		// - Invokes _node_origin#addChild(_node_end), which:
-		//   - Adds _node_end model to _node_origin model's children
-		//   - Sets _node_end model's parent to _node_origin model
+		//   - Adds _node_end jagModel to _node_origin jagModel's children
+		//   - Sets _node_end jagModel's parent to _node_origin jagModel
 		//   - Dispatches update event
 
-		this._updateOrder(origin_model.children, origin_model.execution);
-		this._updateStrokeDash(origin_model.operator);
+		this._updateOrder(origin_jagModel.children, origin_jagModel.execution);
+		this._updateStrokeDash(origin_jagModel.operator);
 
-		const child = origin_model.children.reduce((prev, curr) => {
+		const child = origin_jagModel.children.reduce((prev, curr) => {
 			if (curr.id == this._childId) {
 				return curr;
 			}
@@ -384,7 +384,7 @@ export default class Edge extends EventTarget {
 	_updateOrder(children, execution) {
 		let order = 0;
 
-		if (execution == JAG.EXECUTION.SEQUENTIAL) {
+		if (execution == JagModel.EXECUTION.SEQUENTIAL) {
 			const ordered = children.map(child => child.id);
 			order = ordered.indexOf(this._childId) + 1;
 		}

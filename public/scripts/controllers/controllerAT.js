@@ -31,6 +31,12 @@ export default class ControllerAT {
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
     }
+    // StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
+    // StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
+    // StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));         // a;ll from playground
+    // StorageService.subscribe("jag-storage-cloned", this._addJagNodeTree.bind(this));
+    // StorageService.subscribe("jag-storage-replaced", this.replaceJagNode.bind(this));
+
 
     set menu(value) {
         this._menu = value;
@@ -137,7 +143,7 @@ export default class ControllerAT {
         const description = eventDetail.description;
         const name = eventDetail.name;
         const newJagModel = new JagModel({urn: urn, name: name, description: description});
-        if (newJagModel.isValid()) {
+        if (InputValidator.isValidUrn(newJagModel.urn))  {
             await StorageService.create(newJagModel, 'jag');
         } else {
             window.alert("Invalid URN");
@@ -147,7 +153,7 @@ export default class ControllerAT {
     async localJagUpdatedHandler(event) {
         console.log("-- updating --")
         const eventDetail = event.detail;
-        const updatedJagModel = eventDetail.node;
+        const updatedJagModel = eventDetail.jagModel;
         console.log(updatedJagModel)
         await StorageService.update(updatedJagModel, 'jag');
     }
@@ -229,6 +235,9 @@ export default class ControllerAT {
     }
 
     handleJagStorageCreated(createdJagModel, createdJagUrn) {
+    console.log("iiiiiiiiiiii")
+        console.log(createdJagModel)
+        console.log(createdJagUrn)
         this._playground._addJagNodeTree(createdJagModel, createdJagUrn);         // update the graph node view on update
         this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
     }

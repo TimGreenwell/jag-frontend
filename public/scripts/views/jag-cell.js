@@ -114,7 +114,7 @@ class JAGView extends AnalysisCell {
 				this.dispatchEvent(new CustomEvent('local-jag-updated', {
 					bubbles: true,
 					composed: true,
-					detail: {jag: parent}
+					detail: {jagModel: parent}
 				}));
 			}
 			this.nodeModel.urn = this.urnElementEntry
@@ -159,7 +159,7 @@ class JAGView extends AnalysisCell {
 			const newName = this.nameElementEntry;
 			this.jag.name = newName;
 			if (JAGATValidation.isValidUrn(this.urnElementEntry)) {
-				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._node}}));  //tlg changed from node to jagModel  - looks bad
 				//await ControllerIA.saveJag(this.jag);
 				// Maybe I should update a node object and pass that up to the controller.  More uniform?
 			} else {
@@ -171,7 +171,7 @@ class JAGView extends AnalysisCell {
 				// was commitNameChange(this)
 				this.jag.urn = autoUrn;
 				//await ControllerIA.saveJag(this.jag);
-				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {node: this._node}}));  // should not be this.jag?
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._node}}));  // should not be this.jag?
 			}
 		}
 	//	this.urnElementEntry.focus();   // @TODO -- started getting an error on this.. distraction.

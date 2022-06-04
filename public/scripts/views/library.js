@@ -6,14 +6,14 @@
  * @version 0.43
  */
 
-import JAG from '../models/jag.js';
+import JagModel from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
 	constructor() {
 		super();
-		this._libraryList = [];                         // <li> elements holding model.name & description + (search context) + model
+		this._libraryList = [];                         // <li> elements holding jagModel.name & description + (search context) + jagModel
 		this._existingURNS = new Set();                // Set of URNs in _libraryList
         // Build outer structure inside <jag-library> (search input & ol for nodes)
 		this._initUI();
@@ -49,9 +49,10 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	updateItem(updatedJAGModel) {
 		for (let idx in this._libraryList) {
-			if (this._libraryList[idx].model.urn == updatedJAGModel.urn) {
+			console.log("lirary - updated jag model")
+			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
 
-				this._libraryList[idx].model = updatedJAGModel;
+				this._libraryList[idx].jagModel = updatedJAGModel;
 				this._libraryList[idx].element.id=updatedJAGModel.urn;
 				this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedJAGModel.name;
 				this._libraryList[idx].element.querySelectorAll("p").item(0).innerHTML = updatedJAGModel.description;
@@ -76,7 +77,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	addItem(newJAGModel) {
 		if (!this._existingURNS.has(newJAGModel.urn)) {
-			if (newJAGModel instanceof JAG) {
+			if (newJAGModel instanceof JagModel) {
 				const urn = newJAGModel.urn || '';
 				const name = newJAGModel.name;
 				const description = newJAGModel.description || '';
@@ -98,7 +99,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				this._libraryList.push({
 					element: li,
 					search_content: search_params.join(" "),
-					model: newJAGModel
+					jagModel: newJAGModel
 				});
 
 				// Unsure what this listener is for.
@@ -121,10 +122,14 @@ customElements.define('jag-library', class extends HTMLElement {
 				// Send the newJAGModel and all its children through the dispatch
 				li.addEventListener('click', (event) => {
 					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
+						console.log("___________________")
+						console.log(newJAGModel)
+						console.log(childrenMap)
+						console.log(event.shiftKey)
 						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
 							detail: {
-								model: newJAGModel,
-								model_set: childrenMap,
+								jagModel: newJAGModel,
+								jagModel_set: childrenMap,
 								expanded: event.shiftKey
 							}
 						}))
@@ -133,7 +138,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				this._$list.appendChild(li);
 				this._existingURNS.add(newJAGModel.urn);
-				//	model.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
+				//	jagModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
 				console.log("ERROR -- unexpected type for newJAGModel [library-addItem]")
 			}
@@ -213,8 +218,8 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	async _lazyGet(targetURN) {
 		for (const lineItem of this._libraryList) {
-			if (lineItem.model.urn == targetURN) {
-				return lineItem.model;
+			if (lineItem.jagModel.urn == targetURN) {
+				return lineItem.jagModel;
 			}
 		}
 		const foundJAGModel = await StorageService.get(targetURN, 'jag');
@@ -224,11 +229,11 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	// @TODO  understand this guy
 	async refreshItem(newJAGModel, refreshedSet = new Set()) {
-		this._getChildModels(newJAGModel, new Map()).then(function (all_models) {
+		this._getChildModels(newJAGModel, new Map()).then(function (all_jagModels) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
-					model: newJAGModel,
-					model_set: all_models,
+					jagModel: newJAGModel,
+					jagModel_set: all_jagModels,
 					refreshed: refreshedSet
 				}
 			}))

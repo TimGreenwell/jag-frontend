@@ -49,7 +49,7 @@ class IATable extends Popupable {
     // }
 
     handleJagStorageCreated(newJag, newJagUrn) {
-        console.log("WRITE THIS --  we have a new JAG model to handle")
+        console.log("WRITE THIS --  we have a new jagModel to handle")
         console.log(" n/m  -- ia table should not care about a new jag -- only a jag update.")
     }
 
@@ -291,18 +291,18 @@ class IATable extends Popupable {
     }
 
 
-    async import(analysisModel) {
+    async import(analysisModelImport) {
         {
             //const service = NodeService.instance('idb-service');
             // const service = StorageService.getStorageInstance('idb-service');
 
             // Sort nodes with the least number of children first.
-            analysisModel.nodes.sort((a, b) => a.children.length - b.children.length);
+            analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
 
-            for (const node of analysisModel.nodes) {
-                const model = await NodeModel.fromJSON(node);
-                //await service.create(model,'node');
-                await StorageService.create(model, 'node');
+            for (const node of analysisModelImport.nodes) {
+                const nodeModel = await NodeModel.fromJSON(node);
+                //await service.create(nodeModel,'node');
+                await StorageService.create(nodeModel, 'node');
             }
         }
 
@@ -313,21 +313,21 @@ class IATable extends Popupable {
             //const agent_service = AgentService.instance('idb-service');
             //const agent_service = StorageService.getStorageInstance('idb-service');
 
-            for (const team of analysisModel.teams) {
+            for (const team of analysisModelImport.teams) {
                 for (const agent of team.agents) {
                     await StorageService.create(AgentModel.fromJSON(agent), 'agent');
                 }
 
                 team.agents = team.agents.map((agent) => agent.id);
-                const model = await TeamModel.fromJSON(team);
-                await StorageService.create(model, 'team');
+                const agentModel = await TeamModel.fromJSON(team);
+                await StorageService.create(agentModel, 'team');
             }
         }
 
         //const service = AnalysisService.instance('idb-service');
         //	const service = StorageService.getStorageInstance('idb-service');
 
-        const model = await AnalysisModel.fromJSON({
+        const analysisModel = await AnalysisModel.fromJSON({
             id: analysisModel.id,
             name: analysisModel.name,
             root: analysisModel.root,
@@ -335,9 +335,9 @@ class IATable extends Popupable {
             teams: analysisModel.teams.map((team) => team.id)
         });
 
-        await StorageService.create(model, 'analysis');
+        await StorageService.create(analysisModel, 'analysis');
 
-        this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: model}}));
+        this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: analysisModel}}));
     }
 
     async export(static_jags) {
@@ -375,8 +375,8 @@ class IATable extends Popupable {
             //const service = StorageService.getStorageInstance('idb-service');
 
             for (let jag of jags) {
-                const model = await StorageService.get(jag, 'jag');
-                json.jags.push(model.toJSON());
+                const jagModel = await StorageService.get(jag, 'jag');
+                json.jags.push(jagModel.toJSON());
             }
         }
 
@@ -486,13 +486,13 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
     name: "Overwrite JAGs",
-    description: ({inputs: {jag}}) => `The uploaded analysisModel contains a model for a JAG at (${jag.urn}), which you already have. Replace it?`,
+    description: ({inputs: {jag}}) => `The uploaded analysisModel contains a jagModel at (${jag.urn}), which you already have. Replace it?`,
     actions: [
         {
             text: "Overwrite", color: "black", bgColor: "red",
             action: async function ({inputs: {jag}}) {
-                const model = JAG.fromJSON(jag);
-                await StorageService.create(model, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
+                const jagModel = JAG.fromJSON(jag);
+                await StorageService.create(jagModel, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

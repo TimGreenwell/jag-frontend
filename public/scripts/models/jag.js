@@ -36,7 +36,7 @@ export default class JAG extends EventTarget {
         this._description = description;
 
         if (!connector) {
-            connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};   // important for null (def values above useless)
+            connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};
         }
         this._execution = connector.execution;
         this._operator = connector.operator;
@@ -45,11 +45,13 @@ export default class JAG extends EventTarget {
         this._inputs = inputs ? [...inputs] : new Array();
         this._outputs = outputs ? [...outputs] : new Array();
         this._children = children ? [...children] : new Array();
+        // Copy bindings for the instance if provided, else create a new set.
+        this._bindings = new Set(bindings);
 
+        // The below has not been looked at.
         for (let child of this._children) {
             if (child.annotations) {
                 const annotations = new Map();
-
                 for (let annotation in child.annotations) {
                     annotations.set(annotation, child.annotations[annotation]);
                 }
@@ -57,15 +59,12 @@ export default class JAG extends EventTarget {
             }
         }
 
-        // Copy bindings for the instance if provided, else create a new set.
-        this._bindings = new Set(bindings);
         this._isPublished = false;
     }
 
     get defaultUrn() {
         return this._defaultUrn;
     }
-
     set defaultUrn(defaultUrn){
         this._defaultUrn = defaultUrn;
     }
@@ -101,12 +100,6 @@ export default class JAG extends EventTarget {
     get inputs() {
         return [...this._inputs];
     }
-    /**
-     * Adds the given input to the inputs of this JAG.
-     * Dispatches an update.
-     *
-     * @param {{name:String,type:String}} input Input to add.
-     */
     addInput(input) {
         this._inputs.push(input);
     }
@@ -117,12 +110,6 @@ export default class JAG extends EventTarget {
     get outputs() {
         return [...this._outputs];
     }
-    /**
-     * Adds the given output to the outputs of this JAG.
-     * Dispatches an update.
-     *
-     * @param {{name:String,type:String}} output Output to add.
-     */
     addOutput(output) {
         this._outputs.push(output);
     }
@@ -133,6 +120,9 @@ export default class JAG extends EventTarget {
     get children() {
         return [...this._children];
     }
+    // id: id = UUIDv4(),
+    // urn: child.urn,
+    // jagModel: child
 
 
     set bindings(value) {
@@ -164,40 +154,32 @@ export default class JAG extends EventTarget {
     }
 
 
-    isValid() {
-        let regex = new RegExp("^[a-zA-Z0-9-:]+([a-zA-Z0-9])$");
-        return !!this._urn.match(regex);
-    };
 
-    /**
-     * Adds the given JAG as a child to this JAG.
-     * If an ID already exists, the child already exists, and this was likely called
-     * during creation of a graphical edge for the child of an existing JAG; the call
-     * will be ignored and the given ID will be returned.
-     * Dispatches an update if ID is undefined.
-     *
-     * @param {JAG} child Model to add.
-     * @param {String} id ID for child, if it exists.
-     * @returns {String} UUIDv4 string of the child.
-     */
     addChild(child, id = undefined) {  // Add UUIDv4 default here
+        /**
+         * Adds the given JAG as a child to this JAG.
+         * If an ID already exists, the child already exists, and this was likely called
+         * during creation of a graphical edge for the child of an existing JAG; the call
+         * will be ignored and the given ID will be returned.
+         * Dispatches an update if ID is undefined.
+         *
+         * @param {JAG} child Model to add.
+         * @param {String} id ID for child, if it exists.
+         * @returns {String} UUIDv4 string of the child.
+         */
         if (id === undefined) {   // <-- prob obs now
             this._children.push({
                 id: id = UUIDv4(),
                 urn: child.urn,
-                model: child
+                jagModel: child
             });
         }
         return id;
     }
 
-    /**
-     * Removes the given child from this JAG.
-     * Dispatches an update.
-     *
-     * @param {{id:String,model:JAG}} child Child to remove.
-     */
-    removeChild(child) {
+
+
+    removeChildXXX(child) {
         for (let index in this._children) {
             if (this._children[index].id === child.id) {
                 this._children.splice(index, 1);
@@ -215,7 +197,7 @@ export default class JAG extends EventTarget {
      * @param {String} id ID of the child whose name will be set.
      * @param {String} name Name to set to.
      */
-    setChildName(id, name) {
+    setChildNameXXX(id, name) {
         for (const child of this._children) {
             if (child.id == id) {
                 if (child.name != name) {
@@ -232,7 +214,7 @@ export default class JAG extends EventTarget {
      * @param {String} id ID of the child whose description will be set.
      * @param {String} description Description to set to.
      */
-    setChildDescription(id, description) {
+    setChildDescriptionXXX(id, description) {
         for (const child of this._children) {
             if (child.id == id) {
                 if (child.description != description) {
@@ -250,13 +232,13 @@ export default class JAG extends EventTarget {
      * Includes inputs to this JAG and outputs from sequential children preceding the child with the given ID.
      *
      * @param {String} id ID of the child for which to seek inputs.
-     * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Inputs available to the child with the given ID.
+     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Inputs available to the child with the given ID.
      */
     inputsTo(id) {
         let availableInputs = this._inputs.map((input) => {
             return {
                 id: 'this',
-                model: this,
+                jagModel: this,
                 property: input.name,
                 type: input.type
             };
@@ -267,13 +249,13 @@ export default class JAG extends EventTarget {
                 if (child.id == id)
                     break;
 
-                if (child.model) {
-                    let child_outputs = child.model.outputs;
+                if (child.jagModel) {
+                    let child_outputs = child.jagModel.outputs;
 
                     for (let child_output of child_outputs) {
                         availableInputs.push({
                             id: child.id,
-                            model: child.model,
+                            jagModel: child.jagModel,
                             property: child_output.name,
                             type: child_output.type
                         });
@@ -288,18 +270,18 @@ export default class JAG extends EventTarget {
     /**
      * Gets the ID, JAG, property name and type of all inputs of children of this JAG.
      *
-     * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Inputs of children of this JAG.
+     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Inputs of children of this JAG.
      */
     getAvailableInputs() {
         let availableInputs = [];
 
         for (let child of this._children) {
-            if (child.model) {
-                if (child.model.inputs.length > 0) {
+            if (child.jagModel) {
+                if (child.jagModel.inputs.length > 0) {
                     availableInputs.push({
                         id: child.id,
-                        model: child.model,
-                        inputs: child.model.inputs
+                        jagModel: child.jagModel,
+                        inputs: child.jagModel.inputs
                     });
                 }
             }
@@ -310,18 +292,18 @@ export default class JAG extends EventTarget {
     /**
      * Gets the ID, JAG, property name and type of all outputs of children of this JAG.
      *
-     * @returns {Array<{id:String,model:JAG,property:String,type:String}>} Outputs of children of this JAG.
+     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Outputs of children of this JAG.
      */
     getAvailableOutputs() {
         let availableOutputs = [];
 
         for (let child of this._children) {
-            if (child.model) {
-                if (child.model.outputs.length > 0) {
+            if (child.jagModel) {
+                if (child.jagModel.outputs.length > 0) {
                     availableOutputs.push({
                         id: child.id,
-                        model: child.model,
-                        outputs: child.model.outputs
+                        jagModel: child.jagModel,
+                        outputs: child.jagModel.outputs
                     });
                 }
             }
@@ -393,12 +375,12 @@ export default class JAG extends EventTarget {
      * Gets the child of this JAG with the given ID.
      *
      * @param {String} id
-     * @returns {{id:String,model:JAG}} Child of this JAG with the given ID.
+     * @returns {{id:String,jagModel:JAG}} Child of this JAG with the given ID.
      */
     getCanonicalNode(id) {
 
         if (id === 'this')
-            return {id: 'this', model: this};
+            return {id: 'this', jagModel: this};
 
         for (let child of this._children)
             if (child.id == id)
@@ -418,7 +400,7 @@ export default class JAG extends EventTarget {
     addAnnotation(id, name, value) {
         const child = this.getCanonicalNode(id);
 
-        if (!(child == undefined || child.model == this)) {
+        if (!(child == undefined || child.jagModel == this)) {
             if (!child.annotations || !child.annotations.has(name) || child.annotations.get(name) != value) {
                 if (!child.annotations) child.annotations = new Map();
                 child.annotations.set(name, value);
@@ -436,7 +418,7 @@ export default class JAG extends EventTarget {
     removeAnnotation(id, name) {
         const child = this.getCanonicalNode(id);
 
-        if (!(child == undefined || child.model == this)) {
+        if (!(child == undefined || child.jagModel == this)) {
             if (!child.annotations) return;
 
             if (child.annotations.has(name)) {

@@ -14,8 +14,12 @@ import JAG from '../models/jag.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
-	constructor(model, expanded) {
+	constructor(jagModel, expanded) {
 		super();
+		console.log("creating>>>>>>>>>>>>>>>>>>>>>>>>")
+		console.log(JSON.stringify(jagModel))
+		console.log("creating>>>>>>>>>>>>>>>>>>>>>>>>")
+
 
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
@@ -31,28 +35,31 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._initUI();
 		this._initHandlers();
-
-		this.model = model;
+console.log("finished initing")
+		this.jagModel = jagModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
 		this.expanded = expanded;
 		this.visible = true;
-
 	}
 
-	set model(model) {           // another complex set
-		if (this._model) {
-			this._model.removeEventListener('update', this._boundUpdateHandler);
+	set jagModel(jagModel) {           // another complex set                                                         yuk
+		if (this._jagModel) {
+			this._jagModel.removeEventListener('update', this._boundUpdateHandler);
 		}
-		this._model = model;
-		this._model.addEventListener('update', this._boundUpdateHandler);
+		this._jagModel = jagModel;
+		this._jagModel.addEventListener('update', this._boundUpdateHandler);
+		console.log("APPLYING NAME")
+        console.log(JSON.stringify((jagModel)))
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
 	}
-	get model() {
-		return this._model;
+
+
+	get jagModel() {
+		return this._jagModel;
 	}
-    //complex set expanded
-	set expanded(expanded) {
+
+	set expanded(expanded) {               // complex...leave it
 		this._expanded = expanded;
 
 		for (const edge of this._outs) {
@@ -78,7 +85,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	//complex set visible
-	set visible(visible) {
+	set visible(visible) {                       // complex...leave it
 		this._visible = visible;
 
 		for (const edge of this._outs) {
@@ -161,8 +168,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		// @TODO models should not be talking to models...
-		return this._model.addChild(edge.getNodeEnd().model, id);
+		return this._jagModel.addChild(edge.getNodeEnd().jagModel, id);
 	}
 
 	removeOutEdge(edge, id) {
@@ -171,15 +177,14 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	removeChild(edge, id) {
 		if (edge.getNodeEnd()) {
-			// @TODO models should not be talking to models... separate functionality
-			this._model.removeChild({ id: id, model: edge.getNodeEnd().model });
+			this._jagModel.removeChild({ id: id, jagModel: edge.getNodeEnd().jagModel });
 			this._outs.delete(edge);
 			edge.destroy();
 		}
 	}
 
 	getURN() {
-		return this._model.urn;
+		return this._jagModel.urn;
 	}
 
 	getParent() {
@@ -207,7 +212,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	refresh(alreadyRefreshed = new Set()) {
-		this.dispatchEvent(new CustomEvent('refresh', { detail: { model: this._model, refreshed: alreadyRefreshed } }));
+		this.dispatchEvent(new CustomEvent('refresh', { detail: { jagModel: this._jagModel, refreshed: alreadyRefreshed } }));
 	}
 
 	// getChildren() {
@@ -230,10 +235,10 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualName() {
 		if (this._in) {
-			return this._in.getChildName() || this._model.name;
+			return this._in.getChildName() || this._jagModel.name;
 		}
 
-		return this._model.name;
+		return this._jagModel.name;
 	}
 
 	setContextualDescription(description) {
@@ -244,18 +249,18 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualDescription() {
 		if (this._in) {
-			return this._in.getChildDescription() || this._model.description;
+			return this._in.getChildDescription() || this._jagModel.description;
 		}
 
-		return this._model.description;
+		return this._jagModel.description;
 	}
 
 	setChildName(id, name) {
-		this._model.setChildName(id, name);
+		this._jagModel.setChildName(id, name);
 	}
 
 	setChildDescription(id, description) {
-		this._model.setChildDescription(id, description);
+		this._jagModel.setChildDescription(id, description);
 	}
 
 
@@ -424,7 +429,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_defineModel(e) {
-		this.model = e.detail.model;
+		this.jagModel = e.detail.jagModel;
 	}
 
 	translate(dx, dy, recursive = undefined) {
@@ -465,15 +470,16 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_applyName(override = undefined) {
+		console.log("HHHHHHHEEEEEEEEEEEERRRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEE")
 		this._$header_name.innerHTML = override || this.getContextualName();
 		this._snap();
 	}
 
 	_applyOperator() {
 		let op = '';
-		if(this._model.operator == JAG.OPERATOR.AND)
+		if(this._jagModel.operator == JAG.OPERATOR.AND)
 			op = 'and';
-		else if(this._model.operator == JAG.OPERATOR.OR)
+		else if(this._jagModel.operator == JAG.OPERATOR.OR)
 			op = 'or';
 
 		this._$connector.innerHTML = op;
@@ -490,13 +496,13 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$concurrency.style.display = 'none';
 		this._$concurrency.innerHTML = '';
 
-		if (this._model.execution != JAG.EXECUTION.SEQUENTIAL)
+		if (this._jagModel.execution != JAG.EXECUTION.SEQUENTIAL)
 			return;
 
-		if (!this._model.children || this._model.children.length == 0)
+		if (!this._jagModel.children || this._jagModel.children.length == 0)
 			return;
 
-		for (const child of this._model.children) {
+		for (const child of this._jagModel.children) {
 			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
 				return;
 			}
