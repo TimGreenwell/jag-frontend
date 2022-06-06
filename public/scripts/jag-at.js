@@ -26,6 +26,7 @@ import StorageService from './services/storage-service.js';   // Interface servi
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
 import ControllerAT from "./controllers/controllerAT.js";
+import UserPrefs from "./utils/user-prefs.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -43,6 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	StorageService.senderId = 'jag-at';
+	UserPrefs.setDefaultUrnPrefix("us:tim:")
+
 	let controller = new ControllerAT();
 
 	// @TODO - I need to better understand these two

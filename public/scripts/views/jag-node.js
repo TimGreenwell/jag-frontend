@@ -168,7 +168,7 @@ console.log("finished initing")
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		return this._jagModel.addChild(edge.getNodeEnd().jagModel, id);
+		return this._jagModel.addChild(edge.getNodeEnd().jagModel.urn, id);
 	}
 
 	removeOutEdge(edge, id) {

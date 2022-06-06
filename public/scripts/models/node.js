@@ -11,6 +11,7 @@ import { UUIDv4 }  from '../utils/uuid.js';
 import JagModel from './jag.js';
 import StorageService from '../services/storage-service.js';
 import Validation from '../utils/validation.js';
+import UserPrefs from "../utils/user-prefs.js";
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
@@ -145,10 +146,14 @@ export default class Node extends EventTarget {
 	}
 
 	get name() {
-		return (this.jag === undefined) ? JagModel.defaultName : this.jag.name;
+		return (this.jag === undefined) ? '' : this.jag.name;
+	}
+
+	set name(name) {
+		this.jag.name = name;
 	}
 	get urn() {
-		return (this.jag === undefined) ? JagModel.defaultUrn : this.jag.urn;
+		return (this.jag === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.jag.urn;
 	}
 
 	isRoot() {
@@ -200,6 +205,4 @@ export default class Node extends EventTarget {
 
 }
 
-Node.DEFAULT_JAG_NAME = '';
-Node.default_urn = 'us:ihmc:';
 

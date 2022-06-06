@@ -88,7 +88,6 @@ ia-jag > header h1,
 ia-jag > h2 {
 	font-weight: normal;
 	transition: bottom 250ms ease-in-out;
-	border-bottom: 1px solid transparent;
 	margin: 0;
 	outline: 0;
 }
@@ -97,6 +96,17 @@ ia-jag > header h1 input {
 	background: transparent;
 	border: none;
 	box-shadow: none;
+	font-size: 1.2em;
+	width: 100%;
+}
+
+ia-jag > h2 input {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	font-size: 1em;
+	width: 100%;
+
 }
 
 ia-jag > header h1 {

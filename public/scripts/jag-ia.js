@@ -15,6 +15,7 @@ import TeamEditor from './views/team.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";
+import UserPrefs from "./utils/user-prefs.js";
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
+	UserPrefs.setDefaultUrnPrefix("us:tim:")
 
 	let controller = new ControllerIA();
 

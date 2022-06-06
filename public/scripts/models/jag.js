@@ -30,6 +30,7 @@ export default class JAG extends EventTarget {
                 } ) {
         super();
 
+
         // All string properties can be copied.
         this._urn = urn;
         this._name = name;
@@ -62,12 +63,6 @@ export default class JAG extends EventTarget {
         this._isPublished = false;
     }
 
-    get defaultUrn() {
-        return this._defaultUrn;
-    }
-    set defaultUrn(defaultUrn){
-        this._defaultUrn = defaultUrn;
-    }
 
     get urn() {
         return this._urn;
@@ -155,7 +150,7 @@ export default class JAG extends EventTarget {
 
 
 
-    addChild(child, id = undefined) {  // Add UUIDv4 default here
+    addChild(urn, id = undefined) {  // Add UUIDv4 default here
         /**
          * Adds the given JAG as a child to this JAG.
          * If an ID already exists, the child already exists, and this was likely called
@@ -170,8 +165,8 @@ export default class JAG extends EventTarget {
         if (id === undefined) {   // <-- prob obs now
             this._children.push({
                 id: id = UUIDv4(),
-                urn: child.urn,
-                jagModel: child
+                urn: urn
+            //    jagModel: child   // dont think this is really there.  would be too much to serialize
             });
         }
         return id;
@@ -469,6 +464,8 @@ export default class JAG extends EventTarget {
             return jagList;
         } else {
             try {
+                console.log("Validating")
+                console.log(json)
                 ValidationUtility.validateJAG(json);
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.

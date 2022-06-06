@@ -15,6 +15,7 @@ import JagModel from "../models/jag.js";
 import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
+import UserPrefs from "../utils/user-prefs.js";
 // should need JagModel once I can create Jag by giving valid URN
 
 export default class ControllerIA {
@@ -86,7 +87,6 @@ export default class ControllerIA {
     }
 
     async initialize() {
-        JagModel.setDefaulturn = "us:ihmc:"
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -122,9 +122,10 @@ export default class ControllerIA {
         this._iaTable.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));
         this._iaTable.addEventListener('local-urn-updated', this.localUrnUpdatedHandler.bind(this));
 
-        this._analysisLibrary.addEventListener('library-analysis-selected', this.libraryAnalysisSelected.bind(this));
 
+        this._analysisLibrary.addEventListener('library-analysis-selected', this.localLibraryAnalysisSelected.bind(this));
 
+        //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
     }
 
 
@@ -141,50 +142,43 @@ export default class ControllerIA {
 
     /**
      *                                   Local Handlers
-     * localAnalysisCreatedHandler - requires createAnalysis, displayAnalysis
+     * localAnalysisCreatedHandler - requires createStandardAnalysis, displayAnalysis
      * localAnalysisUpdatedHandler
      * localNodeAddChildHandler
      * localNodePruneChildHandler
      * localCollapseToggledHandler
-     * libraryAnalysisSelected
+     * localLibraryAnalysisSelected
      *
      * @param event
      * @returns {Promise<void>}
      */
 
     async localJagUpdatedHandler(event){
-        let eventDetail = event.detail;
         console.log("JAG UPDATED")
-        console.log(eventDetail);
-        let jagModel  = eventDetail.jag;
-
-        await StorageService.update(jagModel, 'jag');
-
+        await StorageService.update(event.detail.jagModel, 'jag');
     }
 
     async localJagCreatedHandler(event){
-        let eventDetail = event.detail;
-        console.log(eventDetail);
-        let jagModel = new JagModel({urn: eventDetail.urn});
-        jagModel.name = eventDetail.name;
+        let jagModel = new JagModel({urn: event.detail.urn});
+        jagModel.name = event.detail.name;
+        console.log("about to write")
+        console.log(event.detail.urn)
+        console.log(event.detail.name)
+        console.log(jagModel)
         await StorageService.create(jagModel, 'jag');
     }
 
     async localAnalysisCreatedHandler(event){
-        let eventDetail = event.detail;
-        let name = eventDetail.name;
-        let rootUrn = eventDetail.rootUrn;
-        let id = await this.createAnalysis(name, rootUrn, "Popup")
+        let id = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
     }
+    
     async localAnalysisUpdatedHandler(event) {
-        const eventDetail = event.detail;
-        const updatedAnalysisModel = eventDetail.node;
-        await StorageService.update(updatedAnalysisModel, 'analysis');
+        await StorageService.update(event.detail.analysis, 'analysis');
     }
+
     async localNodeAddChildHandler(event){
         // This will not be permanent until a valid URN is set.  Not-persistant.
-        let eventDetail = event.detail;
-        let node = eventDetail.node;
+        let node = event.detail.node;
         if (node.canHaveChildren) {
             const child = new NodeModel();
             child.parent = node;
@@ -194,36 +188,26 @@ export default class ControllerIA {
             alert("Node must first be assigned a valid URN")
         }
     }
+
     async localNodePruneChildHandler(event) {
         // A Prune (or any delete) is a potentially significant change.
         // Going to just update parent.  Actually prune node?
         // After a quick check we are not pruning the head.
-        let eventDetail = event.detail;
-        let node = eventDetail.node;
-        let parentJag = eventDetail.node.parent.jag
-        let childJag = eventDetail.node.jag
+
+        let parentJag = event.detail.node.parent.jag
+        let childJag = event.detail.node.jag
         let parentJagChildren = parentJag.children;
 
         let index = 0;
         let found = false;
-        console.log("Parent Jag's children was: ")
-        console.log(parentJagChildren)
         while ((index < parentJagChildren.length) && (!found)) {
-            console.log("inwhile - index = " + index)
-            console.log(parentJagChildren[index].urn)
-            console.log(childJag.urn)
             if (parentJagChildren[index].urn === childJag.urn) {
-                console.log(index)
-                console.log(parentJagChildren.splice(index,1));
+                parentJagChildren.splice(index,1);
                 found = true;
             }
             else{++index}
         }
-        console.log(parentJagChildren)
         parentJag.children = parentJagChildren;
-        console.log("Parent Jag's children now: ")
-        console.log(parentJag.children)
-
         await StorageService.update(parentJag, "jag")
     }
 
@@ -239,9 +223,9 @@ export default class ControllerIA {
         // just initialize tree would be nice - but think it needs to start from scratch.
         // earlier version of this just call a 'layout'event - whats that?
         this._iaTable.analysisView.layout();
-
     }
-    async libraryAnalysisSelected(event) {
+
+    async localLibraryAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
         this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
         this._iaTable.analysisModel = this._currentAnalysis;
@@ -257,10 +241,12 @@ export default class ControllerIA {
 
     async handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         // 1) update the jag listing
-        // 2) if urn is in current Analysis.nodeModel tree then a) redraw or b) surjury
+        // 2) @todo if urn is in current Analysis.nodeModel tree
+        //         then a) redraw or b) surjury
 
         let origJagModel = this.jagModelMap.get(updatedJagUrn);  // Get original data from cache
         this.addJagModel(updatedJagModel);                       // Update cache to current
+        UserPrefs.setDefaultUrnPrefixFromUrn(updatedJagUrn)
         let newKids = updatedJagModel.children.map(entry => {
             return entry.urn
         })
@@ -285,6 +271,7 @@ export default class ControllerIA {
         }
     }
     //  The surgical method for handling new Jag Updates
+    // in surgical: need to update jaglisting for suggestion building in jagcells.
 //     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
 //         //  Update Jag Model has arrived.
 //         this._nodeModelList.forEach(node => {
@@ -297,8 +284,11 @@ export default class ControllerIA {
 //             }
 //         })
 //     }
+
+
     async handleJagStorageCreated(createdJagModel, createdJagUrn) {
         this.addJagModel(createdJagModel);
+        UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
         // thought below is to surgically add it to the node tree - if its in the currentAnalysis
         // until then, just drawing the whole thing.
         if (this._currentAnalysis) {
@@ -504,7 +494,7 @@ export default class ControllerIA {
     /**
      *                                        Support Functions
      *
-     * createAnalysis - required by 1) localAnalysisCreatedHandler
+     * createStandardAnalysis - required by 1) localAnalysisCreatedHandler
      * displayAnalysis - required by 1) localAnalysisCreatedHandler
      *
      *
@@ -517,7 +507,7 @@ export default class ControllerIA {
 
 
 
-    async createAnalysis(analysisName, rootUrn, source) {
+    async createStandardAnalysis(analysisName, rootUrn, source) {
         // if (await StorageService.has(rootUrn, 'jag')) {
         let rootJagModel = await StorageService.get(rootUrn, 'jag');
         //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")

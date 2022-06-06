@@ -12,6 +12,7 @@ import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import JAG from "./models/jag.js";
+import UserPrefs from "./utils/user-prefs.js";
 
 class Playground extends Popupable {
 
@@ -637,7 +638,6 @@ console.log("DO I GET HERE?")
 //	  <div></div>
 //	  <div class="popup-box" style="visablity
 
-Playground.defaultUrn = "us:ihmc:";
 
 Playground.POPUP_TYPES = {
     WARNING: 'popup-warning',
@@ -655,7 +655,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             name: 'popname', label: 'Name', type: 'text', options: function () {
                 let eventMap = new Map();
                 eventMap.set('input', () => {
-                    const newName = Playground.defaultUrn + document.getElementById('popname').value;
+                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('popname').value;
                     const convName = newName.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
                     document.getElementById('popurn').value = convName;
                 });
@@ -665,10 +665,10 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             name: 'popurn', label: 'URN', type: 'text', options: function () {
                 let eventMap = new Map();
-                eventMap.set('blur', () => {
-                    const newUrn = document.getElementById('popurn').value;
-                    Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
-                });
+ //               eventMap.set('blur', () => {
+ // just remove options if this works                   const newUrn = document.getElementById('popurn').value;
+ //                   Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
+ //               });
                 return eventMap;
             }
         },

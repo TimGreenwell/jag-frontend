@@ -10,6 +10,7 @@
 import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JagModel from "../models/jag.js";
+import UserPrefs from "../utils/user-prefs.js";
 
 
 export default class ControllerAT {
@@ -145,6 +146,7 @@ export default class ControllerAT {
         const newJagModel = new JagModel({urn: urn, name: name, description: description});
         if (InputValidator.isValidUrn(newJagModel.urn))  {
             await StorageService.create(newJagModel, 'jag');
+            this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
         } else {
             window.alert("Invalid URN");
         }
@@ -156,6 +158,7 @@ export default class ControllerAT {
         const updatedJagModel = eventDetail.jagModel;
         console.log(updatedJagModel)
         await StorageService.update(updatedJagModel, 'jag');
+
     }
 
     async localJagDeletedHandler(event) {
@@ -229,16 +232,14 @@ export default class ControllerAT {
      */
 
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+        UserPrefs.setDefaultUrnPrefixFromUrn(updatedJagUrn)
         this._playground.updateJagNode(updatedJagModel, updatedJagUrn);         // update the graph node view on update
         this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
         this._library.updateItem(updatedJagModel);
     }
 
     handleJagStorageCreated(createdJagModel, createdJagUrn) {
-    console.log("iiiiiiiiiiii")
-        console.log(createdJagModel)
-        console.log(createdJagUrn)
-        this._playground._addJagNodeTree(createdJagModel, createdJagUrn);         // update the graph node view on update
+        UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
         this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
     }
 

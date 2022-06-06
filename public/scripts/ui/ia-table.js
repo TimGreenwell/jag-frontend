@@ -9,7 +9,7 @@
 
 import AgentModel from '../models/agent.js';
 import AnalysisModel from '../models/analysis-model.js';
-import JAG from '../models/jag.js';
+import JagModel from '../models/jag.js';
 import NodeModel from '../models/node.js';
 import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
@@ -24,56 +24,39 @@ class IATable extends Popupable {
         this.setPopupBounds(this);
 
         this._analysisModel = null;
+        this._availableJagUrns = [];
 
         this._domElements = {
             name: undefined,
             selector: undefined,
             analysis: undefined,
         };
-
-
         this._initUI();
-
         this._boundRefresh = this._refresh.bind(this);
 
-      //  StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
-     //   StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
-        // StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));   -- not needed -- right?
-
-        //	StorageService.subscribe("jag-storage-updated", this.updateNode.bind(this));
-        //	StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
     }
 
-    // get analysisSelector() {
-    // 	return this._domElements.selector;
-    // }
-
-    handleJagStorageCreated(newJag, newJagUrn) {
-        console.log("WRITE THIS --  we have a new jagModel to handle")
-        console.log(" n/m  -- ia table should not care about a new jag -- only a jag update.")
+    get analysisModel() {
+        return this._analysisModel;
     }
+    set analysisModel(newAnalysisModel) {
+        this._analysisModel = newAnalysisModel;
+    }
+
+    get availableJagUrns() {
+        return this._availableJagUrns;
+    }
+    set availableJagUrns(jagUrnList) {
+        this._availableJagUrns = jagUrnList;
+    }
+
 
 
     get analysisView() {
         return this._domElements.analysis;
     }
 
-    get analysisModel() {
-        return this._analysisModel;
-    }
 
-    set analysis(newAnalysisModel) {
-        console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-        console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-        console.log("ccccccccccccccc NOBODY IS CALLING THIS ccccccccccccccccccccccccc");
-        console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-        console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-    }
-
-
-    set analysisModel(newAnalysisModel) {
-        this._analysisModel = newAnalysisModel;
-    }
 
     displayAnalysis() {
         // remove current view if it exists
@@ -98,19 +81,6 @@ class IATable extends Popupable {
             }
         }
     }
-
-
-
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! Trying to eliminate the buildAnalysisJagNodes
-    async handleAnalysisStorageCreated(newAnalysisModel, newAnalysisId) {
-       // await StorageService.clear('node');
-       // await newAnalysisModel.buildAnalysisJagNodes(newAnalysisModel.root);
-       // this.analysisModel = newAnalysisModel;
-    }
-
-
-
-
 
 
     _initUI() {
@@ -163,10 +133,10 @@ class IATable extends Popupable {
         $header.appendChild($import_analysis);
         $header.appendChild($analysis_file);
 
-        $new_analysis.addEventListener('click', this._handleNewAnalysis.bind(this));
+        $new_analysis.addEventListener('click', this._handleNewAnalysisPopup.bind(this));
         $analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
         $analysis_description.addEventListener('blur', this._handleAnalysisDescriptionChange.bind(this));
-        $export_analysis.addEventListener('click', this._handleExportAnalysis.bind(this));
+        $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
         $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
         $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
@@ -184,12 +154,21 @@ class IATable extends Popupable {
         this._domElements.analysis.layout();
     }
 
-    _handleNewAnalysis() {
+    _handleNewAnalysisPopup() {
         this.popup({
             content: IATable.NOTICE_CREATE_ANALYSIS,
             trackEl: this._domElements.create,
             inputs: {table: this},
             highlights: [this._domElements.create]
+        });
+    }
+
+    _handleExportAnalysisPopup() {
+        this.popup({
+            content: IATable.NOTICE_EXPORT_STATIC,
+            trackEl: this._domElements.export,
+            inputs: {table: this},
+            highlights: [this._domElements.export]
         });
     }
 
@@ -203,44 +182,8 @@ class IATable extends Popupable {
         this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
-    _handleExportAnalysis() {
-        this.popup({
-            content: IATable.NOTICE_EXPORT_STATIC,
-            trackEl: this._domElements.export,
-            inputs: {table: this},
-            highlights: [this._domElements.export]
-        });
-    }
 
-    async _checkImportConflicts(analysisModel) {
-        {
-            //const service = AnalysisService.instance('idb-service');
-            if (await StorageService.has(analysisModel.id, 'analysis'))
-                return true;
-        }
 
-        {
-            //const service = NodeService.instance('idb-service');
-            for (const node of analysisModel.nodes)
-                if (await StorageService.has(node.id, 'node'))
-                    return true;
-        }
-
-        {
-            //const service = TeamService.instance('idb-service');
-            for (const team of analysisModel.teams)
-                if (await StorageService.has(team.id, 'team'))
-                    return true;
-        }
-
-        {
-            //const service = AgentService.instance('idb-service');
-            for (const team of analysisModel.teams)
-                for (const agent of team.agents)
-                    if (await StorageService.has(agent.id, 'agent'))
-                        return true;
-        }
-    }
 
     async _handleUploadAnalysis(e) {
         const files = this._domElements.file.files;
@@ -255,7 +198,7 @@ class IATable extends Popupable {
         if (analysisModel.jags) {
             //const service = JAGService.instance('idb-service');
             for (const jag of analysisModel.jags) {
-                if (await StorageService.has(jag.urn, 'jag')) {
+                if (this._availableJagUrns.contains(jag.urn)) {
                     this.popup({
                         content: IATable.NOTICE_OVERWRITE_JAG,
                         trackEl: this._domElements.import,                  // To separate: put popups in iatable function.  bring rest up.
@@ -266,13 +209,45 @@ class IATable extends Popupable {
             }
         }
 
-        this.popup({
-            content: IATable.NOTICE_OVERWRITE_ANALYSIS,
-            trackEl: this._domElements.import,
-            inputs: {table: this, analysis: analysisModel, conflict: await this._checkImportConflicts(analysisModel)},
-            highlights: [this._domElements.import]
-        });
+        // This verifies data overwrite -- must be called from IA Controller (return true/false)
+        // this.popup({
+        //     content: IATable.NOTICE_OVERWRITE_ANALYSIS,
+        //     trackEl: this._domElements.import,
+        //     inputs: {table: this, analysis: analysisModel, conflict: await this._checkImportConflicts(analysisModel)},
+        //     highlights: [this._domElements.import]
+        // });
     }
+
+
+    // async _checkImportConflicts(analysisModel) {
+    //     {
+    //         //const service = AnalysisService.instance('idb-service');
+    //         if (await StorageService.has(analysisModel.id, 'analysis'))
+    //             return true;
+    //     }
+    //
+    //     {
+    //         //const service = NodeService.instance('idb-service');
+    //         for (const node of analysisModel.nodes)
+    //             if (await StorageService.has(node.id, 'node'))
+    //                 return true;
+    //     }
+    //
+    //     {
+    //         //const service = TeamService.instance('idb-service');
+    //         for (const team of analysisModel.teams)
+    //             if (await StorageService.has(team.id, 'team'))
+    //                 return true;
+    //     }
+    //
+    //     {
+    //         //const service = AgentService.instance('idb-service');
+    //         for (const team of analysisModel.teams)
+    //             for (const agent of team.agents)
+    //                 if (await StorageService.has(agent.id, 'agent'))
+    //                     return true;
+    //     }
+    // }
 
     _handleImportAnalysis(e) {
         this._domElements.file.click();
@@ -421,7 +396,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 
                 //const jags = await JAGService.instance('idb-service').all();
                 const jags = await StorageService.all('jag');
-                //		const jags = jsonList.map(JAG.fromJSON);
+                //		const jags = jsonList.map(JagModel.fromJSON);
 
                 for (const jag of jags) {
                     options.push({
@@ -491,15 +466,17 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
         {
             text: "Overwrite", color: "black", bgColor: "red",
             action: async function ({inputs: {jag}}) {
-                const jagModel = JAG.fromJSON(jag);
-                await StorageService.create(jagModel, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
+                const newJagModel = JagModel.fromJSON(jag);
+                this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {jagModel: newJagModel}}));
+                // seems like a create - but really an update --- an upstream check for 'isPublished' should be made.
+             //   await StorageService.create(newJagModel, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
     ]
 });
 
-IATable.defaultUrn = "us:ihmc:";
+//IATable.defaultUrn = "us:ihmc:";
 IATable.FALLBACK_ANALYSIS_NAME = 'AnalysisModel w/o name';
 IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';
 
