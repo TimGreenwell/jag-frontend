@@ -33,7 +33,7 @@ export default class ControllerIA {
 
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
-        //StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));
+        StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));
         //StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
         //StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
         StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
@@ -87,6 +87,7 @@ export default class ControllerIA {
     }
 
     async initialize() {
+        UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -94,7 +95,6 @@ export default class ControllerIA {
 
     async initializeCache(){
 
-        console.log("initialing cache");
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag))
 
@@ -107,8 +107,6 @@ export default class ControllerIA {
     }
 
     initializePanels() {
-        console.log("checking....");
-        console.log(this._analysisModelMap.values())
         this._analysisLibrary.addListItems([...this._analysisModelMap.values()])
     }
 
@@ -131,10 +129,9 @@ export default class ControllerIA {
 
     async localUrnUpdatedHandler(event){
         let eventDetail = event.detail;
-        console.log("JAG UPDATED")
         let originalUrn  = eventDetail.originalUrn;
         let newUrn  = eventDetail.newUrn;
-        await updateURN(originalUrn, newUrn)
+        await this.updateURN(originalUrn, newUrn)
 
     }
 
@@ -154,17 +151,11 @@ export default class ControllerIA {
      */
 
     async localJagUpdatedHandler(event){
-        console.log("JAG UPDATED")
         await StorageService.update(event.detail.jagModel, 'jag');
     }
 
     async localJagCreatedHandler(event){
-        let jagModel = new JagModel({urn: event.detail.urn});
-        jagModel.name = event.detail.name;
-        console.log("about to write")
-        console.log(event.detail.urn)
-        console.log(event.detail.name)
-        console.log(jagModel)
+        let jagModel = new JagModel(event.detail);
         await StorageService.create(jagModel, 'jag');
     }
 
@@ -180,9 +171,10 @@ export default class ControllerIA {
         // This will not be permanent until a valid URN is set.  Not-persistant.
         let node = event.detail.node;
         if (node.canHaveChildren) {
-            const child = new NodeModel();
-            child.parent = node;
-            node.addChild(child)
+            const childJag = new JagModel({urn: UserPrefs.getDefaultUrnPrefix(), name: ''})
+            const childNode = new NodeModel({jag: childJag});
+            childNode.parent = node;
+            node.addChild(childNode)
             this._iaTable.displayAnalysis();
         } else {
             alert("Node must first be assigned a valid URN")
@@ -213,12 +205,8 @@ export default class ControllerIA {
 
 
     localCollapseToggledHandler(event) {
-        console.log("see the toggle");
-
         let eventDetail = event.detail;
-        console.log(event)
         let node = eventDetail.node;
-        console.log(node)
         node.toggleCollapse();             //  -- think this is going to be moved to an Analysis array if we want it saved.
         // just initialize tree would be nice - but think it needs to start from scratch.
         // earlier version of this just call a 'layout'event - whats that?
@@ -243,10 +231,8 @@ export default class ControllerIA {
         // 1) update the jag listing
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surjury
-
         let origJagModel = this.jagModelMap.get(updatedJagUrn);  // Get original data from cache
         this.addJagModel(updatedJagModel);                       // Update cache to current
-        UserPrefs.setDefaultUrnPrefixFromUrn(updatedJagUrn)
         let newKids = updatedJagModel.children.map(entry => {
             return entry.urn
         })
@@ -255,36 +241,33 @@ export default class ControllerIA {
         });
         let kidsToAdd = newKids.filter(newKid => !oldKids.find(oldKid => newKid === oldKid))
         if (kidsToAdd.length != 0) {
-            console.log("Children were added")
-            this.handleJagStorageCreated(updatedJagModel, updatedJagUrn);
+            console.log("An alternative way to handle and watch structural changes")
+            console.log("new child to add")
+            console.log(updatedJagModel)
+            if (this._currentAnalysis) {
+                // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
+                this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
+                this._iaTable.analysisModel = this._currentAnalysis;
+                this._iaTable.displayAnalysis();
+            }
         }
         let kidsToRemove = oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
         if (kidsToRemove.length != 0) {
-            console.log("Children were deleted");
-            this.handleJagStorageCreated(updatedJagModel, updatedJagUrn);
+            console.log("An alternative way to handle and watch structural changes")
+            console.log("new child to remove")
+            console.log(updatedJagModel)
+            if (this._currentAnalysis) {
+                // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
+                this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
+                this._iaTable.analysisModel = this._currentAnalysis;
+                this._iaTable.displayAnalysis();
+            }
         }
         if  ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
-            console.log("No structure change")
-           // this._iaTable.analysisView.layout();
-           // await this.displayAnalysis(this._currentAnalysis.id);  /// need more than this.. not redrawing..000
+            // console.log("Brute force change")
             this._iaTable.displayAnalysis();
         }
     }
-    //  The surgical method for handling new Jag Updates
-    // in surgical: need to update jaglisting for suggestion building in jagcells.
-//     static handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-//         //  Update Jag Model has arrived.
-//         this._nodeModelList.forEach(node => {
-//             if (updatedJagModel.urn == node.jag.urn) {
-//                 node.jag = updatedJagModel;defaultUrn
-//             }
-//             if (updatedJagModel.children.contains(node.id)){
-//                 node.parent = updatedJagModel;
-//                 node.isRoot = false;
-//             }
-//         })
-//     }
-
 
     async handleJagStorageCreated(createdJagModel, createdJagUrn) {
         this.addJagModel(createdJagModel);
@@ -299,14 +282,15 @@ export default class ControllerIA {
         }
     }
 
+    async handleJagStorageDeleted(deletedJagUrn) {
+
+    }
 
 
     async handleAnalysisStorageCreated(createdAnalysisModel, createdAnalysisId) {
         this.addAnalysisModel(createdAnalysisModel);
 
         if (this._iaTable.analysisModel){
-            console.log("hhhhhhhhhhhhhhhhhhhhhhhHHH")
-            console.log(this._iaTable.analysisModel)
             createdAnalysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(createdAnalysisModel.rootUrn);
         this._iaTable.analysisModel = createdAnalysisModel;
         this._iaTable.displayAnalysis();
@@ -389,7 +373,6 @@ export default class ControllerIA {
                 }
             } else {  // urn not already being used
                 // is the original JagModel published?
-                console.log("is published - " + origJagModel.isPublished);
                 if (origJagModel.isPublished) {
                     await this.cloneJagModel(origJagModel, newURN)
                 } else {/// the original JAGModel is not published

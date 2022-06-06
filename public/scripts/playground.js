@@ -83,10 +83,6 @@ class Playground extends Popupable {
 									  jagModel_set: selectedJagDescendants = new Map(),
 									  expanded: isExpanded = false
 								  }) {
-        console.log(selectedJag)
-        console.log(selectedJagDescendants)
-        console.log(isExpanded)
-        console.log("oooooo")
 		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
 	}
 
@@ -127,7 +123,6 @@ class Playground extends Popupable {
 		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
 		this._activeNodeSet.forEach((node) => {
 			//	for (const node of this._activeNodeSet) {
-console.log("updating jag node...................")
 			if (node.jagModel.urn == updatedJagModel.urn) {
 				const oldNode = node.jagModel;
 
@@ -238,11 +233,7 @@ console.log("updating jag node...................")
 
     createJagNode(jagModel, expanded) {
 
-        console.log("Going to create a Jag Node");
-        console.log(JSON.stringify(jagModel))
-        console.log(expanded)
         const node = new JagNode(jagModel, expanded);
-        console.log(JSON.stringify(node))
 
         node.addEventListener('mousedown', (e) => {
             // If meta isn't pressed clear previous selection
@@ -291,7 +282,6 @@ console.log("updating jag node...................")
         this._nodes_container.appendChild(node);
         node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
         node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-        console.log(JSON.stringify(node))
         return node;
     }
 
@@ -299,7 +289,6 @@ console.log("updating jag node...................")
     _traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
         // if no child...  createJagNode
         // else proceed with the current child
-console.log("DO I GET HERE?")
         const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
 
         if (context) {
@@ -375,7 +364,6 @@ console.log("DO I GET HERE?")
 		const height = this.clientHeight;
 		const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height / 2);
 		this._checkBounds(node.getTree());
-        console.log(node)
 	}
 
     handleRefresh({jagModel, jagModel_set, refreshed = new Set()}) {
@@ -687,7 +675,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
 
-                this.dispatchEvent(new CustomEvent('local-jag-created', {detail: {urn: popurn, name: popname, description: popdescription}}));
+                this.dispatchEvent(new CustomEvent('local-jag-created', {detail: {urn: popurn, name: popname, description: popdescription}})); // local-jag-created in playground uses node
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

@@ -80,7 +80,7 @@ export default class ControllerAT {
     }
 
     async initialize() {
-        JagModel.setDefaultUrn = "us:ihmc:"
+        UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -232,7 +232,6 @@ export default class ControllerAT {
      */
 
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-        UserPrefs.setDefaultUrnPrefixFromUrn(updatedJagUrn)
         this._playground.updateJagNode(updatedJagModel, updatedJagUrn);         // update the graph node view on update
         this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
         this._library.updateItem(updatedJagModel);
@@ -248,10 +247,12 @@ export default class ControllerAT {
     }
 
     handleJagStorageCloned(clonedJagModel, clonedJagUrn) {
+        UserPrefs.setDefaultUrnPrefixFromUrn(clonedJagUrn)
         this._playground._addJagNodeTree(clonedJagModel, clonedJagUrn)
     }
 
     handleJagStorageReplaced(newJagModel, replacedJagUrn) {
+      //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
         this._playground.replaceJagNode(newJagModel, replacedJagUrn)
         this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in library
     }

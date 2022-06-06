@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
-	UserPrefs.setDefaultUrnPrefix("us:tim:")
+
 
 	let controller = new ControllerIA();
 

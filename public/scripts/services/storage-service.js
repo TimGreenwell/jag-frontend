@@ -107,7 +107,6 @@ export default class StorageService extends SharedObservable{
      * No notification made. (Not a storage change)
      */
     static async all(schema = this._schema) {
-        console.log("{} - Storage request --- get all data for " + schema);
         const descriptions = await this._storageInstancesMap.get(this._preferredStorage).all(schema);
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
@@ -122,7 +121,6 @@ export default class StorageService extends SharedObservable{
      * No notification made. (Not a storage change)
      */
     static async get(id, schema = this._schema) {
-        console.log("{} - Storage request --- get item matching " + schema + " " + id);
         const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, id);
         const model = await SchemaManager.deserialize(schema,description);
         return model;

@@ -68,6 +68,13 @@ export default class JAG extends EventTarget {
         return this._urn;
     }
 
+    set urn(urn) {
+        if (!ValidationUtility.isValidUrn(this._urn)) {
+            console.log("yes - pass 2 - setting urn")
+            this._urn = urn;
+        }
+    }
+
     set name(name) {
             this._name = name;
     }
@@ -111,7 +118,11 @@ export default class JAG extends EventTarget {
 
     set children(value) {
         this._children = value;
+        if ((this._children.length !== 0) && (this._operator == JAG.OPERATOR.NONE)) {
+           this._operator = JAG.OPERATOR.AND;
+        }
     }
+
     get children() {
         return [...this._children];
     }
@@ -168,6 +179,9 @@ export default class JAG extends EventTarget {
                 urn: urn
             //    jagModel: child   // dont think this is really there.  would be too much to serialize
             });
+        }
+        if ((this._children.length !== 0) && (this._operator == JAG.OPERATOR.NONE)) {
+            this._operator = JAG.OPERATOR.AND;
         }
         return id;
     }
@@ -464,8 +478,6 @@ export default class JAG extends EventTarget {
             return jagList;
         } else {
             try {
-                console.log("Validating")
-                console.log(json)
                 ValidationUtility.validateJAG(json);
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.

@@ -635,7 +635,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Update jagModel references.
         this._node.jagModel = newJagModel; //?
         this._jagModel = newJagModel;
-        this.dispatchEvent(new CustomEvent('local-jag-created', {bubbles: true, composed: true, detail: {node: newJagModel}}));
+        this.dispatchEvent(new CustomEvent('local-jag-created', {bubbles: true, composed: true, detail: {node: newJagModel}}));    // local-jag-created in playground uses components
         //await StorageService.create(newJagModel, 'jag');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);

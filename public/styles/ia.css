@@ -78,6 +78,10 @@ ia-analysis > ia-column-header {
 	min-width: -webkit-fill-available;
 }
 
+ia-jag > header h1.nodename[placeholder]:empty:before {
+	content: attr(placeholder);
+	color: LightGray;
+}
 
 ia-jag > header {
 	display: flex;

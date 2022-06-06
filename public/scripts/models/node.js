@@ -156,6 +156,14 @@ export default class Node extends EventTarget {
 		return (this.jag === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.jag.urn;
 	}
 
+	set urn(urn) {
+		console.log(this.jag)
+		if (this.jag !== undefined) {
+			console.log("yes - pass 1 - setting urn")
+			this.jag.urn = urn                    // Remember - can't update if urn is valid. (enforced at jagModel)
+		}
+	}
+
 	isRoot() {
 		return this.parent === undefined;
 	}         // is determined by lack of parent.

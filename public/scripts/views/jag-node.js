@@ -16,11 +16,6 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(jagModel, expanded) {
 		super();
-		console.log("creating>>>>>>>>>>>>>>>>>>>>>>>>")
-		console.log(JSON.stringify(jagModel))
-		console.log("creating>>>>>>>>>>>>>>>>>>>>>>>>")
-
-
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
@@ -35,7 +30,6 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._initUI();
 		this._initHandlers();
-console.log("finished initing")
 		this.jagModel = jagModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
 		this.expanded = expanded;
 		this.visible = true;
@@ -47,8 +41,6 @@ console.log("finished initing")
 		}
 		this._jagModel = jagModel;
 		this._jagModel.addEventListener('update', this._boundUpdateHandler);
-		console.log("APPLYING NAME")
-        console.log(JSON.stringify((jagModel)))
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
@@ -470,7 +462,6 @@ console.log("finished initing")
 	}
 
 	_applyName(override = undefined) {
-		console.log("HHHHHHHEEEEEEEEEEEERRRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEE")
 		this._$header_name.innerHTML = override || this.getContextualName();
 		this._snap();
 	}

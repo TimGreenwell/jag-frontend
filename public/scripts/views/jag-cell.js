@@ -83,7 +83,7 @@ class JagCell extends AnalysisCell {
 		// note: the icon controls in the JagCell are defined by JagCellControls
 
 		this._htmlElements.nameEntry.addEventListener('blur', this._handleNameChange.bind(this));  // pass name and 'auto-urn' up to ControllerIA for Jag updating.
-		this._htmlElements.nameEntry.addEventListener('keydown', this._handleNameEdit.bind(this)); // adds child or sibling depending on keypress
+		this._htmlElements.nameEntry.addEventListener('keypress', this._handleNameEdit.bind(this)); // adds child or sibling depending on keypress
 		this._htmlElements.nameEntry.addEventListener('input', this._handleNameInput.bind(this));  // no idea.. view thing.  needed?
 
 		this._htmlElements.urnEntry.addEventListener('blur', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
@@ -97,39 +97,28 @@ class JagCell extends AnalysisCell {
 	async _handleNameChange() {
 		// This runs when the Name field of the IATABLE Jag node area loses focus - blurs
 		if (this.nameElementEntry !== this.nodeModel.name) {
-			//const newName = this.nameElementEntry;
-			//this.jag.name = newName;
-			if (Validator.isValidUrn(this.urnElementEntry)) {
-				console.log("valid")
-				this.nodeModel.name = this.nameElementEntry;
+			this.nameElementEntry = this.nameElementEntry.split(':').slice(-1);
+
+			this.nodeModel.name = this.nameElementEntry;
+			if (Validator.isValidUrn(this.nodeModel.urn)) {
 				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._nodeModel.jag}}));  //tlg changed from node to jagModel  - looks bad
-				//await ControllerIA.saveJag(this.jag);
-				// Maybe I should update a node object and pass that up to the controller.  More uniform?
 			} else {
-				console.log("not valid")
-				// if url is empty or valid then url becomes mutation of the name:
-				//	const dirtyUrl = IaTable.defaultUrn + this.jag.name;
-				const dirtyUrn = UserPrefs.getDefaultUrnPrefix() + this.nameElementEntry;
-				console.log("nv " + dirtyUrn)
-				const autoUrn = dirtyUrn.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
-				console.log("nv " + autoUrn)
-				this.urnElementEntry = autoUrn;
-				console.log("1")
-				this._nodeModel.name =  this.nameElementEntry;
-				console.log("2")
-				this._nodeModel.urn =  autoUrn;
-				console.log("3")
-				console.log(this._nodeModel.name)
-				console.log(this._nodeModel.urn)
-				// was commitNameChange(this)
-	//			this.jag.urn = autoUrn;
-				//await ControllerIA.saveJag(this.jag);
-				this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._nodeModel.jag}}));  // should not be this.jag?
-			}
+				this._nodeModel.urn = this.urnElementEntry;
+				this.dispatchEvent(new CustomEvent('local-jag-created', {
+					bubbles: true,
+					composed: true,
+					detail: this._nodeModel.jag
+				}));
+				parent = this.nodeModel.parent.jag;
+				let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+				this.dispatchEvent(new CustomEvent('local-jag-updated', {
+					bubbles: true,
+					composed: true,
+					detail: {jagModel: parent}
+				}));
+				//this._htmlElements.urnEntry.focus();   // @TODO -- started getting an error on this.. distraction.
+	}
 		}
-		//	this.urnElementEntry.focus();   // @TODO -- started getting an error on this.. distraction.
-		// Maybe I can wait on above statement until URN field blurs.
-		// Currently, it updates on name change and again on url change.  No big deal though.
 	}
 
 	async _handleNameEdit(e) {
@@ -153,6 +142,11 @@ class JagCell extends AnalysisCell {
 				this._htmlElements.nameEntry.blur();
 				break;
 		}
+		const validCharacters = new RegExp('[A-Za-z0-9-:]')
+		if ((!Validator.isValidUrn(this.nodeModel.urn))  && (e.key.length == 1) && (validCharacters.test(e.key))) {
+			this.urnElementEntry = this.urnElementEntry + e.key.toLowerCase();
+
+		}
 	}
 
 	_handleNameInput(e) {
@@ -163,46 +157,39 @@ class JagCell extends AnalysisCell {
 
 
 	_handleURNChange(e) {
-		console.log("-----------------")
-		console.log(this.urnElementEntry)
-		console.log(this.nodeModel.urn)
-		if (this.urnElementEntry !== this.nodeModel.urn) {
-			this._htmlElements.suggestions.hide();
-			// Is the current URN valid?  (A rename involves more than the initial create)
-			if (Validator.isValidUrn(this.nodeModel.urn)) {
-				this.dispatchEvent(new CustomEvent('local-urn-updated', {
-					bubbles: true,
-					composed: true,
-					detail: {originalUrn: this.nodeModel.urn, newUrn: this.urnElementEntry}
-				}));
-				//ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
-			} else {
-				this.dispatchEvent(new CustomEvent('local-jag-created', {
-					bubbles: true,
-					composed: true,
-					detail: {urn: this.urnElementEntry, name: this.nameElementEntry}
-				}));
-				console.log("just created")
-				console.log(this.urnElementEntry)
-				console.log(this.nameElementEntry)
-				console.log("Dispatching for parent update")
-				parent = this.nodeModel.parent.jag;
-				console.log(this.urnElementEntry)
-				let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
-				console.log("parent with child added")
-				console.log(parent)
-				this.dispatchEvent(new CustomEvent('local-jag-updated', {
-					bubbles: true,
-					composed: true,
-					detail: {jagModel: parent}
-				}));
+		if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
+			if (Validator.isValidUrn(this.urnElementEntry)) {        // && entered urn is valid...
+			    this._htmlElements.suggestions.hide();
+				// Is the current URN valid?  (A rename involves more than the initial create)
+				if (Validator.isValidUrn(this.nodeModel.urn)) {
+					this.dispatchEvent(new CustomEvent('local-urn-updated', {
+						bubbles: true,
+						composed: true,
+						detail: {originalUrn: this.nodeModel.urn, newUrn: this.urnElementEntry}
+					}));
+					//ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
+				} else {
+					this.dispatchEvent(new CustomEvent('local-jag-created', {
+						bubbles: true,
+						composed: true,
+						detail: {urn: this.urnElementEntry, name: this.nameElementEntry}
+					}));
+					parent = this.nodeModel.parent.jag;
+					console.log(JSON.stringify(this))
+					let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+					this.dispatchEvent(new CustomEvent('local-jag-updated', {
+						bubbles: true,
+						composed: true,
+						detail: {jagModel: parent}
+					}));
+					console.log(JSON.stringify(this))
+				}
 			}
 			//this.nodeModel.urn = this.urnElementEntry
 		}
 	}
 
 	_handleURNEdit(e) {
-		console.log("kkk");
 		switch(e.key) {
 			case 'Enter':
 				e.preventDefault();
@@ -225,7 +212,12 @@ class JagCell extends AnalysisCell {
 				this._htmlElements.suggestions.select(-1);
 				break;
 		}
+		const validCharacters = /^[A-Za-z0-9\-\:]+/
+		if ((this.nodeModel.name == '')  && (e.key.match(validCharacters))) {
+			this.nameElementEntry = (this.nameElementEntry + e.key).split(':').slice(-1);
+		}
 	}
+
 
 	_handleURNInput(e) {
 		const $suggestions = this._htmlElements.suggestions;
@@ -342,18 +334,16 @@ class JagCell extends AnalysisCell {
 
 		$nameEntry.setAttribute('contenteditable', '');
 		$nameEntry.setAttribute('spellcheck', 'false');
+		$nameEntry.classList.add('nodename');
+		$nameEntry.setAttribute('placeholder', 'Activity');
 
 
 		$urnEntry.setAttribute('contenteditable', '');
 		$urnEntry.setAttribute('spellcheck', 'false');
 		$urnEntry.setAttribute('tabindex', '-1');
 
-		console.log("+++++++++++++++++++++++++")
 		if (this._nodeModel.jag !== undefined)  // && this._nodeModel.jag.hasValidURN) {
 		{
-			console.log("+++++++++++++++++++++++++")
-			console.log(this.nodeModel.urn)
-			console.log(this.nodeModel.name)
 			$urnEntry.innerText = this.nodeModel.urn;
 			$nameEntry.innerText = this.nodeModel.name;
 		} else {
