@@ -15,12 +15,8 @@ import StorageService from '../services/storage-service.js';
 import AutoComplete from '../ui/auto-complete.js';
 import JagCellControls from '../ui/jag-cell-controls.js';
 import AnalysisCell from './analysis-cell.js';
-import IaTable from "../ui/ia-table.js";
-import InputValidator from "../utils/validation.js";
 import JAG from "../models/jag.js";
 import Validator from "../utils/validation.js";
-import ControllerIA from "../controllers/controllerIA.js";
-import UserPrefs from "../utils/user-prefs.js";
 
 // A Cell based off (model/Node)
 class JagCell extends AnalysisCell {

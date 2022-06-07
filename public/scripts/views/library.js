@@ -8,6 +8,7 @@
 
 import JagModel from '../models/jag.js';
 import StorageService from '../services/storage-service.js';
+import LibraryControls from "../ui/library-controls.js";
 
 customElements.define('jag-library', class extends HTMLElement {
 
@@ -18,12 +19,6 @@ customElements.define('jag-library', class extends HTMLElement {
         // Build outer structure inside <jag-library> (search input & ol for nodes)
 		this._initUI();
 		this._initListeners();
-
-
-		// StorageService.subscribe("jag-storage-updated", this.updateItem.bind(this));
-		// StorageService.subscribe("jag-storage-created", this.addItem.bind(this));
-		// StorageService.subscribe("jag-storage-replaced", this.replaceItem.bind(this));
-
 		this.clearLibraryList();
 	};
 
@@ -91,6 +86,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				li.appendChild(h3);
 				li.appendChild(p);
+
 
 				let search_params = [];
 				search_params.push(urn.toLowerCase());
@@ -170,6 +166,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	_initUI() {
+
 		const $header = document.createElement('header');
 		const $search = document.createElement('input');
 		const $list = document.createElement('ol');

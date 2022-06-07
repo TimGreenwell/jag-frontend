@@ -50,3 +50,23 @@ analysis-library pre {
 	padding: 0.25em;
 	margin: 0em;
 }
+
+
+library-controls .jag-button {
+	background-size: cover;
+	width: 16px;
+	height: 16px;
+	flex-basis: 16px;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+library-controls .lock-button {
+	order: 0;
+	background-image: url('/icons/ic_add_black_18dp_1x.png');
+}
+
+library-controls .delete-button {
+	order: 1;
+	background-image: url('/icons/ic_library_delete_black_18dp_1x.png');
+}

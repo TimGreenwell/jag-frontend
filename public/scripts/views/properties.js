@@ -9,6 +9,7 @@
 
 import JagModel from '../models/jag.js';
 import FormUtils from '../utils/forms.js';
+import Validator from "../utils/validation.js";
 
 customElements.define('jag-properties', class extends HTMLElement {
 
@@ -18,8 +19,6 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._consumesMap = new Map();
         this._producesMap = new Map();
         this._initUI();
-        this._initHandlers();
-      //  StorageService.subscribe("jag-storage-updated", this.handleStorageUpdate.bind(this)); // only case is when selected playground item is updated by the jag-ia updates.
 
 
         this._boundUpdate = function (e) {
@@ -41,6 +40,316 @@ customElements.define('jag-properties', class extends HTMLElement {
         }.bind(this);
     }
 
+
+    _initUI() {
+        const childOf_el = document.createElement('div');
+        childOf_el.className = 'special-wrapper child-of-notice';
+        this._childOf = document.createElement('p');
+        this._childOf.className = 'special child-of-notice';
+        this._childOf.id = 'child-of';
+        childOf_el.appendChild(this._childOf);
+
+        // const undefinedJAG_el = document.createElement('div');
+        // undefinedJAG_el.className = 'special-wrapper undefined-jag-notice';
+        // this._undefinedJAG = document.createElement('p');
+        // this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
+        // this._undefinedJAG.className = 'special undefined-jag-notice';
+        // this._undefinedJAG.id = 'undefined-jag';
+        // undefinedJAG_el.appendChild(this._undefinedJAG);
+
+        const leafNode_el = document.createElement('div');
+        leafNode_el.className = 'special-wrapper leaf-node-notice';
+        this._leafNode = document.createElement('p');
+        this._leafNode.innerHTML = 'Possible leaf node: it is a child without a model.';
+        this._leafNode.className = 'special leaf-node-notice';
+        this._leafNode.id = 'leaf-node';
+        leafNode_el.appendChild(this._leafNode);
+
+        const name_el = FormUtils.createPropertyElement('name-property', 'Name');
+        this._nameInput = FormUtils.createTextInput('name-property');
+        this._nameInput.setAttribute("placeholder", "display name");
+        this._nameInput.setAttribute("tabIndex", "0");
+        this._nameInput.className = "direct-property";
+        name_el.appendChild(this._nameInput);
+
+        const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
+        this._urnInput = FormUtils.createTextInput('urn-property');
+        this._urnInput.setAttribute("tabIndex", "1");
+        this._urnInput.className = "direct-property";
+        urn_el.appendChild(this._urnInput);
+
+        const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
+        this._descInput = document.createElement('textarea');
+        this._descInput.setAttribute('id', 'desc-property');
+        this._descInput.setAttribute('width', '100%');
+        this._descInput.setAttribute('rows', '3');
+        this._descInput.setAttribute("placeholder", "Enter your description of node here...");
+        this._descInput.setAttribute("tabIndex", "2");
+        this._descInput.className = "direct-property";
+        desc_el.appendChild(this._descInput);
+
+        const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
+        this._name_ctxInput = FormUtils.createTextInput('name-ctx-property');
+        this._name_ctxInput.className = "contextual";
+        name_ctx_el.appendChild(this._name_ctxInput);
+
+        const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
+        this._desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
+        this._desc_ctxInput.className = "contextual";
+        desc_ctx_el.appendChild(this._desc_ctxInput);
+
+        const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
+        this._executionSelect = FormUtils.createSelect('execution-property', [{
+            value: JagModel.EXECUTION.NONE,
+            text: 'None'
+        }, {
+            value: JagModel.EXECUTION.SEQUENTIAL,
+            text: 'Sequential'
+        }, {
+            value: JagModel.EXECUTION.PARALLEL,
+            text: 'Parallel'
+        }]);
+        this._executionSelect.className = 'direct-property';
+        execution_el.appendChild(this._executionSelect);
+
+        const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
+        this._operatorSelect = FormUtils.createSelect('operator-property', [{
+            value: JagModel.OPERATOR.NONE,
+            text: 'None'
+        }, {
+            value: JagModel.OPERATOR.AND,
+            text: 'And'
+        }, {
+            value: JagModel.OPERATOR.OR,
+            text: 'Or'
+        }]);
+        this._operatorSelect.className = 'direct-property';
+        operator_el.appendChild(this._operatorSelect);
+
+        // Create inputs area
+        const inputs_el = FormUtils.createPropertyElement('inputs-property', 'Inputs');
+
+        const input_add = document.createElement('span');
+        input_add.innerHTML = '+';
+        input_add.className = 'io-add';
+        input_add.addEventListener('click', this._addInput.bind(this));
+        inputs_el.appendChild(input_add);
+
+        this._inputs = FormUtils.createEmptyInputContainer('inputs-property');
+        this._inputs.className = 'directProperty';
+        inputs_el.appendChild(this._inputs);
+
+        // Create outputs area
+        const outputs_el = FormUtils.createPropertyElement('outputs-property', 'Outputs');
+
+        const output_add = document.createElement('span');
+        output_add.innerHTML = '+';
+        output_add.className = 'io-add';
+        output_add.addEventListener('click', this._addOutput.bind(this));
+        outputs_el.appendChild(output_add);
+
+        this._outputs = FormUtils.createEmptyInputContainer('outputs-property');
+        this._outputs.className = 'directProperty';
+        outputs_el.appendChild(this._outputs);
+
+        // Create bindings area
+        const bindings_el = FormUtils.createPropertyElement('bindings-property', 'Bindings');
+
+        this._bindings = FormUtils.createEmptyInputContainer('bindings-property');
+        this._bindings.className = 'directProperty';
+        bindings_el.appendChild(this._bindings);
+
+        // Create annotation area
+        const annotations_el = FormUtils.createPropertyElement('annotations-property', 'Annotations');
+
+        this._annotations = FormUtils.createEmptyInputContainer('annotations-property');
+        this._annotations.className = 'directProperty';
+        annotations_el.appendChild(this._annotations);
+
+        // Create export area
+        const export_el = FormUtils.createEmptyInputContainer('export');
+        this._export = document.createElement('button');
+        this._export.innerHTML = 'export';
+        export_el.appendChild(this._export);
+
+        this._enableProperties(false);
+
+        this.appendChild(childOf_el);
+//        this.appendChild(undefinedJAG_el);
+        this.appendChild(leafNode_el);
+        this.appendChild(name_el);
+        this.appendChild(urn_el);
+        this.appendChild(desc_el);
+        this.appendChild(name_ctx_el);
+        this.appendChild(desc_ctx_el);
+        this.appendChild(execution_el);
+        this.appendChild(operator_el);
+        this.appendChild(inputs_el);
+        this.appendChild(outputs_el);
+        this.appendChild(bindings_el);
+        this.appendChild(annotations_el);
+        this.appendChild(export_el);
+
+        // this._urnInput.addEventListener('keyup', e => {
+        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
+        // });
+
+        this._nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._nameInput.addEventListener('keyup', this._handleNameEdit.bind(this));
+
+        this._urnInput.addEventListener('focusout', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._urnInput.addEventListener('keyup', this._handleUrnEdit.bind(this));  // pass urn change to ControllerIA.updateURN
+
+        this._descInput.addEventListener('blur', this._handleDescriptionChange.bind(this));
+        this._descInput.addEventListener('keyup', this._handleDescriptionEdit.bind(this));
+
+        this._name_ctxInput.addEventListener('keyup', this._handleContextualNameChange.bind(this));
+        this._desc_ctxInput.addEventListener('keyup', this._handleContextualDescriptionChange.bind(this));
+
+        this._executionSelect.addEventListener('change', this._handleExecutionChange.bind(this));
+        this._operatorSelect.addEventListener('change', this._handleOperatorChange.bind(this));
+
+        this._export.addEventListener('click', this._handleExportClick.bind(this));
+
+    }
+
+    _handleNameChange(e) {
+        if (this._jagModel) {
+            this._jagModel.name = this._nameInput.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._jagModel}
+            }));
+        }
+    }
+    _handleNameEdit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            let inputs = this.querySelectorAll("input:enabled, textarea");
+
+            //current position in 'form'
+            const currentPosition = this._nameInput.tabIndex;
+            if (currentPosition < inputs.length - 1) {
+                inputs.item(currentPosition + 1).focus();
+            } else {
+                inputs.item(currentPosition).blur();
+            }
+        } else {
+            this._jagModel.name = this._nameInput.value;
+        }
+    }
+
+    _handleURNChange(e) {
+        if (this._jagModel.urn != this._urnInput.value) {
+            // if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
+            if (Validator.isValidUrn(this._urnInput.value)) {        // && entered urn is valid...
+                this.dispatchEvent(new CustomEvent('local-urn-updated', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {originalUrn: this._urnInput.value, newUrn: this._jagModel.urn}
+                }));
+            }
+        }
+    }
+    _handleUrnEdit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            let inputs = this.querySelectorAll("input:enabled, textarea");
+            this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
+            //current position in 'form'
+            const currentPosition = this._urnInput.tabIndex;
+            if (currentPosition < inputs.length - 1) {
+                inputs.item(currentPosition + 1).focus();
+            } else {
+                inputs.item(currentPosition).blur();
+            }
+        }
+    }
+
+    _handleDescriptionChange(e) {
+        if (this._jagModel) {
+            if (this._jagModel.description != this._descInput.value) {
+                this._jagModel.description = this._descInput.value;
+                this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {jagModel: this._jagModel}
+                }));
+            }
+        }
+    }
+    _handleDescriptionEdit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            let inputs = this.querySelectorAll("input:enabled, textarea");
+            //current position in 'form'
+            const currentPosition = this._descInput.tabIndex;
+            if (currentPosition < inputs.length - 1) {
+                inputs.item(currentPosition + 1).focus();
+            } else {
+                inputs.item(currentPosition).blur();
+            }
+        } else {
+            this._jagModel.description = this._descInput.value;
+        }
+    }
+
+    _handleContextualNameChange(e) {
+        if (this._jagModel) {
+            this._node.setContextualName(this._name_ctxInput.value);
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._jagModel}
+            }));
+        }
+    }
+    _handleContextualDescriptionChange(e) {
+        if (this._jagModel) {
+            this._node.setContextualDescription(this._desc_ctxInput.value);
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._jagModel}
+            }));
+        }
+    }
+
+    _handleExecutionChange(e) {
+        if (this._jagModel) {
+            this._jagModel.execution = this._executionSelect.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._jagModel}
+            }));
+        }
+    }
+    _handleOperatorChange(e) {
+        if (this._jagModel) {
+            this._jagModel.operator = this._operatorSelect.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._jagModel}
+            }));
+        }
+    }
+
+    _handleExportClick(e) {
+        const node = this._jagModel;
+        const json = JSON.stringify(node.toJSON());
+        const a = document.createElement('a');
+        const data = `data:application/json,${encodeURI(json)}`;
+        a.href = data;
+        a.download = `${node.name}.json`;
+        a.click();
+    }
+
+
+
+
     handleStorageUpdate(newJagModel, newJagUrn) {
         if (newJagUrn == this._urnInput) {
             this._jagModel = newJagModel;
@@ -55,7 +364,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             // if (this._jagModel instanceof UndefinedJAG) {
             //     this._jagModel.removeEventListener('define', this._boundDefine);
             // } else {
-                this._jagModel.removeEventListener('update', this._boundUpdate);
+            this._jagModel.removeEventListener('update', this._boundUpdate);
             // }
             this._node = undefined;
             this._jagModel = undefined;
@@ -70,7 +379,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 // if (this._jagModel instanceof UndefinedJAG) {
                 //     this._jagModel.addEventListener('define', this._boundDefine);
                 // } else {
-                    this._jagModel.addEventListener('update', this._boundUpdate);
+                this._jagModel.addEventListener('update', this._boundUpdate);
                 // }
             }
         } else {
@@ -88,9 +397,9 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._descInput.value = this._jagModel.description;
         this._name_ctxInput.value = this._node.getContextualName();
         this._desc_ctxInput.value = this._node.getContextualDescription();
-            this._enableProperties(true);
-            this._updateIO();
-            this._updateAnnotations();
+        this._enableProperties(true);
+        this._updateIO();
+        this._updateAnnotations();
         for (const input of this.querySelectorAll("input")) {
             input.title = input.value;
             input.onchange = () => input.title = input.value;
@@ -622,7 +931,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 
     deleteJagModel(deadJagModel) {
-        this.dispatchEvent(new CustomEvent('local-jag-deleted', {bubbles: true, composed: true, detail: {node: deadJagModel.urn}}));
+        this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+            bubbles: true,
+            composed: true,
+            detail: {node: deadJagModel.urn}
+        }));
         this._jagModel = undefined;
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
@@ -635,7 +948,11 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Update jagModel references.
         this._node.jagModel = newJagModel; //?
         this._jagModel = newJagModel;
-        this.dispatchEvent(new CustomEvent('local-jag-created', {bubbles: true, composed: true, detail: {node: newJagModel}}));    // local-jag-created in playground uses components
+        this.dispatchEvent(new CustomEvent('local-jag-created', {
+            bubbles: true,
+            composed: true,
+            detail: {node: newJagModel}
+        }));    // local-jag-created in playground uses components
         //await StorageService.create(newJagModel, 'jag');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
@@ -644,279 +961,8 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-    _initUI() {
-        const childOf_el = document.createElement('div');
-        childOf_el.className = 'special-wrapper child-of-notice';
-        this._childOf = document.createElement('p');
-        this._childOf.className = 'special child-of-notice';
-        this._childOf.id = 'child-of';
-        childOf_el.appendChild(this._childOf);
-
-        const undefinedJAG_el = document.createElement('div');
-        undefinedJAG_el.className = 'special-wrapper undefined-jag-notice';
-        this._undefinedJAG = document.createElement('p');
-        this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
-        this._undefinedJAG.className = 'special undefined-jag-notice';
-        this._undefinedJAG.id = 'undefined-jag';
-        undefinedJAG_el.appendChild(this._undefinedJAG);
-
-        const leafNode_el = document.createElement('div');
-        leafNode_el.className = 'special-wrapper leaf-node-notice';
-        this._leafNode = document.createElement('p');
-        this._leafNode.innerHTML = 'Possible leaf node: it is a child without a model.';
-        this._leafNode.className = 'special leaf-node-notice';
-        this._leafNode.id = 'leaf-node';
-        leafNode_el.appendChild(this._leafNode);
-
-        const name_el = FormUtils.createPropertyElement('name-property', 'Name');
-        this._nameInput = FormUtils.createTextInput('name-property');
-        this._nameInput.setAttribute("placeholder", "display name");
-        this._nameInput.setAttribute("tabIndex", "0");
-        this._nameInput.className = "direct-property";
-        name_el.appendChild(this._nameInput);
-
-        const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
-        this._urnInput = FormUtils.createTextInput('urn-property');
-        this._urnInput.setAttribute("tabIndex", "1");
-        this._urnInput.className = "direct-property";
-        urn_el.appendChild(this._urnInput);
-
-        const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
-        this._descInput = document.createElement('textarea');
-        this._descInput.setAttribute('id', 'desc-property');
-        this._descInput.setAttribute('width', '100%');
-        this._descInput.setAttribute('rows', '3');
-        this._descInput.setAttribute("placeholder", "Enter your description of node here...");
-        this._descInput.setAttribute("tabIndex", "2");
-        //this._descInput = FormUtils.createTextInput('desc-property');
-        this._descInput.className = "direct-property";
-        desc_el.appendChild(this._descInput);
-
-        const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
-        this._name_ctxInput = FormUtils.createTextInput('name-ctx-property');
-        this._name_ctxInput.className = "contextual";
-        name_ctx_el.appendChild(this._name_ctxInput);
-
-        const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
-        this._desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
-        this._desc_ctxInput.className = "contextual";
-        desc_ctx_el.appendChild(this._desc_ctxInput);
-
-        const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
-        this._executionSelect = FormUtils.createSelect('execution-property', [{
-            value: JagModel.EXECUTION.NONE,
-            text: 'None'
-        }, {
-            value: JagModel.EXECUTION.SEQUENTIAL,
-            text: 'Sequential'
-        }, {
-            value: JagModel.EXECUTION.PARALLEL,
-            text: 'Parallel'
-        }]);
-        this._executionSelect.className = 'direct-property';
-        execution_el.appendChild(this._executionSelect);
-
-        const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
-        this._operatorSelect = FormUtils.createSelect('operator-property', [{
-            value: JagModel.OPERATOR.NONE,
-            text: 'None'
-        }, {
-            value: JagModel.OPERATOR.AND,
-            text: 'And'
-        }, {
-            value: JagModel.OPERATOR.OR,
-            text: 'Or'
-        }]);
-        this._operatorSelect.className = 'direct-property';
-        operator_el.appendChild(this._operatorSelect);
-
-        // Create inputs area
-        const inputs_el = FormUtils.createPropertyElement('inputs-property', 'Inputs');
-
-        const input_add = document.createElement('span');
-        input_add.innerHTML = '+';
-        input_add.className = 'io-add';
-        input_add.addEventListener('click', this._addInput.bind(this));
-        inputs_el.appendChild(input_add);
-
-        this._inputs = FormUtils.createEmptyInputContainer('inputs-property');
-        this._inputs.className = 'directProperty';
-        inputs_el.appendChild(this._inputs);
-
-        // Create outputs area
-        const outputs_el = FormUtils.createPropertyElement('outputs-property', 'Outputs');
-
-        const output_add = document.createElement('span');
-        output_add.innerHTML = '+';
-        output_add.className = 'io-add';
-        output_add.addEventListener('click', this._addOutput.bind(this));
-        outputs_el.appendChild(output_add);
-
-        this._outputs = FormUtils.createEmptyInputContainer('outputs-property');
-        this._outputs.className = 'directProperty';
-        outputs_el.appendChild(this._outputs);
-
-        // Create bindings area
-        const bindings_el = FormUtils.createPropertyElement('bindings-property', 'Bindings');
-
-        this._bindings = FormUtils.createEmptyInputContainer('bindings-property');
-        this._bindings.className = 'directProperty';
-        bindings_el.appendChild(this._bindings);
-
-        // Create annotation area
-        const annotations_el = FormUtils.createPropertyElement('annotations-property', 'Annotations');
-
-        this._annotations = FormUtils.createEmptyInputContainer('annotations-property');
-        this._annotations.className = 'directProperty';
-        annotations_el.appendChild(this._annotations);
-
-        // Create export area
-        const export_el = FormUtils.createEmptyInputContainer('export');
-        this._export = document.createElement('button');
-        this._export.innerHTML = 'export';
-        export_el.appendChild(this._export);
-
-        this._enableProperties(false);
-
-        this.appendChild(childOf_el);
-        this.appendChild(undefinedJAG_el);
-        this.appendChild(leafNode_el);
-        this.appendChild(name_el);
-        this.appendChild(urn_el);
-        this.appendChild(desc_el);
-        this.appendChild(name_ctx_el);
-        this.appendChild(desc_ctx_el);
-        this.appendChild(execution_el);
-        this.appendChild(operator_el);
-        this.appendChild(inputs_el);
-        this.appendChild(outputs_el);
-        this.appendChild(bindings_el);
-        this.appendChild(annotations_el);
-        this.appendChild(export_el);
-    }
 
 
-    _initHandlers() {
-        // this._urnInput.addEventListener('keyup', e => {
-        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
-        // });
-
-        //Uncaught TypeError: Cannot set properties of undefined (setting 'name') - [this._jagModel.name = this._nameInput.value;]
-        this._nameInput.addEventListener('blur', async (e) => {  // get an error if the blur goes to a playground click on empty space.
-            if (this._jagModel) {
-                this._jagModel.name = this._nameInput.value;
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-            }
-        });
-
-        this._nameInput.addEventListener('keyup', (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault();
-                let inputs = this.querySelectorAll("input:enabled, textarea");
-
-                //current position in 'form'
-                const currentPosition = this._nameInput.tabIndex;
-                if (currentPosition < inputs.length - 1) {
-                    inputs.item(currentPosition + 1).focus();
-                } else {
-                    inputs.item(currentPosition).blur();
-                }
-            } else {
-                this._jagModel.name = this._nameInput.value;
-            }
-        });
-
-
-        this._urnInput.addEventListener('keyup', (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault();
-                let inputs = this.querySelectorAll("input:enabled, textarea");
-                this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
-                //current position in 'form'
-                const currentPosition = this._urnInput.tabIndex;
-                if (currentPosition < inputs.length - 1) {
-                    inputs.item(currentPosition + 1).focus();
-                } else {
-                    inputs.item(currentPosition).blur();
-                }
-            }
-        });
-
-        this._urnInput.addEventListener('focusout', async (e) => {
-            if (this._jagModel.urn != this._urnInput.value) {
-                this.dispatchEvent(new CustomEvent('local-urn-renamed', {detail: {newUrn: this._jagModel.urn, originalUrn:  this._urnInput.value }}));
-                    //  await ControllerIA.updateURN(this._jagModel.urn, this._urnInput.value);  // might be a rename
-            }
-        })
-
-        this._descInput.addEventListener('blur', async (e) => {
-            console.log("1")
-            if (this._jagModel) {
-                console.log("2")
-                if (this._jagModel.description != this._descInput.value) {
-                    console.log("3")
-                    this._jagModel.description = this._descInput.value;
-                    this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-                    console.log("4")
-                }
-            }
-        });
-
-        this._descInput.addEventListener('keyup', (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault();
-                let inputs = this.querySelectorAll("input:enabled, textarea");
-                //current position in 'form'
-                const currentPosition = this._descInput.tabIndex;
-                if (currentPosition < inputs.length - 1) {
-                    inputs.item(currentPosition + 1).focus();
-                } else {
-                    inputs.item(currentPosition).blur();
-                }
-            } else {
-                this._jagModel.description = this._descInput.value;
-            }
-        });
-
-
-        this._name_ctxInput.addEventListener('keyup', async () => {
-            if (this._jagModel) {
-                this._node.setContextualName(this._name_ctxInput.value);
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-            }
-        });
-
-        this._desc_ctxInput.addEventListener('keyup', async () => {
-            if (this._jagModel) {
-                this._node.setContextualDescription(this._desc_ctxInput.value);
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-            }
-        });
-
-        this._executionSelect.addEventListener('change', async e => {
-            if (this._jagModel) {
-                this._jagModel.execution = this._executionSelect.value;
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-            }
-        });
-
-        this._operatorSelect.addEventListener('change', async e => {
-            if (this._jagModel) {
-                this._jagModel.operator = this._operatorSelect.value;
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: this._jagModel}}));
-            }
-        });
-
-        this._export.addEventListener('click', e => {
-            const node = this._jagModel;
-            const json = JSON.stringify(node.toJSON());
-            const a = document.createElement('a');
-            const data = `data:application/json,${encodeURI(json)}`;
-            a.href = data;
-            a.download = `${node.name}.json`;
-            a.click();
-        });
-    }
 
     _clearProperties() {
         this._urnInput.value = '';

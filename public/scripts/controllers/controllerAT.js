@@ -89,7 +89,6 @@ export default class ControllerAT {
     async initializeCache() {
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag));
-        console.log(allJags);
     }
 
     initializePanels() {
@@ -153,10 +152,8 @@ export default class ControllerAT {
     }
 
     async localJagUpdatedHandler(event) {
-        console.log("-- updating --")
         const eventDetail = event.detail;
         const updatedJagModel = eventDetail.jagModel;
-        console.log(updatedJagModel)
         await StorageService.update(updatedJagModel, 'jag');
 
     }
