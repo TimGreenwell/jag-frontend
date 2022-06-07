@@ -15,6 +15,7 @@ jag-library ol, analysis-library ol {
 	overflow-y: scroll;
 }
 
+
 jag-library li, analysis-library li {
 	padding: 0.25em;
 	border-bottom: 1px solid white;
@@ -51,8 +52,28 @@ analysis-library pre {
 	margin: 0em;
 }
 
+jag-library h3 {
+	display: flex;
+	flex-direction: row;
+}
 
-library-controls .jag-button {
+jag-library  .jag-button {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	opacity: 0;
+	transition: opacity 250ms ease-in-out;
+}
+
+jag-library  h3 > span {
+	width: 100%;
+}
+
+jag-library .jag-button:hover {
+	opacity: 0.75;
+}
+
+jag-library .jag-button {
 	background-size: cover;
 	width: 16px;
 	height: 16px;
@@ -61,12 +82,10 @@ library-controls .jag-button {
 	flex-shrink: 0;
 }
 
-library-controls .lock-button {
-	order: 0;
+jag-library .lock-button {
 	background-image: url('/icons/ic_add_black_18dp_1x.png');
 }
 
-library-controls .delete-button {
-	order: 1;
-	background-image: url('/icons/ic_library_delete_black_18dp_1x.png');
+jag-library .delete-button {
+	background-image: url('/icons/ic_delete_black_18dp_1x.png');
 }

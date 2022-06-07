@@ -22,7 +22,7 @@ class LibraryControls extends HTMLElement {
 		this._deleteJag = document.createElement('div');
 
 		this._toggleLock.classList.add('jag-button', 'lock-button');
-		this._deleteJag.classList.add('jag-button', 'remove-button');
+		this._deleteJag.classList.add('jag-button', 'delete-button');
 
 		this.appendChild(this._toggleLock);
 		this.appendChild(this._deleteJag);

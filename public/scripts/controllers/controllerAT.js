@@ -32,6 +32,7 @@ export default class ControllerAT {
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
     }
+
     // StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
     // StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
     // StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));         // a;ll from playground
@@ -42,12 +43,15 @@ export default class ControllerAT {
     set menu(value) {
         this._menu = value;
     }
+
     set library(value) {
         this._library = value;
     }
+
     set playground(value) {
         this._playground = value;
     }
+
     set properties(value) {
         this._properties = value;
     }
@@ -55,9 +59,11 @@ export default class ControllerAT {
     get jagModelMap() {
         return this._jagModelMap;
     }
+
     set jagModelMap(newJagModelMap) {
         this._jagModelMap = newJagModelMap;
     }
+
     addJagModel(jagModel) {
         this._jagModelMap.set(jagModel.urn, jagModel)
     }
@@ -65,9 +71,11 @@ export default class ControllerAT {
     get nodeModelMap() {
         return this.nodeModelList;
     }
+
     set nodeModelMap(newNodeModelMap) {
         this.nodeModelList = newNodeModelList;
     }
+
     addNodeModel(newNodeModel) {
         this._nodeModelMap.set(newNodeModel.id, newNodeModel)
     }
@@ -75,6 +83,7 @@ export default class ControllerAT {
     get currentAnalysis() {
         return this._currentAnalysis;
     }
+
     set currentAnalysis(newAnalysisModel) {
         this._currentAnalysis = newAnalysisModel;
     }
@@ -112,9 +121,19 @@ export default class ControllerAT {
     }
 
     libraryLineItemSelectedHandler(event) {
-        const eventDetail = event.detail;
-        this._playground.handleLibraryListItemSelected(eventDetail);
+        const jagModelSelected = event.detail.jagModel;
+        const expandRequested = event.detail.expanded;
+        let childrenMap = this._getChildModels(jagModelSelected, new Map());
+        this._playground.handleLibraryListItemSelected({              // This will need to look different after Nodes are implemented here
+            jagModel: jagModelSelected,
+            jagModel_set: childrenMap,
+            expanded: expandRequested
+        });
     }
+
+
+
+
 
     deleteSelectedHandler(event) {
         console.log(event)
@@ -143,7 +162,7 @@ export default class ControllerAT {
         const description = eventDetail.description;
         const name = eventDetail.name;
         const newJagModel = new JagModel({urn: urn, name: name, description: description});
-        if (InputValidator.isValidUrn(newJagModel.urn))  {
+        if (InputValidator.isValidUrn(newJagModel.urn)) {
             await StorageService.create(newJagModel, 'jag');
             this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
         } else {
@@ -222,6 +241,17 @@ export default class ControllerAT {
     }
 
 
+    _getChildModels(parentJAGModel, childrenJAGMap) {
+        if (!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
+            return childrenJAGMap;
+        for (let childDetails of parentJAGModel.children) {
+            const childJAGModel = this._jagModelMap.get(childDetails.urn)
+            childrenJAGMap.set(childDetails.urn, childJAGModel);
+            childrenJAGMap = this._getChildModels(childJAGModel, childrenJAGMap);
+        }
+        return childrenJAGMap;
+    }
+
     /**
      * Remote Handler - update, create, delete, cloned*, replaced*
      * @param updatedJagModel
@@ -249,13 +279,10 @@ export default class ControllerAT {
     }
 
     handleJagStorageReplaced(newJagModel, replacedJagUrn) {
-      //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
+        //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
         this._playground.replaceJagNode(newJagModel, replacedJagUrn)
         this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in library
     }
-
-
-
 
 
 }

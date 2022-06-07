@@ -79,13 +79,30 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				const li = document.createElement('li');
 				li.id = urn;
-				const h3 = document.createElement('h3');
-				h3.innerHTML = name;
-				const p = document.createElement('p');
-				p.innerHTML = description;
 
-				li.appendChild(h3);
-				li.appendChild(p);
+				this._toggleLock = document.createElement('div');
+				this._toggleLock.classList.add('jag-button', 'lock-button');
+				this._deleteJag = document.createElement('div');
+				this._deleteJag.classList.add('jag-button', 'delete-button');
+
+
+				//const $header = document.createElement('header');
+				const $topHalfWrapper = document.createElement('h3');
+				const $nameEntry = document.createElement('span')
+				$nameEntry.innerText = newJAGModel.name;
+
+				$topHalfWrapper.appendChild(this._toggleLock);
+				$topHalfWrapper.appendChild($nameEntry);
+
+				const $bottomHalfWrapper = document.createElement('h3');
+				const $descriptionEntry = document.createElement('span')
+				$descriptionEntry.innerText = newJAGModel.description;
+
+				$bottomHalfWrapper.appendChild(this._deleteJag);
+				$bottomHalfWrapper.appendChild($descriptionEntry);
+
+				li.appendChild($topHalfWrapper);
+				li.appendChild($bottomHalfWrapper);
 
 
 				let search_params = [];
@@ -98,39 +115,28 @@ customElements.define('jag-library', class extends HTMLElement {
 					jagModel: newJAGModel
 				});
 
-				// Unsure what this listener is for.
-				// newJAGModel.addEventListener('update', (e) => {
-				// 	const {property} = e.detail;
-				// 	if (property == 'name') {
-				// 		h3.innerHTML = newJAGModel.name;
-				// 	} else if (property == 'description') {
-				// 		p.innerHTML = newJAGModel.description;
-				// 	} else if (property == 'children') {
-				// 		this.refreshItem(newJAGModel);
-				// 	}
-				// });
-
 				newJAGModel.addEventListener('refresh', () => {
 					this.refreshItem(newJAGModel);
 				});
 
 
 				// Send the newJAGModel and all its children through the dispatch
-				li.addEventListener('click', (event) => {
-					this._getChildModels(newJAGModel, new Map()).then(function (childrenMap) {
-						console.log("___________________")
-						console.log(newJAGModel)
-						console.log(childrenMap)
-						console.log(event.shiftKey)
-						this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
-							detail: {
-								jagModel: newJAGModel,
-								jagModel_set: childrenMap,
-								expanded: event.shiftKey
-							}
-						}))
-					}.bind(this));
-				});
+				$bottomHalfWrapper.addEventListener('click', (event) => {
+					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+						detail: {
+							jagModel: newJAGModel,
+							expanded: event.shiftKey
+						}
+					}))});
+
+				$topHalfWrapper.addEventListener('click', (event) => {
+					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+						detail: {
+							jagModel: newJAGModel,
+							expanded: event.shiftKey
+						}
+					}))});
+
 
 				this._$list.appendChild(li);
 				this._existingURNS.add(newJAGModel.urn);
@@ -196,33 +202,6 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	// why is this here -- why not a master list of JAG models with functions like this so
-	// everyone can use.
-	// UPDATE - they now want the graph to be permanent.  This means a tree of nodes which will become permanent.
-
-	async _getChildModels(parentJAGModel, childrenJAGMap) {
-		if(!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
-			return childrenJAGMap;
-		for (let childDetails of parentJAGModel.children) {
-			const childJAGModel = await this._lazyGet(childDetails.urn);
-			childrenJAGMap.set(childDetails.urn, childJAGModel);
-			childrenJAGMap = await this._getChildModels(childJAGModel, childrenJAGMap);
-		}
-		return childrenJAGMap;
-	}
-
-//  @TODO Some kind of order to the cached data
-
-	async _lazyGet(targetURN) {
-		for (const lineItem of this._libraryList) {
-			if (lineItem.jagModel.urn == targetURN) {
-				return lineItem.jagModel;
-			}
-		}
-		const foundJAGModel = await StorageService.get(targetURN, 'jag');
-		this.addItem(foundJAGModel);
-		return foundJAGModel;
-	}
 
 	// @TODO  understand this guy
 	async refreshItem(newJAGModel, refreshedSet = new Set()) {
