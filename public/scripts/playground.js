@@ -11,7 +11,6 @@ import JagNode from './views/jag-node.js';
 import Edge from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
-import JAG from "./models/jag.js";
 import UserPrefs from "./utils/user-prefs.js";
 
 class Playground extends Popupable {
@@ -29,7 +28,7 @@ class Playground extends Popupable {
         this.appendChild(this._nodes_container);
         this.setPopupBounds(this._nodes_container);
 
-        this._activeNodeSet = new Set();
+        this._activeJagNodeSet = new Set();
         this._selectedNodeSet = new Set();
         this._is_edge_being_created = false;
 
@@ -91,13 +90,13 @@ class Playground extends Popupable {
 		console.log(this._selectedNodeSet)
 	}
 
-	clearPlayground(jagNodeSet = this._activeNodeSet) {                 // clearNodeSet
+	clearPlayground(jagNodeSet = this._activeJagNodeSet) {                 // clearNodeSet
 		for (let jagNode of jagNodeSet) {
 			const parent = jagNode.getParent();
 			if (!parent || (parent && jagNodeSet.has(parent))) {
 				jagNode.removeAllEdges();
 				jagNode.detachHandlers();
-				this._activeNodeSet.delete(jagNode);
+				this._activeJagNodeSet.delete(jagNode);
 				this._nodes_container.removeChild(jagNode);
 			} else {
 				this.popup({
@@ -121,8 +120,7 @@ class Playground extends Popupable {
 		// 3.2) bindings can be handled with two normal property updates.  This leaves children..
 		//   3.2.1) new child - one create then one update (new edge on update)
 		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
-		this._activeNodeSet.forEach((node) => {
-			//	for (const node of this._activeNodeSet) {
+		this._activeJagNodeSet.forEach((node) => {
 			if (node.jagModel.urn == updatedJagModel.urn) {
 				const oldNode = node.jagModel;
 
@@ -133,14 +131,14 @@ class Playground extends Popupable {
 
 	deleteJagNode(deadUrn) {
 
-		this._activeNodeSet.forEach((node) => {
+		this._activeJagNodeSet.forEach((node) => {
 			if (node.jagModel.urn == deadUrn) {
 			}
 		})
 	}
 
 	replaceJagNode(newJagModel, deadUrn) {
-		this._activeNodeSet.forEach((node) => {
+		this._activeJagNodeSet.forEach((node) => {
 			if (node.jagModel.urn == deadUrn) {
 				node.jagModel = newJagModel;
 			}
@@ -189,7 +187,7 @@ class Playground extends Popupable {
     onKeyDown(e) {
         if (e.key == 'Delete') {
             if (e.ctrlKey) {
-                this.clearPlayground(this._activeNodeSet);  //wofur?
+                this.clearPlayground(this._activeJagNodeSet);  //wofur?
             } else {
                 this.clearPlayground(this._selectedNodeSet);
             }
@@ -278,7 +276,7 @@ class Playground extends Popupable {
             this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
         });
         // Are these two below not the same info.  activeNodeSet needed?
-        this._activeNodeSet.add(node);
+        this._activeJagNodeSet.add(node);
         this._nodes_container.appendChild(node);
         node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
         node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
@@ -347,7 +345,7 @@ class Playground extends Popupable {
                 for (const node of tree) {
                     node.removeAllEdges();
                     node.detachHandlers();
-                    this._activeNodeSet.delete(node);
+                    this._activeJagNodeSet.delete(node);
                     this._nodes_container.removeChild(node);
                 }
             }
@@ -366,11 +364,11 @@ class Playground extends Popupable {
 		this._checkBounds(node.getTree());
 	}
 
-    handleRefresh({jagModel, jagModel_set, refreshed = new Set()}) {
+    handleRefresh({jagModel, jagModel_set, alreadyRefreshedNodes = new Set()}) {
         const margin = 50;
 
-        for (let node of this._activeNodeSet) {
-            if (!refreshed.has(node) && node.jagModel === jagModel) {
+        for (let node of this._activeJagNodeSet) {
+            if (!alreadyRefreshedNodes.has(node) && node.jagModel === jagModel) {
                 const root = node.getRoot();
 
                 if (root == node) {
@@ -380,10 +378,10 @@ class Playground extends Popupable {
                     const tree = node.getTree();
 
                     for (const node of tree) {
-                        refreshed.add(node);
+                        alreadyRefreshedNodes.add(node);
                     }
                 } else {
-                    root.refresh(refreshed);
+                    root.refresh(alreadyRefreshedNodes);
                 }
             }
         }
@@ -434,7 +432,7 @@ class Playground extends Popupable {
         return cardinal;
     }
 
-    _checkBounds(nodes = this._activeNodeSet) {
+    _checkBounds(nodes = this._activeJagNodeSet) {
         const bounds = this.getBoundingClientRect();
         let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
         let showLeft, showRight, showUp, showDown;
@@ -450,7 +448,7 @@ class Playground extends Popupable {
             }
         }
 
-        if (nodes == this._activeNodeSet) {
+        if (nodes == this._activeJagNodeSet) {
             return this._showCardinals({
                 left: showLeft || false,
                 right: showRight || false,
@@ -493,7 +491,7 @@ class Playground extends Popupable {
     }
 
     _dragView(dx, dy) {
-        for (let node of this._activeNodeSet) {
+        for (let node of this._activeJagNodeSet) {
             node.translate(dx, dy, false);
         }
 
@@ -703,7 +701,7 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
 
                 for (const node of tree) {
                     node.removeAllEdges();
-                    this._activeNodeSet.delete(node);
+                    this._activeJagNodeSet.delete(node);
                     this._nodes_container.removeChild(node);
                 }
             }

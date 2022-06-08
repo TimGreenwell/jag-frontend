@@ -10,32 +10,44 @@ jag-library, analysis-library {  /*analysis-library new */
 	color: var(--main-fg);             /* new */
 }
 
-jag-library ol, analysis-library ol {
+/* temp until node-library gets own place */
+node-library {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+	z-index: 100;                      /* new */
+	background: var(--main-bg-darker); /* new */
+	color: var(--main-fg);             /* new */
+}
+
+
+
+jag-library ol, analysis-library ol, node-library ol {
 	height: 100%;
 	overflow-y: scroll;
 }
 
-
-jag-library li, analysis-library li {
+jag-library li, analysis-library li, node-library li {
 	padding: 0.25em;
 	border-bottom: 1px solid white;
 	cursor: pointer;
 	transition: background-color 350ms var(--transition-function);
 }
 
-jag-library li:hover, analysis-library li:hover {
+jag-library li:hover, analysis-library li:hover, node-library li:hover {
 	background-color: var(--main-fg-lighter);
 }
 
-jag-library h3, analysis-library h3 {
+jag-library h3, analysis-library h3, node-library h3 {
 	padding: 0.25em;
 }
 
-jag-library p, analysis-library p {
+jag-library p, analysis-library p, node-library p {
 	padding: 0.25em;
 }
 
-jag-library .library-search {
+jag-library .library-search, analysis-library .library-search, node-library .library-search {
 	height: 30px;
 	font-size: 14px;
 	background-image: url('../icons/search_mag_20.png');
@@ -52,12 +64,12 @@ analysis-library pre {
 	margin: 0em;
 }
 
-jag-library h3 {
+jag-library h3, node-library h3 {
 	display: flex;
 	flex-direction: row;
 }
 
-jag-library  .jag-button {
+jag-library  .jag-button, node-library .node-button {
 	display: flex;
 	flex-direction: row;
 	flex-grow: 1;
@@ -65,15 +77,19 @@ jag-library  .jag-button {
 	transition: opacity 250ms ease-in-out;
 }
 
-jag-library  h3 > span {
+jag-library  h3 > span, node-library h3 > span {
 	width: 100%;
 }
 
-jag-library .jag-button:hover {
+jag-library .jag-button:hover, node-library .node-button:hover {
 	opacity: 0.75;
 }
 
-jag-library .jag-button {
+jag-library .locked, node-library .locked {
+	opacity: 0.75;
+}
+
+jag-library .jag-button, node-library .node-button {
 	background-size: cover;
 	width: 16px;
 	height: 16px;
@@ -82,10 +98,10 @@ jag-library .jag-button {
 	flex-shrink: 0;
 }
 
-jag-library .lock-button {
-	background-image: url('/icons/ic_add_black_18dp_1x.png');
+jag-library .lock-button, node-library .lock-button {
+	background-image: url('/icons/lock-20.png');
 }
 
-jag-library .delete-button {
+jag-library .delete-button, node-library .delete-button {
 	background-image: url('/icons/ic_delete_black_18dp_1x.png');
 }

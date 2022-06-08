@@ -28,7 +28,7 @@ export default class ControllerAT {
 
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
-        StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));
+        StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));   // All from observable
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
     }
@@ -69,11 +69,11 @@ export default class ControllerAT {
     }
 
     get nodeModelMap() {
-        return this.nodeModelList;
+        return this._nodeModelList;
     }
 
     set nodeModelMap(newNodeModelMap) {
-        this.nodeModelList = newNodeModelList;
+        this._nodeModelList = newNodeModelList;
     }
 
     addNodeModel(newNodeModel) {
@@ -111,16 +111,16 @@ export default class ControllerAT {
 
         this._properties.addEventListener('local-urn-renamed', this.localUrnRenamedHandler.bind(this));
         this._properties.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag property updates
-        this._properties.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
+    //    this._properties.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
     //    this._properties.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
 
         this._menu.addEventListener('add-new-node', this.addNewNodeHandler.bind(this));
         this._menu.addEventListener('clear-playground', this.clearPlaygroundHandler.bind(this));  // Event: 'clear-playground' - menu item selected to clear nodes from playground
-        this._menu.addEventListener('delete-selected', this.deleteSelectedHandler.bind(this));
+        this._menu.addEventListener('clear-selected', this.clearSelectedHandler.bind(this));
 
         this._library.addEventListener('library-lineItem-selected', this.libraryLineItemSelectedHandler.bind(this));
-        this._library.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
-     //   this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
+        this._library.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));
+        this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - needs better icon
     }
 
     libraryLineItemSelectedHandler(event) {
@@ -138,7 +138,7 @@ export default class ControllerAT {
 
 
 
-    deleteSelectedHandler(event) {
+    clearSelectedHandler(event) {
         console.log(event)
         console.log("---- Delete Selected ---               ( I dont think we want a real pruning.")
         this._playground.handleDeleteSelected(event);
@@ -177,12 +177,18 @@ export default class ControllerAT {
         const eventDetail = event.detail;
         const updatedJagModel = eventDetail.jagModel;
         await StorageService.update(updatedJagModel, 'jag');
-
     }
+
+    async localJagLockedHandler(event) {
+        const lockedJagModelUrn = event.detail.jagModelUrn;
+        const lockedJagModel = this._jagModelMap.get(lockedJagModelUrn)
+        lockedJagModel.isLocked = true;
+        await StorageService.update(lockedJagModel, 'jag');
+    }
+
 
     async localJagDeletedHandler(event) {
         const deadJagModelUrn = event.detail.jagModelUrn;
-        console.log("heard")
         await StorageService.delete(deadJagModelUrn, 'jag');
     }
 
@@ -200,30 +206,30 @@ export default class ControllerAT {
         const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newUrn + ")? (URN cannot be modified except to create a new model.)";
         const URL_RENAME_WARNING_POPUP = "The new URN (" + newUrn + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
         // Changing a URN is either a rename/move or a copy or just not allowed.
-        // Proposing we have a 'isPublished' tag.
-        // URN changes are renames until the JagModel is marked as 'isPublished'.
-        // After 'isPublished', URN changes are copies.
+        // Proposing we have a 'isLocked' tag.
+        // URN changes are renames until the JagModel is marked as 'isLocked'.
+        // After 'isLocked', URN changes are copies.
 
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(newUrn);
         if (isValid) {
-            let origJagModel = await StorageService.get(originalUrn, 'jag');  // needed to check if 'isPublished'
+            let origJagModel = await StorageService.get(originalUrn, 'jag');  // needed to check if 'isLocked'
             let urnAlreadyBeingUsed = await StorageService.has(newUrn, 'jag');
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
                 // Does user confirm an over-write??
-                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
+                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
                     let newJagModel = await StorageService.get(originalUrn, 'jag');
 
-                    // is the target JagModel published?
-                    if (newJagModel.isPublished) {
-                        // FAIL  - CANT OVERWRITE PUBLISHED JagModel
-                    } else // target JagModel is NOT published
+                    // is the target JagModel locked?
+                    if (newJagModel.isLocked) {
+                        // FAIL  - CANT OVERWRITE LOCKED JagModel
+                    } else // target JagModel is NOT locked
 
-                    { // is the original JagModel published?
-                        if (origJagModel.isPublished) {
+                    { // is the original JagModel locked?
+                        if (origJagModel.isLocked) {
                             await StorageService.clone(originalUrn, newUrn, 'jag');
-                        } else { /// the original JagModel is not published
+                        } else { /// the original JagModel is not locked
                             await StorageService.replace(originalUrn, newUrn, 'jag')
                         }
                     }
@@ -231,11 +237,11 @@ export default class ControllerAT {
                     // FAIL -- NOT OVERWRITING EXISTING JagModel
                 }
             } else {  // urn not already being used
-                // is the original JagModel published?
-                console.log("is published - " + origJagModel.isPublished);
-                if (origJagModel.isPublished) {
+                // is the original JagModel locked?
+                console.log("is locked - " + origJagModel.isLocked);
+                if (origJagModel.isLocked) {
                     await this.cloneJagModel(origJagModel, newUrn)
-                } else {/// the original JagModel is not published
+                } else {/// the original JagModel is not locked
                     await StorageService.replace(originalUrn, newUrn, 'jag');
                 }
             }
@@ -262,17 +268,31 @@ export default class ControllerAT {
      */
 
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+        this._jagModelMap.set(updatedJagModel.urn,updatedJagModel)
+        // let childrenMap = this._getChildModels(updatedJagModel, new Map());
+        // console.log("dddddddddd")
+        // console.log(updatedJagModel)
+        // console.log(childrenMap)
+        // this._playground.handleRefresh({              // This will need to look different after Nodes are implemented here
+        //     jagModel: updatedJagModel,
+        //     jagModel_set: childrenMap
+        // });
+
+
+
         this._playground.updateJagNode(updatedJagModel, updatedJagUrn);         // update the graph node view on update
         this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
         this._library.updateItem(updatedJagModel);
     }
 
     handleJagStorageCreated(createdJagModel, createdJagUrn) {
+        this._jagModelMap.set(createdJagUrn,createdJagModel)
         UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
         this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
     }
 
     handleJagStorageDeleted(deletedJagUrn) {
+        this._jagModelMap.delete(deletedJagUrn)
         console.log("controllerAT -- " + deletedJagUrn)
         this._playground.deleteJagNode(deletedJagUrn)
         this._library.removeLibraryListItem(deletedJagUrn)

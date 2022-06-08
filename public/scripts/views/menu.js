@@ -74,7 +74,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         }.bind(this));
 
         const $clear = document.createElement("span");
-        $clear.id = "menu-clear";
+        $clear.id = "menu-clear-all";
         $clear.classList.add("menu-item");
         $clear.innerText = "clear\nspace";
         $centerLiDiv.appendChild($clear);
@@ -83,13 +83,13 @@ customElements.define('jag-menu', class extends HTMLElement {
         }.bind(this));
 
         const $delete = document.createElement("span");
-        $delete.id = "menu-delete";
+        $delete.id = "menu-clear-node";
         $delete.classList.add("menu-item");
-        $delete.innerText = "delete\nnode";
+        $delete.innerText = "clear\nnode";
         $centerLiDiv.appendChild($delete);
         // @ TODO implement -- clear - or really delete
         $delete.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("delete-selected"));
+            this.dispatchEvent(new CustomEvent("clear-selected"));
         }.bind(this));
 
         //

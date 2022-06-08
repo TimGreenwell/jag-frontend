@@ -76,7 +76,13 @@ export default class SharedObservable extends SharedService {
     static notifySubscribers(topic, dataModel, id) {
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach((callBack) => {
-                callBack(dataModel, id);
+                if (dataModel == null) {
+                    callBack(id);
+                } else if (id == null) {
+                    callBack(dataModel);
+                } else {
+                    callBack(dataModel, id);
+                }
             });
         }
         else

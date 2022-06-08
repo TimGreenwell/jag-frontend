@@ -346,30 +346,30 @@ export default class ControllerIA {
         const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
         const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
         // Changing a URN is either a rename/move or a copy or just not allowed.
-        // Proposing we have a 'isPublished' tag.
-        // URN changes are renames until the JagModel is marked as 'isPublished'.
-        // After 'isPublished', URN changes are copies.
+        // Proposing we have a 'isLocked' tag.
+        // URN changes are renames until the JagModel is marked as 'isLocked'.
+        // After 'isLocked', URN changes are copies.
 
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(newURN);
         if (isValid) {
-            let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isPublished'
+            let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isLocked'
             let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
                 // Does user confirm an over-write??
-                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isPublished ?? ? idk
+                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
                     let newJagModel = await StorageService.get(origURN, 'jag');
 
-                    // is the target JagModel published?
-                    if (newJagModel.isPublished) {
-                        // FAIL  - CANT OVERWRITE PUBLISHED JAG-MODEL
-                    } else // target JagModel is NOT published
+                    // is the target JagModel locked?
+                    if (newJagModel.isLocked) {
+                        // FAIL  - CANT OVERWRITE LOCKED JAG-MODEL
+                    } else // target JagModel is NOT locked
 
-                    { // is the original JagModel published?
-                        if (origJagModel.isPublished) {
+                    { // is the original JagModel locked?
+                        if (origJagModel.isLocked) {
                             await StorageService.clone(origURN, newURN, 'jag');
-                        } else { /// the original JAGModel is not published
+                        } else { /// the original JAGModel is not locked
                             await StorageService.replace(origURN, newURN, 'jag')
                         }
                     }
@@ -377,10 +377,10 @@ export default class ControllerIA {
                     // FAIL -- NOT OVERWRITING EXISTING JAG-MODEL
                 }
             } else {  // urn not already being used
-                // is the original JagModel published?
-                if (origJagModel.isPublished) {
+                // is the original JagModel locked?
+                if (origJagModel.isLocked) {
                     await this.cloneJagModel(origJagModel, newURN)
-                } else {/// the original JAGModel is not published
+                } else {/// the original JAGModel is not locked
                     await StorageService.replace(origURN, newURN, 'jag');
                 }
             }

@@ -10,7 +10,6 @@
 import AgentModel from '../models/agent.js';
 import AnalysisModel from '../models/analysis-model.js';
 import JagModel from '../models/jag.js';
-import NodeModel from '../models/node.js';
 import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
@@ -275,9 +274,9 @@ class IATable extends Popupable {
             analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
 
             for (const node of analysisModelImport.nodes) {
-                const nodeModel = await NodeModel.fromJSON(node);
-                //await service.create(nodeModel,'node');
-                await StorageService.create(nodeModel, 'node');
+                //const nodeModel = await NodeModel.fromJSON(node);
+                ////await service.create(nodeModel,'node');
+                //await StorageService.create(nodeModel, 'node');
             }
         }
 
@@ -468,7 +467,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
             action: async function ({inputs: {jag}}) {
                 const newJagModel = JagModel.fromJSON(jag);
                 this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {jagModel: newJagModel}}));
-                // seems like a create - but really an update --- an upstream check for 'isPublished' should be made.
+                // seems like a create - but really an update --- an upstream check for 'isLocked' should be made.
              //   await StorageService.create(newJagModel, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },

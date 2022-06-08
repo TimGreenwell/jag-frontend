@@ -60,7 +60,7 @@ export default class JAG extends EventTarget {
             }
         }
 
-        this._isPublished = false;
+        this._isLocked = false;
     }
 
 
@@ -152,11 +152,11 @@ export default class JAG extends EventTarget {
         return this._operator;
     }
 
-    set isPublished(bool) {
-        this._isPublished = bool;
+    set isLocked(bool) {
+        this._isLocked = bool;
     }
-    get isPublished() {
-        return this._isPublished;
+    get isLocked() {
+        return this._isLocked;
     }
 
 

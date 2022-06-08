@@ -16,12 +16,11 @@
 
 import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
 import Library from './views/library.js';                     // AT - Left view of available JAG Entities
+import NodeLibrary from './views/node-library.js';
 import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
 import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
-
 import IDE from './ide.js';                                   // ?? - seems unused currently
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
-
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
@@ -54,15 +53,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
 	const library = new Library();
+	const nodeLibrary = new NodeLibrary();
 	const menu = new Menu();
 	const playground = new Playground();
 	const properties = new Properties();
 	body.appendChild(menu)
 	body.appendChild(library);
+	library.appendChild(nodeLibrary);
 	body.appendChild(playground);
 	body.appendChild(properties);
 	controller.menu = menu;
 	controller.library = library;
+	controller.nodeLibrary = nodeLibrary;
 	controller.playground = playground;
 	controller.properties = properties;
 	await controller.initialize();

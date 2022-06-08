@@ -6,15 +6,14 @@
  * @version 0.43
  */
 
-import JagModel from '../models/jag.js';
+import NodeModel from '../models/node.js';
 
-customElements.define('jag-library', class extends HTMLElement {
+customElements.define('node-library', class extends HTMLElement {
 
 	constructor() {
 		super();
-		this._libraryList = [];                         // <li> elements holding jagModel.name & description + (search context) + jagModel
-		this._existingURNS = new Set();                // Set of URNs in _libraryList
-        // Build outer structure inside <jag-library> (search input & ol for nodes)
+		this._libraryList = [];                         // <li> elements holding nodeModel's head Node name & description + (search context) + nodeModel
+		this._existingIds = new Set();                // Set of Ids in _libraryList
 		this._initUI();
 		this._initListeners();
 		this.clearLibraryList();
@@ -24,42 +23,38 @@ customElements.define('jag-library', class extends HTMLElement {
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
-		this._existingURNS.clear();
+		this._existingIds.clear();
 	}
 
-	removeLibraryListItem(urn) {
+	removeLibraryListItem(id) {
 		for (let item of this._libraryList) {
-			console.log(item.element.id)
-			if (item.element.id == urn) {
+			if (item.element.id == id) {
 				this._$list.removeChild(item.element);
 			}
 		}
 		this._libraryList = this._libraryList.filter(function (item) {
-			return item.element.id != urn;
+			return item.element.id != id;
 		});
-		this._existingURNS.delete(urn);
+		this._existingIds.delete(id);
 
 	}
 
-	updateItem(updatedJAGModel) {
-		console.log(updatedJAGModel)
+	updateItem(updatedNodeModel) {
 		for (let idx in this._libraryList) {
-			console.log(idx)
-			console.log("lirary - updated jag model")
-			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
-				this._libraryList[idx].jagModel = updatedJAGModel;
-				this._libraryList[idx].element.id=updatedJAGModel.urn;
-				this._libraryList[idx].element.querySelectorAll(".name-entry").item(0).innerHTML = updatedJAGModel.name;
-				this._libraryList[idx].element.querySelectorAll(".description-entry").item(0).innerHTML = updatedJAGModel.description;
+			if (this._libraryList[idx].nodeModel.id == updatedNodeModel.id) {
+				this._libraryList[idx].nodeModel = updatedNodeModel;
+				this._libraryList[idx].element.id=updatedNodeModel.id;
+				this._libraryList[idx].element.querySelectorAll(".name-entry").item(0).innerHTML = updatedNodeModel.jag.urn;
+				this._libraryList[idx].element.querySelectorAll(".description-entry").item(0).innerHTML = updatedNodeModel.jag.description;
 				let search_params =[];
-				search_params.push(updatedJAGModel.urn.toLowerCase());
-				search_params.push(updatedJAGModel.name.toLowerCase());
-				search_params.push(updatedJAGModel.description.toLowerCase());
+				search_params.push(updatedNodeModel.jag.urn.toLowerCase());
+				search_params.push(updatedNodeModel.jag.name.toLowerCase());
+				search_params.push(updatedNodeModel.jag.description.toLowerCase());
 				this._libraryList[idx].search_content = search_params.join(" ");
-				if (updatedJAGModel.isLocked) {
+				if (updatedNodeModel.isLocked) {
 
 				}
-	//			this.refreshItem(updatedJAGModel);
+	//			this.refreshItem(updatednodeModel);
 			}
 		}
 	}
@@ -73,27 +68,28 @@ customElements.define('jag-library', class extends HTMLElement {
 	//           <p> 'description'
 	//         </li>
 
-	addItem(newJAGModel) {
-		if (!this._existingURNS.has(newJAGModel.urn)) {
-			if (newJAGModel instanceof JagModel) {
-				const urn = newJAGModel.urn || '';
-				const name = newJAGModel.name;
-				const description = newJAGModel.description || '';
+	addItem(newNodeModel) {
+		if (!this._existingIds.has(newNodeModel.id)) {
+			if (newNodeModel instanceof NodeModel) {
+				const id = newNodeModel.id || '';
+				const urn = newNodeModel.jag.urn;
+				const name = newNodeModel.jag.name;
+				const description = newNodeModel.jag.description || '';
 
 				const li = document.createElement('li');
-				li.id = urn;
+				li.id = id;
 
 				const toggleLock = document.createElement('div');
-				toggleLock.classList.add('jag-button', 'lock-button');
-				const deleteJag = document.createElement('div');
-				deleteJag.classList.add('jag-button', 'delete-button');
+				toggleLock.classList.add('node-button', 'lock-button');
+				const deleteNode = document.createElement('div');
+				deleteNode.classList.add('node-button', 'delete-button');
 
 
 				//const $header = document.createElement('header');
 				const $topHalfWrapper = document.createElement('h3');
 				const $nameEntry = document.createElement('span')
 				$nameEntry.classList.add('name-entry')
-				$nameEntry.innerText = newJAGModel.name;
+				$nameEntry.innerText = newNodeModel.name;
 
 				$topHalfWrapper.appendChild(toggleLock);
 				$topHalfWrapper.appendChild($nameEntry);
@@ -101,9 +97,9 @@ customElements.define('jag-library', class extends HTMLElement {
 				const $bottomHalfWrapper = document.createElement('h3');
 				const $descriptionEntry = document.createElement('span')
 				$descriptionEntry.classList.add('description-entry')
-				$descriptionEntry.innerText = newJAGModel.description;
+				$descriptionEntry.innerText = newNodeModel.description;
 
-				$bottomHalfWrapper.appendChild(deleteJag);
+				$bottomHalfWrapper.appendChild(deleteNode);
 				$bottomHalfWrapper.appendChild($descriptionEntry);
 
 				li.appendChild($topHalfWrapper);
@@ -117,37 +113,37 @@ customElements.define('jag-library', class extends HTMLElement {
 				this._libraryList.push({
 					element: li,
 					search_content: search_params.join(" "),
-					jagModel: newJAGModel
+					nodeModel: newNodeModel
 				});
 
-				newJAGModel.addEventListener('refresh', () => {
+				newNodeModel.addEventListener('refresh', () => {
 					console.log(("Refresh event heard in Library"))
-					this.refreshItem(newJAGModel);
+					this.refreshItem(newNodeModel);
 				});
 
 
-				// Send the newJAGModel and all its children through the dispatch
+				// Send the newNodeModel and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+					this.dispatchEvent(new CustomEvent('library-node-selected', {
 						detail: {
-							jagModel: newJAGModel,
+							nodeModel: newNodeModel,
 							expanded: event.shiftKey
 						}
 					}))});
 
 				$topHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+					this.dispatchEvent(new CustomEvent('library-node-selected', {
 						detail: {
-							jagModel: newJAGModel,
+							nodeModel: newNodeModel,
 							expanded: event.shiftKey
 						}
 					}))});
 
-				deleteJag.addEventListener('click', (event) => {
+				deleteNode.addEventListener('click', (event) => {
 					event.stopPropagation();
-					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+					this.dispatchEvent(new CustomEvent('local-node-deleted', {
 						detail: {
-							jagModelUrn: newJAGModel.urn,
+							nodeModelUrn: newNodeModel.urn,
 						}
 					}))
 				})
@@ -155,27 +151,27 @@ customElements.define('jag-library', class extends HTMLElement {
 				toggleLock.addEventListener('click', (event) => {
 					event.stopPropagation();
 					console.log("clicked")
-					this.dispatchEvent(new CustomEvent('local-jag-locked', {
+					this.dispatchEvent(new CustomEvent('local-node-locked', {
 						detail: {
-							jagModelUrn: newJAGModel.urn,
+							nodeModelUrn: newNodeModel.urn,
 						}
 					}))
 				})
 
 				this._$list.appendChild(li);
-				this._existingURNS.add(newJAGModel.urn);
-				//	jagModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
+				this._existingURNS.add(newNodeModel.urn);
+				//	nodeModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
-				console.log("ERROR -- unexpected type for newJAGModel [library-addItem]")
+				console.log("ERROR -- unexpected type for newNodeModel [library-addItem]")
 			}
 		} else {
 			console.log("ERROR -- URN already exists [library-addItem]")
 		}
 	}
 
-	replaceItem(newJAGModel, replacedUrn) {
+	replaceItem(newNodeModel, replacedUrn) {
 		this.removeLibraryListItem(replacedUrn);
-		this.addItem(newJAGModel);
+		this.addItem(newNodeModel);
 	}
 
 
@@ -191,8 +187,8 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	addListItems(jagModelArray) {
-		jagModelArray.forEach(jagModel => this.addItem(jagModel));
+	addListItems(nodeModelArray) {
+		nodeModelArray.forEach(nodeModel => this.addItem(nodeModel));
 	}
 
 	_initUI() {
@@ -228,14 +224,14 @@ customElements.define('jag-library', class extends HTMLElement {
 
 
 	// @TODO  understand this guy
-	async refreshItem(newJAGModel, refreshedSet = new Set()) {
+	async refreshItem(newNodeModel, refreshedSet = new Set()) {
 		console.log("dispatch refresh in library")
 		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
-		this._getChildModels(newJAGModel, new Map()).then(function (all_jagModels) {
+		this._getChildModels(newNodeModel, new Map()).then(function (all_nodeModels) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
-					jagModel: newJAGModel,
-					jagModel_set: all_jagModels,
+					nodeModel: newNodeModel,
+					nodeModel_set: all_nodeModels,
 					refreshed: refreshedSet
 				}
 			}))
@@ -244,11 +240,11 @@ customElements.define('jag-library', class extends HTMLElement {
 
 });
 
-export default customElements.get('jag-library');
+export default customElements.get('node-library');
 
-// <jag-library> (this)
+// <node-library> (this)
 //   <input class='library-search'></input>
 //   <ol class='library-list'>
 //      ( Line items added later by addItems )
 //   </ol>
-// </jag-library>
+// </node-library>

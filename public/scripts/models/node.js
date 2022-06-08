@@ -28,6 +28,9 @@ export default class Node extends EventTarget {
 		this._color = color;                 // Derived color
 		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
 
+		this._x;
+		this._y;
+
 		this._leafCount = 1;
 		this._treeDepth = 0;
 
@@ -108,6 +111,20 @@ export default class Node extends EventTarget {
 		this.collapsed = !this.collapsed;
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
+	}
+
+	get x() {
+		return this._x;
+	}
+	set x(x) {
+		this._x = x;
+	}
+
+	get y() {
+		return this._y;
+	}
+	set y(y) {
+		this._y = y;
 	}
 
 	get breadth() {
