@@ -283,7 +283,12 @@ export default class ControllerIA {
     }
 
     async handleJagStorageDeleted(deletedJagUrn) {
-
+        if (this._iaTable.analysisModel){
+            console.log("Check if deleted jag is in the analysis")
+            console.log("if so - check if it is the head")
+            console.log("   if so - delete the analysis")
+            console.log("    if not --- prune that section and redraw")
+        }
     }
 
 
@@ -512,30 +517,6 @@ export default class ControllerIA {
         this._iaTable.analysisModel = analysisModel;
         this._iaTable.displayAnalysis();
     }
-
-
-
-
-
-
-    // // Put in a URN - Get a NodeModel Tree back. - recursion method... needs modification for URN statt node.
-    // async buildNodeTreeFromJagUrn(currentNode) { // this was newRootNodeModel
-    //     //	let currentNode = newRootNodeModel;     // this was uncommented
-    //     let children = currentNode.jag.children;// this was newRootNodeModel
-    //     await Promise.all(
-    //         children.map(async ({urn, id}) => {
-    //             const childJagModel = await StorageService.get(urn, 'jag');  // can replace this once laziness is going
-    //             const childNodeModel = new NodeModel({jag: childJagModel});
-    //             currentNode.addChild(childNodeModel, true);
-    //             await this.buildNodeTreeFromJagUrn(childNodeModel);
-    //         }))
-    //     this._nodeSet.add(currentNode);
-    //     await StorageService.create(currentNode,'node');
-    // }
-
-
-
-
 
     //     static async createNodeModel(newNodeModel) {
     async saveNodeModel(newNodeModel) {

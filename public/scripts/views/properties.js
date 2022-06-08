@@ -929,16 +929,15 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-
+    //@TODO Add a button to properties to delete the Jag. --
+    //@TODO Same for 'publish'/'lock'
     deleteJagModel(deadJagModel) {
-        this.dispatchEvent(new CustomEvent('local-jag-deleted', {
-            bubbles: true,
-            composed: true,
-            detail: {node: deadJagModel.urn}
-        }));
         this._jagModel = undefined;
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
+        this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+            detail: {urn: deadJagModel.urn}
+        }));
     }
 
     async cloneJagModel(sourceJagModel, newURN) {

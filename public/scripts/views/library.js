@@ -30,11 +30,16 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 	removeLibraryListItem(urn) {
+		console.log("Going to remove list items")
+		console.log(this._libraryList)
 		for (let item of this._libraryList) {
+			console.log(item.element.id)
+			console.log(urn)
 			if (item.element.id == urn) {
 				this._$list.removeChild(item.element);
 			}
 		}
+		console.log(this._libraryList)
 		this._libraryList = this._libraryList.filter(function (item) {
 			return item.element.id != urn;
 		});
@@ -80,10 +85,10 @@ customElements.define('jag-library', class extends HTMLElement {
 				const li = document.createElement('li');
 				li.id = urn;
 
-				this._toggleLock = document.createElement('div');
-				this._toggleLock.classList.add('jag-button', 'lock-button');
-				this._deleteJag = document.createElement('div');
-				this._deleteJag.classList.add('jag-button', 'delete-button');
+				const toggleLock = document.createElement('div');
+				toggleLock.classList.add('jag-button', 'lock-button');
+				const deleteJag = document.createElement('div');
+				deleteJag.classList.add('jag-button', 'delete-button');
 
 
 				//const $header = document.createElement('header');
@@ -91,14 +96,14 @@ customElements.define('jag-library', class extends HTMLElement {
 				const $nameEntry = document.createElement('span')
 				$nameEntry.innerText = newJAGModel.name;
 
-				$topHalfWrapper.appendChild(this._toggleLock);
+				$topHalfWrapper.appendChild(toggleLock);
 				$topHalfWrapper.appendChild($nameEntry);
 
 				const $bottomHalfWrapper = document.createElement('h3');
 				const $descriptionEntry = document.createElement('span')
 				$descriptionEntry.innerText = newJAGModel.description;
 
-				$bottomHalfWrapper.appendChild(this._deleteJag);
+				$bottomHalfWrapper.appendChild(deleteJag);
 				$bottomHalfWrapper.appendChild($descriptionEntry);
 
 				li.appendChild($topHalfWrapper);
@@ -136,6 +141,16 @@ customElements.define('jag-library', class extends HTMLElement {
 							expanded: event.shiftKey
 						}
 					}))});
+
+				deleteJag.addEventListener('click', (event) => {
+					event.stopPropagation();
+					console.log("clicked")
+					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+						detail: {
+							jagModelUrn: newJAGModel.urn,
+						}
+					}))
+				})
 
 
 				this._$list.appendChild(li);

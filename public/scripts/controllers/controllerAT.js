@@ -106,18 +106,21 @@ export default class ControllerAT {
 
     initializeHandlers() {
         this._playground.addEventListener('local-jag-created', this.localJagCreatedHandler.bind(this));  // popup create
-        this._playground.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // not implemented (menu?)
         this._playground.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag structure updates
         this._playground.addEventListener('playground-nodes-selected', this.playgroundNodesSelectedHandler.bind(this));
 
         this._properties.addEventListener('local-urn-renamed', this.localUrnRenamedHandler.bind(this));
         this._properties.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag property updates
+        this._properties.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
+    //    this._properties.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
 
         this._menu.addEventListener('add-new-node', this.addNewNodeHandler.bind(this));
         this._menu.addEventListener('clear-playground', this.clearPlaygroundHandler.bind(this));  // Event: 'clear-playground' - menu item selected to clear nodes from playground
         this._menu.addEventListener('delete-selected', this.deleteSelectedHandler.bind(this));
 
         this._library.addEventListener('library-lineItem-selected', this.libraryLineItemSelectedHandler.bind(this));
+        this._library.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
+     //   this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
     }
 
     libraryLineItemSelectedHandler(event) {
@@ -178,8 +181,8 @@ export default class ControllerAT {
     }
 
     async localJagDeletedHandler(event) {
-        const eventDetail = event.detail;
-        const deadJagModelUrn = eventDetail.urn;
+        const deadJagModelUrn = event.detail.jagModelUrn;
+        console.log("heard")
         await StorageService.delete(deadJagModelUrn, 'jag');
     }
 
@@ -270,7 +273,9 @@ export default class ControllerAT {
     }
 
     handleJagStorageDeleted(deletedJagUrn) {
+        console.log("controllerAT -- " + deletedJagUrn)
         this._playground.deleteJagNode(deletedJagUrn)
+        this._library.removeLibraryListItem(deletedJagUrn)
     }
 
     handleJagStorageCloned(clonedJagModel, clonedJagUrn) {
