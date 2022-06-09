@@ -8,10 +8,10 @@
 'use strict';
 
 import InputValidator from "../utils/validation.js";
-import StorageService from "../services/storage-service.js";
-import JagModel from "../models/jag.js";
 import UserPrefs from "../utils/user-prefs.js";
-
+import JagModel from "../models/jag.js";
+import NodeModel from "../models/node.js";
+import StorageService from "../services/storage-service.js";
 
 export default class ControllerAT {
 
@@ -19,6 +19,7 @@ export default class ControllerAT {
 
         this._menu = null;
         this._library = null;
+        this._nodeLibrary = null;
         this._playground = null;
         this._properties = null;
 
@@ -26,32 +27,26 @@ export default class ControllerAT {
         this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
-        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
+        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this)); 
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
         StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));   // All from observable
-        StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
+        StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));     // Cross-tab communications
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
+        StorageService.subscribe("node-storage-created", this.handleNodeStorageCreated.bind(this));
     }
-
-    // StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
-    // StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
-    // StorageService.subscribe("jag-storage-deleted", this.deleteJagNode.bind(this));         // a;ll from playground
-    // StorageService.subscribe("jag-storage-cloned", this._addJagNodeTree.bind(this));
-    // StorageService.subscribe("jag-storage-replaced", this.replaceJagNode.bind(this));
-
 
     set menu(value) {
         this._menu = value;
     }
-
     set library(value) {
         this._library = value;
     }
-
+    set nodeLibrary(value) {
+        this._nodeLibrary = value;
+    }
     set playground(value) {
         this._playground = value;
     }
-
     set properties(value) {
         this._properties = value;
     }
@@ -59,11 +54,9 @@ export default class ControllerAT {
     get jagModelMap() {
         return this._jagModelMap;
     }
-
     set jagModelMap(newJagModelMap) {
         this._jagModelMap = newJagModelMap;
     }
-
     addJagModel(jagModel) {
         this._jagModelMap.set(jagModel.urn, jagModel)
     }
@@ -71,11 +64,9 @@ export default class ControllerAT {
     get nodeModelMap() {
         return this._nodeModelList;
     }
-
     set nodeModelMap(newNodeModelMap) {
         this._nodeModelList = newNodeModelList;
     }
-
     addNodeModel(newNodeModel) {
         this._nodeModelMap.set(newNodeModel.id, newNodeModel)
     }
@@ -83,7 +74,6 @@ export default class ControllerAT {
     get currentAnalysis() {
         return this._currentAnalysis;
     }
-
     set currentAnalysis(newAnalysisModel) {
         this._currentAnalysis = newAnalysisModel;
     }
@@ -94,12 +84,10 @@ export default class ControllerAT {
         this.initializePanels();
         this.initializeHandlers();
     }
-
     async initializeCache() {
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag));
     }
-
     initializePanels() {
         this._library.addListItems([...this._jagModelMap.values()])
     }
@@ -123,18 +111,19 @@ export default class ControllerAT {
         this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - needs better icon
     }
 
-    libraryLineItemSelectedHandler(event) {
+    async libraryLineItemSelectedHandler(event) {
         const jagModelSelected = event.detail.jagModel;
         const expandRequested = event.detail.expanded;
-        let childrenMap = this._getChildModels(jagModelSelected, new Map());
-        this._playground.handleLibraryListItemSelected({              // This will need to look different after Nodes are implemented here
-            jagModel: jagModelSelected,
-            jagModel_set: childrenMap,
-            expanded: expandRequested
-        });
+      //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
+        let newProjectRootNode = this.buildNodeTreeFromJagUrn(jagModelSelected.urn);
+        await StorageService.create(newProjectRootNode, "node");
     }
 
-
+    handleNodeStorageCreated(createdNodeModel, createdNodeId) {
+        this._nodeModelMap.set(createdNodeId,createdNodeModel)
+        this._nodeLibrary.addItem(createdNodeModel);                                   // Add JagModel list item to Library
+        this._playground.createJagNode(createdNodeModel);
+    }
 
 
 
@@ -154,8 +143,7 @@ export default class ControllerAT {
 
 
     playgroundNodesSelectedHandler(event) {
-        const eventDetail = event.detail;
-        this._properties.handleSelectionUpdate(eventDetail);
+        this._properties.handleSelectionUpdate(event.detail);
         //ide.handleSelectionUpdate(e.detail);
     }
 
@@ -249,17 +237,52 @@ export default class ControllerAT {
 
     }
 
+//  tlgtlgtlg wednesday
+    // _getChildModels(parentJAGModel, childrenJAGMap) {
+    //     if (!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
+    //         return childrenJAGMap;
+    //     for (let childDetails of parentJAGModel.children) {
+    //         const childJAGModel = this._jagModelMap.get(childDetails.urn)
+    //         childrenJAGMap.set(childDetails.urn, childJAGModel);
+    //         childrenJAGMap = this._getChildModels(childJAGModel, childrenJAGMap);
+    //     }
+    //     return childrenJAGMap;
+    // }
 
-    _getChildModels(parentJAGModel, childrenJAGMap) {
-        if (!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
-            return childrenJAGMap;
-        for (let childDetails of parentJAGModel.children) {
-            const childJAGModel = this._jagModelMap.get(childDetails.urn)
-            childrenJAGMap.set(childDetails.urn, childJAGModel);
-            childrenJAGMap = this._getChildModels(childJAGModel, childrenJAGMap);
+    // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
+    buildNodeTreeFromJagUrn(newRootJagUrn) {
+
+        console.log("+++++++++++++++++++++++++++")
+        console.log(newRootJagUrn)
+        const nodeStack = [];
+        const resultStack = [];
+        const rootJagModel = this.jagModelMap.get(newRootJagUrn); /// I could have just passed in the Model...instead of switching to urn and back.
+        const rootNodeModel = new NodeModel({jag: rootJagModel, is_root: true});
+        console.log(rootJagModel)
+        console.log(rootNodeModel)
+        nodeStack.push(rootNodeModel);
+        while (nodeStack.length != 0) {
+            console.log("Stack if now --")
+            console.log(nodeStack)
+            let currentNode = nodeStack.pop();
+            console.log("popping")
+            for (const child of currentNode.jag.children) {
+                const childJagModel = this.jagModelMap.get(newRootJagUrn);
+                const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+                currentNode.addChild(childNodeModel, true);
+                nodeStack.push(childNodeModel);
+            }
+            resultStack.push(currentNode);
         }
-        return childrenJAGMap;
+        return resultStack.shift();
     }
+
+
+
+
+
+
+
 
     /**
      * Remote Handler - update, create, delete, cloned*, replaced*

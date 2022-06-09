@@ -14,7 +14,7 @@ import JAG from '../models/jag.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
-	constructor(jagModel, expanded) {
+	constructor(nodeModel, expanded) {
 		super();
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
@@ -30,25 +30,25 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._initUI();
 		this._initHandlers();
-		this.jagModel = jagModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
+		this._nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
 		this.expanded = expanded;
 		this.visible = true;
 	}
 
-	set jagModel(jagModel) {           // another complex set                                                         yuk
-		if (this._jagModel) {
-			this._jagModel.removeEventListener('update', this._boundUpdateHandler);
+	set nodeModel(nodeModel) {           // another complex set                                                         yuk
+		if (this._nodeModel) {
+			this._nodeModel.removeEventListener('update', this._boundUpdateHandler);
 		}
-		this._jagModel = jagModel;
-		this._jagModel.addEventListener('update', this._boundUpdateHandler);
+		this._nodeModel = nodeModel;
+		this._nodeModel.addEventListener('update', this._boundUpdateHandler);
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
 	}
 
 
-	get jagModel() {
-		return this._jagModel;
+	get nodeModel() {
+		return this._nodeModel;
 	}
 
 	set expanded(expanded) {               // complex...leave it

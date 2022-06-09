@@ -159,7 +159,7 @@ customElements.define('node-library', class extends HTMLElement {
 				})
 
 				this._$list.appendChild(li);
-				this._existingURNS.add(newNodeModel.urn);
+				this._existingIds.add(newNodeModel.urn);
 				//	nodeModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
 				console.log("ERROR -- unexpected type for newNodeModel [library-addItem]")

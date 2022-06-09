@@ -229,9 +229,9 @@ class Playground extends Popupable {
     }
 
 
-    createJagNode(jagModel, expanded) {
+    createJagNode(nodeModel, expanded) {
 
-        const node = new JagNode(jagModel, expanded);
+        const node = new JagNode(nodeModel, expanded);
 
         node.addEventListener('mousedown', (e) => {
             // If meta isn't pressed clear previous selection

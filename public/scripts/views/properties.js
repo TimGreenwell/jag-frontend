@@ -15,7 +15,9 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     constructor() {
         super();
-        this._jagModel = undefined;
+
+        this._nodeModel = undefined;
+      //  this._nodeModel.jag = undefined;
         this._consumesMap = new Map();
         this._producesMap = new Map();
         this._initUI();
@@ -34,7 +36,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         }.bind(this);
 
         this._boundDefine = function (e) {
-            this._jagModel = e.detail.jagModel;
+            this._nodeModel = e.detail.nodeModel;
 
             this._updateProperties();
         }.bind(this);
@@ -48,14 +50,6 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._childOf.className = 'special child-of-notice';
         this._childOf.id = 'child-of';
         childOf_el.appendChild(this._childOf);
-
-        // const undefinedJAG_el = document.createElement('div');
-        // undefinedJAG_el.className = 'special-wrapper undefined-jag-notice';
-        // this._undefinedJAG = document.createElement('p');
-        // this._undefinedJAG.innerHTML = 'Model is undefined: its direct properties cannot be modified.';
-        // this._undefinedJAG.className = 'special undefined-jag-notice';
-        // this._undefinedJAG.id = 'undefined-jag';
-        // undefinedJAG_el.appendChild(this._undefinedJAG);
 
         const leafNode_el = document.createElement('div');
         leafNode_el.className = 'special-wrapper leaf-node-notice';
@@ -175,7 +169,6 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._enableProperties(false);
 
         this.appendChild(childOf_el);
-//        this.appendChild(undefinedJAG_el);
         this.appendChild(leafNode_el);
         this.appendChild(name_el);
         this.appendChild(urn_el);
@@ -191,7 +184,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this.appendChild(export_el);
 
         // this._urnInput.addEventListener('keyup', e => {
-        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
+        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._nodeModel.jag.urn);
         // });
 
         this._nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
@@ -214,12 +207,12 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _handleNameChange(e) {
-        if (this._jagModel) {
-            this._jagModel.name = this._nameInput.value;
+        if (this._nodeModel) {
+            this._nodeModel.jag.name = this._nameInput.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._jagModel}
+                detail: {jagModel: this._nodeModel.jag}
             }));
         }
     }
@@ -236,18 +229,18 @@ customElements.define('jag-properties', class extends HTMLElement {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._jagModel.name = this._nameInput.value;
+            this._nodeModel.jag.name = this._nameInput.value;
         }
     }
 
     _handleURNChange(e) {
-        if (this._jagModel.urn != this._urnInput.value) {
+        if (this._nodeModel.jag.urn != this._urnInput.value) {
             // if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
             if (Validator.isValidUrn(this._urnInput.value)) {        // && entered urn is valid...
                 this.dispatchEvent(new CustomEvent('local-urn-updated', {
                     bubbles: true,
                     composed: true,
-                    detail: {originalUrn: this._urnInput.value, newUrn: this._jagModel.urn}
+                    detail: {originalUrn: this._urnInput.value, newUrn: this._nodeModel.jag.urn}
                 }));
             }
         }
@@ -256,7 +249,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         if (e.key == "Enter") {
             e.preventDefault();
             let inputs = this.querySelectorAll("input:enabled, textarea");
-            this._urnInput.classList.toggle('edited', this._urnInput.value != this._jagModel.urn);
+            this._urnInput.classList.toggle('edited', this._urnInput.value != this._nodeModel.jag.urn);
             //current position in 'form'
             const currentPosition = this._urnInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
@@ -268,13 +261,13 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _handleDescriptionChange(e) {
-        if (this._jagModel) {
-            if (this._jagModel.description != this._descInput.value) {
-                this._jagModel.description = this._descInput.value;
+        if (this._nodeModel.jag) {
+            if (this._nodeModel.jag.description != this._descInput.value) {
+                this._nodeModel.jag.description = this._descInput.value;
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     bubbles: true,
                     composed: true,
-                    detail: {jagModel: this._jagModel}
+                    detail: {jagModel: this._nodeModel.jag}
                 }));
             }
         }
@@ -291,59 +284,59 @@ customElements.define('jag-properties', class extends HTMLElement {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._jagModel.description = this._descInput.value;
+            this._nodeModel.jag.description = this._descInput.value;
         }
     }
 
     _handleContextualNameChange(e) {
-        if (this._jagModel) {
+        if (this._nodeModel) {
             this._node.setContextualName(this._name_ctxInput.value);
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._jagModel}
+                detail: {jagModel: this._nodeModel.jag}
             }));
         }
     }
     _handleContextualDescriptionChange(e) {
-        if (this._jagModel) {
+        if (this._nodeModel) {
             this._node.setContextualDescription(this._desc_ctxInput.value);
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._jagModel}
+                detail: {jagModel: this._nodeModel.jag}
             }));
         }
     }
 
     _handleExecutionChange(e) {
-        if (this._jagModel) {
-            this._jagModel.execution = this._executionSelect.value;
+        if (this._nodeModel) {
+            this._nodeModel.jag.execution = this._executionSelect.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._jagModel}
+                detail: {jagModel: this._nodeModel.jag}
             }));
         }
     }
     _handleOperatorChange(e) {
-        if (this._jagModel) {
-            this._jagModel.operator = this._operatorSelect.value;
+        if (this._nodeModel) {
+            this._nodeModel.jag.operator = this._operatorSelect.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._jagModel}
+                detail: {jagModel: this._nodeModel.jag}
             }));
         }
     }
 
     _handleExportClick(e) {
-        const node = this._jagModel;
+        const node = this._nodeModel;
         const json = JSON.stringify(node.toJSON());
         const a = document.createElement('a');
         const data = `data:application/json,${encodeURI(json)}`;
         a.href = data;
-        a.download = `${node.name}.json`;
+        a.download = `${node.jag.name}.json`;
         a.click();
     }
 
@@ -352,7 +345,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     handleStorageUpdate(newJagModel, newJagUrn) {
         if (newJagUrn == this._urnInput) {
-            this._jagModel = newJagModel;
+            this._nodeModel.jag = newJagModel;
             this._updateProperties();
         }
     }
@@ -360,27 +353,19 @@ customElements.define('jag-properties', class extends HTMLElement {
     // Called by user selecting one or more Nodes in the playground
 
     handleSelectionUpdate(selection) {
-        if (this._jagModel) {
-            // if (this._jagModel instanceof UndefinedJAG) {
-            //     this._jagModel.removeEventListener('define', this._boundDefine);
-            // } else {
-            this._jagModel.removeEventListener('update', this._boundUpdate);
-            // }
+        if (this._nodeModel) {
+            this._nodeModel.removeEventListener('update', this._boundUpdate);
             this._node = undefined;
-            this._jagModel = undefined;
+            this._nodeModel = undefined;
         }
         this._clearProperties();
         if (selection.size == 1) {
             const selectedNodeModel = selection.values().next().value;
-            if (selectedNodeModel._jagModel) {         // why wouldnt this have a model(node)?
+            if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
                 this._node = selectedNodeModel;
-                this._jagModel = this._node.jagModel;
+                this._nodeModel = this._node.nodeModel;
                 this._updateProperties();
-                // if (this._jagModel instanceof UndefinedJAG) {
-                //     this._jagModel.addEventListener('define', this._boundDefine);
-                // } else {
-                this._jagModel.addEventListener('update', this._boundUpdate);
-                // }
+                this._nodeModel.addEventListener('update', this._boundUpdate);
             }
         } else {
             this._enableProperties(false);
@@ -390,11 +375,11 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _updateProperties() {
 
-        this._urnInput.value = this._jagModel.urn
-        this._nameInput.value = this._jagModel.name;
-        this._executionSelect.value = this._jagModel.execution || 'none';
-        this._operatorSelect.value = this._jagModel.operator || 'none';
-        this._descInput.value = this._jagModel.description;
+        this._urnInput.value = this._nodeModel.jag.urn
+        this._nameInput.value = this._nodeModel.jag.name;
+        this._executionSelect.value = this._nodeModel.jag.execution || 'none';
+        this._operatorSelect.value = this._nodeModel.jag.operator || 'none';
+        this._descInput.value = this._nodeModel.jag.description;
         this._name_ctxInput.value = this._node.getContextualName();
         this._desc_ctxInput.value = this._node.getContextualDescription();
         this._enableProperties(true);
@@ -407,7 +392,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _addInput(e) {
-        if (this._jagModel) { //} && !(this._jagModel instanceof UndefinedJAG)) {
+        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
             const name = window.prompt('Input name');
             if (name === null)
                 return;
@@ -421,12 +406,12 @@ customElements.define('jag-properties', class extends HTMLElement {
                 type: type
             };
 
-            this._jagModel.addInput(input);
+            this._nodeModel.jag.addInput(input);
         }
     }
 
     _addOutput(e) {
-        if (this._jagModel) { //} && !(this._jagModel instanceof UndefinedJAG)) {
+        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
             const name = window.prompt('Output name');
             if (name === null)
                 return;
@@ -440,7 +425,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 type: type
             };
 
-            this._jagModel.addOutput(output);
+            this._nodeModel.jag.addOutput(output);
         }
     }
 
@@ -487,7 +472,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         }
 
-        this._jagModel.addAnnotation(id, name, value);
+        this._nodeModel.jag.addAnnotation(id, name, value);
     }
 
     _addInputElement(id, input) {
@@ -506,8 +491,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         const select_el = FormUtils.createSelect('binding-inputs', options.map(node => {
             let label = node.id;
             if (node.id != 'this') {
-                label = node.jagModel.name;
-                const order = this._jagModel.getOrderForId(node.id);
+                label = node.nodeModel.jag.name;
+                const order = this._nodeModel.jag.getOrderForId(node.id);
                 if (order != 0) {
                     label += ` (${order})`;
                 }
@@ -536,8 +521,8 @@ customElements.define('jag-properties', class extends HTMLElement {
 
             let label = node.id;
             if (node.id != 'this' && node.id != 'any') {
-                label = node.jagModel.name;
-                const order = this._jagModel.getOrderForId(node.id);
+                label = node.nodeModel.jag.name;
+                const order = this._nodeModel.jag.getOrderForId(node.id);
                 if (order != 0) {
                     label += ` (${order})`;
                 }
@@ -563,14 +548,14 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _findInputOptions() {
         // We can "input" a value into any of this node's children's inputs.
-        const options = this._jagModel.getAvailableInputs();
+        const options = this._nodeModel.jag.getAvailableInputs();
 
         // We can also "input" a value to this node's outputs.
-        if (this._jagModel.outputs.length > 0) {
+        if (this._nodeModel.jag.outputs.length > 0) {
             options.push({
                 id: 'this',
-                jagModel: this._jagModel,
-                inputs: this._jagModel.outputs
+                jagModel: this._nodeModel.jag,
+                inputs: this._nodeModel.jag.outputs
             });
         }
 
@@ -581,29 +566,29 @@ customElements.define('jag-properties', class extends HTMLElement {
         const options = [];
 
         // We can "output" a value from this node's inputs.
-        if (this._jagModel.inputs.length > 0) {
+        if (this._nodeModel.jag.inputs.length > 0) {
             options.push({
                 id: 'this',
-                jagModel: this._jagModel,
-                outputs: this._jagModel.inputs
+                jagModel: this._nodeModel.jag,
+                outputs: this._nodeModel.jag.inputs
             });
         }
 
         // We can also "output" a value from this node's children's outputs.
-        this._jagModel.getAvailableOutputs().forEach(node => options.push(node));
+        this._nodeModel.jag.getAvailableOutputs().forEach(node => options.push(node));
 
         // We can also opt to accept any output with a matching name based on all available outputs.
-        if (this._jagModel.inputs.length > 0 && this._jagModel.children.length > 0) {
+        if (this._nodeModel.jag.inputs.length > 0 && this._nodeModel.jag.children.length > 0) {
             const output_properties = new Set();
             const any_outputs = new Set();
 
-            for (const input of this._jagModel.inputs) {
+            for (const input of this._nodeModel.jag.inputs) {
                 output_properties.add(input.name);
             }
 
-            for (const child of this._jagModel.children) {
-                if (child.jagModel) {
-                    child.jagModel.outputs.forEach((child_output) => {
+            for (const child of this._nodeModel.jag.children) {
+                if (child.nodeModel.jag) {
+                    child.nodeModel.jag.outputs.forEach((child_output) => {
                         if (output_properties.has(child_output.name)) {
                             any_outputs.add(child_output);
                         } else {
@@ -628,13 +613,13 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._clearIO();
 
         // Create node input panel
-        for (let input of this._jagModel.inputs) {
+        for (let input of this._nodeModel.jag.inputs) {
             const input_id = `${input.name}-inputs-property`;
             this._addInputElement(input_id, input.name);
         }
 
         // Create node output panel
-        for (let output of this._jagModel.outputs) {
+        for (let output of this._nodeModel.jag.outputs) {
             const output_id = `${output.name}-outputs-property`;
             this._addOutputElement(output_id, output.name);
         }
@@ -670,7 +655,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const provider = output_option.value.split(":");
                     const consumer = input_option.value.split(":");
 
-                    this._jagModel.addBinding({
+                    this._nodeModel.jag.addBinding({
                         consumer: {
                             id: consumer[0],
                             property: consumer[1]
@@ -700,7 +685,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const provider = output_option.value.split(':');
 
                     const this_inputs_names = new Set();
-                    this._jagModel.inputs.forEach(input => this_inputs_names.add(input.name));
+                    this._nodeModel.jag.inputs.forEach(input => this_inputs_names.add(input.name));
 
                     // TODO: Check if type matches selected output type (probably need to get output type first)
                     if (provider[0] == 'this') {
@@ -709,22 +694,22 @@ customElements.define('jag-properties', class extends HTMLElement {
                         }
                     } else {
                         // TODO: Check if type matches selected output type (probably need to get output type first)
-                        this._jagModel.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
+                        this._nodeModel.jag.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
 
-                        if (this._jagModel.execution == JagModel.EXECUTION.SEQUENTIAL) {
+                        if (this._nodeModel.jag.execution == JagModel.EXECUTION.SEQUENTIAL) {
                             if (provider[0] == 'any') {
                                 const all_cumulative_outputs = new Set();
 
-                                this._jagModel.inputs.forEach(input => all_cumulative_outputs.add(input.name));
+                                this._nodeModel.jag.inputs.forEach(input => all_cumulative_outputs.add(input.name));
 
                                 const valid_any_outputs_from_children = new Set();
 
-                                for (const child of this._jagModel.children) {
+                                for (const child of this._nodeModel.jag.children) {
                                     if (valid_any_outputs_from_children.has(provider[1])) {
-                                        child.jagModel.inputs.forEach(input => valid_input_values_for_output.add(`${child.id}:${input.name}`));
+                                        child.nodeModel.jag.inputs.forEach(input => valid_input_values_for_output.add(`${child.id}:${input.name}`));
                                     }
 
-                                    child.jagModel.outputs.forEach(output => {
+                                    child.nodeModel.jag.outputs.forEach(output => {
                                         if (all_cumulative_outputs.has(output.name)) {
                                             valid_any_outputs_from_children.add(output.name)
                                         } else {
@@ -733,12 +718,12 @@ customElements.define('jag-properties', class extends HTMLElement {
                                     });
                                 }
                             } else {
-                                const order = this._jagModel.getOrderForId(provider[0]);
+                                const order = this._nodeModel.jag.getOrderForId(provider[0]);
 
-                                for (const child of this._jagModel.children) {
-                                    if (child.jagModel) {
-                                        if (this._jagModel.getOrderForId(child.id) > order) {
-                                            for (const input of child.jagModel.inputs) {
+                                for (const child of this._nodeModel.jag.children) {
+                                    if (child.nodeModel.jag) {
+                                        if (this._nodeModel.jag.getOrderForId(child.id) > order) {
+                                            for (const input of child.nodeModel.jag.inputs) {
                                                 // TODO: Check if type matches selected output type (probably need to get output type first)
                                                 valid_input_values_for_output.add(`${child.id}:${input.name}`);
                                             }
@@ -763,13 +748,13 @@ customElements.define('jag-properties', class extends HTMLElement {
                     const consumer = input_option.value.split(':');
 
                     // TODO: Check if types match selected output type (probably as a .filter before .map)
-                    let valid_for_input = new Set(this._jagModel.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
+                    let valid_for_input = new Set(this._nodeModel.jag.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
                     FormUtils.toggleSelectValues(output_select_el, valid_for_input);
                 }
             }.bind(this));
         }
 
-        for (let binding of this._jagModel.bindings) {
+        for (let binding of this._nodeModel.jag.bindings) {
             let binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
 
             let output_label = document.createElement("input");
@@ -778,14 +763,14 @@ customElements.define('jag-properties', class extends HTMLElement {
             if (binding.provider.id == 'this' || binding.provider.id == 'any') {
                 output_label.value = `${binding.provider.id}:${binding.provider.property}`
             } else {
-                const provider_node = this._jagModel.getCanonicalNode(binding.provider.id);
+                const provider_node = this._nodeModel.jag.getCanonicalNode(binding.provider.id);
 
                 let provider_name = binding.provider.id;
 
                 if (provider_node.name) {
                     provider_name = provider_node.name;
-                } else if (provider_node.jagModel) {
-                    provider_name = provider_node.jagModel.name;
+                } else if (provider_node.nodeModel.jag) {
+                    provider_name = provider_node.nodeModel.jag.name;
                 }
 
                 output_label.value = `${provider_name}:${binding.provider.property}`;
@@ -806,14 +791,14 @@ customElements.define('jag-properties', class extends HTMLElement {
             if (binding.consumer.id == 'this' || binding.consumer.id == 'any') {
                 input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
             } else {
-                const consumer_node = this._jagModel.getCanonicalNode(binding.consumer.id);
+                const consumer_node = this._nodeModel.jag.getCanonicalNode(binding.consumer.id);
 
                 let consumer_name = binding.consumer.id;
 
                 if (consumer_node.name) {
                     consumer_name = consumer_node.name;
-                } else if (consumer_node.jagModel) {
-                    consumer_name = consumer_node.jagModel.name;
+                } else if (consumer_node.nodeModel.jag) {
+                    consumer_name = consumer_node.nodeModel.jag.name;
                 }
 
                 input_label.value = `${consumer_name}:${binding.consumer.property}`;
@@ -828,7 +813,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             remove.className = 'binding remove';
 
             remove.addEventListener('click', function (e) {
-                this._jagModel.removeBinding(binding);
+                this._nodeModel.jag.removeBinding(binding);
             }.bind(this));
 
             binding_box.appendChild(remove);
@@ -840,10 +825,10 @@ customElements.define('jag-properties', class extends HTMLElement {
     _updateAnnotations() {
         this._clearAnnotations();
 
-        if (this._jagModel.children.length > 0) {
-            for (const child of this._jagModel.children) {
+        if (this._nodeModel.jag.children.length > 0) {
+            for (const child of this._nodeModel.jag.children) {
                 let child_name = child.id;
-                if (child.jagModel) child_name = child.jagModel.name;
+                if (child.nodeModel.jag) child_name = child.nodeModel.jag.name;
 
                 let child_annotations = FormUtils.createPropertyElement(`annotations-${child.id}`, child_name);
                 child_annotations.className = "annotation node";
@@ -865,7 +850,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 iterable_checkbox.type = "checkbox";
 
                 iterable_checkbox.addEventListener('change', function (e) {
-                    this._jagModel.setIterable(child.id, iterable_checkbox.checked);
+                    this._nodeModel.jag.setIterable(child.id, iterable_checkbox.checked);
                 }.bind(this));
 
                 iterable_box.appendChild(iterable_checkbox);
@@ -915,7 +900,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                         remove.className = "annotation remove";
 
                         remove.addEventListener('click', function (e) {
-                            this._jagModel.removeAnnotation(child.id, annotation[0]);
+                            this._nodeModel.jag.removeAnnotation(child.id, annotation[0]);
                         }.bind(this));
 
                         annotation_box.appendChild(remove);
@@ -932,7 +917,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     //@TODO Add a button to properties to delete the Jag. --
     //@TODO Same for 'publish'/'lock'
     deleteJagModel(deadJagModel) {
-        this._jagModel = undefined;
+        this._nodeModel.jag = undefined;
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
         this.dispatchEvent(new CustomEvent('local-jag-deleted', {
@@ -946,7 +931,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         const newJagModel = JagModel.fromJSON(description);
         // Update jagModel references.
         this._node.jagModel = newJagModel; //?
-        this._jagModel = newJagModel;
+        this._nodeModel.jag = newJagModel;
         this.dispatchEvent(new CustomEvent('local-jag-created', {
             bubbles: true,
             composed: true,
@@ -956,7 +941,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 
-        //  WHEN GOOD -->             this._jagModel.url = this._urnInput.value;
+        //  WHEN GOOD -->             this._nodeModel.jag.url = this._urnInput.value;
     }
 
 
@@ -1017,7 +1002,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
 
-        if (this._node && this._node.getParent() != undefined && (enabled)) {//} || this._jagModel instanceof UndefinedJAG)) {
+        if (this._node && this._node.getParent() != undefined && (enabled)) {//} || this._nodeModel.jag instanceof UndefinedJAG)) {
             this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
             this.classList.toggle('root-node', false);
             this._name_ctxInput.disabled = false;
@@ -1028,11 +1013,11 @@ customElements.define('jag-properties', class extends HTMLElement {
             this._desc_ctxInput.disabled = true;
         }
 
-        if (enabled || (!enabled && !this._jagModel)) {
-            this.classList.toggle('defined-model', true);
+        if (enabled || (!enabled && !this._nodeModel)) {
+            this.classList.toggle('defined-model', true);   // This block useful?
             this.classList.toggle('non-leaf-node', true);
         }
-        // else if (this._jagModel instanceof UndefinedJAG) {
+        // else if (this._nodeModel.jag instanceof UndefinedJAG) {
         //     this.classList.toggle('defined-model', false);
         //
         //     if (this._node.getParent()) {
