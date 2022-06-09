@@ -65,11 +65,11 @@ customElements.define('jag-menu', class extends HTMLElement {
         const $new = document.createElement("span");
         $new.id = "menu-new";
         $new.classList.add("menu-item");
-        $new.innerText = "new\nnode";
+        $new.innerText = " new\nactivity";
         $centerLiDiv.appendChild($new);
 
         $new.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent('add-new-node', {}
+            this.dispatchEvent(new CustomEvent('add-new-jag-activity', {}
             ));
         }.bind(this));
 

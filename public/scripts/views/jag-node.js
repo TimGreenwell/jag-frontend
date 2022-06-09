@@ -16,10 +16,10 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(nodeModel, expanded) {
 		super();
+		console.log("in constructor")
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
-
 		this._boundUpdateHandler = this._updateHandler.bind(this);
 		this._boundDrag = this._drag.bind(this);
 		this._boundMouseUp = this._mouseUp.bind(this);
@@ -29,16 +29,24 @@ customElements.define('jag-node', class extends HTMLElement {
 		});
 
 		this._initUI();
+		this.setTranslation(100, 100);
 		this._initHandlers();
-		this._nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
+		this.nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
+
+		console.log("3")
+		console.log(nodeModel)
+
 		this.expanded = expanded;
 		this.visible = true;
+		console.log("out constructor")
 	}
 
 	set nodeModel(nodeModel) {           // another complex set                                                         yuk
 		if (this._nodeModel) {
 			this._nodeModel.removeEventListener('update', this._boundUpdateHandler);
 		}
+		this.id = nodeModel.id;
+		this.setAttribute("urn",nodeModel.jag.urn)
 		this._nodeModel = nodeModel;
 		this._nodeModel.addEventListener('update', this._boundUpdateHandler);
 		this._applyName();
@@ -160,7 +168,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		return this._jagModel.addChild(edge.getNodeEnd().jagModel.urn, id);
+		return this._nodeModel.jag.addChild(edge.getNodeEnd().jagModel.urn, id);  //@todo - wondering if node and jag models need to be modded
 	}
 
 	removeOutEdge(edge, id) {
@@ -169,14 +177,14 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	removeChild(edge, id) {
 		if (edge.getNodeEnd()) {
-			this._jagModel.removeChild({ id: id, jagModel: edge.getNodeEnd().jagModel });
+			this._nodeModel.jag.removeChild({ id: id, jagModel: edge.getNodeEnd().jagModel });
 			this._outs.delete(edge);
 			edge.destroy();
 		}
 	}
 
 	getURN() {
-		return this._jagModel.urn;
+		return this._nodeModel.jag.urn;
 	}
 
 	getParent() {
@@ -186,6 +194,13 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		return undefined;
 	}
+
+	//
+	// getParent() {
+	// 	if (this._in !== undefined) {
+	// 		return this._in.getNodeOrigin();
+	// 	}
+	// }
 
 	getParentURN() {
 		if (this._in) {
@@ -204,7 +219,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	refresh(alreadyRefreshed = new Set()) {
-		this.dispatchEvent(new CustomEvent('refresh', { detail: { jagModel: this._jagModel, refreshed: alreadyRefreshed } }));
+		this.dispatchEvent(new CustomEvent('refresh', { detail: { jagModel: this._nodeModel.jag, refreshed: alreadyRefreshed } }));
 	}
 
 	// getChildren() {
@@ -227,10 +242,10 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualName() {
 		if (this._in) {
-			return this._in.getChildName() || this._jagModel.name;
+			return this._in.getChildName() || this._nodeModel.jag.name;
 		}
 
-		return this._jagModel.name;
+		return this._nodeModel.jag.name;
 	}
 
 	setContextualDescription(description) {
@@ -241,18 +256,18 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualDescription() {
 		if (this._in) {
-			return this._in.getChildDescription() || this._jagModel.description;
+			return this._in.getChildDescription() || this._nodeModel.jag.description;
 		}
 
-		return this._jagModel.description;
+		return this._nodeModel.jag.description;
 	}
 
 	setChildName(id, name) {
-		this._jagModel.setChildName(id, name);
+		this._nodeModel.jag.setChildName(id, name);
 	}
 
 	setChildDescription(id, description) {
-		this._jagModel.setChildDescription(id, description);
+		this._nodeModel.jag.setChildDescription(id, description);
 	}
 
 
@@ -286,11 +301,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
-	getParent() {
-		if (this._in !== undefined) {
-			return this._in.getNodeOrigin();
-		}
-	}
 
 	getChildEdges() {
 		return this._outs;
@@ -339,7 +349,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.appendChild(this._$expand);
 		this.appendChild(this._$concurrency);
 
-		this.setTranslation(100, 100);
 	}
 
 	_drag(e) {
@@ -391,6 +400,13 @@ customElements.define('jag-node', class extends HTMLElement {
 	detachHandlers() {
 		this.parentNode.removeEventListener('mouseup', this._boundMouseUp);
 		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+	}
+
+	syncViewToJagModel(jagModel) {
+		this._nodeModel.jag = jagModel;
+		this._applyName();
+		this._applyOperator();
+		this._applyExecution();
 	}
 
 	_updateHandler(e) {
@@ -468,9 +484,9 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_applyOperator() {
 		let op = '';
-		if(this._jagModel.operator == JAG.OPERATOR.AND)
+		if(this._nodeModel.jag.operator == JAG.OPERATOR.AND)
 			op = 'and';
-		else if(this._jagModel.operator == JAG.OPERATOR.OR)
+		else if(this._nodeModel.jag.operator == JAG.OPERATOR.OR)
 			op = 'or';
 
 		this._$connector.innerHTML = op;
@@ -487,13 +503,13 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$concurrency.style.display = 'none';
 		this._$concurrency.innerHTML = '';
 
-		if (this._jagModel.execution != JAG.EXECUTION.SEQUENTIAL)
+		if (this._nodeModel.jag.execution != JAG.EXECUTION.SEQUENTIAL)
 			return;
 
-		if (!this._jagModel.children || this._jagModel.children.length == 0)
+		if (!this._nodeModel.jag.children || this._nodeModel.jag.children.length == 0)
 			return;
 
-		for (const child of this._jagModel.children) {
+		for (const child of this._nodeModel.jag.children) {
 			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
 				return;
 			}

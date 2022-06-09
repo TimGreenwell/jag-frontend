@@ -102,7 +102,7 @@ export default class ControllerAT {
     //    this._properties.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
     //    this._properties.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
 
-        this._menu.addEventListener('add-new-node', this.addNewNodeHandler.bind(this));
+        this._menu.addEventListener('add-new-jag-activity', this.addNewJagActivityHandler.bind(this));
         this._menu.addEventListener('clear-playground', this.clearPlaygroundHandler.bind(this));  // Event: 'clear-playground' - menu item selected to clear nodes from playground
         this._menu.addEventListener('clear-selected', this.clearSelectedHandler.bind(this));
 
@@ -122,7 +122,7 @@ export default class ControllerAT {
     handleNodeStorageCreated(createdNodeModel, createdNodeId) {
         this._nodeModelMap.set(createdNodeId,createdNodeModel)
         this._nodeLibrary.addItem(createdNodeModel);                                   // Add JagModel list item to Library
-        this._playground.createJagNode(createdNodeModel);
+        this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
     }
 
 
@@ -137,8 +137,8 @@ export default class ControllerAT {
         this._playground.clearPlayground();
     }
 
-    addNewNodeHandler() {
-        this._playground._handleNewNodePopup();
+    addNewJagActivityHandler() {
+        this._playground._handleNewJagActivityPopup();         //@todo consider moving popupable to menu as well
     }
 
 
@@ -148,14 +148,13 @@ export default class ControllerAT {
     }
 
     async localJagCreatedHandler(event) {
-        const eventDetail = event.detail;
-        const urn = eventDetail.urn;
-        const description = eventDetail.description;
-        const name = eventDetail.name;
+        const urn = event.detail.urn;
+        const description = event.detail.description;
+        const name = event.detail.name;
         const newJagModel = new JagModel({urn: urn, name: name, description: description});
         if (InputValidator.isValidUrn(newJagModel.urn)) {
             await StorageService.create(newJagModel, 'jag');
-            this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
+         //   this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
         } else {
             window.alert("Invalid URN");
         }
@@ -251,21 +250,14 @@ export default class ControllerAT {
 
     // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
     buildNodeTreeFromJagUrn(newRootJagUrn) {
-
-        console.log("+++++++++++++++++++++++++++")
-        console.log(newRootJagUrn)
+        console.log("Chosen URN = " + newRootJagUrn)
         const nodeStack = [];
         const resultStack = [];
         const rootJagModel = this.jagModelMap.get(newRootJagUrn); /// I could have just passed in the Model...instead of switching to urn and back.
         const rootNodeModel = new NodeModel({jag: rootJagModel, is_root: true});
-        console.log(rootJagModel)
-        console.log(rootNodeModel)
         nodeStack.push(rootNodeModel);
         while (nodeStack.length != 0) {
-            console.log("Stack if now --")
-            console.log(nodeStack)
             let currentNode = nodeStack.pop();
-            console.log("popping")
             for (const child of currentNode.jag.children) {
                 const childJagModel = this.jagModelMap.get(newRootJagUrn);
                 const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
@@ -274,7 +266,10 @@ export default class ControllerAT {
             }
             resultStack.push(currentNode);
         }
-        return resultStack.shift();
+        const returnNode = resultStack.shift();
+        console.log("Returning Node Root:")
+        console.log(returnNode)
+        return returnNode;
     }
 
 
@@ -293,17 +288,12 @@ export default class ControllerAT {
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         this._jagModelMap.set(updatedJagModel.urn,updatedJagModel)
         // let childrenMap = this._getChildModels(updatedJagModel, new Map());
-        // console.log("dddddddddd")
-        // console.log(updatedJagModel)
-        // console.log(childrenMap)
         // this._playground.handleRefresh({              // This will need to look different after Nodes are implemented here
         //     jagModel: updatedJagModel,
         //     jagModel_set: childrenMap
         // });
 
-
-
-        this._playground.updateJagNode(updatedJagModel, updatedJagUrn);         // update the graph node view on update
+        this._playground.updateJagModel(updatedJagModel, updatedJagUrn);         // update the graph node view on update
         this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
         this._library.updateItem(updatedJagModel);
     }
@@ -317,7 +307,7 @@ export default class ControllerAT {
     handleJagStorageDeleted(deletedJagUrn) {
         this._jagModelMap.delete(deletedJagUrn)
         console.log("controllerAT -- " + deletedJagUrn)
-        this._playground.deleteJagNode(deletedJagUrn)
+        this._playground.deleteJagModel(deletedJagUrn)
         this._library.removeLibraryListItem(deletedJagUrn)
     }
 

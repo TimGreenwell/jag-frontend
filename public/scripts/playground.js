@@ -7,8 +7,8 @@
  * @version 0.80
  */
 
-import JagNode from './views/jag-node.js';
-import Edge from './views/edge.js';
+import JagNodeElement from './views/jag-node.js';
+import EdgeElement from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import StorageService from "./services/storage-service.js";
 import UserPrefs from "./utils/user-prefs.js";
@@ -17,6 +17,7 @@ class Playground extends Popupable {
 
     constructor() {
         super();
+        const margin = 50;
         this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this._edges_container.setAttribute('version', '1.1');
         this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -28,8 +29,8 @@ class Playground extends Popupable {
         this.appendChild(this._nodes_container);
         this.setPopupBounds(this._nodes_container);
 
-        this._activeJagNodeSet = new Set();
-        this._selectedNodeSet = new Set();
+        this._activeJagNodeSet = new Set();    // set of JagNodes (view)
+        this._selectedNodeSet = new Set();     // set of JagNodes (view)
         this._is_edge_being_created = false;
 
         this._cardinals = {
@@ -71,13 +72,206 @@ class Playground extends Popupable {
 	 *   -  clearPlayground
 	 *
 	 * Subscriptions
-	 *   -  updateJagNode
-	 *   -  deleteJagNode
+	 *   -  updateJagModel
+	 *   -  deleteJagModel
 	 *   -  replaceJagNode
 	 *
 	 */
 
-	handleLibraryListItemSelected({
+    _buildNodeViewFromNodeModel(nodeModel, x, y) {
+            const newViewNode = this.createJagNode(nodeModel)
+            const preferred_size = nodeModel.leafCount;
+            newViewNode.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
+            if ((nodeModel.isRoot) || (!nodeModel.parent.x) || (!nodeModel.parent.y)) {
+                if (!nodeModel.x) { nodeModel.x = 10 }                      // default: 10 px from left of playground
+                if (!nodeModel.y) { nodeModel.y =  this.clientHeight / 2 }  // vertical center of playgroung
+            }
+            else{
+                // assume all children have same height as the parent.
+                const node_height = node.clientHeight + margin;
+                const preferred_height = preferred_size * node_height;
+                const x_offset = x + node.clientWidth + margin;
+                let y_offset = y - preferred_height / 2;
+            }
+        currentParentJagNode.children.forEach((child) => {
+
+           // const currentChildJagNode = descendantJagNodeMap.get(child.urn);
+            const local_preferred_size = child.getLeafCount();
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            const sub_node = this._traverseJagNodeTree(child, true, x_offset, y_offset);   // orig had 'true' for expanded
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            if (!childrenMap.has(child.id)) {
+                let edge = this._createEdge(node, child.id);
+                edge.setNodeEnd(sub_node);
+                edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+            }
+
+            if (child.name) sub_node.setContextualName(child.name);
+            if (child.description) sub_node.setContextualDescription(child.description);
+
+
+        })
+
+
+
+
+        viewnode.setTranslation(x + viewnode.clientWidth / 2.0, y + viewnode.clientHeight / 2.0);
+
+
+    }
+
+
+    // add JagNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
+    _addJagNodeTree(selectedJag, selectedJagDescendants = new Map(), isExpanded = false) {
+        //const margin = 50;
+        const height = this.clientHeight;
+        const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height / 2);
+        this._checkBounds(node.getTree());
+    }
+
+///////////////////////
+    _traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+        // if no child...  createJagNode
+        // else proceed with the current child
+        const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
+
+        if (context) {
+            if (context.name) node.setContextualName(context.name);
+            if (context.description) node.setContextualDescription(context.description);
+        }
+
+        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
+
+        if (!currentParentJagNode.children)
+            return node;
+
+        const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
+
+        // assume all children have same height as the parent.
+        const node_height = node.clientHeight + margin;
+        const preferred_height = preferred_size * node_height;
+        const x_offset = x + node.clientWidth + margin;
+        let y_offset = y - preferred_height / 2;
+
+        const childrenMap = new Map();
+        for (const child_edge of node.getChildEdges()) {
+            childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
+        }
+
+        currentParentJagNode.children.forEach((child) => {
+            const currentChildJagNode = descendantJagNodeMap.get(child.urn);
+            const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            if (!childrenMap.has(child.id)) {
+                let edge = this._createEdge(node, child.id);
+                edge.setNodeEnd(sub_node);
+                edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+            }
+
+            if (child.name) sub_node.setContextualName(child.name);
+            if (child.description) sub_node.setContextualDescription(child.description);
+        });
+
+        for (const [id, child] of childrenMap.entries()) {
+            let actual = false;
+
+            for (const actual_child of currentParentJagNode.children) {
+                if (actual_child.id == id) {
+                    actual = true;
+                    break;
+                }
+            }
+
+            if (!actual) {
+                const tree = child.getTree();
+                for (const node of tree) {
+                    node.removeAllEdges();
+                    node.detachHandlers();
+                    this._activeJagNodeSet.delete(node);
+                    this._nodes_container.removeChild(node);
+                }
+            }
+        }
+        return node;
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    // create new project on playground = used when new node appears from above.
+
+
+    // this is called when a new jag appears from above --- applies?
+    //note: creates a view based on JagModel xxx now NodeModel
+    createJagNode(nodeModel, expanded) {
+        const node = new JagNodeElement(nodeModel, expanded);
+
+        console.log("near final node: ")
+        console.log(node)
+
+        node.addEventListener('mousedown', (e) => {
+            // If meta isn't pressed clear previous selection
+            if (!e.shiftKey) {
+                this._selectedNodeSet.forEach(local_node => {
+                    if (local_node != node)
+                        local_node.setSelected(false);
+                });
+                this._selectedNodeSet.clear();
+            }
+
+            this._selectedNodeSet.add(node);
+
+            if (e.ctrlKey) {
+                const all_selected = node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
+                for (const sub_node of all_selected)
+                    this._selectedNodeSet.add(sub_node);
+            } else {
+                node.setSelected(true);
+            }
+
+            this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedNodeSet}));
+            e.stopPropagation();
+        });
+
+        node.addEventListener('keydown', this.onKeyDown.bind(this));
+
+        node.addEventListener('drag', () => {
+            this._checkBounds();
+        });
+
+        node.addEventListener('toggle-visible', (e) => {
+            if (e.detail) {
+                this._checkBounds(node.getTree());
+            } else {
+                this._checkBounds();
+            }
+        });
+
+        ////?? @TODO think about this.
+        node.addEventListener('refresh', (e) => {
+            this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
+        });
+        // Are these two below not the same info.  activeNodeSet needed?
+        this._activeJagNodeSet.add(node);
+        this._nodes_container.appendChild(node);
+        node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
+        node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
+        return node;
+    }
+
+
+
+
+
+    handleLibraryListItemSelected({
 									  jagModel: selectedJag,
 									  jagModel_set: selectedJagDescendants = new Map(),
 									  expanded: isExpanded = false
@@ -112,7 +306,7 @@ class Playground extends Popupable {
 		this._checkBounds();
 	}
 
-	updateJagNode(updatedJagModel, updatedUrn) {
+	updateJagModel(updatedJagModel, updatedUrn) {
 		// Going to be more complicated than originally thought.
 		// 1) update activeNodeSet - replace existing node with this one.
 		// 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
@@ -121,26 +315,24 @@ class Playground extends Popupable {
 		//   3.2.1) new child - one create then one update (new edge on update)
 		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
 		this._activeJagNodeSet.forEach((node) => {
-			if (node.jagModel.urn == updatedJagModel.urn) {
-				const oldNode = node.jagModel;
-
-				node.jagModel = updatedJagModel;
+			if (node.getAttribute("urn") == updatedJagModel.urn) {
+                node.syncViewToJagModel(updatedJagModel);
 			}
 		})
 	}
 
-	deleteJagNode(deadUrn) {
+	deleteJagModel(deadUrn) {
 
 		this._activeJagNodeSet.forEach((node) => {
-			if (node.jagModel.urn == deadUrn) {
+			if (node.nodeModel.jag.urn == deadUrn) {
 			}
 		})
 	}
 
 	replaceJagNode(newJagModel, deadUrn) {
 		this._activeJagNodeSet.forEach((node) => {
-			if (node.jagModel.urn == deadUrn) {
-				node.jagModel = newJagModel;
+			if (node.nodeModel.jag.urn == deadUrn) {
+				node.nodeModel.jag = newJagModel;
 			}
 		})
 	}
@@ -229,140 +421,11 @@ class Playground extends Popupable {
     }
 
 
-    createJagNode(nodeModel, expanded) {
-
-        const node = new JagNode(nodeModel, expanded);
-
-        node.addEventListener('mousedown', (e) => {
-            // If meta isn't pressed clear previous selection
-            if (!e.shiftKey) {
-                this._selectedNodeSet.forEach(local_node => {
-                    if (local_node != node)
-                        local_node.setSelected(false);
-                });
-                this._selectedNodeSet.clear();
-            }
-
-            this._selectedNodeSet.add(node);
-
-            if (e.ctrlKey) {
-                const all_selected = node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
-                for (const sub_node of all_selected)
-                    this._selectedNodeSet.add(sub_node);
-            } else {
-                node.setSelected(true);
-            }
-
-            this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedNodeSet}));
-            e.stopPropagation();
-        });
-
-        node.addEventListener('keydown', this.onKeyDown.bind(this));
-
-        node.addEventListener('drag', () => {
-            this._checkBounds();
-        });
-
-        node.addEventListener('toggle-visible', (e) => {
-            if (e.detail) {
-                this._checkBounds(node.getTree());
-            } else {
-                this._checkBounds();
-            }
-        });
-
-        ////?? @TODO think about this.
-        node.addEventListener('refresh', (e) => {
-            this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
-        });
-        // Are these two below not the same info.  activeNodeSet needed?
-        this._activeJagNodeSet.add(node);
-        this._nodes_container.appendChild(node);
-        node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-        node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-        return node;
-    }
-
-
-    _traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
-        // if no child...  createJagNode
-        // else proceed with the current child
-        const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
-
-        if (context) {
-            if (context.name) node.setContextualName(context.name);
-            if (context.description) node.setContextualDescription(context.description);
-        }
-
-        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
-
-        if (!currentParentJagNode.children)
-            return node;
-
-        const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
-
-        // assume all children have same height as the parent.
-        const node_height = node.clientHeight + margin;
-        const preferred_height = preferred_size * node_height;
-
-        const x_offset = x + node.clientWidth + margin;
-        let y_offset = y - preferred_height / 2;
-        const childrenMap = new Map();
-        for (const child_edge of node.getChildEdges()) {     //@TODO  what is this? -> getChildEdges.  Are edges stored or just node.chldren
-            childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
-        }
-
-        currentParentJagNode.children.forEach((child) => {
-            const currentChildJagNode = descendantJagNodeMap.get(child.urn);
-            const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            if (!childrenMap.has(child.id)) {
-                let edge = this._createEdge(node, child.id);
-                edge.setNodeEnd(sub_node);
-                edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
-            }
-
-            if (child.name) sub_node.setContextualName(child.name);
-            if (child.description) sub_node.setContextualDescription(child.description);
-        });
-
-        for (const [id, child] of childrenMap.entries()) {
-            let actual = false;
-
-            for (const actual_child of currentParentJagNode.children) {
-                if (actual_child.id == id) {
-                    actual = true;
-                    break;
-                }
-            }
-
-            if (!actual) {
-                const tree = child.getTree();
-                for (const node of tree) {
-                    node.removeAllEdges();
-                    node.detachHandlers();
-                    this._activeJagNodeSet.delete(node);
-                    this._nodes_container.removeChild(node);
-                }
-            }
-        }
-        return node;
-    }
 
 
 
 
-	// add JagNodeTree ==
-	_addJagNodeTree(selectedJag, selectedJagDescendants = new Map(), isExpanded = false) {
-		const margin = 50;
-		const height = this.clientHeight;
-		const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height / 2);
-		this._checkBounds(node.getTree());
-	}
+
 
     handleRefresh({jagModel, jagModel_set, alreadyRefreshedNodes = new Set()}) {
         const margin = 50;
@@ -387,6 +450,8 @@ class Playground extends Popupable {
         }
     }
 
+//  I think this just returns the number of leaves.
+// if so, we already keep track of leaf count at each node during build.
     _getNodePreferredHeight(jagNode, jagNodeMap) {
         if (!jagNode.children || jagNode.children.length === 0)
             return 1;
@@ -554,7 +619,7 @@ class Playground extends Popupable {
     }
 
     _createEdge(origin, id = undefined) {
-        const edge = new Edge(this._edges_container);
+        const edge = new EdgeElement(this._edges_container);
         edge.setNodeOrigin(origin);
         if (id) edge.setChildId(id);
         return edge;
@@ -606,7 +671,7 @@ class Playground extends Popupable {
         this.cancelEdge();
     }
 
-    _handleNewNodePopup(e) {
+    _handleNewJagActivityPopup(e) {
         const initiator = document.getElementById('menu-new');
         this.popup({
             content: Playground.NOTICE_CREATE_JAG,
@@ -634,7 +699,7 @@ Playground.POPUP_TYPES = {
 // why cant this go inside scope.? Does anyone else need it?
 Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
     type: Playground.POPUP_TYPES.NOTICE,
-    name: "Add New Node",
+    name: "Add New JAG Activity",
     description: "Be precise.  You can always edit this later.",
     properties: [
         {
