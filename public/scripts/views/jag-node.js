@@ -47,6 +47,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 		this.id = nodeModel.id;
 		this.setAttribute("urn",nodeModel.jag.urn)
+		this.setAttribute("project", nodeModel.id)
 		this._nodeModel = nodeModel;
 		this._nodeModel.addEventListener('update', this._boundUpdateHandler);
 		this._applyName();
@@ -168,7 +169,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		return this._nodeModel.jag.addChild(edge.getNodeEnd().jagModel.urn, id);  //@todo - wondering if node and jag models need to be modded
+		return this._nodeModel.jag.addChild(edge.getNodeEnd().nodeModel.jag.urn, id);  //@todo - wondering if node and jag models need to be modded
 	}
 
 	removeOutEdge(edge, id) {

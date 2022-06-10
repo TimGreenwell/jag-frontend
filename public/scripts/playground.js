@@ -325,9 +325,20 @@ class Playground extends Popupable {
 
 		this._activeJagNodeSet.forEach((node) => {
 			if (node.nodeModel.jag.urn == deadUrn) {
+                // @TODO
 			}
 		})
 	}
+
+    deleteNodeModel(deadId) {
+
+        this._activeJagNodeSet.forEach((node) => {
+            if (node.getAttribute("project" == "deadId")) {
+                this._activeJagNodeSet.delete(node)
+            }
+        })
+    }
+
 
 	replaceJagNode(newJagModel, deadUrn) {
 		this._activeJagNodeSet.forEach((node) => {

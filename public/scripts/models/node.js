@@ -181,6 +181,14 @@ export default class Node extends EventTarget {
 		}
 	}
 
+	get description() {
+		return (this.jag === undefined) ? '' : this.jag.description;
+	}
+
+	set description(name) {
+		this.jag.name = name;
+	}
+
 	isRoot() {
 		return this.parent === undefined;
 	}         // is determined by lack of parent.

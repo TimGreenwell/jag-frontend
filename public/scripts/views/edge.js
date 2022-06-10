@@ -305,9 +305,9 @@ export default class Edge extends EventTarget {
 		this._node_end = node;
 		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to jagModel
 
-		const origin_jagModel = this._node_origin.jagModel;
+		const origin_nodeModel = this._node_origin.nodeModel;  // maybe +.jag
 
-		origin_jagModel.addEventListener('update', this._boundUpdateHandler);
+		origin_nodeModel.addEventListener('update', this._boundUpdateHandler);
 
 		this._childId = this._node_origin.completeOutEdge(this, this._childId); // Note: this does multiple things:
 		// - Adds edge to graphical node's 'outs'
@@ -316,10 +316,10 @@ export default class Edge extends EventTarget {
 		//   - Sets _node_end jagModel's parent to _node_origin jagModel
 		//   - Dispatches update event
 
-		this._updateOrder(origin_jagModel.children, origin_jagModel.execution);
-		this._updateStrokeDash(origin_jagModel.operator);
+		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
+		this._updateStrokeDash(origin_nodeModel.jag.operator);
 
-		const child = origin_jagModel.children.reduce((prev, curr) => {
+		const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
 			if (curr.id == this._childId) {
 				return curr;
 			}

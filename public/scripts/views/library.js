@@ -14,11 +14,30 @@ customElements.define('jag-library', class extends HTMLElement {
 		super();
 		this._libraryList = [];                         // <li> elements holding jagModel.name & description + (search context) + jagModel
 		this._existingURNS = new Set();                // Set of URNs in _libraryList
-        // Build outer structure inside <jag-library> (search input & ol for nodes)
 		this._initUI();
 		this._initListeners();
 		this.clearLibraryList();
 	};
+
+	_initUI() {
+
+		const $header = document.createElement('header');
+		const $search = document.createElement('input');
+		const $list = document.createElement('ol');
+
+		$search.classList.add('library-search');
+		$list.classList.add('library-list');
+
+		this.appendChild($search);
+		this.appendChild($list);
+
+		this._$list = $list;
+		this._$search = $search;
+	}
+
+	_initListeners() {
+		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+	}
 
 	clearLibraryList() {
 		for (let item of this._libraryList) {
@@ -27,52 +46,15 @@ customElements.define('jag-library', class extends HTMLElement {
 		this._existingURNS.clear();
 	}
 
-	removeLibraryListItem(urn) {
-		for (let item of this._libraryList) {
-			console.log(item.element.id)
-			if (item.element.id == urn) {
-				this._$list.removeChild(item.element);
-			}
-		}
-		this._libraryList = this._libraryList.filter(function (item) {
-			return item.element.id != urn;
-		});
-		this._existingURNS.delete(urn);
-
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////  Supporting controllerAT //////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	// initializePanels (@controllerAT)
+	addListItems(jagModelArray) {
+		jagModelArray.forEach(jagModel => this.addItem(jagModel));
 	}
 
-	updateItem(updatedJAGModel) {
-		console.log(updatedJAGModel)
-		for (let idx in this._libraryList) {
-			console.log(idx)
-			console.log("lirary - updated jag model")
-			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
-				this._libraryList[idx].jagModel = updatedJAGModel;
-				this._libraryList[idx].element.id=updatedJAGModel.urn;
-				this._libraryList[idx].element.querySelectorAll(".name-entry").item(0).innerHTML = updatedJAGModel.name;
-				this._libraryList[idx].element.querySelectorAll(".description-entry").item(0).innerHTML = updatedJAGModel.description;
-				let search_params =[];
-				search_params.push(updatedJAGModel.urn.toLowerCase());
-				search_params.push(updatedJAGModel.name.toLowerCase());
-				search_params.push(updatedJAGModel.description.toLowerCase());
-				this._libraryList[idx].search_content = search_params.join(" ");
-				if (updatedJAGModel.isLocked) {
-
-				}
-	//			this.refreshItem(updatedJAGModel);
-			}
-		}
-	}
-
-	// Adding an item in library:
-	//     1)   Build <li> element for list (also holds search content and JAG model[why?])
-	//     2)   Attach 'update' and 'refresh' and 'copy' listeners
-	//     3)   Attach 'click' to <li> to dispatch 'library-lineItem-selected'
-	// Add the <li id='urn'>
-	//           <h3> 'name' </h3>
-	//           <p> 'description'
-	//         </li>
-
+	// handleJagStorageCreated (@controllerAT)
 	addItem(newJAGModel) {
 		if (!this._existingURNS.has(newJAGModel.urn)) {
 			if (newJAGModel instanceof JagModel) {
@@ -108,7 +90,6 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				li.appendChild($topHalfWrapper);
 				li.appendChild($bottomHalfWrapper);
-
 
 				let search_params = [];
 				search_params.push(urn.toLowerCase());
@@ -173,9 +154,66 @@ customElements.define('jag-library', class extends HTMLElement {
 		}
 	}
 
+	// handleJagStorageUpdated (@controllerAT)
+	updateItem(updatedJAGModel) {
+		console.log(updatedJAGModel)
+		for (let idx in this._libraryList) {
+			console.log(idx)
+			console.log("lirary - updated jag model")
+			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
+				this._libraryList[idx].jagModel = updatedJAGModel;
+				this._libraryList[idx].element.id=updatedJAGModel.urn;
+				this._libraryList[idx].element.querySelectorAll(".name-entry").item(0).innerHTML = updatedJAGModel.name;
+				this._libraryList[idx].element.querySelectorAll(".description-entry").item(0).innerHTML = updatedJAGModel.description;
+				let search_params =[];
+				search_params.push(updatedJAGModel.urn.toLowerCase());
+				search_params.push(updatedJAGModel.name.toLowerCase());
+				search_params.push(updatedJAGModel.description.toLowerCase());
+				this._libraryList[idx].search_content = search_params.join(" ");
+				if (updatedJAGModel.isLocked) {
+
+				}
+				//			this.refreshItem(updatedJAGModel);
+			}
+		}
+	}
+
+	// handleJagStorageDeleted (@controllerAT)
+	removeLibraryListItem(deletedUrn) {
+		for (let item of this._libraryList) {
+			console.log(item.element.id)
+			if (item.element.id == deletedUrn) {
+				this._$list.removeChild(item.element);
+			}
+		}
+		this._libraryList = this._libraryList.filter(function (item) {
+			return item.element.id != deletedUrn;
+		});
+		this._existingURNS.delete(deletedUrn);
+
+	}
+
+	// handleJagStorageReplaced (@controllerAT)
 	replaceItem(newJAGModel, replacedUrn) {
 		this.removeLibraryListItem(replacedUrn);
 		this.addItem(newJAGModel);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////  Supporting ///////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+
+
+	_filterFromSearchInput(e) {
+		const search_text = e.srcElement.value.toLowerCase();
+		this._libraryList.forEach((item) => {
+			if (item.element) {
+				item.element.style.display = 'block';
+				if(!item.search_content.includes(search_text))
+					item.element.style.display = 'none';
+			}
+		});
 	}
 
 
@@ -191,46 +229,10 @@ customElements.define('jag-library', class extends HTMLElement {
 		});
 	}
 
-	addListItems(jagModelArray) {
-		jagModelArray.forEach(jagModel => this.addItem(jagModel));
-	}
-
-	_initUI() {
-
-		const $header = document.createElement('header');
-		const $search = document.createElement('input');
-		const $list = document.createElement('ol');
-
-		$search.classList.add('library-search');
-		$list.classList.add('library-list');
-
-		this.appendChild($search);
-		this.appendChild($list);
-
-		this._$list = $list;
-		this._$search = $search;
-	}
-
-	_initListeners() {
-		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
-	}
-
-	_filterFromSearchInput(e) {
-		const search_text = e.srcElement.value.toLowerCase();
-		this._libraryList.forEach((item) => {
-			if (item.element) {
-				item.element.style.display = 'block';
-				if(!item.search_content.includes(search_text))
-					item.element.style.display = 'none';
-			}
-		});
-	}
 
 
 	// @TODO  understand this guy
 	async refreshItem(newJAGModel, refreshedSet = new Set()) {
-		console.log("dispatch refresh in library")
-		console.log("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
 		this._getChildModels(newJAGModel, new Map()).then(function (all_jagModels) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
@@ -252,3 +254,9 @@ export default customElements.get('jag-library');
 //      ( Line items added later by addItems )
 //   </ol>
 // </jag-library>
+
+
+//         <li id='urn'>
+//           <h3> 'name' </h3>
+//           <p> 'description'
+//         </li>

@@ -33,6 +33,8 @@ export default class ControllerAT {
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));     // Cross-tab communications
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
         StorageService.subscribe("node-storage-created", this.handleNodeStorageCreated.bind(this));
+        StorageService.subscribe("node-storage-updated", this.handleNodeStorageUpdated.bind(this));
+        StorageService.subscribe("node-storage-deleted", this.handleNodeStorageDeleted.bind(this));
     }
 
     set menu(value) {
@@ -87,9 +89,12 @@ export default class ControllerAT {
     async initializeCache() {
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag));
+        let allNodes = await StorageService.all('node')
+        allNodes.forEach(node => this.addNodeModel(node));
     }
     initializePanels() {
         this._library.addListItems([...this._jagModelMap.values()])
+        this._nodeLibrary.addListItems([...this._nodeModelMap.values()])
     }
 
     initializeHandlers() {
@@ -108,7 +113,9 @@ export default class ControllerAT {
 
         this._library.addEventListener('library-lineItem-selected', this.libraryLineItemSelectedHandler.bind(this));
         this._library.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));
-        this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - needs better icon
+        this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));
+        this._library.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
+        this._library.addEventListener('local-node-locked', this.localNodeLockedHandler.bind(this));
     }
 
     async libraryLineItemSelectedHandler(event) {
@@ -178,6 +185,24 @@ export default class ControllerAT {
         const deadJagModelUrn = event.detail.jagModelUrn;
         await StorageService.delete(deadJagModelUrn, 'jag');
     }
+
+
+
+    async localNodeLockedHandler(event) {
+        const lockedNodeModelId = event.detail.nodeModelId;
+        const lockedNodeModel = this._nodeModelMap.get(lockedNodeModelId)
+        lockedNodeModel.isLocked = true;
+        await StorageService.update(lockedNodeModel, 'node');
+    }
+
+
+    async localNodeDeletedHandler(event) {
+        const deadNodeModelId = event.detail.nodeModelId;
+        await StorageService.delete(deadNodeModelId, 'node');
+    }
+
+
+
 
 
 // This is an identical copy (hopefully) of the URN updater found in views/Properties
@@ -284,6 +309,21 @@ export default class ControllerAT {
      * @param updatedJagModel
      * @param updatedJagUrn
      */
+
+    handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
+        this._nodeModelMap.set(updatedNodeModel.id,updatedNodeModel)
+      //  this._nodeLibrary.updateItem(updatedNodeModel); @TODO
+        // update playground
+    }
+
+
+    handleNodeStorageDeleted(deletedNodeId) {
+        this._nodeModelMap.delete(deletedNodeId)
+        console.log("controllerAT -- " + deletedNodeId)
+        this._playground.deleteNodeModel(deletedNodeId)
+        this._nodeLibrary.removeNodeLibraryListItem(deletedNodeId)
+    }
+
 
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         this._jagModelMap.set(updatedJagModel.urn,updatedJagModel)
