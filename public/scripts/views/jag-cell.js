@@ -169,7 +169,7 @@ class JagCell extends AnalysisCell {
                 this._htmlElements.suggestions.hide();
                 // Is the current URN valid?  (A rename involves more than the initial create)
                 if (Validator.isValidUrn(this.nodeModel.urn)) {
-                    this.dispatchEvent(new CustomEvent('local-urn-updated', {
+                    this.dispatchEvent(new CustomEvent('local-urn-changed', {
                         bubbles: true,
                         composed: true,
                         detail: {originalUrn: this.nodeModel.urn, newUrn: this.urnElementEntry}

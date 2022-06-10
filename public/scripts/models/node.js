@@ -19,6 +19,7 @@ export default class Node extends EventTarget {
 	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
+		this._childId;                       // child differentiating id
 		this._jag = jag;                     // The Jag Model representing this node
 
 		this._children = new Array();            // Links to actual children [objects]
@@ -42,6 +43,13 @@ export default class Node extends EventTarget {
 	set id(value) {
 		this._id = value;
 	}
+	get childId() {
+		return this._childId;
+	}
+	set childId(value) {
+		this._childId = value;
+	}
+
 	get jag() {
 		return this._jag;
 	}
@@ -57,6 +65,13 @@ export default class Node extends EventTarget {
 	hasChildren() {
 		return (this.children.length !== 0);
 	}
+	getChildById(id){
+		this.children.forEach(child => {
+			if (child.id == id) {
+				return child;
+			}
+		})
+	}
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
 			const child = new Node();
@@ -69,6 +84,19 @@ export default class Node extends EventTarget {
 		} else {
 			alert("Node must first be assigned a valid URN")
 		}
+	}
+
+	removeChild(child){
+		let filtered = this.children.filter(entry => {
+			return entry
+		})
+	}
+	removeChildById(id){dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddstorm
+		this.children.forEach(child => {
+			if (child.id == id) {
+				this.removeChild(child);
+			}
+		})
 	}
 	getLastChild(){
 		return this._children[this.children.length - 1]
@@ -176,7 +204,6 @@ export default class Node extends EventTarget {
 	set urn(urn) {
 		console.log(this.jag)
 		if (this.jag !== undefined) {
-			console.log("yes - pass 1 - setting urn")
 			this.jag.urn = urn                    // Remember - can't update if urn is valid. (enforced at jagModel)
 		}
 	}

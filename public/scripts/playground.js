@@ -18,11 +18,11 @@ class Playground extends Popupable {
     constructor() {
         super();
         const margin = 50;
-        this._edges_container = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this._edges_container.setAttribute('version', '1.1');
-        this._edges_container.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this._edges_container.id = "edges-container";
-        this.appendChild(this._edges_container);
+        this._edgeContainerElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this._edgeContainerElement.setAttribute('version', '1.1');
+        this._edgeContainerElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        this._edgeContainerElement.id = "edges-container";
+        this.appendChild(this._edgeContainerElement);
 
         this._nodes_container = document.createElement('div');
         this._nodes_container.id = "nodes-container";
@@ -214,9 +214,6 @@ class Playground extends Popupable {
     createJagNode(nodeModel, expanded) {
         const node = new JagNodeElement(nodeModel, expanded);
 
-        console.log("near final node: ")
-        console.log(node)
-
         node.addEventListener('mousedown', (e) => {
             // If meta isn't pressed clear previous selection
             if (!e.shiftKey) {
@@ -268,9 +265,6 @@ class Playground extends Popupable {
     }
 
 
-
-
-
     handleLibraryListItemSelected({
 									  jagModel: selectedJag,
 									  jagModel_set: selectedJagDescendants = new Map(),
@@ -316,8 +310,8 @@ class Playground extends Popupable {
 		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
 		this._activeJagNodeSet.forEach((node) => {
 			if (node.getAttribute("urn") == updatedJagModel.urn) {
-                node.syncViewToJagModel(updatedJagModel);
-			}
+                node.syncViewToJagModel(updatedJagModel);                               // dont think this is what I want
+			}                                                                           // should sync to NodeModel
 		})
 	}
 
@@ -362,7 +356,7 @@ class Playground extends Popupable {
         this.addEventListener('mousedown', (e) => {
             if (!e.shiftKey) this.deselectAll();
             this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedNodeSet}));
-            this._edges_container.dispatchEvent(new MouseEvent('click', {
+            this._edgeContainerElement.dispatchEvent(new MouseEvent('click', {
                 clientX: e.clientX,
                 clientY: e.clientY,
                 shiftKey: e.shiftKey
@@ -373,7 +367,7 @@ class Playground extends Popupable {
         });
 
         this.addEventListener('mousemove', (e) => {
-            this._edges_container.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
+            this._edgeContainerElement.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
         });
 
         //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
@@ -561,7 +555,7 @@ class Playground extends Popupable {
     _zoomView(factor) {
         this._zoomFactor = factor;
         const transform = `scale(${factor})`;
-        this._edges_container.style.transform = transform;
+        this._edgeContainerElement.style.transform = transform;
         this._nodes_container.style.transform = transform;
         this._checkBounds();
     }
@@ -630,7 +624,7 @@ class Playground extends Popupable {
     }
 
     _createEdge(origin, id = undefined) {
-        const edge = new EdgeElement(this._edges_container);
+        const edge = new EdgeElement(this._edgeContainerElement);
         edge.setNodeOrigin(origin);
         if (id) edge.setChildId(id);
         return edge;
@@ -644,7 +638,12 @@ class Playground extends Popupable {
         this._created_edge.setEnd(x, y);
     }
 
-    async onEdgeFinalized(e, node) {
+
+    // Strange - 'node' exists - but not passed in anywhere.. is it just global?   Event is sugar for document.event.
+    async onEdgeFinalized(e) {
+
+        let node = e.target.offsetParent;
+
         if (!this._is_edge_being_created)
             return;
 
@@ -655,9 +654,9 @@ class Playground extends Popupable {
 
             // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
             // @TODO consider bringing it up here (separation of functionality)
-            const parentJag = this._created_edge._node_origin.jagModel;
-            const childJag = this._created_edge._node_end.jagModel;
-            // parentJag.addChild(childJag);
+            const parentJag = this._created_edge._leadActivityNode.nodeModel.jag;
+            const childJag = this._created_edge._subActivityNode.nodeModel.jag;
+            //parentJag.addChild(childJag);
             this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: parentJag}}));
            // await StorageService.update(parentJag, 'jag');
 

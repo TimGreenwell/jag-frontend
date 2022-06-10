@@ -32,8 +32,6 @@ export default class RESTStorage {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.all.replace("{urlHandle}", urlHandle);
 		const all = await RESTUtils.all(this._endpoint + path);
-		console.log("alaalalalalalalala")
-		console.log(all)
 		return all;
 	}
 
@@ -41,8 +39,6 @@ export default class RESTStorage {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.get.replace("{urlHandle}", urlHandle).replace("{id}",id);
 		const getById =  await RESTUtils.get(this._endpoint + path);
-		console.log("gotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyidgotbyid")
-		console.log(getById)
 		return getById;
 	}
 

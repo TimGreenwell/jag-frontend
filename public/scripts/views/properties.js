@@ -237,7 +237,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         if (this._nodeModel.jag.urn != this._urnInput.value) {
             // if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
             if (Validator.isValidUrn(this._urnInput.value)) {        // && entered urn is valid...
-                this.dispatchEvent(new CustomEvent('local-urn-updated', {
+                this.dispatchEvent(new CustomEvent('local-urn-changed', {
                     bubbles: true,
                     composed: true,
                     detail: {originalUrn: this._urnInput.value, newUrn: this._nodeModel.jag.urn}

@@ -19,7 +19,7 @@ export default class ControllerAT {
 
         this._menu = null;
         this._library = null;
-        this._nodeLibrary = null;
+        this._projectLibrary = null;
         this._playground = null;
         this._properties = null;
 
@@ -27,8 +27,8 @@ export default class ControllerAT {
         this._nodeModelMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
-        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this)); 
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
+        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
         StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));   // All from observable
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));     // Cross-tab communications
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
@@ -43,8 +43,8 @@ export default class ControllerAT {
     set library(value) {
         this._library = value;
     }
-    set nodeLibrary(value) {
-        this._nodeLibrary = value;
+    set projectLibrary(value) {
+        this._projectLibrary = value;
     }
     set playground(value) {
         this._playground = value;
@@ -89,12 +89,13 @@ export default class ControllerAT {
     async initializeCache() {
         let allJags = await StorageService.all('jag')
         allJags.forEach(jag => this.addJagModel(jag));
+
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => this.addNodeModel(node));
     }
     initializePanels() {
         this._library.addListItems([...this._jagModelMap.values()])
-        this._nodeLibrary.addListItems([...this._nodeModelMap.values()])
+        this._projectLibrary.addListItems([...this._nodeModelMap.values()])
     }
 
     initializeHandlers() {
@@ -102,7 +103,7 @@ export default class ControllerAT {
         this._playground.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag structure updates
         this._playground.addEventListener('playground-nodes-selected', this.playgroundNodesSelectedHandler.bind(this));
 
-        this._properties.addEventListener('local-urn-renamed', this.localUrnRenamedHandler.bind(this));
+        this._properties.addEventListener('local-urn-changed', this.localUrnRenamedHandler.bind(this));
         this._properties.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag property updates
     //    this._properties.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));  // @todo - button to add
     //    this._properties.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));  // @todo - button to add
@@ -117,42 +118,21 @@ export default class ControllerAT {
         this._library.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
         this._library.addEventListener('local-node-locked', this.localNodeLockedHandler.bind(this));
     }
-
-    async libraryLineItemSelectedHandler(event) {
-        const jagModelSelected = event.detail.jagModel;
-        const expandRequested = event.detail.expanded;
-      //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
-        let newProjectRootNode = this.buildNodeTreeFromJagUrn(jagModelSelected.urn);
-        await StorageService.create(newProjectRootNode, "node");
-    }
-
-    handleNodeStorageCreated(createdNodeModel, createdNodeId) {
-        this._nodeModelMap.set(createdNodeId,createdNodeModel)
-        this._nodeLibrary.addItem(createdNodeModel);                                   // Add JagModel list item to Library
-        this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
-    }
-
-
-
-    clearSelectedHandler(event) {
-        console.log(event)
-        console.log("---- Delete Selected ---               ( I dont think we want a real pruning.")
-        this._playground.handleDeleteSelected(event);
-    }
-
-    clearPlaygroundHandler() {
-        this._playground.clearPlayground();
-    }
-
-    addNewJagActivityHandler() {
-        this._playground._handleNewJagActivityPopup();         //@todo consider moving popupable to menu as well
-    }
-
-
-    playgroundNodesSelectedHandler(event) {
-        this._properties.handleSelectionUpdate(event.detail);
-        //ide.handleSelectionUpdate(e.detail);
-    }
+    //////////////////////////////////////////////////////////////////////////////////
+    //////////  controllerAT - UPWARD Control  ///////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////
+    /**
+     *                                   Local Upward Handlers
+     * localAnalysisCreatedHandler - requires createStandardAnalysis, displayAnalysis
+     * localAnalysisUpdatedHandler
+     * localNodeAddChildHandler
+     * localNodePruneChildHandler
+     * localCollapseToggledHandler
+     * localLibraryAnalysisSelected
+     *
+     * @param event
+     * @returns {Promise<void>}
+     */
 
     async localJagCreatedHandler(event) {
         const urn = event.detail.urn;
@@ -161,7 +141,7 @@ export default class ControllerAT {
         const newJagModel = new JagModel({urn: urn, name: name, description: description});
         if (InputValidator.isValidUrn(newJagModel.urn)) {
             await StorageService.create(newJagModel, 'jag');
-         //   this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
+            //   this._playground._addJagNodeTree(newJagModel, newJagModel.urn);         // updates locally (only fresh new orphan leafs)
         } else {
             window.alert("Invalid URN");
         }
@@ -173,41 +153,15 @@ export default class ControllerAT {
         await StorageService.update(updatedJagModel, 'jag');
     }
 
-    async localJagLockedHandler(event) {
-        const lockedJagModelUrn = event.detail.jagModelUrn;
-        const lockedJagModel = this._jagModelMap.get(lockedJagModelUrn)
-        lockedJagModel.isLocked = true;
-        await StorageService.update(lockedJagModel, 'jag');
+    playgroundNodesSelectedHandler(event) {
+        this._properties.handleSelectionUpdate(event.detail);
+        //ide.handleSelectionUpdate(e.detail);
     }
 
 
-    async localJagDeletedHandler(event) {
-        const deadJagModelUrn = event.detail.jagModelUrn;
-        await StorageService.delete(deadJagModelUrn, 'jag');
-    }
-
-
-
-    async localNodeLockedHandler(event) {
-        const lockedNodeModelId = event.detail.nodeModelId;
-        const lockedNodeModel = this._nodeModelMap.get(lockedNodeModelId)
-        lockedNodeModel.isLocked = true;
-        await StorageService.update(lockedNodeModel, 'node');
-    }
-
-
-    async localNodeDeletedHandler(event) {
-        const deadNodeModelId = event.detail.nodeModelId;
-        await StorageService.delete(deadNodeModelId, 'node');
-    }
-
-
-
-
-
-// This is an identical copy (hopefully) of the URN updater found in views/Properties
+    // This is an identical copy (hopefully) of the URN updater found in views/Properties
     // I can't decide on a common area for updates such as this.  Views arent shared.  A controller area?
-    // Maybe just the model (stoage is data) but circular reference problem with schema.
+    // Maybe just the model (storage is data) but circular reference problem with schema.
     // Currently thinking a controller area if more can be found.
 
 
@@ -250,7 +204,6 @@ export default class ControllerAT {
                 }
             } else {  // urn not already being used
                 // is the original JagModel locked?
-                console.log("is locked - " + origJagModel.isLocked);
                 if (origJagModel.isLocked) {
                     await this.cloneJagModel(origJagModel, newUrn)
                 } else {/// the original JagModel is not locked
@@ -261,7 +214,127 @@ export default class ControllerAT {
 
     }
 
-//  tlgtlgtlg wednesday
+
+    async localJagDeletedHandler(event) {
+        const deadJagModelUrn = event.detail.jagModelUrn;
+        await StorageService.delete(deadJagModelUrn, 'jag');
+    }
+
+    async localJagLockedHandler(event) {
+        const lockedJagModelUrn = event.detail.jagModelUrn;
+        const lockedJagModel = this._jagModelMap.get(lockedJagModelUrn)
+        lockedJagModel.isLocked = true;
+        await StorageService.update(lockedJagModel, 'jag');
+    }
+
+
+    addNewJagActivityHandler() {
+        this._playground._handleNewJagActivityPopup();         //@todo consider moving popupable to menu as well
+    }
+
+
+    clearPlaygroundHandler() {
+        this._playground.clearPlayground();
+    }
+
+
+    clearSelectedHandler(event) {
+        this._playground.handleDeleteSelected(event);
+    }
+
+    async libraryLineItemSelectedHandler(event) {
+        const jagModelSelected = event.detail.jagModel;
+        const expandRequested = event.detail.expanded;
+        //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
+        let newProjectRootNode = this.buildNodeTreeFromJagUrn(jagModelSelected.urn);
+        await StorageService.create(newProjectRootNode, "node");
+    }
+
+    async localNodeDeletedHandler(event) {
+        const deadNodeModelId = event.detail.nodeModelId;
+        await StorageService.delete(deadNodeModelId, 'node');
+    }
+
+    async localNodeLockedHandler(event) {
+        const lockedNodeModelId = event.detail.nodeModelId;
+        const lockedNodeModel = this._nodeModelMap.get(lockedNodeModelId)
+        lockedNodeModel.isLocked = true;
+        await StorageService.update(lockedNodeModel, 'node');
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //////////  controllerAT - DOWNWARD Control  ///////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Remote Handlers - jagUpdate, jagCreate, jagDelete, jagCloned*, jagReplaced*
+     *                   nodeUpdate, nodeCreate, nodeDelete, nodeCloned*, nodeReplaced*
+     * @param updatedJagModel
+     * @param updatedJagUrn
+     */
+
+
+    handleJagStorageCreated(createdJagModel, createdJagUrn) {
+        this._jagModelMap.set(createdJagUrn,createdJagModel)
+        UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
+        this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
+    }
+
+    handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
+        this._jagModelMap.set(updatedJagModel.urn,updatedJagModel)
+        // let childrenMap = this._getChildModels(updatedJagModel, new Map());
+        // this._playground.handleRefresh({              // This will need to look different after Nodes are implemented here
+        //     jagModel: updatedJagModel,
+        //     jagModel_set: childrenMap
+        // });
+
+        this._playground.updateJagModel(updatedJagModel, updatedJagUrn);         // update the graph node view on update
+        this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
+        this._library.updateItem(updatedJagModel);
+    }
+
+    handleJagStorageDeleted(deletedJagUrn) {
+        this._jagModelMap.delete(deletedJagUrn)
+        this._playground.deleteJagModel(deletedJagUrn)
+        this._library.removeLibraryListItem(deletedJagUrn)
+    }
+
+    handleJagStorageCloned(clonedJagModel, clonedJagUrn) {
+        UserPrefs.setDefaultUrnPrefixFromUrn(clonedJagUrn)
+        this._playground._addJagNodeTree(clonedJagModel, clonedJagUrn)
+    }
+
+    handleJagStorageReplaced(newJagModel, replacedJagUrn) {
+        //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
+        this._playground.replaceJagNode(newJagModel, replacedJagUrn)
+        this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in library
+    }
+
+    handleNodeStorageCreated(createdNodeModel, createdNodeId) {
+        this._nodeModelMap.set(createdNodeId,createdNodeModel)
+        this._projectLibrary.addItem(createdNodeModel);                                   // Add JagModel list item to Library
+        this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
+    }
+
+    handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
+        this._nodeModelMap.set(updatedNodeModel.id,updatedNodeModel)
+        //  this._projectLibrary.updateItem(updatedNodeModel); @TODO
+        // update playground
+    }
+
+    handleNodeStorageDeleted(deletedNodeId) {
+        this._nodeModelMap.delete(deletedNodeId)
+        this._playground.deleteNodeModel(deletedNodeId)
+        this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
+    }
+
+    /**
+     *                                        Support Functions
+     * buildNodeTreeFromJagUrn   Build node tree given root URN
+     *                           @TODO should this be shared with IA>?
+     *
+     */
+
+
     // _getChildModels(parentJAGModel, childrenJAGMap) {
     //     if (!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
     //         return childrenJAGMap;
@@ -275,7 +348,6 @@ export default class ControllerAT {
 
     // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
     buildNodeTreeFromJagUrn(newRootJagUrn) {
-        console.log("Chosen URN = " + newRootJagUrn)
         const nodeStack = [];
         const resultStack = [];
         const rootJagModel = this.jagModelMap.get(newRootJagUrn); /// I could have just passed in the Model...instead of switching to urn and back.
@@ -292,75 +364,10 @@ export default class ControllerAT {
             resultStack.push(currentNode);
         }
         const returnNode = resultStack.shift();
-        console.log("Returning Node Root:")
-        console.log(returnNode)
         return returnNode;
     }
 
 
-
-
-
-
-
-
-    /**
-     * Remote Handler - update, create, delete, cloned*, replaced*
-     * @param updatedJagModel
-     * @param updatedJagUrn
-     */
-
-    handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
-        this._nodeModelMap.set(updatedNodeModel.id,updatedNodeModel)
-      //  this._nodeLibrary.updateItem(updatedNodeModel); @TODO
-        // update playground
-    }
-
-
-    handleNodeStorageDeleted(deletedNodeId) {
-        this._nodeModelMap.delete(deletedNodeId)
-        console.log("controllerAT -- " + deletedNodeId)
-        this._playground.deleteNodeModel(deletedNodeId)
-        this._nodeLibrary.removeNodeLibraryListItem(deletedNodeId)
-    }
-
-
-    handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
-        this._jagModelMap.set(updatedJagModel.urn,updatedJagModel)
-        // let childrenMap = this._getChildModels(updatedJagModel, new Map());
-        // this._playground.handleRefresh({              // This will need to look different after Nodes are implemented here
-        //     jagModel: updatedJagModel,
-        //     jagModel_set: childrenMap
-        // });
-
-        this._playground.updateJagModel(updatedJagModel, updatedJagUrn);         // update the graph node view on update
-        this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
-        this._library.updateItem(updatedJagModel);
-    }
-
-    handleJagStorageCreated(createdJagModel, createdJagUrn) {
-        this._jagModelMap.set(createdJagUrn,createdJagModel)
-        UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
-        this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
-    }
-
-    handleJagStorageDeleted(deletedJagUrn) {
-        this._jagModelMap.delete(deletedJagUrn)
-        console.log("controllerAT -- " + deletedJagUrn)
-        this._playground.deleteJagModel(deletedJagUrn)
-        this._library.removeLibraryListItem(deletedJagUrn)
-    }
-
-    handleJagStorageCloned(clonedJagModel, clonedJagUrn) {
-        UserPrefs.setDefaultUrnPrefixFromUrn(clonedJagUrn)
-        this._playground._addJagNodeTree(clonedJagModel, clonedJagUrn)
-    }
-
-    handleJagStorageReplaced(newJagModel, replacedJagUrn) {
-        //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
-        this._playground.replaceJagNode(newJagModel, replacedJagUrn)
-        this._library.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in library
-    }
 
 
 }

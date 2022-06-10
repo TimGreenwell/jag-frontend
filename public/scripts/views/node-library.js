@@ -137,7 +137,6 @@ customElements.define('node-library', class extends HTMLElement {
 
 				toggleLock.addEventListener('click', (event) => {
 					event.stopPropagation();
-					console.log("clicked")
 					this.dispatchEvent(new CustomEvent('local-node-locked', {
 						detail: {
 							nodeModelUrn: newNodeModel.urn,

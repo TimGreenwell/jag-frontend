@@ -12,50 +12,54 @@ const XMLNS = 'http://www.w3.org/2000/svg';
 
 export default class Edge extends EventTarget {
 
-	constructor(parent) {
+	constructor(edgeContainerElement) {
 		super();
-		this.init(parent);
+		this.init(edgeContainerElement);
 		this.visible = true;
 		this._atomic = false;
 	}
 
-	init(parent) {
+	init(edgeContainerElement) {
 		this._group = document.createElementNS(XMLNS, 'g');
+
 		this._origin = {x : 0, y : 0};
 		this._end = {x : 0, y : 0};
-		this._node_origin = undefined;
-		this._node_end = undefined;
+		this._leadActivityNode = undefined;
+		this._subActivityNode = undefined;
+
 		this._edge_el = document.createElementNS(XMLNS, 'path');
 		this._edge_el.setAttributeNS(null, 'stroke', 'gray');
 		this._edge_el.setAttributeNS(null, 'fill', 'transparent');
+
 		this._text_el = document.createElementNS(XMLNS, 'text');
 		this._text_el.setAttribute('class', 'sequential-label');
+
 		this._anno_el = document.createElementNS(XMLNS, 'text');
 		this._anno_el.setAttribute('class', 'annotation-label');
 		this._anno_el.innerHTML = "@";
 		this._anno_el.style.visibility = "hidden";
 		this._anno_visibility = "hidden";
+
 		this._list_el = document.createElementNS(XMLNS, 'text');
 		this._list_el.setAttribute('class', 'annotations-list');
 		this._list_el.style.visibility = "hidden";
+
 		this._part_el = document.createElementNS(XMLNS, 'text');
 		this._part_el.setAttribute('class', 'participation-label');
+
 		this._group.appendChild(this._edge_el);
 		this._group.appendChild(this._text_el);
 		this._group.appendChild(this._anno_el);
 		this._group.appendChild(this._list_el);
 		this._group.appendChild(this._part_el);
 
-		this._parent = parent;
-		parent.appendChild(this._group);
+		this._edgeContainerElement = edgeContainerElement;
+		edgeContainerElement.appendChild(this._group);
 
 		this._childId = undefined;
 
-		this._boundUpdateHandler = this._updateHandler.bind(this);
-		this._boundHandleSelection = this._handleSelection.bind(this);
-		this._boundHandleHover = this._handleHover.bind(this);
-		parent.addEventListener('click', this._boundHandleSelection);
-		parent.addEventListener('mousemove', this._boundHandleHover);
+		edgeContainerElement.addEventListener('click', this._handleSelection.bind(this));
+		edgeContainerElement.addEventListener('mousemove', this._handleHover.bind(this));
 	}
 
 	_updateHandler(e) {
@@ -74,7 +78,7 @@ export default class Edge extends EventTarget {
 
 		// Since the atomic annotation may have been modified, or a change in
 		// the inheritance tree has occurred, check to update the stroke.
-		this.updateStroke(this._node_origin.isAtomic());
+		this.updateStroke(this._leadActivityNode.isAtomic());
 	}
 
 	_updateParticipation(type) {
@@ -157,7 +161,7 @@ export default class Edge extends EventTarget {
 	updateStroke(atomic) {
 		// The atomic notation for a higher-level node may have changed to false, but
 		// this node's parent may be atomic, so accept the most immediate value.
-		const toggle = atomic || this._node_origin.isAtomic();
+		const toggle = atomic || this._leadActivityNode.isAtomic();
 
 		// Update ONLY this edge's stroke.
 		this._updateStroke(toggle);
@@ -166,7 +170,7 @@ export default class Edge extends EventTarget {
 		this._part_el.style.visibility = !toggle && this._visible ? "visible" : "hidden";
 
 		// Recursively update for all children in this tree.
-		for (const child_edge of this._node_end.getChildEdges()) {
+		for (const child_edge of this._subActivityNode.getChildEdges()) {
 			child_edge.updateStroke(atomic);
 		}
 	}
@@ -213,7 +217,7 @@ export default class Edge extends EventTarget {
 			this._edge_el.setAttributeNS(null, 'stroke', 'red');
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
 		} else if (!e.shiftKey) {
-			this._updateStroke(this._node_origin.isAtomic());
+			this._updateStroke(this._leadActivityNode.isAtomic());
 			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
 		}
 	}
@@ -223,7 +227,7 @@ export default class Edge extends EventTarget {
 		if (this._atomic) return true;
 
 		// Otherwise, check if upstream is atomic.
-		return this._node_origin.isAtomic();
+		return this._leadActivityNode.isAtomic();
 	}
 
 	set visible(visible) {
@@ -231,7 +235,7 @@ export default class Edge extends EventTarget {
 
 		if (visible) {
 			this._edge_el.style.visibility = "visible";
-			this._part_el.style.visibility = (this._node_origin && this._node_origin.isAtomic()) ? "hidden" : "visible";
+			this._part_el.style.visibility = (this._leadActivityNode && this._leadActivityNode.isAtomic()) ? "hidden" : "visible";
 			this._text_el.style.visibility = "visible";
 			this._anno_el.style.visibility = this._anno_visibility;
 		} else {
@@ -243,36 +247,36 @@ export default class Edge extends EventTarget {
 	}
 
 	destroy() {
-		this._parent.removeChild(this._group);
-		this._parent.removeEventListener('click', this._boundHandleSelection);
+		this._edgeContainerElement.removeChild(this._group);
+		this._edgeContainerElement.removeEventListener('click', this._handleSelection.bind(this));
 
-		if (this._node_origin != undefined) {
-			this._node_origin.jagModel.removeEventListener('update', this._boundUpdateHandler);
-			this._node_origin.removeOutEdge(this, this._childId);
+		if (this._leadActivityNode != undefined) {
+			this._leadActivityNode.jagModel.removeEventListener('update', this._updateHandler.bind(this));
+			this._leadActivityNode.removeOutEdge(this, this._childId);
 		}
 
-		if (this._node_end != undefined)
-			this._node_end.removeInEdge(this);
+		if (this._subActivityNode != undefined)
+			this._subActivityNode.removeInEdge(this);
 	}
 
 	getNodeOrigin() {
-		return this._node_origin;
+		return this._leadActivityNode;
 	}
 
 	getNodeEnd() {
-		return this._node_end;
+		return this._subActivityNode;
 	}
 
 	setNodeOrigin(node) {
-		this._node_origin = node;
-		this._node_origin.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
+		this._leadActivityNode = node;
+		this._leadActivityNode.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
 
 		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
-		this._updateStroke(this._node_origin.isAtomic());
+		this._updateStroke(this._leadActivityNode.isAtomic());
 	}
 
 	getParentURN() {
-		return this._node_origin.getURN();
+		return this._leadActivityNode.getURN();
 	}
 
 	setChildId(id) {
@@ -285,7 +289,7 @@ export default class Edge extends EventTarget {
 
 	setChildName(name) {
 		this._childName = name;
-		this._node_origin.setChildName(this._childId, name);
+		this._leadActivityNode.setChildName(this._childId, name);
 	}
 
 	getChildName() {
@@ -294,26 +298,25 @@ export default class Edge extends EventTarget {
 
 	setChildDescription(description) {
 		this._childDescription = description;
-		this._node_origin.setChildDescription(this._childId, description);
+		this._leadActivityNode.setChildDescription(this._childId, description);
 	}
 
 	getChildDescription() {
 		return this._childDescription;
 	}
 
-	setNodeEnd(node) {
-		this._node_end = node;
-		this._node_end.addInEdge(this); // Note: this only computes and sets graphical edge stroke end and adds edge to graphical node's 'ins'; no change to jagModel
+	setNodeEnd(subActivityNode) {
+		this._subActivityNode = subActivityNode;
+		this._subActivityNode.addInEdge(this);
+		const origin_nodeModel = this._leadActivityNode.nodeModel;  // maybe +.jag
 
-		const origin_nodeModel = this._node_origin.nodeModel;  // maybe +.jag
+		origin_nodeModel.addEventListener('update', this._updateHandler.bind(this));
 
-		origin_nodeModel.addEventListener('update', this._boundUpdateHandler);
-
-		this._childId = this._node_origin.completeOutEdge(this, this._childId); // Note: this does multiple things:
+		this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:
 		// - Adds edge to graphical node's 'outs'
-		// - Invokes _node_origin#addChild(_node_end), which:
-		//   - Adds _node_end jagModel to _node_origin jagModel's children
-		//   - Sets _node_end jagModel's parent to _node_origin jagModel
+		// - Invokes _leadActivityNode#addChild(_subActivityNode), which:
+		//   - Adds _subActivityNode jagModel to _leadActivityNode jagModel's children
+		//   - Sets _subActivityNode jagModel's parent to _leadActivityNode jagModel
 		//   - Dispatches update event
 
 		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
@@ -332,22 +335,20 @@ export default class Edge extends EventTarget {
 		// Update all child edges of the end node with upstream atomicity.
 		// Note: this does not use this#updateStroke since this edge may not be
 		//       atomic, but is annotated atomic, and so its children should be.
-		for (const child_edge of this._node_end.getChildEdges()) {
-			child_edge.updateStroke(this._node_end.isAtomic());
+		for (const child_edge of this._subActivityNode.getChildEdges()) {
+			child_edge.updateStroke(this._subActivityNode.isAtomic());
 		}
 	}
 
 	setOrigin(x, y) {
 		this._origin.x = x;
 		this._origin.y = y;
-
 		this._applyPath();
 	}
 
 	setEnd(x, y) {
 		this._end.x = x;
 		this._end.y = y;
-
 		this._applyPath();
 	}
 

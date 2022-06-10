@@ -16,7 +16,6 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	constructor(nodeModel, expanded) {
 		super();
-		console.log("in constructor")
 		this._translation = {x: 0, y:0};
 		this._outs = new Set();
 		this._in = undefined;
@@ -32,13 +31,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.setTranslation(100, 100);
 		this._initHandlers();
 		this.nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
-
-		console.log("3")
-		console.log(nodeModel)
-
 		this.expanded = expanded;
 		this.visible = true;
-		console.log("out constructor")
 	}
 
 	set nodeModel(nodeModel) {           // another complex set                                                         yuk
@@ -54,11 +48,11 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._applyOperator();
 		this._applyExecution();
 	}
-
-
 	get nodeModel() {
 		return this._nodeModel;
 	}
+
+
 
 	set expanded(expanded) {               // complex...leave it
 		this._expanded = expanded;
@@ -105,6 +99,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: visible }));
 	}
+
 	get visible() {
 		return this._visible;
 	}
@@ -237,7 +232,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (this._in) {
 			this._in.setChildName(name);
 		}
-
 		this._applyName(name);
 	}
 
@@ -245,7 +239,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (this._in) {
 			return this._in.getChildName() || this._nodeModel.jag.name;
 		}
-
 		return this._nodeModel.jag.name;
 	}
 
@@ -401,6 +394,13 @@ customElements.define('jag-node', class extends HTMLElement {
 	detachHandlers() {
 		this.parentNode.removeEventListener('mouseup', this._boundMouseUp);
 		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+	}
+
+	syncViewToNodeModel(nodeModel) {
+		this._nodeModel = nodeModel;
+		this._translation.x = this._nodeModel.x;
+		this._translation.y = this._nodeModel.y;
+		this.syncViewToJagModel(nodeModel.jag)
 	}
 
 	syncViewToJagModel(jagModel) {

@@ -70,7 +70,6 @@ export default class JAG extends EventTarget {
 
     set urn(urn) {
         if (!ValidationUtility.isValidUrn(this._urn)) {
-            console.log("yes - pass 2 - setting urn")
             this._urn = urn;
         }
     }

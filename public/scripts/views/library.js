@@ -102,7 +102,6 @@ customElements.define('jag-library', class extends HTMLElement {
 				});
 
 				newJAGModel.addEventListener('refresh', () => {
-					console.log(("Refresh event heard in Library"))
 					this.refreshItem(newJAGModel);
 				});
 
@@ -135,7 +134,6 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				toggleLock.addEventListener('click', (event) => {
 					event.stopPropagation();
-					console.log("clicked")
 					this.dispatchEvent(new CustomEvent('local-jag-locked', {
 						detail: {
 							jagModelUrn: newJAGModel.urn,
@@ -156,10 +154,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	// handleJagStorageUpdated (@controllerAT)
 	updateItem(updatedJAGModel) {
-		console.log(updatedJAGModel)
 		for (let idx in this._libraryList) {
-			console.log(idx)
-			console.log("lirary - updated jag model")
 			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
 				this._libraryList[idx].jagModel = updatedJAGModel;
 				this._libraryList[idx].element.id=updatedJAGModel.urn;
@@ -181,7 +176,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	// handleJagStorageDeleted (@controllerAT)
 	removeLibraryListItem(deletedUrn) {
 		for (let item of this._libraryList) {
-			console.log(item.element.id)
 			if (item.element.id == deletedUrn) {
 				this._$list.removeChild(item.element);
 			}
