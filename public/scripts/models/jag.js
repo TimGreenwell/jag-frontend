@@ -30,8 +30,6 @@ export default class JAG extends EventTarget {
                 } ) {
         super();
 
-
-        // All string properties can be copied.
         this._urn = urn;
         this._name = name;
         this._description = description;

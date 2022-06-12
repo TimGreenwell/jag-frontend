@@ -454,7 +454,6 @@ customElements.define('jag-node', class extends HTMLElement {
 	setTranslation(x, y) {
 		this._translation.x = x;
 		this._translation.y = y;
-
 		if(!this.parentNode) return;
 
 		const [left, top] = this.getPosition();
@@ -530,10 +529,6 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.setTranslation(this._translation.x, this._translation.y);
 	}
 
-	_adjustPosition(x,y) {
-		return [x, y];
-	}
-
 	_snap() {
 		this._translation.z = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
 		this._translation.y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
@@ -542,10 +537,10 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	getPosition() {
-		const left = Math.round(this._translation.x - this.clientWidth / 2.0);
-		const top = Math.round(this._translation.y - this.clientHeight / 2.0);
+		const x = Math.round(this._translation.x - this.clientWidth / 2.0);
+		const y = Math.round(this._translation.y - this.clientHeight / 2.0);
 
-		return this._adjustPosition(left, top);
+		return [x,y];
 	}
 
 	_computeNodeInputAttachment() {

@@ -18,19 +18,19 @@ class Playground extends Popupable {
     constructor() {
         super();
         const margin = 50;
-        this._edgeContainerElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this._edgeContainerElement.setAttribute('version', '1.1');
-        this._edgeContainerElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this._edgeContainerElement.id = "edges-container";
-        this.appendChild(this._edgeContainerElement);
+        this._edgeContainerDiv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this._edgeContainerDiv.setAttribute('version', '1.1');
+        this._edgeContainerDiv.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        this._edgeContainerDiv.id = "edges-container";
+        this.appendChild(this._edgeContainerDiv);
 
-        this._nodes_container = document.createElement('div');
-        this._nodes_container.id = "nodes-container";
-        this.appendChild(this._nodes_container);
-        this.setPopupBounds(this._nodes_container);
+        this._nodeContainerDiv = document.createElement('div');
+        this._nodeContainerDiv.id = "nodes-container";
+        this.appendChild(this._nodeContainerDiv);
+        this.setPopupBounds(this._nodeContainerDiv);
 
-        this._activeJagNodeSet = new Set();    // set of JagNodes (view)
-        this._selectedNodeSet = new Set();     // set of JagNodes (view)
+        this._activeJagNodeElementSet = new Set();    // set of JagNodes (view)
+        this._selectedJagNodeElementSet = new Set();     // set of JagNodes (view)
         this._is_edge_being_created = false;
 
         this._cardinals = {
@@ -58,48 +58,359 @@ class Playground extends Popupable {
         this._boundStopDragView = this.stopDragView.bind(this);
 
 
-        this.initGlobalEvents();
+        // Turned this off temporarily.  Most keys have no function here.  They all work when
+        // a node inside is selected
+        // document.addEventListener('keydown', this.onKeyDown.bind(this));
+
+        this.addEventListener('mousedown', this.playgroundNodeClickSelected.bind(this));
+
+        this.addEventListener('mousemove', (e) => {
+            this._edgeContainerDiv.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
+        });
+
+        //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
+        this.addEventListener('dragover', this.cancelDefault.bind(this));
+        this.addEventListener('drop', this.onImport.bind(this));
     }
 
-	/**
-	 *
-	 * Handlers for dispatches and subscriptions
-	 * Dispatches from Library
-	 *   -  handleLibraryListItemSelected
-	 *
-	 *   Dispatches from Menu
-	 *   -  handleDeleteSelected
-	 *   -  clearPlayground
-	 *
-	 * Subscriptions
-	 *   -  updateJagModel
-	 *   -  deleteJagModel
-	 *   -  replaceJagNode
-	 *
-	 */
 
-    _buildNodeViewFromNodeModel(nodeModel, x, y) {
-            const newViewNode = this.createJagNode(nodeModel)
-            const preferred_size = nodeModel.leafCount;
-            newViewNode.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
-            if ((nodeModel.isRoot) || (!nodeModel.parent.x) || (!nodeModel.parent.y)) {
-                if (!nodeModel.x) { nodeModel.x = 10 }                      // default: 10 px from left of playground
-                if (!nodeModel.y) { nodeModel.y =  this.clientHeight / 2 }  // vertical center of playgroung
-            }
-            else{
-                // assume all children have same height as the parent.
-                const node_height = node.clientHeight + margin;
-                const preferred_height = preferred_size * node_height;
-                const x_offset = x + node.clientWidth + margin;
-                let y_offset = y - preferred_height / 2;
-            }
-        currentParentJagNode.children.forEach((child) => {
+    /**
+     *      Local Handlers
+     *         -- Edge Handling
+     *
+     */
 
-           // const currentChildJagNode = descendantJagNodeMap.get(child.urn);
+    /**
+     * Edge Handling
+     *
+     * _handleEdgeSelected
+     * onEdgeInitialized
+     * _createEdge
+     * onEdgeUpdated
+     * onEdgeFinalized
+     * cancelEdge
+     * onEdgeCanceled
+     *
+     */
+
+    _handleEdgeSelected(e) {
+        if (e.detail.selected) {
+            this._selectedJagNodeElementSet.add(e.target);
+        } else {
+            this._selectedJagNodeElementSet.delete(e.target);
+        }
+    }
+
+    onEdgeInitialized(e, node) {
+        this.removeEventListener('mousemove', this._boundDragView);
+        this.removeEventListener('mouseup', this._boundStopDragView);
+        this.addEventListener('mousemove', this._boundOnEdgeUpdated);
+        this.addEventListener('mouseup', this._boundOnEdgeCanceled);
+
+        this._created_edge = this._createEdge(node);
+        this._is_edge_being_created = true;
+
+        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
+        this._created_edge.setEnd(x, y);
+    }
+
+    _createEdge(origin, id = undefined) {
+        const edge = new EdgeElement(this._edgeContainerDiv);
+        edge.setNodeOrigin(origin);
+        if (id) edge.setChildId(id);
+        return edge;
+    }
+
+    onEdgeUpdated(e) {
+        if (!this._is_edge_being_created)
+            return;
+
+        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
+        this._created_edge.setEnd(x, y);
+    }
+
+    async onEdgeFinalized(e) {
+
+        let node = e.target.offsetParent;
+
+        if (!this._is_edge_being_created)
+            return;
+
+        if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
+            this._is_edge_being_created = false;
+            this._created_edge.setNodeEnd(node);
+            this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+
+            // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
+            // @TODO consider bringing it up here (separation of functionality)
+            const parentJag = this._created_edge._leadActivityNode.nodeModel.jag;
+            const childJag = this._created_edge._subActivityNode.nodeModel.jag;
+            //parentJag.addChild(childJag);
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: parentJag}
+            }));
+            // await StorageService.update(parentJag, 'jag');
+
+        } else {
+            this.cancelEdge();
+        }
+    }
+
+    cancelEdge() {
+        if (!this._is_edge_being_created)
+            return;
+
+        this.removeEventListener('mousemove', this._boundOnEdgeUpdated);
+        this.removeEventListener('mouseup', this._boundOnEdgeCanceled);
+
+        this._created_edge.destroy();
+        this._created_edge = undefined;
+        this._is_edge_being_created = false;
+    }
+
+    onEdgeCanceled(e, node) {
+        this.cancelEdge();
+    }
+
+
+    /**
+     *
+     * Playground Pan and Zoom
+     *
+     * _createCardinal
+     * _checkBounds
+     * _showCardinals
+     * _zoomView
+     * _dragView
+     * dragView
+     * stopDragView
+     * fromClientToPlaygroundCoordinates
+     *
+     */
+
+    _createCardinal(type, dx, dy) {
+        const cardinal = document.createElement("div");
+        cardinal.classList.add("cardinal");
+        cardinal.classList.add(type);
+
+        this.appendChild(cardinal);
+
+        cardinal.addEventListener('mouseenter', () => {
+            const hoverInterval = setInterval(function () {
+                this._dragView(dx * Playground.DEFAULT_CARDINAL_MULTIPLIER, dy * Playground.DEFAULT_CARDINAL_MULTIPLIER);
+            }.bind(this), 10);
+
+            cardinal.addEventListener('mouseleave', () => {
+                clearInterval(hoverInterval);
+            });
+        });
+
+        return cardinal;
+    }
+
+    _checkBounds(nodes = this._activeJagNodeElementSet) {
+        const bounds = this.getBoundingClientRect();
+        let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
+        let showLeft, showRight, showUp, showDown;
+
+        for (const node of nodes) {
+            if (node.visible) {
+                const {x, y, width, height} = node.getBoundingClientRect();
+
+                if (x < minX) showLeft = true;
+                if (x + width > maxX) showRight = true;
+                if (y < minY) showUp = true;
+                if (y + height > maxY) showDown = true;
+            }
+        }
+
+        if (nodes == this._activeJagNodeElementSet) {
+            return this._showCardinals({
+                left: showLeft || false,
+                right: showRight || false,
+                up: showUp || false,
+                down: showDown || false
+            });
+        }
+
+        return this._showCardinals({
+            left: showLeft,
+            right: showRight,
+            up: showUp,
+            down: showDown
+        });
+    }
+
+    _showCardinals(toggle = {left, right, up, down}) {
+        this._canMoveView = {
+            left: toggle.left != undefined ? toggle.left : this._canMoveView.left,
+            right: toggle.right != undefined ? toggle.right : this._canMoveView.right,
+            up: toggle.up != undefined ? toggle.up : this._canMoveView.up,
+            down: toggle.down != undefined ? toggle.down : this._canMoveView.down
+        };
+
+        for (const [key, value] of Object.entries(toggle)) {
+            if (value == true || value == false) {
+                this._cardinals[key].classList.toggle("visible", value);
+            }
+        }
+
+        return this._canMoveView;
+    }
+
+    _zoomView(factor) {
+        this._zoomFactor = factor;
+        const transform = `scale(${factor})`;
+        this._edgeContainerDiv.style.transform = transform;
+        this._nodeContainerDiv.style.transform = transform;
+        this._checkBounds();
+    }
+
+    _dragView(dx, dy) {
+        for (let node of this._activeJagNodeElementSet) {
+            node.translate(dx, dy, false);
+        }
+
+        this._checkBounds();
+    }
+
+    dragView(e) {
+        const dx = e.clientX - this._initialMouse.x;
+        const dy = e.clientY - this._initialMouse.y;
+
+        this._dragView(dx, dy);
+
+        this._initialMouse = {x: e.clientX, y: e.clientY};
+    }
+
+    stopDragView(e) {
+        this.removeEventListener('mousemove', this._boundDragView);
+    }
+
+    fromClientToPlaygroundCoordinates(x, y) {
+        const px = x - this.offsetLeft;
+        const py = y - this.offsetTop;
+        return [px, py];
+    }
+
+    /**
+     *
+     * playgroundNodeClickSelected
+     * cancelDefault
+     * onImport
+     */
+
+    handlePlaygroundSelectedNodes(e) {           // on mousedown  applied during jag-node create
+        let $node = e.target.offsetParent
+        if (!e.shiftKey) {
+            this._selectedJagNodeElementSet.forEach(local_node => {
+                if (local_node != $node)
+                    local_node.setSelected(false);
+            });
+            this._selectedJagNodeElementSet.clear();
+        }
+
+        this._selectedJagNodeElementSet.add($node);
+
+        if (e.ctrlKey) {
+            const all_selected = $node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
+            for (const sub_node of all_selected)
+                this._selectedJagNodeElementSet.add(sub_node);
+        } else {
+            $node.setSelected(true);
+        }
+
+        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedJagNodeElementSet}));
+        e.stopPropagation();
+    }
+
+    playgroundNodeClickSelected(e) {               // on mousedown  constructor
+        if (!e.shiftKey) this.deselectAll();
+
+        // deselectAll() {
+        //     this._selectedJagNodeElementSet.forEach(n => {
+        //         n.setSelected(false)
+        //     });
+        //     this._selectedJagNodeElementSet.clear();
+        // }
+
+        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedJagNodeElementSet}));
+        this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            shiftKey: e.shiftKey
+        }));
+        this._initialMouse = {x: e.clientX, y: e.clientY};
+        this.addEventListener('mousemove', this._boundDragView);
+        this.addEventListener('mouseup', this._boundStopDragView);
+    }
+
+    cancelDefault(e) {
+        e.preventDefault();
+    }
+
+    onImport(e) {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        const reader = new FileReader();
+        reader.addEventListener('load', function (content) {
+        });
+        reader.readAsText(files[0]);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    /////////////  Called from ControllerAT  ///////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    /**
+     *
+     * Handlers for ControllerAT
+     *
+     * _buildNodeViewFromNodeModel
+     * _handleNewJagActivityPopup
+     * clearPlayground
+     * handleClearSelected (@TODO)
+     * handleRefresh
+     * updateJagModel
+     * deleteJagModel
+     * _addJagNodeTree
+     * replaceJagNode
+     * createJagNode  - called on new Project message from above
+     * deleteNodeModel
+     */
+
+
+    _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
+        let margin = 20
+        if (currentNodeModel.isRoot) {
+            currentNodeModel.setPosition(10, this.clientHeight / 2)
+        }
+        if (!currentNodeModel.x) {
+            currentNodeModel.x = 10
+        };
+        if (!currentNodeModel.y) {
+            currentNodeModel.y = this.clientHeight / 2
+        };
+
+        const $newViewNode = this.createJagNode(currentNodeModel)
+
+        $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+        // assume all children have same height as the parent.
+        const node_height = $newViewNode.clientHeight + margin;
+        const preferred_height = currentNodeModel.leafCount * node_height;
+        const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
+        let y_offset = currentNodeModel.y - preferred_height / 2;
+
+        currentNodeModel.children.forEach((child) => {
+
+            // const currentChildJagNode = descendantJagNodeMap.get(child.urn);
             const local_preferred_size = child.getLeafCount();
             y_offset += (local_preferred_size * node_height) / 2;
 
-            const sub_node = this._traverseJagNodeTree(child, true, x_offset, y_offset);   // orig had 'true' for expanded
+            this._buildNodeViewFromNodeModel(child, x_offset, y_offset)
+
+            //     const sub_node = this._traverseJagNodeTree(child, true, x_offset, y_offset);   // orig had 'true' for expanded
             y_offset += (local_preferred_size * node_height) / 2;
 
             if (!childrenMap.has(child.id)) {
@@ -111,17 +422,93 @@ class Playground extends Popupable {
             if (child.name) sub_node.setContextualName(child.name);
             if (child.description) sub_node.setContextualDescription(child.description);
 
-
         })
-
-
-
-
-        viewnode.setTranslation(x + viewnode.clientWidth / 2.0, y + viewnode.clientHeight / 2.0);
-
-
     }
 
+    _handleNewJagActivityPopup(e) {
+        const $initiator = document.getElementById('menu-new');
+        this.popup({
+            content: Playground.NOTICE_CREATE_JAG,
+            trackEl: this,
+            inputs: {},//event: e},
+            highlights: [$initiator]
+        });
+    }
+
+    clearPlayground(jagNodeSet = this._activeJagNodeElementSet) {                 // clearNodeSet
+        for (let jagNode of jagNodeSet) {
+            const parent = jagNode.getParent();
+            if (!parent || (parent && jagNodeSet.has(parent))) {
+                jagNode.removeAllEdges();
+                jagNode.detachHandlers();
+                this._activeJagNodeElementSet.delete(jagNode);
+                this._nodeContainerDiv.removeChild(jagNode);
+            } else {
+                this.popup({
+                    content: Playground.NOTICE_REMOVE_CHILD,
+                    trackEl: jagNode,
+                    inputs: {node: jagNode},
+                    highlights: [jagNode]
+                });
+            }
+            jagNode.setSelected(false);
+        }
+        jagNodeSet.clear();
+        this._checkBounds();
+    }
+
+    handleClearSelected() {  // you get this on the menu click 'delete node'    @TODO
+        console.log("When implemented.. these nodes will be pruned:")
+        console.log(this._selectedJagNodeElementSet)
+    }     // @TODO
+
+    handleRefresh({jagModel, jagModel_set, alreadyRefreshedNodes = new Set()}) {
+        const margin = 50;
+
+        for (let node of this._activeJagNodeElementSet) {
+            if (!alreadyRefreshedNodes.has(node) && node.jagModel === jagModel) {
+                const root = node.getRoot();
+
+                if (root == node) {
+                    const [x, y] = node.getPosition();
+                    this._traverseJagNodeTree(jagModel, jagModel_set, true, margin, x, y, node);
+
+                    const tree = node.getTree();
+
+                    for (const node of tree) {
+                        alreadyRefreshedNodes.add(node);
+                    }
+                } else {
+                    root.refresh(alreadyRefreshedNodes);
+                }
+            }
+        }
+    }
+
+    updateJagModel(updatedJagModel, updatedUrn) {
+        // Going to be more complicated than originally thought.
+        // 1) update activeNodeSet - replace existing node with this one.
+        // 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
+        // 3.1) if change involes bindings or children, resync $nodeContainer with activeNodeSet?  <--- xxxx  no
+        // 3.2) bindings can be handled with two normal property updates.  This leaves children..
+        //   3.2.1) new child - one create then one update (new edge on update)
+        //   3.2.1) remove child - (one destroy and one update) (edge removed on update)
+        this._activeJagNodeElementSet.forEach((node) => {
+            if (node.getAttribute("urn") == updatedJagModel.urn) {
+                node.syncViewToJagModel(updatedJagModel);                               // dont think this is what I want
+            }                                                                           // should sync to NodeModel
+        })
+    }
+
+
+    deleteJagModel(deadUrn) {
+
+        this._activeJagNodeElementSet.forEach((node) => {
+            if (node.nodeModel.jag.urn == deadUrn) {
+                // @TODO
+            }
+        })
+    }
 
     // add JagNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
     _addJagNodeTree(selectedJag, selectedJagDescendants = new Map(), isExpanded = false) {
@@ -131,7 +518,73 @@ class Playground extends Popupable {
         this._checkBounds(node.getTree());
     }
 
-///////////////////////
+    replaceJagNode(newJagModel, deadUrn) {
+        this._activeJagNodeElementSet.forEach((node) => {
+            if (node.nodeModel.jag.urn == deadUrn) {
+                node.nodeModel.jag = newJagModel;
+            }
+        })
+    }
+
+    // this is called when a new jag appears from above --- applies?
+    //note: creates a view based on JagModel xxx now NodeModel
+    createJagNode(nodeModel, expanded) {
+        const $node = new JagNodeElement(nodeModel, expanded);
+        $node.addEventListener('mousedown', this.handlePlaygroundSelectedNodes.bind(this));
+
+        $node.addEventListener('keydown', this.onKeyDown.bind(this));
+
+        $node.addEventListener('drag', () => {
+            this._checkBounds()
+        });
+
+        $node.addEventListener('toggle-visible', (e) => {
+            if (e.detail) {
+                this._checkBounds($node.getTree());
+            } else {
+                this._checkBounds();
+            }
+        });
+
+        ////?? @TODO think about this.
+        $node.addEventListener('refresh', (e) => {
+            this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
+        });
+        // Are these two below not the same info.  activeNodeSet needed?
+
+        $node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
+        $node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
+
+        this._activeJagNodeElementSet.add($node);
+        this._nodeContainerDiv.appendChild($node);
+        return $node;
+    }
+
+    deleteNodeModel(deadId) {
+
+        this._activeJagNodeElementSet.forEach((node) => {
+            if (node.getAttribute("project" == "deadId")) {
+                this._activeJagNodeElementSet.delete(node)
+            }
+        })
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    /////////////  Support Functions  //////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    /**
+     *
+     * Support Functions
+     *
+     * _traverseJagNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addJagNodeTree
+     * deselectAll             : Required by : playgroundNodeClickSelected
+     * onKeyDown               : Required by : createJagNode
+     * _getNodePreferredHeight : Required by : _traverseJagNodeTree
+     *
+     */
+
+    //  the way with HEAD + child map   ===> want to go to the tree method.
     _traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
         // if no child...  createJagNode
         // else proceed with the current child
@@ -193,200 +646,25 @@ class Playground extends Popupable {
                 for (const node of tree) {
                     node.removeAllEdges();
                     node.detachHandlers();
-                    this._activeJagNodeSet.delete(node);
-                    this._nodes_container.removeChild(node);
+                    this._activeJagNodeElementSet.delete(node);
+                    this._nodeContainerDiv.removeChild(node);
                 }
             }
         }
         return node;
     }
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    // create new project on playground = used when new node appears from above.
-
-
-    // this is called when a new jag appears from above --- applies?
-    //note: creates a view based on JagModel xxx now NodeModel
-    createJagNode(nodeModel, expanded) {
-        const node = new JagNodeElement(nodeModel, expanded);
-
-        node.addEventListener('mousedown', (e) => {
-            // If meta isn't pressed clear previous selection
-            if (!e.shiftKey) {
-                this._selectedNodeSet.forEach(local_node => {
-                    if (local_node != node)
-                        local_node.setSelected(false);
-                });
-                this._selectedNodeSet.clear();
-            }
-
-            this._selectedNodeSet.add(node);
-
-            if (e.ctrlKey) {
-                const all_selected = node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
-                for (const sub_node of all_selected)
-                    this._selectedNodeSet.add(sub_node);
-            } else {
-                node.setSelected(true);
-            }
-
-            this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedNodeSet}));
-            e.stopPropagation();
-        });
-
-        node.addEventListener('keydown', this.onKeyDown.bind(this));
-
-        node.addEventListener('drag', () => {
-            this._checkBounds();
-        });
-
-        node.addEventListener('toggle-visible', (e) => {
-            if (e.detail) {
-                this._checkBounds(node.getTree());
-            } else {
-                this._checkBounds();
-            }
-        });
-
-        ////?? @TODO think about this.
-        node.addEventListener('refresh', (e) => {
-            this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
-        });
-        // Are these two below not the same info.  activeNodeSet needed?
-        this._activeJagNodeSet.add(node);
-        this._nodes_container.appendChild(node);
-        node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-        node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-        return node;
-    }
-
-
-    handleLibraryListItemSelected({
-									  jagModel: selectedJag,
-									  jagModel_set: selectedJagDescendants = new Map(),
-									  expanded: isExpanded = false
-								  }) {
-		this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
-	}
-
-	handleDeleteSelected() {  // you get this on the menu click 'delete node'    @TODO
-        console.log("When implemented.. these nodes will be pruned:")
-		console.log(this._selectedNodeSet)
-	}
-
-	clearPlayground(jagNodeSet = this._activeJagNodeSet) {                 // clearNodeSet
-		for (let jagNode of jagNodeSet) {
-			const parent = jagNode.getParent();
-			if (!parent || (parent && jagNodeSet.has(parent))) {
-				jagNode.removeAllEdges();
-				jagNode.detachHandlers();
-				this._activeJagNodeSet.delete(jagNode);
-				this._nodes_container.removeChild(jagNode);
-			} else {
-				this.popup({
-					content: Playground.NOTICE_REMOVE_CHILD,
-					trackEl: jagNode,
-					inputs: {node: jagNode},
-					highlights: [jagNode]
-				});
-			}
-			jagNode.setSelected(false);
-		}
-		jagNodeSet.clear();
-		this._checkBounds();
-	}
-
-	updateJagModel(updatedJagModel, updatedUrn) {
-		// Going to be more complicated than originally thought.
-		// 1) update activeNodeSet - replace existing node with this one.
-		// 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
-		// 3.1) if change involes bindings or children, resync $nodeContainer with activeNodeSet?  <--- xxxx  no
-		// 3.2) bindings can be handled with two normal property updates.  This leaves children..
-		//   3.2.1) new child - one create then one update (new edge on update)
-		//   3.2.1) remove child - (one destroy and one update) (edge removed on update)
-		this._activeJagNodeSet.forEach((node) => {
-			if (node.getAttribute("urn") == updatedJagModel.urn) {
-                node.syncViewToJagModel(updatedJagModel);                               // dont think this is what I want
-			}                                                                           // should sync to NodeModel
-		})
-	}
-
-	deleteJagModel(deadUrn) {
-
-		this._activeJagNodeSet.forEach((node) => {
-			if (node.nodeModel.jag.urn == deadUrn) {
-                // @TODO
-			}
-		})
-	}
-
-    deleteNodeModel(deadId) {
-
-        this._activeJagNodeSet.forEach((node) => {
-            if (node.getAttribute("project" == "deadId")) {
-                this._activeJagNodeSet.delete(node)
-            }
-        })
-    }
-
-
-	replaceJagNode(newJagModel, deadUrn) {
-		this._activeJagNodeSet.forEach((node) => {
-			if (node.nodeModel.jag.urn == deadUrn) {
-				node.nodeModel.jag = newJagModel;
-			}
-		})
-	}
-
-
-
-
-
-
-
-    initGlobalEvents() {
-        // Turned this off temporarily.  Most keys have no function here.  They all work when
-        // a node inside is selected
-        // document.addEventListener('keydown', this.onKeyDown.bind(this));
-
-        this.addEventListener('mousedown', (e) => {
-            if (!e.shiftKey) this.deselectAll();
-            this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedNodeSet}));
-            this._edgeContainerElement.dispatchEvent(new MouseEvent('click', {
-                clientX: e.clientX,
-                clientY: e.clientY,
-                shiftKey: e.shiftKey
-            }));
-            this._initialMouse = {x: e.clientX, y: e.clientY};
-            this.addEventListener('mousemove', this._boundDragView);
-            this.addEventListener('mouseup', this._boundStopDragView);
-        });
-
-        this.addEventListener('mousemove', (e) => {
-            this._edgeContainerElement.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
-        });
-
-        //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
-        this.addEventListener('dragover', this.cancelDefault.bind(this));
-        this.addEventListener('drop', this.onImport.bind(this));
-    }
-
 
     deselectAll() {
-        this._selectedNodeSet.forEach(n => n.setSelected(false));
-        this._selectedNodeSet.clear();
+        this._selectedJagNodeElementSet.forEach(n => n.setSelected(false));
+        this._selectedJagNodeElementSet.clear();
     }
 
     onKeyDown(e) {
         if (e.key == 'Delete') {
             if (e.ctrlKey) {
-                this.clearPlayground(this._activeJagNodeSet);  //wofur?
+                this.clearPlayground(this._activeJagNodeElementSet);  //wofur?
             } else {
-                this.clearPlayground(this._selectedNodeSet);
+                this.clearPlayground(this._selectedJagNodeElementSet);
             }
         } else if (e.key == 'ArrowLeft') {
             if (this._canMoveView.left) {
@@ -411,52 +689,6 @@ class Playground extends Popupable {
         }
     }
 
-
-    onImport(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        const reader = new FileReader();
-        reader.addEventListener('load', function (content) {
-        });
-        reader.readAsText(files[0]);
-    }
-
-    cancelDefault(e) {
-        e.preventDefault();
-    }
-
-
-
-
-
-
-
-
-    handleRefresh({jagModel, jagModel_set, alreadyRefreshedNodes = new Set()}) {
-        const margin = 50;
-
-        for (let node of this._activeJagNodeSet) {
-            if (!alreadyRefreshedNodes.has(node) && node.jagModel === jagModel) {
-                const root = node.getRoot();
-
-                if (root == node) {
-                    const [x, y] = node.getPosition();
-                    this._traverseJagNodeTree(jagModel, jagModel_set, true, margin, x, y, node);
-
-                    const tree = node.getTree();
-
-                    for (const node of tree) {
-                        alreadyRefreshedNodes.add(node);
-                    }
-                } else {
-                    root.refresh(alreadyRefreshedNodes);
-                }
-            }
-        }
-    }
-
-//  I think this just returns the number of leaves.
-// if so, we already keep track of leaf count at each node during build.
     _getNodePreferredHeight(jagNode, jagNodeMap) {
         if (!jagNode.children || jagNode.children.length === 0)
             return 1;
@@ -467,229 +699,25 @@ class Playground extends Popupable {
         }, 0);
     }
 
-    /**
-     *
-     * Playground Pan and Zoom
-     *
-     * _createCardinal
-     * _checkBounds
-     * _showCardinals
-     * _zoomView
-     * _dragView
-     * dragView
-     * stopDragView
-     * fromClientToPlaygroundCoordinates
-     *
-     */
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
-    _createCardinal(type, dx, dy) {
-        const cardinal = document.createElement("div");
-        cardinal.classList.add("cardinal");
-        cardinal.classList.add(type);
-
-        this.appendChild(cardinal);
-
-        cardinal.addEventListener('mouseenter', () => {
-            const hoverInterval = setInterval(function () {
-                this._dragView(dx * Playground.DEFAULT_CARDINAL_MULTIPLIER, dy * Playground.DEFAULT_CARDINAL_MULTIPLIER);
-            }.bind(this), 10);
-
-            cardinal.addEventListener('mouseleave', () => {
-                clearInterval(hoverInterval);
-            });
-        });
-
-        return cardinal;
-    }
-
-    _checkBounds(nodes = this._activeJagNodeSet) {
-        const bounds = this.getBoundingClientRect();
-        let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
-        let showLeft, showRight, showUp, showDown;
-
-        for (const node of nodes) {
-            if (node.visible) {
-                const {x, y, width, height} = node.getBoundingClientRect();
-
-                if (x < minX) showLeft = true;
-                if (x + width > maxX) showRight = true;
-                if (y < minY) showUp = true;
-                if (y + height > maxY) showDown = true;
-            }
-        }
-
-        if (nodes == this._activeJagNodeSet) {
-            return this._showCardinals({
-                left: showLeft || false,
-                right: showRight || false,
-                up: showUp || false,
-                down: showDown || false
-            });
-        }
-
-        return this._showCardinals({
-            left: showLeft,
-            right: showRight,
-            up: showUp,
-            down: showDown
-        });
-    }
-
-    _showCardinals(toggle = {left, right, up, down}) {
-        this._canMoveView = {
-            left: toggle.left != undefined ? toggle.left : this._canMoveView.left,
-            right: toggle.right != undefined ? toggle.right : this._canMoveView.right,
-            up: toggle.up != undefined ? toggle.up : this._canMoveView.up,
-            down: toggle.down != undefined ? toggle.down : this._canMoveView.down
-        };
-
-        for (const [key, value] of Object.entries(toggle)) {
-            if (value == true || value == false) {
-                this._cardinals[key].classList.toggle("visible", value);
-            }
-        }
-
-        return this._canMoveView;
-    }
-
-    _zoomView(factor) {
-        this._zoomFactor = factor;
-        const transform = `scale(${factor})`;
-        this._edgeContainerElement.style.transform = transform;
-        this._nodes_container.style.transform = transform;
-        this._checkBounds();
-    }
-
-    _dragView(dx, dy) {
-        for (let node of this._activeJagNodeSet) {
-            node.translate(dx, dy, false);
-        }
-
-        this._checkBounds();
-    }
-
-    dragView(e) {
-        const dx = e.clientX - this._initialMouse.x;
-        const dy = e.clientY - this._initialMouse.y;
-
-        this._dragView(dx, dy);
-
-        this._initialMouse = {x: e.clientX, y: e.clientY};
-    }
-
-    stopDragView(e) {
-        this.removeEventListener('mousemove', this._boundDragView);
-    }
-
-    fromClientToPlaygroundCoordinates(x, y) {
-        const px = x - this.offsetLeft;
-        const py = y - this.offsetTop;
-        return [px, py];
-    }
-
-    /**
-     * Edge Handling
-     *
-     * _handleEdgeSelected
-     * onEdgeInitialized
-     * _createEdge
-     * onEdgeUpdated
-     * onEdgeFinalized
-     * cancelEdge
-     *
-     * @param e
-     * @private
-     */
-
-
-    _handleEdgeSelected(e) {
-        if (e.detail.selected) {
-            this._selectedNodeSet.add(e.target);
-        } else {
-            this._selectedNodeSet.delete(e.target);
-        }
-    }
-
-    onEdgeInitialized(e, node) {
-        this.removeEventListener('mousemove', this._boundDragView);
-        this.removeEventListener('mouseup', this._boundStopDragView);
-        this.addEventListener('mousemove', this._boundOnEdgeUpdated);
-        this.addEventListener('mouseup', this._boundOnEdgeCanceled);
-
-        this._created_edge = this._createEdge(node);
-        this._is_edge_being_created = true;
-
-        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
-        this._created_edge.setEnd(x, y);
-    }
-
-    _createEdge(origin, id = undefined) {
-        const edge = new EdgeElement(this._edgeContainerElement);
-        edge.setNodeOrigin(origin);
-        if (id) edge.setChildId(id);
-        return edge;
-    }
-
-    onEdgeUpdated(e) {
-        if (!this._is_edge_being_created)
-            return;
-
-        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
-        this._created_edge.setEnd(x, y);
+    handleLibraryListItemSelected({
+                                      jagModel: selectedJag,
+                                      jagModel_set: selectedJagDescendants = new Map(),
+                                      expanded: isExpanded = false
+                                  }) {
+        this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
     }
 
 
-    // Strange - 'node' exists - but not passed in anywhere.. is it just global?   Event is sugar for document.event.
-    async onEdgeFinalized(e) {
+//  I think this just returns the number of leaves.
+// if so, we already keep track of leaf count at each node during build.
 
-        let node = e.target.offsetParent;
-
-        if (!this._is_edge_being_created)
-            return;
-
-        if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
-            this._is_edge_being_created = false;
-            this._created_edge.setNodeEnd(node);
-            this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
-
-            // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
-            // @TODO consider bringing it up here (separation of functionality)
-            const parentJag = this._created_edge._leadActivityNode.nodeModel.jag;
-            const childJag = this._created_edge._subActivityNode.nodeModel.jag;
-            //parentJag.addChild(childJag);
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {bubbles: true, composed: true, detail: {jagModel: parentJag}}));
-           // await StorageService.update(parentJag, 'jag');
-
-        } else {
-            this.cancelEdge();
-        }
-    }
-
-    cancelEdge() {
-        if (!this._is_edge_being_created)
-            return;
-
-        this.removeEventListener('mousemove', this._boundOnEdgeUpdated);
-        this.removeEventListener('mouseup', this._boundOnEdgeCanceled);
-
-        this._created_edge.destroy();
-        this._created_edge = undefined;
-        this._is_edge_being_created = false;
-    }
-
-    onEdgeCanceled(e, node) {
-        this.cancelEdge();
-    }
-
-    _handleNewJagActivityPopup(e) {
-        const initiator = document.getElementById('menu-new');
-        this.popup({
-            content: Playground.NOTICE_CREATE_JAG,
-            trackEl: this,
-            inputs: {},//event: e},
-            highlights: [initiator]
-        });
-    }
 
 }
 
@@ -726,10 +754,10 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             name: 'popurn', label: 'URN', type: 'text', options: function () {
                 let eventMap = new Map();
- //               eventMap.set('blur', () => {
- // just remove options if this works                   const newUrn = document.getElementById('popurn').value;
- //                   Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
- //               });
+                //               eventMap.set('blur', () => {
+                // just remove options if this works                   const newUrn = document.getElementById('popurn').value;
+                //                   Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
+                //               });
                 return eventMap;
             }
         },
@@ -748,7 +776,13 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
 
-                this.dispatchEvent(new CustomEvent('local-jag-created', {detail: {urn: popurn, name: popname, description: popdescription}})); // local-jag-created in playground uses node
+                this.dispatchEvent(new CustomEvent('local-jag-created', {
+                    detail: {
+                        urn: popurn,
+                        name: popname,
+                        description: popdescription
+                    }
+                })); // local-jag-created in playground uses node
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
@@ -776,8 +810,8 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
 
                 for (const node of tree) {
                     node.removeAllEdges();
-                    this._activeJagNodeSet.delete(node);
-                    this._nodes_container.removeChild(node);
+                    this._activeJagNodeElementSet.delete(node);
+                    this._nodeContainerDiv.removeChild(node);
                 }
             }
         },
@@ -833,17 +867,17 @@ export default customElements.get('jag-playground');
  *
  *
  *    // getSelectedAsJSON() {
- *     // 	if(this._selectedNodeSet.size == 0)
+ *     // 	if(this._selectedJagNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedNodeSet.values().next().value.jagModel.toJSON();
+ *     // 	return this._selectedJagNodeElementSet.values().next().value.jagModel.toJSON();
  *     // }
  *
  *     // getSelectedURN() {
- *     // 	if(this._selectedNodeSet.size == 0)
+ *     // 	if(this._selectedJagNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedNodeSet.values().next().value.jagModel.urn;
+ *     // 	return this._selectedJagNodeElementSet.values().next().value.jagModel.urn;
  *     // }
  *
  *

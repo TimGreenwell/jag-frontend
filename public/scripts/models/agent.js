@@ -18,6 +18,30 @@ export default class AgentModel extends EventTarget {
 		this._assessments = assessments;
 	}
 
+	get id() {
+		return this._id;
+	}
+
+	get name() {
+		return this._name;
+	}
+	set name(name) {
+		this._name = name;
+		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
+	}
+
+	setAssessment(urn, assessment) {
+		this._assessments.set(urn, assessment);
+		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "assessment", "extra": { "urn": urn, "assessment": assessment }}}));
+	}
+
+	assessment(node) {
+		if (node.urn === '')
+			return undefined;
+
+		return this._assessments.get(node.urn);
+	}
+
 	static fromJSON(json) {
 		const assessments = new Map();
 		for (const urn in json.assessments) {
@@ -39,31 +63,6 @@ export default class AgentModel extends EventTarget {
 		json.assessments = assessments;
 
 		return new AgentModel(json);
-	}
-
-	get id() {
-		return this._id;
-	}
-
-	get name() {
-		return this._name;
-	}
-
-	set name(name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
-	}
-
-	setAssessment(urn, assessment) {
-		this._assessments.set(urn, assessment);
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "assessment", "extra": { "urn": urn, "assessment": assessment }}}));
-	}
-
-	assessment(node) {
-		if (node.urn === '')
-			return undefined;
-
-		return this._assessments.get(node.urn);
 	}
 
 	toJSON() {

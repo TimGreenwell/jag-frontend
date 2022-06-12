@@ -10,7 +10,6 @@
 import { UUIDv4 } from '../utils/uuid.js';
 import TeamModel from './team.js';
 import StorageService from '../services/storage-service.js';
-import ControllerIA from "../controllers/controllerIA.js";
 
 export default class AnalysisModel extends EventTarget {
 
@@ -19,7 +18,6 @@ export default class AnalysisModel extends EventTarget {
 					id = UUIDv4(),
 					name = AnalysisModel.DEFAULT_NAME,
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
-					//root,     //tlg = new NodeModel({is_root: true}),
 		            rootUrn,
 					team,
 				} = {}) {
@@ -32,10 +30,6 @@ export default class AnalysisModel extends EventTarget {
 
 		this._rootNodeModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisJagNodes(rootUrn);
 		                                  //  or when click in analysis library
-
-
-	//	StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
-	//	StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
 
 	};
 
@@ -67,14 +61,12 @@ export default class AnalysisModel extends EventTarget {
 	set rootUrn(value) {
 		this._rootUrn = value;
 	}
-
 	get team() {
 		return this._team;
 	}
 	set team(newTeam){
 		this._team = newTeam;
 	}
-
 	get rootNodeModel() {
 		return this._rootNodeModel;
 	}
@@ -82,9 +74,7 @@ export default class AnalysisModel extends EventTarget {
 		this._rootNodeModel = value;
 	}
 
-	// async buildDefaultTeam() {
-	//
-	// }
+
 	findNode(id){
 		const searchStack = []
 		searchStack.push(this._rootNodeModel)
@@ -109,12 +99,6 @@ export default class AnalysisModel extends EventTarget {
 		const newAnalysis = new AnalysisModel(json);
 		return newAnalysis;
 	}
-
-// 	save() {
-// 		// THIS BEING USED ANYWHERE?
-// console.log("(((DISPLATCHING UPDATE)) - doesnt seem to be problem but dont know what it does")
-// 		 this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
-// 	}
 
 	toJSON() {
 

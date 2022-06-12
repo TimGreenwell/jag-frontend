@@ -32,6 +32,7 @@ export default class ControllerAT {
         StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));   // All from observable
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));     // Cross-tab communications
         StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
+
         StorageService.subscribe("node-storage-created", this.handleNodeStorageCreated.bind(this));
         StorageService.subscribe("node-storage-updated", this.handleNodeStorageUpdated.bind(this));
         StorageService.subscribe("node-storage-deleted", this.handleNodeStorageDeleted.bind(this));
@@ -239,7 +240,7 @@ export default class ControllerAT {
 
 
     clearSelectedHandler(event) {
-        this._playground.handleDeleteSelected(event);
+        this._playground.handleClearSelected(event);
     }
 
     async libraryLineItemSelectedHandler(event) {
@@ -311,8 +312,9 @@ export default class ControllerAT {
 
     handleNodeStorageCreated(createdNodeModel, createdNodeId) {
         this._nodeModelMap.set(createdNodeId,createdNodeModel)
-        this._projectLibrary.addItem(createdNodeModel);                                   // Add JagModel list item to Library
-        this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
+        this._projectLibrary.addItem(createdNodeModel);                                        // Add JagModel list item to Library
+        this._playground._buildNodeViewFromNodeModel(createdNodeModel)
+     //   this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
     }
 
     handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
