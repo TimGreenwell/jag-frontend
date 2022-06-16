@@ -26,7 +26,8 @@ export default class JAG extends EventTarget {
                     inputs,
                     outputs,
                     children,
-                    bindings
+                    bindings,
+                    isLocked
                 } ) {
         super();
 
@@ -58,7 +59,7 @@ export default class JAG extends EventTarget {
             }
         }
 
-        this._isLocked = false;
+        this._isLocked = isLocked;
     }
 
 
@@ -477,7 +478,8 @@ export default class JAG extends EventTarget {
             inputs: [],
             outputs: [],
             children: [],
-            bindings: []
+            bindings: [],
+            isLocked: this._isLocked
         };
         this._children.forEach((child) => {
             let descriptor = {

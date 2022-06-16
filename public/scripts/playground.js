@@ -721,6 +721,9 @@ class Playground extends Popupable {
         // }
 
         this._activeJagNodeElementSet.forEach((node) => {
+            console.log("AAAAAAAAAAAAAAaaaa")
+            console.log(node.nodeModel)
+            console.log(node.nodeModel.getAncestor().id)
             let ancestry = node.nodeModel.getAncestor().id;
             // Absorb into another project
             node.setAttribute("project" , ancestry);   // @TODO -- put this in a more logical place later

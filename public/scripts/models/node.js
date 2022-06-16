@@ -16,7 +16,7 @@ import JagModel from "../models/jag.js"
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
-	constructor({ id = UUIDv4(), childId, urn, color, link_status = true, collapsed = false,is_root = false, x, y , children = new Array()} = {}) {
+	constructor({ id = UUIDv4(), childId, urn, color, link_status = true, collapsed = false,isLocked = false, is_root = false, x, y , children = new Array()} = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
@@ -36,6 +36,7 @@ export default class Node extends EventTarget {
 		this._treeDepth = 0;
 		this._contextualName = "-";
 		this._contextualDescription = "--"
+		this._isLocked = isLocked;
 
 
 	}
@@ -82,6 +83,15 @@ export default class Node extends EventTarget {
 	set linkStatus(value) {
 		this._link_status = value;
 	}
+
+	get isLocked() {
+		return this._isLocked;
+	}
+
+	set isLocked(value) {
+		this._isLocked = value;
+	}
+
 	get color() {
 		return this._color;
 	}
@@ -288,6 +298,7 @@ export default class Node extends EventTarget {
 			color: this._color,
 			link_status: this._link_status,
 			collapsed: this._collapsed,
+			isLocked: this._isLocked,
 			x: this._x,
 			y: this._y,
 			contextualName: this._contextualName,

@@ -1,9 +1,20 @@
 /**
+ *
+ * @TODO
+ * 1. Clear should remove from view .. if root, remove... else unexpand
+ * 2. Delete key should disconnect child from parent (Activity-level)
+ * 3. Shift=multi-select, Cntl=include children, Alt=select all activities with that urn
+ *
+ *
+ *
  * @fileOverview Jag ControllerIA.
  *
  * @author IHMC
- * @version 0.01
+ * @version 0.02
  */
+
+
+
 
 'use strict';
 
@@ -26,14 +37,14 @@ export default class ControllerAT extends EventTarget {
         this._projectMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
-        StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
-        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));
+        StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));   //
+        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   //
         StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));   // All from observable
         StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));     // Cross-tab communications
-        StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
-        StorageService.subscribe("node-storage-created", this.handleNodeStorageCreated.bind(this));
-        StorageService.subscribe("node-storage-updated", this.handleNodeStorageUpdated.bind(this));
-        StorageService.subscribe("node-storage-deleted", this.handleNodeStorageDeleted.bind(this));
+        StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this)); //
+        StorageService.subscribe("node-storage-created", this.handleNodeStorageCreated.bind(this)); //
+        StorageService.subscribe("node-storage-updated", this.handleNodeStorageUpdated.bind(this)); //
+        StorageService.subscribe("node-storage-deleted", this.handleNodeStorageDeleted.bind(this)); //
     }
 
     set menu(value) {
@@ -106,7 +117,6 @@ export default class ControllerAT extends EventTarget {
             this.addNodeModel(node);
         });
 
-
         window.onblur = function (ev) {
             console.log("window.onblur");
         };
@@ -119,15 +129,12 @@ export default class ControllerAT extends EventTarget {
 
 
     initializeHandlers() {
-        this._playground.addEventListener('local-nodes-joined', this.localNodesJoinedHandler.bind(this));  // popup create
-        this._playground.addEventListener('local-jag-created', this.localJagCreatedHandler.bind(this));  // popup create
-        this._playground.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // popup create
-        this._playground.addEventListener('local-node-updated', this.localNodeUpdatedHandler.bind(this));  // jag(&project) structure updates
-        this._playground.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
-        this._playground.addEventListener('playground-nodes-selected', this.playgroundNodesSelectedHandler.bind(this));
-        this._playground.addEventListener('new-activity-affects-project', this.newActivityAffectsProjectHandler.bind(this));
-        this._playground.addEventListener('repositioning-stopped', this.repositioningStoppedHandler.bind(this));   // jag-node triggers
-        // playground-clicked
+        this._playground.addEventListener('local-nodes-joined', this.localNodesJoinedHandler.bind(this));                      // onEdgeFinalized between nodes
+        this._playground.addEventListener('local-jag-created', this.localJagCreatedHandler.bind(this));                        // popup create
+        //this._playground.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
+        this._playground.addEventListener('playground-nodes-selected', this.playgroundNodesSelectedHandler.bind(this));        // mouse click event
+        this._playground.addEventListener('new-activity-affects-project', this.newActivityAffectsProjectHandler.bind(this));   // is changed activity in active viewing
+        this._playground.addEventListener('repositioning-stopped', this.repositioningStoppedHandler.bind(this));               // mouse movement event
 
         this._properties.addEventListener('local-urn-changed', this.localUrnRenamedHandler.bind(this));
         this._properties.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));  // jag property updates
@@ -136,16 +143,16 @@ export default class ControllerAT extends EventTarget {
 
         this._menu.addEventListener('add-new-jag-activity', this.addNewJagActivityHandler.bind(this));
         this._menu.addEventListener('clear-playground', this.clearPlaygroundHandler.bind(this));  // Event: 'clear-playground' - menu item selected to clear nodes from playground
-        this._menu.addEventListener('clear-selected', this.clearSelectedHandler.bind(this));
+        // this._menu.addEventListener('clear-selected', this.clearSelectedHandler.bind(this));
 
         this._library.addEventListener('library-lineItem-selected', this.libraryLineItemSelectedHandler.bind(this));
         this._library.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));
         this._library.addEventListener('local-jag-locked', this.localJagLockedHandler.bind(this));
-        // for now--  this._library.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));  //? is it reallly?  reconsider msybe proj splits into fragment projs
-        this._library.addEventListener('local-node-locked', this.localNodeLockedHandler.bind(this));
+        // for now--  this._library.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));  //? is it really?  reconsider msybe proj splits into fragment projs
 
-        this._projectLibrary.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
-        this._projectLibrary.addEventListener('project-lineItem-selected', this.libraryNodeSelectedHandler.bind(this));
+        this._projectLibrary.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));             // delete icon
+        this._projectLibrary.addEventListener('project-lineItem-selected', this.libraryNodeSelectedHandler.bind(this));   // list item chosen
+        this._projectLibrary.addEventListener('local-node-locked', this.localNodeLockedHandler.bind(this));             // lock icon
     }
 
 
@@ -377,11 +384,18 @@ export default class ControllerAT extends EventTarget {
 
     async localJagLockedHandler(event) {
         console.log("Local >> (jag locked) ")
-        const lockedJagModelUrn = event.detail.jagModelUrn;
-        const lockedJagModel = this._jagModelMap.get(lockedJagModelUrn)
-        lockedJagModel.isLocked = true;
+        const lockedJagModel = event.detail.jagModel;
+        lockedJagModel.isLocked = !lockedJagModel.isLocked;
         await StorageService.update(lockedJagModel, 'jag');
         console.log("Local << (jag locked) ")
+    }
+
+    async localNodeLockedHandler(event) {
+        console.log("Local >> (node locked) ")
+        const lockedNodeModel = event.detail.nodeModel;
+        lockedNodeModel.isLocked = !lockedNodeModel.isLocked;
+        await StorageService.update(lockedNodeModel, 'node');
+        console.log("Local << (node locked) ")
     }
 
     addNewJagActivityHandler() {
@@ -419,14 +433,7 @@ export default class ControllerAT extends EventTarget {
         console.log("Local << (node deleted) ")
     }
 
-    async localNodeLockedHandler(event) {
-        console.log("Local >> (node locked) ")
-        const lockedNodeModelId = event.detail.nodeModelId;
-        const lockedNodeModel = this._projectMap.get(lockedNodeModelId)
-        lockedNodeModel.isLocked = true;
-        await StorageService.update(lockedNodeModel, 'node');
-        console.log("Local << (node locked) ")
-    }
+
 
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -444,7 +451,7 @@ export default class ControllerAT extends EventTarget {
         console.log("((OBSERVER IN) >>  Jag Created - Jag Created - Jag Created - Jag Created - Jag Created")
         this._jagModelMap.set(createdJagUrn, createdJagModel)
         UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
-        this._library.addItem(createdJagModel);                                   // Add JagModel list item to Library
+        this._library.addListItem(createdJagModel);                                   // Add JagModel list item to Library
         console.log("((OBSERVER OUT) <<  Jag Created - Jag Created - Jag Created - Jag Created - Jag Created")
     }
 
@@ -484,7 +491,7 @@ export default class ControllerAT extends EventTarget {
         console.log("((OBSERVER IN) >>  Node Created - Node Created - Node Created - Node Created - Node Created")
         createdNodeModel.jag = this._jagModelMap.get(createdNodeModel.urn)
         this._projectMap.set(createdNodeId, createdNodeModel)
-        this._projectLibrary.addItem(createdNodeModel);                                        // Add JagModel list item to Library
+        this._projectLibrary.addListItem(createdNodeModel);                                        // Add JagModel list item to Library
         this._playground._buildNodeViewFromNodeModel(createdNodeModel)
         //   this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
         console.log("((OBSERVER OUT) <<  Node Created - Node Created - Node Created - Node Created - Node Created")
@@ -500,7 +507,7 @@ export default class ControllerAT extends EventTarget {
         //this._projectMap.set(updatedNodeModel.id, updatedNodeModel)  // duplicate think updating projectMap with ancestor is more accurate
         this._playground._rebuildNodeView(ancestor)
 
-        //  this._projectLibrary.updateItem(updatedNodeModel); @TODO
+        this._projectLibrary.updateItem(updatedNodeModel);
         // update playground
         console.log("((OBSERVER OUT) <<  Node Updated - Node Updated - Node Updated - Node Updated - Node Updated")
     }

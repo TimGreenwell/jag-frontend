@@ -13,7 +13,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	constructor() {
 		super();
 		this._libraryList = [];                         // <li> elements holding jagModel.name & description + (search context) + jagModel
-		this._existingURNS = new Set();                // Set of URNs in _libraryList
 		this._initUI();
 		this._initListeners();
 		this.clearLibraryList();
@@ -43,32 +42,47 @@ customElements.define('jag-library', class extends HTMLElement {
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
-		this._existingURNS.clear();
+		this._libraryList = [];
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//////////  Supporting controllerAT //////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
-	// initializePanels (@controllerAT)
-	addListItems(jagModelArray) {
-		jagModelArray.forEach(jagModel => this.addItem(jagModel));
-	}
+
+
 
 	// handleJagStorageCreated (@controllerAT)
-	addItem(newJAGModel) {
-		if (!this._existingURNS.has(newJAGModel.urn)) {
+	createListItem(newJAGModel) {
+		let existingUrns = this._libraryList.filter(entry => {
+			return entry.urn;
+		})
+		if (!existingUrns.includes(newJAGModel.urn)) {
 			if (newJAGModel instanceof JagModel) {
-				const urn = newJAGModel.urn || '';
-				const name = newJAGModel.name;
+				const urn = newJAGModel.urn;
+				const name = newJAGModel.name || '';
 				const description = newJAGModel.description || '';
 
 				const li = document.createElement('li');
-				li.id = urn;
 
-				const toggleLock = document.createElement('div');
-				toggleLock.classList.add('jag-button', 'lock-button');
-				const deleteJag = document.createElement('div');
-				deleteJag.classList.add('jag-button', 'delete-button');
+				let deleteIconClickedHandler = function (event) {
+					event.stopPropagation();
+					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+						detail: {
+							jagModelUrn: newJAGModel.urn
+						}
+					}))
+				}
+
+				let lockIconClickedHandler = function (event) {
+					event.stopPropagation();
+					console.log("I see your lock click")
+					this.dispatchEvent(new CustomEvent('local-jag-locked', {
+						detail: {
+							jagModel: newJAGModel
+						}
+					}))
+				}
+
 
 
 				//const $header = document.createElement('header');
@@ -77,6 +91,10 @@ customElements.define('jag-library', class extends HTMLElement {
 				$nameEntry.classList.add('name-entry')
 				$nameEntry.innerText = newJAGModel.name;
 
+				const toggleLock = document.createElement('div');
+				toggleLock.classList.add('jag-button', 'lock-button');
+				toggleLock.addEventListener('click', lockIconClickedHandler.bind(this))
+
 				$topHalfWrapper.appendChild(toggleLock);
 				$topHalfWrapper.appendChild($nameEntry);
 
@@ -84,6 +102,12 @@ customElements.define('jag-library', class extends HTMLElement {
 				const $descriptionEntry = document.createElement('span')
 				$descriptionEntry.classList.add('description-entry')
 				$descriptionEntry.innerText = newJAGModel.description;
+
+				const deleteJag = document.createElement('div');
+				if (!newJAGModel.isLocked) {
+					deleteJag.classList.add('jag-button', 'delete-button');
+					deleteJag.addEventListener('click',  deleteIconClickedHandler.bind(this))
+				}
 
 				$bottomHalfWrapper.appendChild(deleteJag);
 				$bottomHalfWrapper.appendChild($descriptionEntry);
@@ -95,11 +119,6 @@ customElements.define('jag-library', class extends HTMLElement {
 				search_params.push(urn.toLowerCase());
 				search_params.push(name.toLowerCase());
 				search_params.push(description.toLowerCase());
-				this._libraryList.push({
-					element: li,
-					search_content: search_params.join(" "),
-					jagModel: newJAGModel
-				});
 
 				newJAGModel.addEventListener('refresh', () => {
 					this.refreshItem(newJAGModel);
@@ -121,28 +140,18 @@ customElements.define('jag-library', class extends HTMLElement {
 							jagModel: newJAGModel,
 							expanded: event.shiftKey
 						}
-					}))});
-
-				deleteJag.addEventListener('click', (event) => {
-					event.stopPropagation();
-					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
-						detail: {
-							jagModelUrn: newJAGModel.urn,
-						}
 					}))
-				})
+				});
 
-				toggleLock.addEventListener('click', (event) => {
-					event.stopPropagation();
-					this.dispatchEvent(new CustomEvent('local-jag-locked', {
-						detail: {
-							jagModelUrn: newJAGModel.urn,
-						}
-					}))
-				})
 
-				this._$list.appendChild(li);
-				this._existingURNS.add(newJAGModel.urn);
+				let newItem = {
+					element: li,
+					search_content: search_params.join(" "),
+					jagModel: newJAGModel
+				};
+
+				return newItem;
+
 				//	jagModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
 				console.log("ERROR -- unexpected type for newJAGModel [library-addItem]")
@@ -152,45 +161,66 @@ customElements.define('jag-library', class extends HTMLElement {
 		}
 	}
 
-	// handleJagStorageUpdated (@controllerAT)
+	addListItem(newJAGModel) {
+		// handleNodeStorageCreated (@controllerAT)
+		let listItemElement = this.createListItem(newJAGModel)
+		this._libraryList.push(listItemElement);
+		this._$list.appendChild(listItemElement.element);
+	}
+
+
+	addListItems(jagModelArray) {
+		// initializePanels (@controllerAT)
+		jagModelArray.forEach(jagModel => {
+			this.addListItem(jagModel)
+		});
+	}
+
+
 	updateItem(updatedJAGModel) {
+		let listItemElement = this.createListItem(updatedJAGModel)
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
 		for (let idx in this._libraryList) {
 			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
-				this._libraryList[idx].jagModel = updatedJAGModel;
-				this._libraryList[idx].element.id=updatedJAGModel.urn;
-				this._libraryList[idx].element.querySelectorAll(".name-entry").item(0).innerHTML = updatedJAGModel.name;
-				this._libraryList[idx].element.querySelectorAll(".description-entry").item(0).innerHTML = updatedJAGModel.description;
-				let search_params =[];
-				search_params.push(updatedJAGModel.urn.toLowerCase());
-				search_params.push(updatedJAGModel.name.toLowerCase());
-				search_params.push(updatedJAGModel.description.toLowerCase());
-				this._libraryList[idx].search_content = search_params.join(" ");
-				if (updatedJAGModel.isLocked) {
-
-				}
-				//			this.refreshItem(updatedJAGModel);
+				this._libraryList[idx] = listItemElement;
 			}
 		}
-	}
-
-	// handleJagStorageDeleted (@controllerAT)
-	removeLibraryListItem(deletedUrn) {
 		for (let item of this._libraryList) {
-			if (item.element.id == deletedUrn) {
-				this._$list.removeChild(item.element);
-			}
+			this._$list.appendChild(item.element);
 		}
-		this._libraryList = this._libraryList.filter(function (item) {
-			return item.element.id != deletedUrn;
-		});
-		this._existingURNS.delete(deletedUrn);
-
 	}
 
+
+	// @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
+
+	replaceItem(newJAGModel, replacedUrn) {
+		// handleJagStorageReplaced (@controllerAT)
+		this.removeLibraryListItem(replacedUrn);
+		this.appendChild(newJAGModel);
+	}
+
+
+
+	removeLibraryListItem(deletedUrn) {
+		// handleJagStorageDeleted (@controllerAT)
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
+		this._libraryList = this._libraryList.filter(entry => {
+			return entry.jagModel.urn != deletedUrn
+		})
+		for (let item of this._libraryList) {
+			this._$list.appendChild(item.element);
+		}
+	}
+
+	//??
 	// handleJagStorageReplaced (@controllerAT)
 	replaceItem(newJAGModel, replacedUrn) {
 		this.removeLibraryListItem(replacedUrn);
-		this.addItem(newJAGModel);
+		this.addListItem(newJAGModel);
 	}
 
 
