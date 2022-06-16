@@ -10,7 +10,6 @@
 import JagNodeElement from './views/jag-node.js';
 import EdgeElement from './views/edge.js';
 import Popupable from './utils/popupable.js';
-import StorageService from "./services/storage-service.js";
 import UserPrefs from "./utils/user-prefs.js";
 
 class Playground extends Popupable {
@@ -29,8 +28,10 @@ class Playground extends Popupable {
         this.appendChild(this._nodeContainerDiv);
         this.setPopupBounds(this._nodeContainerDiv);
 
+        this._activeNodeModelMap = new Map();         // All active Jag root nodes - should be in sync with _activeJagNodeElementSet
+
         this._activeJagNodeElementSet = new Set();    // set of JagNodes (view)
-        this._selectedJagNodeElementSet = new Set();     // set of JagNodes (view)
+        this._selectedJagNodeElementSet = new Set();  // set of JagNodes (view)
         this._is_edge_being_created = false;
 
         this._cardinals = {
@@ -62,7 +63,7 @@ class Playground extends Popupable {
         // a node inside is selected
         // document.addEventListener('keydown', this.onKeyDown.bind(this));
 
-        this.addEventListener('mousedown', this.playgroundNodeClickSelected.bind(this));
+        this.addEventListener('mousedown', this.playgroundClicked.bind(this));
 
         this.addEventListener('mousemove', (e) => {
             this._edgeContainerDiv.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
@@ -71,13 +72,13 @@ class Playground extends Popupable {
         //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
         this.addEventListener('dragover', this.cancelDefault.bind(this));
         this.addEventListener('drop', this.onImport.bind(this));
+
     }
 
 
     /**
      *      Local Handlers
      *         -- Edge Handling
-     *
      */
 
     /**
@@ -92,6 +93,13 @@ class Playground extends Popupable {
      * onEdgeCanceled
      *
      */
+
+
+
+    delay(time) {
+        return new Promise(resolve => setTimeout(resolve, time));
+    }
+
 
     _handleEdgeSelected(e) {
         if (e.detail.selected) {
@@ -116,7 +124,7 @@ class Playground extends Popupable {
 
     _createEdge(origin, id = undefined) {
         const edge = new EdgeElement(this._edgeContainerDiv);
-        edge.setNodeOrigin(origin);
+        edge.setLeadActivityNode(origin);
         if (id) edge.setChildId(id);
         return edge;
     }
@@ -138,21 +146,33 @@ class Playground extends Popupable {
 
         if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
             this._is_edge_being_created = false;
-            this._created_edge.setNodeEnd(node);
+            this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
+
             this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
 
+            // identical issue below
+            //parentJag.addChild(childJag);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
             // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
             // @TODO consider bringing it up here (separation of functionality)
-            const parentJag = this._created_edge._leadActivityNode.nodeModel.jag;
-            const childJag = this._created_edge._subActivityNode.nodeModel.jag;
-            //parentJag.addChild(childJag);
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
-                bubbles: true,
-                composed: true,
-                detail: {jagModel: parentJag}
-            }));
-            // await StorageService.update(parentJag, 'jag');
 
+            const parentNodeModel = this._created_edge._leadActivityNode.nodeModel;
+            const childNodeModel = this._created_edge._subActivityNode.nodeModel;
+
+            childNodeModel.parent = parentNodeModel;
+            childNodeModel.childId = this._created_edge._childId
+            parentNodeModel.addChild(childNodeModel);
+
+          //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
+          //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
+
+
+                   this.dispatchEvent(new CustomEvent('local-nodes-joined', {
+                       bubbles: true,
+                       composed: true,
+                       detail: {childNodeModel: childNodeModel, parentNodeModel:parentNodeModel }
+                   }));
+
+   //   //      this._activeNodeModelMap.delete(childNodeModel.id)
         } else {
             this.cancelEdge();
         }
@@ -271,6 +291,9 @@ class Playground extends Popupable {
     _dragView(dx, dy) {
         for (let node of this._activeJagNodeElementSet) {
             node.translate(dx, dy, false);
+
+            node.nodeModel.x = node.nodeModel.x + dx;
+            node.nodeModel.y = node.nodeModel.y + dy;
         }
 
         this._checkBounds();
@@ -297,7 +320,7 @@ class Playground extends Popupable {
 
     /**
      *
-     * playgroundNodeClickSelected
+     * playgroundClicked
      * cancelDefault
      * onImport
      */
@@ -322,21 +345,25 @@ class Playground extends Popupable {
             $node.setSelected(true);
         }
 
-        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedJagNodeElementSet}));
-        e.stopPropagation();
+        let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
+        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {return jagNodeElement.nodeModel})
+
+        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {
+            detail: {
+                selectedNodeArray: selectedNodeArray
+            }
+        }));
+        e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
 
-    playgroundNodeClickSelected(e) {               // on mousedown  constructor
+    playgroundClicked(e) {
+        // The background clicker
         if (!e.shiftKey) this.deselectAll();
 
-        // deselectAll() {
-        //     this._selectedJagNodeElementSet.forEach(n => {
-        //         n.setSelected(false)
-        //     });
-        //     this._selectedJagNodeElementSet.clear();
-        // }
+        let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
+        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {return jagNodeElement.nodeModel})
 
-        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {detail: this._selectedJagNodeElementSet}));
+        this.dispatchEvent(new CustomEvent('playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
         this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -379,50 +406,172 @@ class Playground extends Popupable {
      * createJagNode  - called on new Project message from above
      * deleteNodeModel
      */
+    //  the way with HEAD + child map   ===> want to go to the tree method.
+    // replaced -- but keep for now - new method missing some things still
+    traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+        // if no child...  createJagNode
+        // else proceed with the current child
+        const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
 
-
-    _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
-        let margin = 20
-        if (currentNodeModel.isRoot) {
-            currentNodeModel.setPosition(10, this.clientHeight / 2)
+        if (context) {
+            if (context.name) node.setContextualName(context.name);
+            if (context.description) node.setContextualDescription(context.description);
         }
-        if (!currentNodeModel.x) {
-            currentNodeModel.x = 10
-        };
-        if (!currentNodeModel.y) {
-            currentNodeModel.y = this.clientHeight / 2
-        };
 
-        const $newViewNode = this.createJagNode(currentNodeModel)
+        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
-        $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+        if (!currentParentJagNode.children)
+            return node;
+
+        const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
+
         // assume all children have same height as the parent.
-        const node_height = $newViewNode.clientHeight + margin;
-        const preferred_height = currentNodeModel.leafCount * node_height;
-        const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
-        let y_offset = currentNodeModel.y - preferred_height / 2;
+        const node_height = node.clientHeight + margin;
+        const preferred_height = preferred_size * node_height;
+        const x_offset = x + node.clientWidth + margin;
+        let y_offset = y - preferred_height / 2;
 
-        currentNodeModel.children.forEach((child) => {
+        const childrenMap = new Map();
+        for (const child_edge of node.getChildEdges()) {
+            childrenMap.set(child_edge.getChildId(), child_edge.getSubActivityNode());
+        }
 
-            // const currentChildJagNode = descendantJagNodeMap.get(child.urn);
-            const local_preferred_size = child.getLeafCount();
+        currentParentJagNode.children.forEach((child) => {
+            const currentChildJagNode = descendantJagNodeMap.get(child.urn);
+            const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
             y_offset += (local_preferred_size * node_height) / 2;
 
-            this._buildNodeViewFromNodeModel(child, x_offset, y_offset)
-
-            //     const sub_node = this._traverseJagNodeTree(child, true, x_offset, y_offset);   // orig had 'true' for expanded
+            const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
             y_offset += (local_preferred_size * node_height) / 2;
 
             if (!childrenMap.has(child.id)) {
                 let edge = this._createEdge(node, child.id);
-                edge.setNodeEnd(sub_node);
+                edge.setSubActivityNode(sub_node);
                 edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
             }
 
             if (child.name) sub_node.setContextualName(child.name);
             if (child.description) sub_node.setContextualDescription(child.description);
+        });
+
+        for (const [id, child] of childrenMap.entries()) {
+            let actual = false;
+
+            for (const actual_child of currentParentJagNode.children) {
+                if (actual_child.id == id) {
+                    actual = true;
+                    break;
+                }
+            }
+
+            if (!actual) {
+                const tree = child.getTree();
+                for (const node of tree) {
+                    node.removeAllEdges();
+                    node.detachHandlers();
+                    this._activeJagNodeElementSet.delete(node);
+                    this._nodeContainerDiv.removeChild(node);
+                }
+            }
+        }
+        return node;
+    }
+
+
+
+    _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
+        // currentNodeModel should be project root at first.
+        // if it were smart enough to join up with parent - then it could be anywhere
+        // something to consoder for later
+        let margin = 20
+
+        if (currentNodeModel.isRoot()){         // not sure why this is here.
+            this._activeNodeModelMap.set(currentNodeModel.id, currentNodeModel);
+        }
+
+        if ((!currentNodeModel.x) || (!currentNodeModel.y) ) {
+            currentNodeModel.x = 10
+            currentNodeModel.y = this.clientHeight / 2
+        }
+        let xPos = (true) ? currentNodeModel.x : x;
+        let yPos = (true) ? currentNodeModel.y : y;
+
+        currentNodeModel.setPosition(xPos, yPos)
+
+        const $newViewNode = this.createJagNode(currentNodeModel)
+
+        $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
+
+        // assume all children have same height as the parent.
+        const x_offset = xPos + $newViewNode.clientWidth + margin;
+        const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
+        let y_offset = yPos - (preferred_height / 2);
+
+        currentNodeModel.children.forEach((child) => {
+
+            //  local_preferred_size Getting NaN here  VV why?
+            const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
+            y_offset = y_offset + (local_preferred_size) / 2;
+
+            let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+
+
+            let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
+
+            edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
+            edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+
+            // if (child.name) sub_node.setContextualName(child.name);
+            // if (child.description) sub_node.setContextualDescription(child.description);
 
         })
+        return $newViewNode
+    }
+
+    _rebuildNodeView(projectNodeModel) {                                  // @TODO extremely similar to *deleteNodeModel* + _buildNodeViewFromNodeModel
+        let margin = 20
+
+        // wanted to nix the next three lines - but needed for the getAncestor of each viewNode in the next section
+        // or can I assume all projectModels at this point have been parentized.  (watch for it)
+        // for (let project of this._activeNodeModelMap.values()) {          // @TODO this can be applied at a more sensible place. (when structure changes)
+        //     project.parentize(project);
+        // }
+
+        // This removes all Playground elements === @TODO understand destroy/rebuild is most accurate - but maybe later a more delicate solution
+        for (let node of this._activeJagNodeElementSet) {           // search through active elements
+            if (node.nodeModel.getAncestor().id == projectNodeModel.id) {         // is this node in the tree of the currentNodeModel?
+                node.removeAllEdges();
+                node.detachHandlers();
+                this._activeJagNodeElementSet.delete(node);
+                this._nodeContainerDiv.removeChild(node);
+            }
+        }
+        this._buildNodeViewFromNodeModel(projectNodeModel);
+
+
+
+        // for (let rootNode of this._activeNodeModelMap.values()) {
+        //     let workStack = [];
+        //     workStack.push(rootNode);
+        //     while (workStack.length > 0) {
+        //         let currentNodeModel = workStack.pop();
+        //         const $newViewNode = this.createJagNode(currentNodeModel)
+        //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+        //
+        //         currentNodeModel.children.forEach((child) => {
+        //             let edge = this._createEdge(currentNodeModel, child.id);
+        //             edge.setSubActivityNode(child);
+        //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+        //             workStack.push(child)
+        //     //        this._edgeContainerDiv.appendChild(edge);
+        //         })
+        //     }
+        //
+        //
+        // }
+
+        // if (child.name) sub_node.setContextualName(child.name);
+        // if (child.description) sub_node.setContextualDescription(child.description);
     }
 
     _handleNewJagActivityPopup(e) {
@@ -485,19 +634,18 @@ class Playground extends Popupable {
         }
     }
 
-    updateJagModel(updatedJagModel, updatedUrn) {
-        // Going to be more complicated than originally thought.
-        // 1) update activeNodeSet - replace existing node with this one.
-        // 2) if change is just properties (name,urn,operator), update the node in $nodeContainer
-        // 3.1) if change involes bindings or children, resync $nodeContainer with activeNodeSet?  <--- xxxx  no
-        // 3.2) bindings can be handled with two normal property updates.  This leaves children..
-        //   3.2.1) new child - one create then one update (new edge on update)
-        //   3.2.1) remove child - (one destroy and one update) (edge removed on update)
-        this._activeJagNodeElementSet.forEach((node) => {
-            if (node.getAttribute("urn") == updatedJagModel.urn) {
-                node.syncViewToJagModel(updatedJagModel);                               // dont think this is what I want
-            }                                                                           // should sync to NodeModel
-        })
+    updateJagModel(updatedJagModel, updatedUrn) {             // Activity got updated - does it affect our projects?
+        for (let node of this._activeNodeModelMap.values()) {
+            if (node.isActivityInProject(updatedUrn)) {
+                this.dispatchEvent(new CustomEvent('new-activity-affects-project', {
+                    detail: {
+                        projectId: node.id,
+                        activityUrn: updatedUrn
+                    }
+                })); // local-jag-created in playground uses node
+
+            }
+        }
     }
 
 
@@ -561,14 +709,30 @@ class Playground extends Popupable {
     }
 
     deleteNodeModel(deadId) {
+        // The deadId is a node marked for deletion.  Death can either be
+        // annihilation or absorbtion into another project.  Playground nodes
+        // with an ancester matching deadId are removed.
+        let deadIdModel = this._activeNodeModelMap.get(deadId)
+        this._activeNodeModelMap.delete(deadId)
+
+        // Establish parent links to simplify verifying project ancestry.
+        // for (let project of this._activeNodeModelMap.values()) {
+        //     project.parentize(project);
+        // }
 
         this._activeJagNodeElementSet.forEach((node) => {
-            if (node.getAttribute("project" == "deadId")) {
-                this._activeJagNodeElementSet.delete(node)
+            let ancestry = node.nodeModel.getAncestor().id;
+            // Absorb into another project
+            node.setAttribute("project" , ancestry);   // @TODO -- put this in a more logical place later
+            // Vernichtern
+            if (ancestry == deadId) {
+                node.removeAllEdges();
+                node.detachHandlers();
+                this._activeJagNodeElementSet.delete(node);
+                this._nodeContainerDiv.removeChild(node);
             }
         })
     }
-
 
     ////////////////////////////////////////////////////////////////////////
     /////////////  Support Functions  //////////////////////////////////////
@@ -578,81 +742,12 @@ class Playground extends Popupable {
      * Support Functions
      *
      * _traverseJagNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addJagNodeTree
-     * deselectAll             : Required by : playgroundNodeClickSelected
+     * deselectAll             : Required by : playgroundClicked
      * onKeyDown               : Required by : createJagNode
      * _getNodePreferredHeight : Required by : _traverseJagNodeTree
      *
      */
 
-    //  the way with HEAD + child map   ===> want to go to the tree method.
-    _traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
-        // if no child...  createJagNode
-        // else proceed with the current child
-        const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
-
-        if (context) {
-            if (context.name) node.setContextualName(context.name);
-            if (context.description) node.setContextualDescription(context.description);
-        }
-
-        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
-
-        if (!currentParentJagNode.children)
-            return node;
-
-        const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
-
-        // assume all children have same height as the parent.
-        const node_height = node.clientHeight + margin;
-        const preferred_height = preferred_size * node_height;
-        const x_offset = x + node.clientWidth + margin;
-        let y_offset = y - preferred_height / 2;
-
-        const childrenMap = new Map();
-        for (const child_edge of node.getChildEdges()) {
-            childrenMap.set(child_edge.getChildId(), child_edge.getNodeEnd());
-        }
-
-        currentParentJagNode.children.forEach((child) => {
-            const currentChildJagNode = descendantJagNodeMap.get(child.urn);
-            const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            if (!childrenMap.has(child.id)) {
-                let edge = this._createEdge(node, child.id);
-                edge.setNodeEnd(sub_node);
-                edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
-            }
-
-            if (child.name) sub_node.setContextualName(child.name);
-            if (child.description) sub_node.setContextualDescription(child.description);
-        });
-
-        for (const [id, child] of childrenMap.entries()) {
-            let actual = false;
-
-            for (const actual_child of currentParentJagNode.children) {
-                if (actual_child.id == id) {
-                    actual = true;
-                    break;
-                }
-            }
-
-            if (!actual) {
-                const tree = child.getTree();
-                for (const node of tree) {
-                    node.removeAllEdges();
-                    node.detachHandlers();
-                    this._activeJagNodeElementSet.delete(node);
-                    this._nodeContainerDiv.removeChild(node);
-                }
-            }
-        }
-        return node;
-    }
 
     deselectAll() {
         this._selectedJagNodeElementSet.forEach(n => n.setSelected(false));
@@ -859,7 +954,7 @@ export default customElements.get('jag-playground');
   	//
   	// 		node.setTranslation(x_start, y_offset);
   	// 		let edge = this._createEdge(root_node);
-  	// 		edge.setNodeEnd(node);
+  	// 		edge.setSubActivityNode(node);
   	// 		this._generateSubGoals(node, subgoal.item);
   	// 		x_start += 175;
   	// 	});

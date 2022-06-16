@@ -20,6 +20,9 @@ export default class SharedObservable extends SharedService {
         this.sharedWorker.port.onmessage = this.handleReceiveMessage.bind(this);
     }
 
+
+
+
     static get subscribers() {
         return this._subscribers;
     }
@@ -42,13 +45,6 @@ export default class SharedObservable extends SharedService {
         this._subscribers.get(topic).delete(subscriber);
     }
 
-    /**
-     * Local action to be propagated across SharedWorker for remote listeners.
-     */
-    static confirmStorageChange({topic, schema, id, description}) {
-        console.log("{} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
-        this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
-    }
 
     /**
      * Remote action received from SharedWorker. Any included object-descriptions will
@@ -65,28 +61,42 @@ export default class SharedObservable extends SharedService {
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }
-        console.log("Notifying subscribers of (" + topic + ")")
+        console.log(topic + " --- Notifying subscribers")
         this.notifySubscribers(topic, dataModel, id);
+        console.log(topic + " --- Subscribers notified")
     }
+
+    /**
+     * Local action to be propagated across SharedWorker for remote listeners.
+     */
+    static confirmStorageChange({topic, schema, id, description}) {
+        console.log("{POSTING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+        this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
+        console.log("{POSTING<} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+    }
+
+
 
     /**
      * Final distribution of processed remote/local event messages
      * Callback functions were provided at initial subscription.
      */
     static notifySubscribers(topic, dataModel, id) {
+        console.log("{Observer callbacks started>}       (" + id + "/" + topic + ")  (" + id + "/" + topic + ") ")
         if (this._subscribers.has(topic)) {
-            this._subscribers.get(topic).forEach((callBack) => {
+            this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {
-                    callBack(id);
+                    await callBack(id);
                 } else if (id == null) {
-                    callBack(dataModel);
+                    await callBack(dataModel);
                 } else {
-                    callBack(dataModel, id);
+                    await callBack(dataModel, id);
                 }
             });
         }
         else
         {console.log("No subscribers to : " + topic)}
+        console.log("{Observer Callbacks complete<}      (" + id + "/" + topic + ")  (" + id + "/" + topic + ")")
     }
 }
 

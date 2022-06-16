@@ -62,6 +62,135 @@ export default class Edge extends EventTarget {
 		edgeContainerElement.addEventListener('mousemove', this._handleHover.bind(this));
 	}
 
+	getLeadActivityNode() {
+		return this._leadActivityNode;
+	}
+	setLeadActivityNode(node) {
+		this._leadActivityNode = node;
+		this._leadActivityNode.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
+
+		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
+		this._updateStroke(this._leadActivityNode.isAtomic());
+	}
+
+	getSubActivityNode() {
+		return this._subActivityNode;
+	}
+	setSubActivityNode(subActivityNode) {
+		this._subActivityNode = subActivityNode;
+		this._subActivityNode.addInEdge(this);
+		const origin_nodeModel = this._leadActivityNode.nodeModel;  // maybe +.jag
+
+		origin_nodeModel.addEventListener('update', this._updateHandler.bind(this));
+
+		this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:  @TODO Fix this
+		// Not sure of the point of the second (id) parameter
+		//@TODO First thing - remove child adding inside the abouve completeOutEdge
+		// - Adds edge to graphical node's 'outs'
+		// - Invokes _leadActivityNode#addChild(_subActivityNode), which:
+		//   - Adds _subActivityNode jagModel to _leadActivityNode jagModel's children
+		//   - Sets _subActivityNode jagModel's parent to _leadActivityNode jagModel
+		//   - Dispatches update event
+
+		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
+		this._updateStrokeDash(origin_nodeModel.jag.operator);
+
+		const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
+			if (curr.id == this._childId) {
+				return curr;
+			}
+
+			return prev;
+		});
+
+		this._updateAnnotations(this._childId, child.annotations, child.iterable);
+
+		// Update all child edges of the end node with upstream atomicity.
+		// Note: this does not use this#updateStroke since this edge may not be
+		//       atomic, but is annotated atomic, and so its children should be.
+		for (const child_edge of this._subActivityNode.getChildEdges()) {
+			child_edge.updateStroke(this._subActivityNode.isAtomic());
+		}
+	}
+
+	setOrigin(x, y) {
+		this._origin.x = x;
+		this._origin.y = y;
+		this._applyPath();
+	}
+	setEnd(x, y) {
+		this._end.x = x;
+		this._end.y = y;
+		this._applyPath();
+	}
+
+	getChildId() {
+		return this._childId;
+	}
+	setChildId(id) {
+		this._childId = id;
+	}
+
+	getChildName() {
+		return this._childName;
+	}
+	setChildName(name) {
+		this._childName = name;
+		this._leadActivityNode.setChildName(name, this._childId);                  ///////////// I swapped these
+	}
+
+	getChildDescription() {
+		return this._childDescription;
+	}
+	setChildDescription(description) {
+		this._childDescription = description;
+		this._leadActivityNode.setChildDescription(this._childId, description);
+	}
+
+	set visible(visible) {
+		this._visible = visible;
+
+		if (visible) {
+			this._edge_el.style.visibility = "visible";
+			this._part_el.style.visibility = (this._leadActivityNode && this._leadActivityNode.isAtomic()) ? "hidden" : "visible";
+			this._text_el.style.visibility = "visible";
+			this._anno_el.style.visibility = this._anno_visibility;
+		} else {
+			this._edge_el.style.visibility = "hidden";
+			this._part_el.style.visibility = "hidden";
+			this._text_el.style.visibility = "hidden";
+			this._anno_el.style.visibility = "hidden";
+		}
+	}
+
+	getParentURN() {
+		return this._leadActivityNode.getURN();
+	}
+
+
+	setGreyedOut(is_greyed_out) {
+		this._is_greyed_out = is_greyed_out;
+
+		if(is_greyed_out)
+			this._group.setAttribute('class', 'greyed-out-node');
+		else
+			this._group.setAttribute('class', '');
+	}
+
+	setSelected(is_selected) {
+		this._is_selected = is_selected;
+
+		if(is_selected)
+			this._group.setAttribute('class', 'selected-node');
+		else
+			this._group.setAttribute('class', '');
+	}
+
+	/////////////////////////////////////////////
+	///////////  Handlers  //////////////////////
+	/////////////////////////////////////////////
+
+
 	_updateHandler(e) {
 		const property = e.detail.property;
 		const data = e.detail.extra;
@@ -80,6 +209,29 @@ export default class Edge extends EventTarget {
 		// the inheritance tree has occurred, check to update the stroke.
 		this.updateStroke(this._leadActivityNode.isAtomic());
 	}
+
+	_handleHover(e) {
+		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
+			this._list_el.style.visibility = "visible";
+		} else {
+			this._list_el.style.visibility = "hidden";
+		}
+	}
+
+	_handleSelection(e) {
+		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
+			this._edge_el.setAttributeNS(null, 'stroke', 'red');
+			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
+		} else if (!e.shiftKey) {
+			this._updateStroke(this._leadActivityNode.isAtomic());
+			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
+		}
+	}
+
+
+	/////////////////////////////////////////////
+	///////////  Support  //////////////////////
+	/////////////////////////////////////////////
 
 	_updateParticipation(type) {
 		let icon = '';
@@ -204,24 +356,6 @@ export default class Edge extends EventTarget {
 			&& (y > rect.top && y < rect.bottom);
 	}
 
-	_handleHover(e) {
-		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
-			this._list_el.style.visibility = "visible";
-		} else {
-			this._list_el.style.visibility = "hidden";
-		}
-	}
-
-	_handleSelection(e) {
-		if (this._visible && this._containsPoint(e.clientX, e.clientY)) {
-			this._edge_el.setAttributeNS(null, 'stroke', 'red');
-			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: true }}));
-		} else if (!e.shiftKey) {
-			this._updateStroke(this._leadActivityNode.isAtomic());
-			this.dispatchEvent(new CustomEvent('selection', { detail: { selected: false }}));
-		}
-	}
-
 	isAtomic() {
 		// If this is directly annotated atomic, it is atomic.
 		if (this._atomic) return true;
@@ -230,126 +364,17 @@ export default class Edge extends EventTarget {
 		return this._leadActivityNode.isAtomic();
 	}
 
-	set visible(visible) {
-		this._visible = visible;
-
-		if (visible) {
-			this._edge_el.style.visibility = "visible";
-			this._part_el.style.visibility = (this._leadActivityNode && this._leadActivityNode.isAtomic()) ? "hidden" : "visible";
-			this._text_el.style.visibility = "visible";
-			this._anno_el.style.visibility = this._anno_visibility;
-		} else {
-			this._edge_el.style.visibility = "hidden";
-			this._part_el.style.visibility = "hidden";
-			this._text_el.style.visibility = "hidden";
-			this._anno_el.style.visibility = "hidden";
-		}
-	}
-
 	destroy() {
 		this._edgeContainerElement.removeChild(this._group);
 		this._edgeContainerElement.removeEventListener('click', this._handleSelection.bind(this));
 
 		if (this._leadActivityNode != undefined) {
-			this._leadActivityNode.jagModel.removeEventListener('update', this._updateHandler.bind(this));
+			this._leadActivityNode.nodeModel.jag.removeEventListener('update', this._updateHandler.bind(this));
 			this._leadActivityNode.removeOutEdge(this, this._childId);
 		}
 
 		if (this._subActivityNode != undefined)
 			this._subActivityNode.removeInEdge(this);
-	}
-
-	getNodeOrigin() {
-		return this._leadActivityNode;
-	}
-
-	getNodeEnd() {
-		return this._subActivityNode;
-	}
-
-	setNodeOrigin(node) {
-		this._leadActivityNode = node;
-		this._leadActivityNode.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
-
-		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
-		this._updateStroke(this._leadActivityNode.isAtomic());
-	}
-
-	getParentURN() {
-		return this._leadActivityNode.getURN();
-	}
-
-	setChildId(id) {
-		this._childId = id;
-	}
-
-	getChildId() {
-		return this._childId;
-	}
-
-	setChildName(name) {
-		this._childName = name;
-		this._leadActivityNode.setChildName(this._childId, name);
-	}
-
-	getChildName() {
-		return this._childName;
-	}
-
-	setChildDescription(description) {
-		this._childDescription = description;
-		this._leadActivityNode.setChildDescription(this._childId, description);
-	}
-
-	getChildDescription() {
-		return this._childDescription;
-	}
-
-	setNodeEnd(subActivityNode) {
-		this._subActivityNode = subActivityNode;
-		this._subActivityNode.addInEdge(this);
-		const origin_nodeModel = this._leadActivityNode.nodeModel;  // maybe +.jag
-
-		origin_nodeModel.addEventListener('update', this._updateHandler.bind(this));
-
-		this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:
-		// - Adds edge to graphical node's 'outs'
-		// - Invokes _leadActivityNode#addChild(_subActivityNode), which:
-		//   - Adds _subActivityNode jagModel to _leadActivityNode jagModel's children
-		//   - Sets _subActivityNode jagModel's parent to _leadActivityNode jagModel
-		//   - Dispatches update event
-
-		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
-		this._updateStrokeDash(origin_nodeModel.jag.operator);
-
-		const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
-			if (curr.id == this._childId) {
-				return curr;
-			}
-
-			return prev;
-		});
-
-		this._updateAnnotations(this._childId, child.annotations, child.iterable);
-
-		// Update all child edges of the end node with upstream atomicity.
-		// Note: this does not use this#updateStroke since this edge may not be
-		//       atomic, but is annotated atomic, and so its children should be.
-		for (const child_edge of this._subActivityNode.getChildEdges()) {
-			child_edge.updateStroke(this._subActivityNode.isAtomic());
-		}
-	}
-
-	setOrigin(x, y) {
-		this._origin.x = x;
-		this._origin.y = y;
-		this._applyPath();
-	}
-
-	setEnd(x, y) {
-		this._end.x = x;
-		this._end.y = y;
-		this._applyPath();
 	}
 
 	_applyPath() {
@@ -393,21 +418,5 @@ export default class Edge extends EventTarget {
 		this._text_el.innerHTML = order == 0 ? '' : order;
 	}
 
-	setGreyedOut(is_greyed_out) {
-		this._is_greyed_out = is_greyed_out;
 
-		if(is_greyed_out)
-			this._group.setAttribute('class', 'greyed-out-node');
-		else
-			this._group.setAttribute('class', '');
-	}
-
-	setSelected(is_selected) {
-		this._is_selected = is_selected;
-
-		if(is_selected)
-			this._group.setAttribute('class', 'selected-node');
-		else
-			this._group.setAttribute('class', '');
-	}
 }

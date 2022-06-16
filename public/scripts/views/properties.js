@@ -352,21 +352,21 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     // Called by user selecting one or more Nodes in the playground
 
-    handleSelectionUpdate(selection) {
+    handleSelectionUpdate(selection) {       // (selectedNodeArray)
         if (this._nodeModel) {
             this._nodeModel.removeEventListener('update', this._boundUpdate);
-            this._node = undefined;
+          //  this._node = undefined;
             this._nodeModel = undefined;
         }
         this._clearProperties();
-        if (selection.size == 1) {
-            const selectedNodeModel = selection.values().next().value;
-            if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
-                this._node = selectedNodeModel;
-                this._nodeModel = this._node.nodeModel;
+        if (selection.length == 1) {
+            const selectedNodeModel = selection[0];
+        //    if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
+        //        this._node = selectedNodeModel;
+                this._nodeModel = selectedNodeModel;
                 this._updateProperties();
                 this._nodeModel.addEventListener('update', this._boundUpdate);
-            }
+        //    }
         } else {
             this._enableProperties(false);
         }
@@ -380,8 +380,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._executionSelect.value = this._nodeModel.jag.execution || 'none';
         this._operatorSelect.value = this._nodeModel.jag.operator || 'none';
         this._descInput.value = this._nodeModel.jag.description;
-        this._name_ctxInput.value = this._node.getContextualName();
-        this._desc_ctxInput.value = this._node.getContextualDescription();
+        this._name_ctxInput.value = this._nodeModel.contextualName;
+        this._desc_ctxInput.value = this._nodeModel.contextualDescription;
         this._enableProperties(true);
         this._updateIO();
         this._updateAnnotations();
@@ -824,11 +824,12 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _updateAnnotations() {
         this._clearAnnotations();
+        if (this._nodeModel.children.length > 0) {
+            for (const child of this._nodeModel.children) {
 
-        if (this._nodeModel.jag.children.length > 0) {
-            for (const child of this._nodeModel.jag.children) {
+        //        child.nodeModel(child.nodeModel)
                 let child_name = child.id;
-                if (child.nodeModel.jag) child_name = child.nodeModel.jag.name;
+                if (child.jag) child_name = child.jag.name;
 
                 let child_annotations = FormUtils.createPropertyElement(`annotations-${child.id}`, child_name);
                 child_annotations.className = "annotation node";

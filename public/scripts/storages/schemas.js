@@ -15,11 +15,12 @@
 
 
 
-import Node from  '../models/node.js';
+
 import AnalysisModel from '../models/analysis-model.js';
 import JagModel from "../models/jag.js";
 import Agent from  '../models/agent.js';
 import Team from  '../models/team.js';
+import NodeModel from  '../models/node.js';
 
 
 
@@ -43,7 +44,7 @@ export default class Schemas {
 		const NODE_STORE = {
 			name: 'node',
 			key: 'id',
-			deserialize: Node.fromJSON,
+			deserialize: NodeModel.fromJSON,
 			rest: 'jagCells',
 			indexList: [{
 				name: 'id-index',
@@ -129,7 +130,7 @@ export default class Schemas {
 		return Schemas.get(schema).key;
 	}
 
-	static async deserialize(schema,description) {;
+	static async deserialize(schema,description) {
 		const newObj =  await Schemas.get(schema).deserialize(description)
 		return newObj;
 	}

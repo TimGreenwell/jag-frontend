@@ -8,32 +8,35 @@
 'use strict';
 
 import { UUIDv4 }  from '../utils/uuid.js';
-import JagModel from './jag.js';
-import StorageService from '../services/storage-service.js';
 import Validation from '../utils/validation.js';
 import UserPrefs from "../utils/user-prefs.js";
+import JagModel from "../models/jag.js"
+
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
-	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
+	constructor({ id = UUIDv4(), childId, urn, color, link_status = true, collapsed = false,is_root = false, x, y , children = new Array()} = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
-		this._childId = undefined;                       // child differentiating id
-		this._jag = jag;                     // The Jag Model representing this node
+		this._childId = childId;                       // child differentiating id
+		this._jag = undefined;
 
-		this._children = new Array();            // Links to actual children [objects]
-		this._parent = undefined;            // Link to parent object
+        this._urn = urn;
+		this._children = children;            // Links to actual children [objects]
 
 		this._link_status = link_status;     // dont know what this is.
 		this._color = color;                 // Derived color
 		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
 
-		this._x = undefined;
-		this._y = undefined;
+		this._x = x;
+		this._y = y;
 
 		this._leafCount = 1;
 		this._treeDepth = 0;
+		this._contextualName = "-";
+		this._contextualDescription = "--"
+
 
 	}
 
@@ -42,6 +45,12 @@ export default class Node extends EventTarget {
 	}
 	set id(value) {
 		this._id = value;
+	}
+	get urn() {
+		return this._urn;
+	}
+	set urn(value) {
+		this._urn = value;
 	}
 	get childId() {
 		return this._childId;
@@ -111,8 +120,20 @@ export default class Node extends EventTarget {
 		return this._leafCount;
 	}
 
+	get contextualName() {
+		return this._contextualName;
+	}
+	set contextualName(value) {
+		this._contextualName = value;
+	}
+	get contextualDescription() {
+		return this._contextualDescription;
+	}
+	set contextualDescription(value) {
+		this._contextualDescription = value;
+	}
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Inner Jag Assignments  ////////////////////////////////
 	/////////////////////   ( This will go away once extending JAG Model )    /////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -124,14 +145,14 @@ export default class Node extends EventTarget {
 			this.jag.name = name;
 		}
 	}
-	get urn() {
-		return (this.jag === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.jag.urn;
-	}
-	set urn(urn) {
-			if (this.jag !== undefined) {
-			this.jag.urn = urn                    // Remember - can't update if urn is valid. (enforced at jagModel)
-		}
-	}
+	// get urn() {
+	// 	return (this.jag === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.jag.urn;
+	// }
+	// set urn(urn) {
+	// 		if (this.jag !== undefined) {
+	// 		this.jag.urn = urn                    // Remember - can't update if urn is valid. (enforced at jagModel)
+	// 	}
+	// }
 	get description() {
 		return (this.jag === undefined) ? '' : this.jag.description;
 	}
@@ -150,6 +171,26 @@ export default class Node extends EventTarget {
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 
+	activitiesInProject(urn){    // return array of nodes matching urn
+		let matchStack = [];
+		let workStack = [];
+
+		workStack.push(this);
+		while (workStack.length > 0 ){
+			let nodeModel = workStack.pop();
+
+			if (nodeModel.jag.urn == urn) {
+				matchStack.push(nodeModel);
+			}
+			nodeModel.children.forEach(kid => {workStack.push(kid)})
+		}
+      return matchStack;
+	}
+
+	isActivityInProject(urn) {
+		return (this.activitiesInProject(urn).length > 0)
+	}
+
 	incrementDepth(depthCount){
 		if (depthCount > this._treeDepth) {
 			this._treeDepth = depthCount;
@@ -164,6 +205,15 @@ export default class Node extends EventTarget {
 			this.parent.incrementLeafCount();
 		}
 	}
+
+	// parentize(currentNode = this.getAncestor()){
+	// 	if (currentNode.hasChildren()){
+	// 		for (let child of this.children) {
+	// 			child.parent = currentNode;
+	// 			this.parentize(child);
+	// 		}
+	// 	}
+	// }
 
 	hasChildren() {
 		return (this.children.length !== 0);
@@ -217,39 +267,66 @@ export default class Node extends EventTarget {
 	}
 
 	isRoot() {
-		return this.parent === undefined;
+		return this._parent === undefined;
 	}         // is determined by lack of parent.
 
+    getAncestor() {
+		let topAncestor = this;
+		while(!topAncestor.isRoot()) {
+			topAncestor = topAncestor.parent
+		}
+		return topAncestor;
+		}
 
 
 
 	toJSON() {
 		const json = {
 			id: this._id,
-			jag: this.urn,
+			urn: this._urn,
+			childId: this._childId,
 			color: this._color,
 			link_status: this._link_status,
 			collapsed: this._collapsed,
 			x: this._x,
-			y: this._y
+			y: this._y,
+			contextualName: this._contextualName,
+			contextualDescription: this._contextualDescription
 		};
-		json.children = this._children.map(child => child.id);
+		let childStack = [];
+		for (let child of this._children) {
+			childStack.push(child.toJSON())
+		}
+		json.children = childStack
 		return json;
 	}
+
 	static async fromJSON(json) {
-		const jag = await StorageService.get(json.jag,'jag');
-		if (jag instanceof JagModel) {
-			json.jag = jag;
+		let childStack = [];
+		for (let child of json.children) {
+			childStack.push(await Node.fromJSON(child))
 		}
-		else {
-			json.jag = undefined;
-		}
-		//json.jag = (jag != null) ? jag : undefined;
-
+		json.children = childStack;
 		const node = new Node(json);
-
 		return node;
 	}
+
+
+
+	// static async fromJSON(json) {
+	// 	const jag = await StorageService.get(json.jag,'jag');
+	// 	if (jag instanceof JagModel) {
+	// 		json.jag = jag;
+	// 	}
+	// 	else {
+	// 		json.jag = undefined;
+	// 	}
+	// 	//json.jag = (jag != null) ? jag : undefined;
+	//
+	// 	const node = new Node(json);
+	//
+	// 	return node;
+	// }
 
 
 }

@@ -172,8 +172,8 @@ export default class JAG extends EventTarget {
          */
         if (id === undefined) {   // <-- prob obs now
             this._children.push({
-                id: id = UUIDv4(),
-                urn: urn
+                urn: urn,
+                id: id = UUIDv4()
             //    jagModel: child   // dont think this is really there.  would be too much to serialize
             });
         }
@@ -462,28 +462,7 @@ export default class JAG extends EventTarget {
     }
 
 
-    static fromJSON(json) {
-        if (Array.isArray(json)) {
-            let jagList = json.map(function (element) {
-                try {
-                    ValidationUtility.validateJAG(element);
-                } catch (e) {
-                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
-                }
-                return new JAG(element);
-            })
-            return jagList;
-        } else {
-            try {
-                ValidationUtility.validateJAG(json);
-            } catch (e) {
-                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
-            }
-            return new JAG(json);
-            // @TODO: explode the json definition to use the constructor below
-            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
-        }
-    }
+
 
     toJSON() {
         const json = {
@@ -542,6 +521,31 @@ export default class JAG extends EventTarget {
 
         return json
     }
+
+    static fromJSON(json) {
+        if (Array.isArray(json)) {
+            let jagList = json.map(function (element) {
+                try {
+                    ValidationUtility.validateJAG(element);
+                } catch (e) {
+                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+                }
+                return new JAG(element);
+            })
+            return jagList;
+        } else {
+            try {
+                ValidationUtility.validateJAG(json);
+            } catch (e) {
+                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+            }
+            return new JAG(json);
+            // @TODO: explode the json definition to use the constructor below
+            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
+        }
+    }
+
+
 
 }
 

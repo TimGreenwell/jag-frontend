@@ -1,3 +1,7 @@
+
+// What is this.parentNode.    Useed but not defined.
+
+
 /**
  * @file Graphical node representation of a JAG.
  *
@@ -14,9 +18,9 @@ import JAG from '../models/jag.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
-	constructor(nodeModel, expanded) {
+	constructor(nodeModel, expanded = true) {
 		super();
-		this._translation = {x: 0, y:0};
+		this._translation = {x: 0, y:0};        // set_translation below == doesnt that make this useless.
 		this._outs = new Set();
 		this._in = undefined;
 		this._boundUpdateHandler = this._updateHandler.bind(this);
@@ -28,7 +32,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		});
 
 		this._initUI();
-		this.setTranslation(100, 100);
+		this.setTranslation(100, 100);       //  Looks like this sets the  translation values and sets the view style
 		this._initHandlers();
 		this.nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing and easy to fuck up - cost 1/2 day
 		this.expanded = expanded;
@@ -40,6 +44,8 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._nodeModel.removeEventListener('update', this._boundUpdateHandler);
 		}
 		this.id = nodeModel.id;
+		this._translation.x = (nodeModel.x) ? nodeModel.x : 0;
+		this._translation.y = (nodeModel.y) ? nodeModel.y : 0;
 		this.setAttribute("urn",nodeModel.jag.urn)
 		this.setAttribute("project", nodeModel.id)
 		this._nodeModel = nodeModel;
@@ -58,7 +64,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._expanded = expanded;
 
 		for (const edge of this._outs) {
-			const child = edge.getNodeEnd();
+			const child = edge.getSubActivityNode();
 			edge.visible = expanded && this.visible;
 			child.visible = expanded && this.visible;
 		}
@@ -84,7 +90,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._visible = visible;
 
 		for (const edge of this._outs) {
-			const child = edge.getNodeEnd();
+			const child = edge.getSubActivityNode();
 			edge.visible = visible;
 			child.visible = visible;
 		}
@@ -164,16 +170,16 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		return this._nodeModel.jag.addChild(edge.getNodeEnd().nodeModel.jag.urn, id);  //@todo - wondering if node and jag models need to be modded
-	}
+		return this._nodeModel.jag.addChild(edge.getSubActivityNode().nodeModel.jag.urn, id);  //@todo - wondering if node and jag models need to be modded  < hate this
+	}  // What the holy crap is completeOutEdge returning?  Ans: it returns the ID of the jag child (urn,id) -- for main to refer to subactivity
 
 	removeOutEdge(edge, id) {
 		this._outs.delete(edge);
 	}
 
 	removeChild(edge, id) {
-		if (edge.getNodeEnd()) {
-			this._nodeModel.jag.removeChild({ id: id, jagModel: edge.getNodeEnd().jagModel });
+		if (edge.getSubActivityNode()) {
+			this._nodeModel.jag.removeChild({ id: id, jagModel: edge.getSubActivityNode().jagModel });
 			this._outs.delete(edge);
 			edge.destroy();
 		}
@@ -185,7 +191,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getParent() {
 		if (this._in) {
-			return this._in.getNodeOrigin();
+			return this._in.getLeadActivityNode();
 		}
 
 		return undefined;
@@ -194,7 +200,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	//
 	// getParent() {
 	// 	if (this._in !== undefined) {
-	// 		return this._in.getNodeOrigin();
+	// 		return this._in.getLeadActivityNode();
 	// 	}
 	// }
 
@@ -208,7 +214,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getRoot() {
 		if (this._in) {
-			return this._in.getNodeOrigin().getRoot();
+			return this._in.getLeadActivityNode().getRoot();
 		}
 
 		return this;
@@ -222,7 +228,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	// 	const all_children = new Set();
 	//
 	// 	for (const out_edge of this._outs) {
-	// 		all_children.add(out_edge.getNodeEnd());
+	// 		all_children.add(out_edge.getSubActivityNode());
 	// 	}
 	//
 	// 	return all_children;
@@ -278,7 +284,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 			if (nodeDescendantSet) {
 				for (const out_edge of this._outs) {
-					const sub_node = out_edge.getNodeEnd();
+					const sub_node = out_edge.getSubActivityNode();
 					nodeDescendantSet.add(sub_node);
 					nodeDescendantSet = sub_node.setSelected(true, nodeDescendantSet);
 				}
@@ -304,7 +310,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		const all_children = new Set();
 
 		for (const out_edge of this._outs) {
-			all_children.add(out_edge.getNodeEnd());
+			all_children.add(out_edge.getSubActivityNode());
 		}
 
 		return all_children;
@@ -314,7 +320,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		tree.add(this);
 
 		for (const out_edge of this._outs) {
-			out_edge.getNodeEnd().getTree(tree);
+			out_edge.getSubActivityNode().getTree(tree);
 		}
 
 		return tree;
@@ -361,6 +367,14 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.dispatchEvent(new CustomEvent('drag'));
 		this.removeEventListener('mousemove', this._boundNodeDrag);
 		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+		this.dispatchEvent(new CustomEvent('repositioning-stopped', {
+			bubbles: true,
+			detail: {
+				nodeModel: this.nodeModel,
+				x: this._translation.x,
+				y: this._translation.y
+			}
+		}));
 	}
 
 	_initHandlers() {

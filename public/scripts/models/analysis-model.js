@@ -8,7 +8,6 @@
 'use strict';
 
 import { UUIDv4 } from '../utils/uuid.js';
-import TeamModel from './team.js';
 import StorageService from '../services/storage-service.js';
 
 export default class AnalysisModel extends EventTarget {

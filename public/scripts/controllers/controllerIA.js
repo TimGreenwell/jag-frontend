@@ -281,9 +281,7 @@ export default class ControllerIA {
         });
         let kidsToAdd = newKids.filter(newKid => !oldKids.find(oldKid => newKid === oldKid))
         if (kidsToAdd.length != 0) {
-            console.log("An alternative way to handle and watch structural changes")
-            console.log("new child to add")
-            console.log(updatedJagModel)
+
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
@@ -293,9 +291,7 @@ export default class ControllerIA {
         }
         let kidsToRemove = oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
         if (kidsToRemove.length != 0) {
-            console.log("An alternative way to handle and watch structural changes")
-            console.log("new child to remove")
-            console.log(updatedJagModel)
+
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
@@ -376,6 +372,8 @@ export default class ControllerIA {
             let currentNode = nodeStack.pop();
             let origJagModel = currentNode.jag;
             let updatedJagModel = this._jagModelMap.get(origJagModel.urn);
+            currentNode.jag = updatedJagModel;
+
             let kidsToAdd = this.getChildrenToAdd(origJagModel, updatedJagModel);
             kidsToAdd.forEach(child => {
                 const childJagModel = this._jagModelMap.get(child.urn);
@@ -387,19 +385,22 @@ export default class ControllerIA {
             let kidsToRemove = this.getChildrenToRemove(origJagModel, updatedJagModel);
             kidsToRemove.forEach(child => {
                     let childNodeModel = currentNode.getChildById(child.id)
-                    childNodeModel.is_root(true);
-                    this._nodeModelMap.set(child.id, childNodeModel)
+                    //   In AT, the following must be done  how: [sperate similar functions?, event call to add this? , parameter to split or delete?, or two functions same name in
+                     //  different places? -> seperateChild(child).[[one would remove it... the other save and projectize it]]
+                    //       ---childNodeModel.is_root(true);
+                    //       --- StorageServer.create(childNodeModel,"node");
+                   //            ----   ----   this._nodeModelMap.set(child.id, childNodeModel)
                     currentNode.removeChild();
-
             })
 
 
-            for (const child of currentNode.jag.children) {
-                const childJagModel = await StorageService.get(child.urn, 'jag');
-                const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
-                childNodeModel.childId = child.id;
-                currentNode.addChild(childNodeModel, true);
-                nodeStack.push(childNodeModel);
+            for (const child of currentNode.children) {
+                // const childJagModel = await StorageService.get(child.urn, 'jag');
+                // const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+                // childNodeModel.childId = child.id;
+                // currentNode.addChild(childNodeModel, true);
+                // nodeStack.push(childNodeModel);
+                nodeStack.push(child);
             }
             resultStack.push(currentNode);
         }
@@ -424,9 +425,6 @@ export default class ControllerIA {
 
         let kidsToRemove = this.getChildrenToRemove(origJagModel, updatedJagModel);
         if (kidsToRemove.length != 0) {
-            console.log("An alternative way to handle and watch structural changes")
-            console.log("new child to remove")
-            console.log(updatedJagModel)
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
@@ -439,9 +437,6 @@ export default class ControllerIA {
             this._iaTable.displayAnalysis();
         }
     }
-
-
-
 
     async buildNodeTreeFromJagUrn(newRootJagUrn) {
         const nodeStack = [];

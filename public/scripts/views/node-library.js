@@ -111,17 +111,17 @@ customElements.define('node-library', class extends HTMLElement {
 
 				// Send the newNodeModel and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-node-selected', {
+					this.dispatchEvent(new CustomEvent('project-lineItem-selected', {
 						detail: {
-							nodeModel: newNodeModel,
+							projectModel: newNodeModel,
 							expanded: event.shiftKey
 						}
 					}))});
 
 				$topHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-node-selected', {
+					this.dispatchEvent(new CustomEvent('project-lineItem-selected', {
 						detail: {
-							nodeModel: newNodeModel,
+							projectModel: newNodeModel,
 							expanded: event.shiftKey
 						}
 					}))});
@@ -130,7 +130,7 @@ customElements.define('node-library', class extends HTMLElement {
 					event.stopPropagation();
 					this.dispatchEvent(new CustomEvent('local-node-deleted', {
 						detail: {
-							nodeModelUrn: newNodeModel.urn,
+							nodeModelId: newNodeModel.id,
 						}
 					}))
 				})
@@ -177,9 +177,8 @@ customElements.define('node-library', class extends HTMLElement {
 		}
 	}
 
-
 	// handleNodeStorageDeleted (@controllerAT)
-		removeLibraryListItem(id) {
+		removeNodeLibraryListItem(id) {
 		for (let item of this._libraryList) {
 			if (item.element.id == id) {
 				this._$list.removeChild(item.element);
@@ -190,6 +189,12 @@ customElements.define('node-library', class extends HTMLElement {
 		});
 		this._existingIds.delete(id);
 	}
+
+
+
+
+
+
 
 	// handleJagStorageReplaced (@controllerAT)
 	replaceItem(newNodeModel, replacedUrn) {
