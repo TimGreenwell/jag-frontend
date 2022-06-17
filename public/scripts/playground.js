@@ -147,7 +147,6 @@ class Playground extends Popupable {
         if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
             this._is_edge_being_created = false;
             this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
-
             this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
 
             // identical issue below
@@ -158,9 +157,9 @@ class Playground extends Popupable {
             const parentNodeModel = this._created_edge._leadActivityNode.nodeModel;
             const childNodeModel = this._created_edge._subActivityNode.nodeModel;
 
-            childNodeModel.parent = parentNodeModel;
-            childNodeModel.childId = this._created_edge._childId
-            parentNodeModel.addChild(childNodeModel);
+            // childNodeModel.parent = parentNodeModel;
+            // childNodeModel.childId = this._created_edge._childId
+            // parentNodeModel.addChild(childNodeModel);
 
           //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
           //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
@@ -528,51 +527,7 @@ class Playground extends Popupable {
         return $newViewNode
     }
 
-    _rebuildNodeView(projectNodeModel) {                                  // @TODO extremely similar to *deleteNodeModel* + _buildNodeViewFromNodeModel
-        let margin = 20
 
-        // wanted to nix the next three lines - but needed for the getAncestor of each viewNode in the next section
-        // or can I assume all projectModels at this point have been parentized.  (watch for it)
-        // for (let project of this._activeNodeModelMap.values()) {          // @TODO this can be applied at a more sensible place. (when structure changes)
-        //     project.parentize(project);
-        // }
-
-        // This removes all Playground elements === @TODO understand destroy/rebuild is most accurate - but maybe later a more delicate solution
-        for (let node of this._activeJagNodeElementSet) {           // search through active elements
-            if (node.nodeModel.getAncestor().id == projectNodeModel.id) {         // is this node in the tree of the currentNodeModel?
-                node.removeAllEdges();
-                node.detachHandlers();
-                this._activeJagNodeElementSet.delete(node);
-                this._nodeContainerDiv.removeChild(node);
-            }
-        }
-        this._buildNodeViewFromNodeModel(projectNodeModel);
-
-
-
-        // for (let rootNode of this._activeNodeModelMap.values()) {
-        //     let workStack = [];
-        //     workStack.push(rootNode);
-        //     while (workStack.length > 0) {
-        //         let currentNodeModel = workStack.pop();
-        //         const $newViewNode = this.createJagNode(currentNodeModel)
-        //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
-        //
-        //         currentNodeModel.children.forEach((child) => {
-        //             let edge = this._createEdge(currentNodeModel, child.id);
-        //             edge.setSubActivityNode(child);
-        //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
-        //             workStack.push(child)
-        //     //        this._edgeContainerDiv.appendChild(edge);
-        //         })
-        //     }
-        //
-        //
-        // }
-
-        // if (child.name) sub_node.setContextualName(child.name);
-        // if (child.description) sub_node.setContextualDescription(child.description);
-    }
 
     _handleNewJagActivityPopup(e) {
         const $initiator = document.getElementById('menu-new');
@@ -724,17 +679,62 @@ class Playground extends Popupable {
             console.log("AAAAAAAAAAAAAAaaaa")
             console.log(node.nodeModel)
             console.log(node.nodeModel.getAncestor().id)
-            let ancestry = node.nodeModel.getAncestor().id;
             // Absorb into another project
-            node.setAttribute("project" , ancestry);   // @TODO -- put this in a more logical place later
+            node.setAttribute("project" , node.nodeModel.project);   // @TODO -- put this in a more logical place later
             // Vernichtern
-            if (ancestry == deadId) {
+            if (node.nodeModel.project == deadId) {
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeJagNodeElementSet.delete(node);
                 this._nodeContainerDiv.removeChild(node);
             }
         })
+    }
+
+    _rebuildNodeView(projectNodeModel) {                                  // @TODO extremely similar to *deleteNodeModel* + _buildNodeViewFromNodeModel
+        let margin = 20
+
+        // wanted to nix the next three lines - but needed for the getAncestor of each viewNode in the next section
+        // or can I assume all projectModels at this point have been parentized.  (watch for it)
+        // for (let project of this._activeNodeModelMap.values()) {          // @TODO this can be applied at a more sensible place. (when structure changes)
+        //     project.parentize(project);
+        // }
+
+        // This removes all Playground elements === @TODO understand destroy/rebuild is most accurate - but maybe later a more delicate solution
+        for (let node of this._activeJagNodeElementSet) {           // search through active elements
+            if (node.nodeModel.project == projectNodeModel.id) {         // is this node in the tree of the currentNodeModel?
+                node.removeAllEdges();
+                node.detachHandlers();
+                this._activeJagNodeElementSet.delete(node);
+                this._nodeContainerDiv.removeChild(node);
+            }
+        }
+        this._buildNodeViewFromNodeModel(projectNodeModel);
+
+
+
+        // for (let rootNode of this._activeNodeModelMap.values()) {
+        //     let workStack = [];
+        //     workStack.push(rootNode);
+        //     while (workStack.length > 0) {
+        //         let currentNodeModel = workStack.pop();
+        //         const $newViewNode = this.createJagNode(currentNodeModel)
+        //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+        //
+        //         currentNodeModel.children.forEach((child) => {
+        //             let edge = this._createEdge(currentNodeModel, child.id);
+        //             edge.setSubActivityNode(child);
+        //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+        //             workStack.push(child)
+        //     //        this._edgeContainerDiv.appendChild(edge);
+        //         })
+        //     }
+        //
+        //
+        // }
+
+        // if (child.name) sub_node.setContextualName(child.name);
+        // if (child.description) sub_node.setContextualDescription(child.description);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -898,19 +898,46 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
         {
             text: "Yes", color: "black", bgColor: "red",
             action: function ({inputs: {node}}) {
+
+
                 const edge = node.getParentEdge();
                 const id = edge.getChildId();
                 const parent = node.getParent();
 
-                parent.removeChild(edge, id);
+               //  console.log(parent.nodeModel)
+               //  console.log(node.nodeModel.urn)
+               //  let childId = node.nodeModel.childId
+               //  let oldParentJagChildren = parent.nodeModel.jag.children
+               //  console.log("before and after")
+               //  console.log(oldParentJagChildren)
+               //  let newParentJagChildren = oldParentJagChildren.filter(entry => {
+               //      if (entry.id != childId){
+               //          return entry
+               //      }
+               //  })
+               //  console.log(newParentJagChildren)
+               //  parent.nodeModel.jag.children = newParentJagChildren;
+               //
+               // // parent.removeChild(edge, id);
+               //
+               //  const tree = node.getTree();
+               //
+               //  for (const node of tree) {
+               //      node.removeAllEdges();
+               //      this._activeJagNodeElementSet.delete(node);
+               //      this._nodeContainerDiv.removeChild(node);
+               //  }
+                console.log(node)
+                console.log(node.nodeModel)
+                console.log(node.getParentEdge.getLeadActivityNode)
+                this.dispatchEvent(new CustomEvent('local-node-deleted', {
+                    detail: {nodeModel: node.nodeModel}
+                }));
 
-                const tree = node.getTree();
 
-                for (const node of tree) {
-                    node.removeAllEdges();
-                    this._activeJagNodeElementSet.delete(node);
-                    this._nodeContainerDiv.removeChild(node);
-                }
+
+
+
             }
         },
         {text: "No", color: "white", bgColor: "black"}

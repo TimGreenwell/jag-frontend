@@ -14,8 +14,6 @@
  */
 
 
-
-
 'use strict';
 
 import InputValidator from "../utils/validation.js";
@@ -131,7 +129,7 @@ export default class ControllerAT extends EventTarget {
     initializeHandlers() {
         this._playground.addEventListener('local-nodes-joined', this.localNodesJoinedHandler.bind(this));                      // onEdgeFinalized between nodes
         this._playground.addEventListener('local-jag-created', this.localJagCreatedHandler.bind(this));                        // popup create
-        //this._playground.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
+        this._playground.addEventListener('local-node-deleted', this.localNodeDeletedHandler.bind(this));
         this._playground.addEventListener('playground-nodes-selected', this.playgroundNodesSelectedHandler.bind(this));        // mouse click event
         this._playground.addEventListener('new-activity-affects-project', this.newActivityAffectsProjectHandler.bind(this));   // is changed activity in active viewing
         this._playground.addEventListener('repositioning-stopped', this.repositioningStoppedHandler.bind(this));               // mouse movement event
@@ -181,11 +179,10 @@ export default class ControllerAT extends EventTarget {
 
         this._playground._rebuildNodeView(projectSelected)
         //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
-    //    let newProjectRootNode = this.buildNodeTreeFromJagUrn(projectSelected.urn);
-    //    await StorageService.create(newProjectRootNode, "node");
+        //    let newProjectRootNode = this.buildNodeTreeFromJagUrn(projectSelected.urn);
+        //    await StorageService.create(newProjectRootNode, "node");
         console.log("Local << (project line item selected) ")
     }
-
 
 
     // This was a miserable answer to not being able to make the 3 calls from Playground.
@@ -197,16 +194,31 @@ export default class ControllerAT extends EventTarget {
         console.log("Local >> (local nodes joined) ")
         let childNodeModel = event.detail.childNodeModel
         let parentNodeModel = event.detail.parentNodeModel
-        // this is just ugly - my fault - tlg
 
+        // What the join taught us:
+        // 1) Jag changed
+        let newChildId = parentNodeModel.jag.addChild(childNodeModel.urn)
+        this._jagModelMap.set(parentNodeModel.urn, parentNodeModel.jag)
+        event.detail.jagModel = parentNodeModel.jag;
+        await this.localJagUpdatedHandler(event)
+
+        // This particular node changed (to preserve that node) otherwise it gets recreated as new
+        parentNodeModel.addChild(childNodeModel)
+        childNodeModel.childId = newChildId
+        this.updateProject(childNodeModel, parentNodeModel.project)
         event.detail.nodeModel = parentNodeModel;
         await this.localNodeUpdatedHandler(event)
-        event.detail.nodeModelId = childNodeModel.id;
+
+
+        event.detail.nodeModel = childNodeModel;
         await this.localNodeDeletedHandler(event)
 
-        event.detail.jagModel = parentNodeModel.jag
-        await this.localJagUpdatedHandler(event);
         console.log("Local << (local nodes joined) ")
+    }
+
+    updateProject(currentNode, projectId) {
+        currentNode.project = projectId
+        currentNode.children.forEach(child => this.updateProject(child))
     }
 
     async localJagCreatedHandler(event) {
@@ -240,7 +252,7 @@ export default class ControllerAT extends EventTarget {
 
     playgroundNodesSelectedHandler(event) {
         console.log("Local >> (local node selected) ")
-         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
+        this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
         //ide.handleSelectionUpdate(e.detail);
         console.log("Local << (local node selected) ")
     }
@@ -264,6 +276,39 @@ export default class ControllerAT extends EventTarget {
         console.log("Local << (new node affects project) ")
     }
 
+    restructureProject(currentNode) {                                         ///  This should be replaced
+        let existingKids = currentNode.children.map(node => {
+            return {urn: node.urn, id: node.childId}
+        })
+        let validKids = this._jagModelMap.get(currentNode.urn)
+        let kidsToAdd = this.getChildrenToAdd(newKids, oldKids);
+        let kidsToRemove = this.getChildrenToRemove(newKids, oldKids);
+        kidsToAdd.forEach(child => {
+            const childJagModel = this._jagModelMap.get(child.urn);
+            const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
+            childNodeModel.jag = this._jagModelMap.get(childJagModel.urn)
+            childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
+            currentNode.addChild(childNodeModel, true);
+        })
+
+        kidsToRemove.forEach(child => {
+            let childNodeModel = currentNode.getChildById(child.id)
+            childNodeModel.isRoot(true);
+            newlyFormedRootStack.push(childNodeModel);
+            currentNode.removeChild();
+        })
+
+    }
+
+    getChildrenToAdd(oldKids, newKids) {
+        const returnValue = newKids.filter(newKid => !oldKids.find(oldKid => JSON.stringify(newKid) === JSON.stringify(oldKid)))
+        return returnValue
+    }
+
+    getChildrenToRemove(oldKids, newKids) {
+        return oldKids.filter(oldKid => !newKids.find(newKid => JSON.stringify(oldKid) === JSON.stringify(newKid)))
+    }
+
 
     resultingProjectsFromActivityChange(rootNodeModel, changedActivityUrn = undefined) {         // Why would urn ever be undefined?       zzzzzz
         const nodeStack = [];
@@ -273,19 +318,30 @@ export default class ControllerAT extends EventTarget {
             let currentNode = nodeStack.pop();
             if ((changedActivityUrn == undefined) || (currentNode.urn == changedActivityUrn)) {
                 if (changedActivityUrn == undefined) {
-                    console.log("DONT LIKE ---- urn was undefined for some reason ----- I want to remove this ")
+                    console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                 }
+                console.log("Beginning current node")
+                console.log(currentNode)
 
+                let existingKids = currentNode.children.map(node => {
+                    return {urn: node.urn, id: node.childId}
+                })
+                console.log("Existing Kids:")
+                console.log(existingKids)
+                let validJag = this._jagModelMap.get(currentNode.urn)
+                let validKids = validJag.children
+                console.log("Valid Kids:")
+                console.log(validKids)
 
-                let origJagModel = currentNode.jag;
-                let updatedJagModel = this._jagModelMap.get(origJagModel.urn);
+                currentNode.jag = validJag;
 
-                //  Part I is easy === add the new Jag to the Node Model   (it contains all the goodies like name, description, childid of children, etc)
-                currentNode.jag = updatedJagModel;
+                let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
+                console.log("kidsToAdd")
+                console.log(kidsToAdd)
+                let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
+                console.log("kidsToRemove")
+                console.log(kidsToRemove)
 
-                // Part II === determine where the JAG children differ from the actual Node Children. ( Was a child added or removed? )
-                let kidsToAdd = this.getChildrenToAdd(origJagModel, updatedJagModel);
-                let kidsToRemove = this.getChildrenToRemove(origJagModel, updatedJagModel);
                 kidsToAdd.forEach(child => {
                     const childJagModel = this._jagModelMap.get(child.urn);
                     const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
@@ -296,10 +352,13 @@ export default class ControllerAT extends EventTarget {
 
                 kidsToRemove.forEach(child => {
                     let childNodeModel = currentNode.getChildById(child.id)
+                    console.log(childNodeModel)
                     childNodeModel.isRoot(true);
                     newlyFormedRootStack.push(childNodeModel);
                     currentNode.removeChild();
                 })
+                console.log("Final current node")
+                console.log(currentNode)
             }
             for (const child of currentNode.children) {
                 nodeStack.push(child);
@@ -426,12 +485,37 @@ export default class ControllerAT extends EventTarget {
         console.log("Local << (line item selected) ")
     }
 
+
     async localNodeDeletedHandler(event) {
         console.log("Local >> (node deleted) ")
-        const deadNodeModelId = event.detail.nodeModelId;
-        await StorageService.delete(deadNodeModelId, 'node');
+        const deadNodeModel = event.detail.nodeModel;
+        // Deleting a node has a couple effects..
+        // 1) Creates projects out of any children.
+        for (let child of deadNodeModel.children) {
+            await StorageService.create(child, 'node');
+        }
+        // 2) Modifies the deleted Node's Parent's Jag.
+        if (deadNodeModel.id != deadNodeModel.project){
+            console.log(deadNodeModel)
+            this.repopulateParent(this._projectMap.get(deadNodeModel.project))
+            console.log(deadNodeModel)
+            let parentsJag = deadNodeModel.parent.jag;
+            console.log(parentsJag)
+            let newParentJagChildren = deadNodeModel.parent.jag.children.filter(entry => {
+                if (entry.id != deadNodeModel.childId) {
+                    return entry;
+                }
+            })
+            console.log(newParentJagChildren)
+            deadNodeModel.parent.jag.children = newParentJagChildren
+            await StorageService.update(parentsJag, 'jag');
+        }
+        // 3) Removes the project
+         await StorageService.delete(deadNodeModel.id, 'node');
         console.log("Local << (node deleted) ")
     }
+
+
 
 
 
@@ -499,8 +583,10 @@ export default class ControllerAT extends EventTarget {
 
     handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
         console.log("((OBSERVER IN) >>  Node Updated - Node Updated - Node Updated - Node Updated - Node Updated")
-        for (let node of this.projectMap.values()){this.repopulateParent(node)}
-                let ancestor = updatedNodeModel.getAncestor();
+        for (let node of this.projectMap.values()) {
+            this.repopulateParent(node)
+        }
+        let ancestor = updatedNodeModel.getAncestor();
         this.repopulateJag(ancestor)
         /// give node the (convenient) parents (little bruteforcey) needed? think so
         this.projectMap.set(ancestor.id, ancestor)
@@ -540,28 +626,6 @@ export default class ControllerAT extends EventTarget {
      *                           @TODO should this be shared with IA>?
      *
      */
-
-    getChildrenToAdd(origJagModel, updatedJagModel) {
-        let newKids = updatedJagModel.children.map(entry => {
-            return entry
-        })
-
-        let oldKids = origJagModel.children.map(entry => {
-            return entry
-        });
-        const returnValue = newKids.filter(newKid => !oldKids.find(oldKid => JSON.stringify(newKid) === JSON.stringify(oldKid)))
-        return returnValue
-    }
-
-    getChildrenToRemove(origJagModel, updatedJagModel) {
-        let newKids = updatedJagModel.children.map(entry => {
-            return entry.urn
-        })
-        let oldKids = origJagModel.children.map(entry => {
-            return entry.urn
-        });
-        return oldKids.filter(oldKid => !newKids.find(newKid => JSON.stringify(oldKid) === JSON.stringify(newKid)))
-    }
 
 
     // _getChildModels(parentJAGModel, childrenJAGMap) {

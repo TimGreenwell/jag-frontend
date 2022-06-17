@@ -16,11 +16,12 @@ import JagModel from "../models/jag.js"
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
-	constructor({ id = UUIDv4(), childId, urn, color, link_status = true, collapsed = false,isLocked = false, is_root = false, x, y , children = new Array()} = {}) {
+	constructor({ id = UUIDv4(), childId, urn, color, project = id, link_status = true, collapsed = false,isLocked = false, is_root = false, x, y , children = new Array()} = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
 		this._jag = undefined;
+		this._project = project;
 
         this._urn = urn;
 		this._children = children;            // Links to actual children [objects]
@@ -65,6 +66,16 @@ export default class Node extends EventTarget {
 	set jag(value) {
 		this._jag = value;
 	}
+
+
+	get project() {
+		return this._project;
+	}
+
+	set project(value) {
+		this._project = value;
+	}
+
 	get children() {
 		return this._children;
 	}
@@ -229,11 +240,13 @@ export default class Node extends EventTarget {
 		return (this.children.length !== 0);
 	}
 	getChildById(id){
+		let identifiedChild = null;
 		this.children.forEach(child => {
-			if (child.id == id) {
-				return child;
+			if (child.childId == id) {
+				identifiedChild = child
 			}
 		})
+		return identifiedChild
 	}
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
@@ -295,6 +308,7 @@ export default class Node extends EventTarget {
 			id: this._id,
 			urn: this._urn,
 			childId: this._childId,
+			project: this._project,
 			color: this._color,
 			link_status: this._link_status,
 			collapsed: this._collapsed,

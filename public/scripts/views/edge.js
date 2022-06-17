@@ -83,7 +83,9 @@ export default class Edge extends EventTarget {
 
 		origin_nodeModel.addEventListener('update', this._updateHandler.bind(this));
 
-		this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:  @TODO Fix this
+		//this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:  @TODO Fix this
+		this._leadActivityNode.completeOutEdge(this, this._childId);  // now it does very little
+
 		// Not sure of the point of the second (id) parameter
 		//@TODO First thing - remove child adding inside the abouve completeOutEdge
 		// - Adds edge to graphical node's 'outs'
@@ -95,22 +97,24 @@ export default class Edge extends EventTarget {
 		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
 		this._updateStrokeDash(origin_nodeModel.jag.operator);
 
-		const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
-			if (curr.id == this._childId) {
-				return curr;
-			}
 
-			return prev;
-		});
-
-		this._updateAnnotations(this._childId, child.annotations, child.iterable);
-
-		// Update all child edges of the end node with upstream atomicity.
-		// Note: this does not use this#updateStroke since this edge may not be
-		//       atomic, but is annotated atomic, and so its children should be.
-		for (const child_edge of this._subActivityNode.getChildEdges()) {
-			child_edge.updateStroke(this._subActivityNode.isAtomic());
-		}
+		// @TODO TLG - DO NOT DELETE THIS COMMENT OR THE BLOCK BELOW.  THIS MAY HAVE BEEN PREMATURLY BLOCKED OFF>
+		// const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
+		// 	if (curr.id == this._childId) {
+		// 		return curr;
+		// 	}
+		//
+		// 	return prev;
+		// });
+		//
+		// this._updateAnnotations(this._childId, child.annotations, child.iterable);
+		//
+		// // Update all child edges of the end node with upstream atomicity.
+		// // Note: this does not use this#updateStroke since this edge may not be
+		// //       atomic, but is annotated atomic, and so its children should be.
+		// for (const child_edge of this._subActivityNode.getChildEdges()) {
+		// 	child_edge.updateStroke(this._subActivityNode.isAtomic());
+		// }
 	}
 
 	setOrigin(x, y) {

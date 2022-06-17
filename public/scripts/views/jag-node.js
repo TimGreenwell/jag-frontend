@@ -1,5 +1,5 @@
 
-// What is this.parentNode.    Useed but not defined.
+// What is this.parentNode.    Used but not defined.
 
 
 /**
@@ -170,7 +170,9 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-		return this._nodeModel.jag.addChild(edge.getSubActivityNode().nodeModel.jag.urn, id);  //@todo - wondering if node and jag models need to be modded  < hate this
+	//	return this._nodeModel.jag.addChild(edge.getSubActivityNode().nodeModel.urn, id);              ////// sorry
+
+		//@todo - wondering if node and jag models need to be modded  < hate this
 	}  // What the holy crap is completeOutEdge returning?  Ans: it returns the ID of the jag child (urn,id) -- for main to refer to subactivity
 
 	removeOutEdge(edge, id) {
@@ -366,7 +368,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._snap();
 		this.dispatchEvent(new CustomEvent('drag'));
 		this.removeEventListener('mousemove', this._boundNodeDrag);
-		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+	//	this.parentNode.removeEventListener('mousemove', this._boundDrag);                // tlg I thook this out -- being annoying -- what is parentNode..never defined
 		this.dispatchEvent(new CustomEvent('repositioning-stopped', {
 			bubbles: true,
 			detail: {
@@ -460,7 +462,8 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		if(this._outs != undefined && (recursive || (recursive == undefined && !this.expanded))) {
 			this._outs.forEach((edge) => {
-				edge._node_end.translate(dx, dy, recursive || !this.expanded);
+			//	edge._node_end.translate(dx, dy, recursive || !this.expanded);
+				edge._subActivityNode.translate(dx, dy, recursive || !this.expanded);
 			});
 		}
 	}
