@@ -13,7 +13,7 @@
 
 //  This is the playground Jag Node -
 
-const SNAP_SIZE = 5.0;
+const SNAP_SIZE = 10.0;
 import JAG from '../models/jag.js';
 
 customElements.define('jag-node', class extends HTMLElement {

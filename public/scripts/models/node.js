@@ -16,7 +16,19 @@ import JagModel from "../models/jag.js"
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
-	constructor({ id = UUIDv4(), childId, urn, color, project = id, link_status = true, collapsed = false,isLocked = false, is_root = false, x, y , children = new Array()} = {}) {
+	constructor({ id = UUIDv4(),
+					childId,
+					urn,
+					color,
+					project = id,
+					link_status = true,
+					collapsed = false,
+					isLocked = false,
+					is_root = false,
+					x, y ,
+					contextualName = '-',
+					contextualDescription = '--',
+					children = new Array()} = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
@@ -35,8 +47,8 @@ export default class Node extends EventTarget {
 
 		this._leafCount = 1;
 		this._treeDepth = 0;
-		this._contextualName = "-";
-		this._contextualDescription = "--"
+		this._contextualName = contextualName;
+		this._contextualDescription = contextualDescription
 		this._isLocked = isLocked;
 
 
@@ -239,15 +251,21 @@ export default class Node extends EventTarget {
 	hasChildren() {
 		return (this.children.length !== 0);
 	}
-	getChildById(id){
-		let identifiedChild = null;
-		this.children.forEach(child => {
-			if (child.childId == id) {
-				identifiedChild = child
-			}
-		})
-		return identifiedChild
-	}
+
+	getChildById(id) {
+		if (id == this.is) {
+			return this
+		} else {
+			this.children.forEach(child => {
+				child.getChildById(id)
+			})
+
+		}}
+
+
+
+
+
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
 			const child = new Node();
@@ -263,9 +281,16 @@ export default class Node extends EventTarget {
 	}
 	removeChild(child){
 		let filtered = this.children.filter(entry => {
-			return entry
-		})
+			console.log("--");
+
+			console.log(child)
+			console.log(entry)
+			if (entry.id != child.id) {
+				return entry
+			}})
+		this.children = filtered;
 	}
+
 	removeChildById(id){
 		this.children.forEach(child => {
 			if (child.id == id) {

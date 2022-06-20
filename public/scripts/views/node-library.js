@@ -170,6 +170,19 @@ customElements.define('node-library', class extends HTMLElement {
 		});
 	}
 
+	updateStructureChange(projectNodes) {
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
+
+projectNodes.forEach(project => this.createListItem(project))
+
+		for (let item of this._libraryList) {
+			this._$list.appendChild(item.element);
+		}
+
+	}
+
 
 	updateItem(updatedNodeModel) {
 		let listItemElement = this.createListItem(updatedNodeModel)

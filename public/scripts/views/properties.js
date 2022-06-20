@@ -17,7 +17,6 @@ customElements.define('jag-properties', class extends HTMLElement {
         super();
 
         this._nodeModel = undefined;
-      //  this._nodeModel.jag = undefined;
         this._consumesMap = new Map();
         this._producesMap = new Map();
         this._initUI();
@@ -44,6 +43,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 
     _initUI() {
+        // The "Child-Of" banner
         const childOf_el = document.createElement('div');
         childOf_el.className = 'special-wrapper child-of-notice';
         this._childOf = document.createElement('p');
@@ -51,6 +51,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._childOf.id = 'child-of';
         childOf_el.appendChild(this._childOf);
 
+        // The "Leaf" banner
         const leafNode_el = document.createElement('div');
         leafNode_el.className = 'special-wrapper leaf-node-notice';
         this._leafNode = document.createElement('p');
@@ -196,8 +197,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._descInput.addEventListener('blur', this._handleDescriptionChange.bind(this));
         this._descInput.addEventListener('keyup', this._handleDescriptionEdit.bind(this));
 
-        this._name_ctxInput.addEventListener('keyup', this._handleContextualNameChange.bind(this));
-        this._desc_ctxInput.addEventListener('keyup', this._handleContextualDescriptionChange.bind(this));
+        this._name_ctxInput.addEventListener('blur', this._handleContextualNameChange.bind(this));
+        this._desc_ctxInput.addEventListener('blur', this._handleContextualDescriptionChange.bind(this));
 
         this._executionSelect.addEventListener('change', this._handleExecutionChange.bind(this));
         this._operatorSelect.addEventListener('change', this._handleOperatorChange.bind(this));
@@ -290,21 +291,21 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     _handleContextualNameChange(e) {
         if (this._nodeModel) {
-            this._node.setContextualName(this._name_ctxInput.value);
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this._nodeModel.contextualName = this._name_ctxInput.value;
+            this.dispatchEvent(new CustomEvent('local-node-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._nodeModel.jag}
+                detail: {nodeModel: this._nodeModel}
             }));
         }
     }
     _handleContextualDescriptionChange(e) {
         if (this._nodeModel) {
-            this._node.setContextualDescription(this._desc_ctxInput.value);
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this._nodeModel.contextualDescription = this._desc_ctxInput.value;
+            this.dispatchEvent(new CustomEvent('local-node-updated', {
                 bubbles: true,
                 composed: true,
-                detail: {jagModel: this._nodeModel.jag}
+                detail: {nodeModel: this._nodeModel}
             }));
         }
     }
@@ -1003,8 +1004,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
 
-        if (this._node && this._node.getParent() != undefined && (enabled)) {//} || this._nodeModel.jag instanceof UndefinedJAG)) {
-            this._childOf.innerHTML = `As child of ${this._node.getParentURN()}`;
+        if (this._nodeModel &&  (enabled)) {//} || this._nodeModel.jag instanceof UndefinedJAG)) {
+            this._childOf.innerHTML = `As child of ${this._nodeModel.parent}`;
             this.classList.toggle('root-node', false);
             this._name_ctxInput.disabled = false;
             this._desc_ctxInput.disabled = false;

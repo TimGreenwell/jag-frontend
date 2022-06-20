@@ -66,6 +66,9 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				let deleteIconClickedHandler = function (event) {
 					event.stopPropagation();
+                    console.log(event)
+
+
 					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
 						detail: {
 							jagModelUrn: newJAGModel.urn
