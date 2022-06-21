@@ -8,6 +8,7 @@
 
 import {UUIDv4} from '../utils/uuid.js';
 import ValidationUtility from "../utils/validation.js";
+import Validation from "../utils/validation.js";
 
 /**
  * Joint Activity Graph (JAG) model.
@@ -27,7 +28,8 @@ export default class JAG extends EventTarget {
                     outputs,
                     children,
                     bindings,
-                    isLocked
+                    isLocked,
+                    collapsed = false,
                 } ) {
         super();
 
@@ -60,6 +62,7 @@ export default class JAG extends EventTarget {
         }
 
         this._isLocked = isLocked;
+        this._collapsed = collapsed;
     }
 
 
@@ -130,6 +133,14 @@ export default class JAG extends EventTarget {
     // urn: child.urn,
     // jagModel: child
 
+    hasChildren(){
+        console.log("Has " + this._children.length + " children")
+        return (this._children.length>0)
+    }
+
+    get canHaveChildren() {
+        return (Validation.isValidUrn(this.urn));
+    }
 
     set bindings(value) {
         this._bindings = value;
@@ -160,6 +171,13 @@ export default class JAG extends EventTarget {
     }
 
 
+    get collapsed() {
+        return this._collapsed;
+    }
+
+    set collapsed(value) {
+        this._collapsed = value;
+    }
 
     addChild(urn, id = undefined) {  // Add UUIDv4 default here
         /**
@@ -481,7 +499,8 @@ export default class JAG extends EventTarget {
             outputs: [],
             children: [],
             bindings: [],
-            isLocked: this._isLocked
+            isLocked: this._isLocked,
+            collapsed: this._collapsed
         };
         this._children.forEach((child) => {
             let descriptor = {

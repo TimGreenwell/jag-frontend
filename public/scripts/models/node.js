@@ -301,7 +301,7 @@ export default class Node extends EventTarget {
 	getLastChild(){
 		return this._children[this.children.length - 1]
 	}
-	get canHaveChildren() {
+	get canHaveChildren() {  // already pushed to jag model
 		return ((this.jag !== undefined) && (Validation.isValidUrn(this.jag.urn)));
 	}
 	get childCount() {

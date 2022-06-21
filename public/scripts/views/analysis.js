@@ -25,6 +25,7 @@ class AnalysisView extends HTMLElement {
 		this._idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
+		console.log(this._analysisModel.rootNodeModel)
 		this._initializeTree(this._analysisModel.rootNodeModel);
 		this.layout();
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
@@ -79,16 +80,19 @@ class AnalysisView extends HTMLElement {
 
 	
 	// Get the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
-	getMappedJagCell(node) {
+	getMappedJagCell(node, parent) {
+		console.log("Got me here a ")
+		console.log(node)
 		let jagCell = this._idToTableCellMap.get(node.id);
 		if(jagCell == undefined) {
-			jagCell = new JagCell(node);
+			console.log("calling it")
+			jagCell = new JagCell(node, parent);
 			this._idToTableCellMap.set(node.id, jagCell);
 		}
 		return jagCell;
 	}
 
-	attach({targetNode, reference = null, layout = true, select = true } = {}) {
+	attach({targetNode, targetNodeParent,  reference = null, layout = true, select = true } = {}) {
 		// When would there ever be a different 'reference'
 		// Ideally, layout only on last call.
 		// select isnt working.. range error.
@@ -97,7 +101,7 @@ class AnalysisView extends HTMLElement {
 		if(reference == null) {
 			reference = this.findTableBottomNode(targetNode);
 		}
-		const $targetCell = this.getMappedJagCell(targetNode);
+		const $targetCell = this.getMappedJagCell(targetNode,targetNodeParent );
 		const $referenceCell = this.getMappedJagCell(reference);
 		this.insertBefore($targetCell, $referenceCell.nextSibling);
 		if(select) {
@@ -154,6 +158,8 @@ class AnalysisView extends HTMLElement {
 
 		height = this._analysisModel.rootNodeModel.treeDepth;
 		rows = this._analysisModel.rootNodeModel.leafCount;
+		console.log(this._analysisModel.rootNodeModel)
+		console.log(rows)
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);
@@ -191,13 +197,14 @@ class AnalysisView extends HTMLElement {
 
 	// Prefix traversal. okay
 	// For every node in tree - Attach it.  (Attach = put it in map)
-	_initializeTree(node) {
+	_initializeTree(node, nodeParent = null) {
 		this.attach({
 			targetNode: node,
+			targetNodeParent: nodeParent,
 			layout: false
 		});
 		node.children.forEach((child_node) => {
-			this._initializeTree(child_node);
+			this._initializeTree(child_node, node);
 		});
 	}
 

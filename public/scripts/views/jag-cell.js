@@ -21,9 +21,10 @@ import Validator from "../utils/validation.js";
 // A Cell based off (model/Node)
 class JagCell extends AnalysisCell {
 
-    constructor(nodeModel) {
+    constructor(cellModel, parent) {
         super();
-        this._nodeModel = nodeModel;
+        this._cellModel = cellModel
+        this._parent = parent
 
         this._htmlElements = {
             urnEntry: undefined,
@@ -35,15 +36,15 @@ class JagCell extends AnalysisCell {
     }
 
 
-    get nodeModel() {
-        return this._nodeModel;
+    get cellModel() {
+        return this._cellModel;
     }
 
-    set nodeModel(value) {
-        this._nodeModel = value;
+    set cellModel(value) {
+        this._cellModel = value;
     }
 
-    //////  Elements and Element Values
+//////  Elements and Element Values
     get urnElementEntry() {
         return this._htmlElements.urnEntry.innerText;
     }
@@ -68,7 +69,16 @@ class JagCell extends AnalysisCell {
         return this._htmlElements.nameEntry;
     }
 
-    //////  classList Properties
+
+    get parent() {
+        return this._parent;
+    }
+
+    set parent(value) {
+        this._parent = value;
+    }
+
+//////  classList Properties
     set valid(valid) {
         this.classList.toggle('unsaved', !valid);
     }
@@ -97,26 +107,31 @@ class JagCell extends AnalysisCell {
 
     // Handlers
 
-    async _handleNameChange() {
+    async _handleNameChange(event) {
+        console.log(">>>")
+        console.log(event)
+        console.log(event)
+        console.log(event)
         // This runs when the Name field of the IATABLE Jag node area loses focus - blurs
-        if (this.nameElementEntry !== this.nodeModel.name) {
+        if (this.nameElementEntry !== this.cellModel.jag.name) {
             this.nameElementEntry = this.nameElementEntry.split(':').slice(-1);
 
-            this.nodeModel.name = this.nameElementEntry;
-            if (Validator.isValidUrn(this.nodeModel.urn)) {
+            this.cellModel.jag.name = this.nameElementEntry;
+            if (Validator.isValidUrn(this.cellModel.jag.urn)) {
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     bubbles: true,
                     composed: true,
-                    detail: {jagModel: this._nodeModel.jag}
-                }));  //tlg changed from node to jagModel  - looks bad
+                    detail: {jagModel: this._cellModel}
+                }));  //tlg changed from node to cellModel  - looks bad
             } else {
-                this._nodeModel.urn = this.urnElementEntry;
+                this._cellModel.jag.urn = this.urnElementEntry;
+                console.log("earlier -" + this.urnElementEntry )
                 this.dispatchEvent(new CustomEvent('local-jag-created', {
                     bubbles: true,
                     composed: true,
-                    detail: this._nodeModel.jag
+                    detail: {jagModel: this._cellModel}
                 }));
-                parent = this.nodeModel.parent.jag;
+                parent = this.nodeModel.parent.jag;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
                 let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     bubbles: true,
@@ -137,10 +152,10 @@ class JagCell extends AnalysisCell {
                 this._htmlElements.nameEntry.blur();
 
                 if (e.shiftKey)
-                    this.nodeModel.addChild(new NodeModel());   // shift to controller (ControllerIA.addNewNode(nodeModel))
+                    this.nodeModel.addChild(new NodeModel());   // shift to controller (ControllerIA.addNewNode(cellModel))
                 if (e.ctrlKey) {
                     if (this.nodeModel.parent !== undefined)
-                        this.nodeModel.parent.addChild(new NodeModel());  // shift to controller (ControllerIA.addNewNode(nodeModel.parent))
+                        this.nodeModel.parent.addChild(new NodeModel());  // shift to controller (ControllerIA.addNewNode(cellModel.parent))
                     else
                         console.log('Can\'t add siblings to root');
                 }
@@ -150,7 +165,7 @@ class JagCell extends AnalysisCell {
                 break;
         }
         const validCharacters = new RegExp('[A-Za-z0-9-:]')
-        if ((!Validator.isValidUrn(this.nodeModel.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
+        if ((!Validator.isValidUrn(this.cellModel.jag.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
             this.urnElementEntry = this.urnElementEntry + e.key.toLowerCase();
 
         }
@@ -164,17 +179,17 @@ class JagCell extends AnalysisCell {
 
 
     _handleURNChange(e) {
-        if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
+        if (this.urnElementEntry !== this.cellModel.jag.urn) {           // if urn was changed
             if (Validator.isValidUrn(this.urnElementEntry)) {        // && entered urn is valid...
                 this._htmlElements.suggestions.hide();
                 // Is the current URN valid?  (A rename involves more than the initial create)
-                if (Validator.isValidUrn(this.nodeModel.urn)) {
+                if (Validator.isValidUrn(this.cellModel.jag.urn)) {
                     this.dispatchEvent(new CustomEvent('local-urn-changed', {
                         bubbles: true,
                         composed: true,
-                        detail: {originalUrn: this.nodeModel.urn, newUrn: this.urnElementEntry}
+                        detail: {originalUrn: this.cellModel.jag.urn, newUrn: this.urnElementEntry}
                     }));
-                    //ControllerIA.updateURN(this.urn, this.nodeModel.urn);  // orig, new
+                    //ControllerIA.updateURN(this.urn, this.cellModel.jag.urn);  // orig, new
                 } else {
                     this.dispatchEvent(new CustomEvent('local-jag-created', {
                         bubbles: true,
@@ -192,7 +207,7 @@ class JagCell extends AnalysisCell {
                     console.log(JSON.stringify(this))
                 }
             }
-            //this.nodeModel.urn = this.urnElementEntry
+            //this.jagModel.urn = this.urnElementEntry
         }
     }
 
@@ -207,7 +222,7 @@ class JagCell extends AnalysisCell {
                 this._htmlElements.suggestions.hide();
                 break;
             case 'Escape':
-                this.urnElementEntry = this.nodeModel.urn;
+                this.urnElementEntry = this.cellModel.jag.urn;
                 this._htmlElements.urnEntry.blur();
                 break;
             case 'ArrowDown':
@@ -220,7 +235,7 @@ class JagCell extends AnalysisCell {
                 break;
         }
         const validCharacters = /^[A-Za-z0-9\-\:]+/
-        if ((this.nodeModel.name == '') && (e.key.match(validCharacters))) {
+        if ((this.cellModel.jag.name == '') && (e.key.match(validCharacters))) {
             this.nameElementEntry = (this.nameElementEntry + e.key).split(':').slice(-1);
         }
     }
@@ -233,7 +248,7 @@ class JagCell extends AnalysisCell {
 
 
     async deleteJagModel(deadJagModel) {
-        this._jagModel = undefined;
+        this._cellModel = undefined;
         await StorageService.get(deadJagModel.urn, 'jag');
 
 
@@ -248,12 +263,12 @@ class JagCell extends AnalysisCell {
         const newJagModel = JAG.fromJSON(description);
         // Update model references.
         this._node.model = newJagModel; //?
-        this._jagModel = newJagModel;
+        this._cellModel = newJagModel;
         await StorageService.create(newJagModel, 'jag');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 
-        //  WHEN GOOD -->             this._jagModel.url = this._urnInput.value;
+        //  WHEN GOOD -->             this._cellModel.url = this._urnInput.value;
     }
 
 
@@ -323,17 +338,17 @@ class JagCell extends AnalysisCell {
 
 
     async _initUI() {
-        this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
+        this.cellModel.addEventListener('sync', this._syncViewToModel.bind(this));
         //@TODO should view listen to model (new way) or controller (older way)
 
-        const $controls = new JagCellControls(this.nodeModel);
+        const $controls = new JagCellControls(this.cellModel);
         const $header = document.createElement('header');
         const $nameEntry = document.createElement('h1');
         const $urnEntry = document.createElement('h2');
         const $suggestions = new AutoComplete();
         const $fold = document.createElement('div');
 
-        this.classList.toggle('leaf', !this.nodeModel.hasChildren());  // Am I a leaf?
+        this.classList.toggle('leaf', !this.cellModel.hasChildren());  // Am I a leaf?
 
 
         $nameEntry.setAttribute('contenteditable', '');
@@ -346,10 +361,10 @@ class JagCell extends AnalysisCell {
         $urnEntry.setAttribute('spellcheck', 'false');
         $urnEntry.setAttribute('tabindex', '-1');
 
-        if (this._nodeModel.jag !== undefined)  // && this._nodeModel.jag.hasValidURN) {
+        if (this._cellModel !== undefined)  // && this._cellModel.hasValidURN) {
         {
-            $urnEntry.innerText = this.nodeModel.urn;
-            $nameEntry.innerText = this.nodeModel.name;
+            $urnEntry.innerText = this.cellModel.jag.urn;
+            $nameEntry.innerText = this.cellModel.jag.name;
         } else {
             this.classList.add('unsaved');
         }
@@ -358,7 +373,7 @@ class JagCell extends AnalysisCell {
             this.dispatchEvent(new CustomEvent('local-collapse-toggled', {
                 bubbles: true,
                 composed: true,
-                detail: {node: this._nodeModel}
+                detail: {node: this._cellModel}
             })))
         $fold.classList.add('fold-button');
 
@@ -378,21 +393,21 @@ class JagCell extends AnalysisCell {
         //    tg - Both functions are equivalent but neither seem to be of any use.  this._htmlElements is set to auto-complete.
         //    tg - possibly the '.suggestions.suggestions' is a mistake.
         await StorageService.all('jag').then(jags => this._htmlElements.suggestions.suggestions = jags.map(jag => jag.urn));
-        //	allJagModels.forEach(() => this._htmlElements.suggestions.suggestions = allJagModels.map(jagModel => jagModel.urn));
+        //	allJagModels.forEach(() => this._htmlElements.suggestions.suggestions = allJagModels.map(cellModel => cellModel.jag.urn));
     }
 
 
-    updateSuggestions(jagModelList) {
-        //jagModelList.forEach(() => this._htmlElements.suggestions.suggestions = jagModelList.map(jagModel => jagModel.urn));
-        this._htmlElements.suggestions.suggestions = jagModelList.map(jagModel => jagModel.urn)
+    updateSuggestions(cellModelList) {
+        //cellModelList.forEach(() => this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.jag.urn));
+        this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.jag.urn)
     }
 
-    // Sync view to existing model values.  --- Triggered on 'sync' event which is linked to nodeModel.
+    // Sync view to existing model values.  --- Triggered on 'sync' event which is linked to cellModel.
     _syncViewToModel() {
         console.log("SYNC HAS BEEN ACTIVATED.................................(surgical treatment of jag/model change)........................   (thought it was disabled) ..........")
-        this.urnElementEntry = this.nodeModel.urn;
-        this.nameElementEntry = this.nodeModel.name;
-        this.classList.toggle('leaf', !this.nodeModel.hasChildren());
+        this.urnElementEntry = this.cellModel.jag.urn;
+        this.nameElementEntry = this.cellModel.jag.name;
+        this.classList.toggle('leaf', !this.cellModel.hasChildren());
     }
 
 

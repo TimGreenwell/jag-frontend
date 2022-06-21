@@ -170,7 +170,7 @@ class Playground extends Popupable {
                    this.dispatchEvent(new CustomEvent('local-nodes-joined', {
                        bubbles: true,
                        composed: true,
-                       detail: {childNodeId: childNodeModel.id, parentNodeId: parentNodeModel.id }
+                       detail: { projectNodeId: parentNodeModel.project, parentNodeId: parentNodeModel.id, childNodeId: childNodeModel.id }
                    }));
 
    //   //      this._activeNodeModelMap.delete(childNodeModel.id)
@@ -753,7 +753,7 @@ class Playground extends Popupable {
     }
 
     onKeyDown(event) {
-        event.stopPropagation();
+        event.stopImmediatePropagation();
         let $node = event.target
         console.log($node)
         if (event.key == 'Delete') {
@@ -775,13 +775,34 @@ class Playground extends Popupable {
                     if ($node.nodeModel.project == $node.nodeModel.id) {
                         this.clearPlayground($node.nodeModel.project);
                     } else {
-                        this.popup({
-                            content: Playground.NOTICE_REMOVE_CHILD,
-                            trackEl: $node,
-                            inputs: {node: $node},
-                            highlights: [$node]
-                        });
-                    }
+                        if (window.confirm("Are you sure you want to remove this node as a child? (This will change all instances of the parent node to reflect this change.)"))
+
+                        {
+                        const edge = $node.getParentEdge();
+                        const id = edge.getChildId();
+                        const parent = $node.getParent();
+                        const jagUrn = parent.nodeModel.urn
+                        const jagChild = {urn: $node.nodeModel.urn, id: $node.nodeModel.childId}
+                        let remainingChildren = parent.nodeModel.jag.children.filter(entry => {
+                            if (entry.id != jagChild.id) {
+                                return entry;
+                            }
+                        })
+                        parent.nodeModel.jag.children = remainingChildren
+                        this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                            detail: {jagModel: parent.nodeModel.jag}
+                        }));
+
+
+
+
+                        // this.popup({
+                        //     content: Playground.NOTICE_REMOVE_CHILD,
+                        //     trackEl: $node,
+                        //     inputs: {node: $node},
+                        //     highlights: [$node]
+                        // });
+                    }}
 
                 }
         } else if (e.key == 'ArrowLeft') {
@@ -872,10 +893,6 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             name: 'popurn', label: 'URN', type: 'text', options: function () {
                 let eventMap = new Map();
-                //               eventMap.set('blur', () => {
-                // just remove options if this works                   const newUrn = document.getElementById('popurn').value;
-                //                   Playground.defaultUrn = newUrn.split(':').slice(0, -1).join(':') + ":";
-                //               });
                 return eventMap;
             }
         },
@@ -928,8 +945,6 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
                         return entry;
                     }
                 })
-
-                console.log("-------------------------------------------------------------------------------------------------------------------------------------------")
                 parent.nodeModel.jag.children = remainingChildren
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     detail: {jagModel: parent.nodeModel.jag}

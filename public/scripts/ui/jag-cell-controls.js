@@ -18,26 +18,26 @@ class JagCellControls extends HTMLElement {
 	}
 
 	_initUI() {
-		this._add_child = document.createElement('div');
-		this._remove = document.createElement('div');
+		this._addButton = document.createElement('div');
+		this._removeButton = document.createElement('div');
 
-		this._add_child.classList.add('jag-button', 'add-child-button');
-		this._remove.classList.add('jag-button', 'remove-button');
+		this._addButton.classList.add('jag-button', 'add-child-button');
+		this._removeButton.classList.add('jag-button', 'remove-button');
 
-		this.appendChild(this._add_child);
+		this.appendChild(this._addButton);
 
 		// Only show the remove icon if not root.
 		if(!this._node.isRoot())
-			this.appendChild(this._remove);
+			this.appendChild(this._removeButton);
 	}
 
 	_initListeners() {
-		this._add_child.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-node-addchild', {bubbles: true, composed: true, detail: {node: this._node}}));
+		this._addButton.addEventListener('click', () => {
+			this.dispatchEvent(new CustomEvent('local-node-addchild', {bubbles: true, composed: true, detail: {cell: this._node}}));
 		});
 
-		this._remove.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-node-prunechild', {bubbles: true, composed: true, detail: {node: this._node}}));
+		this._removeButton.addEventListener('click', () => {
+			this.dispatchEvent(new CustomEvent('local-node-prunechild', {bubbles: true, composed: true, detail: {cell: this._node}}));
 		});
 	}
 

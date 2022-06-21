@@ -203,13 +203,20 @@ export default class ControllerAT extends EventTarget {
     async localNodesJoinedHandler(event) {            // only needed id's
         console.log("Local>> (local nodes joined) ")
 
-
-        let childNodeId = event.detail.childNodeId
+        let projectNodeId = event.detail.projectNodeId
         let parentNodeId = event.detail.parentNodeId
+        let childNodeId = event.detail.childNodeId
+        console.log(projectNodeId)
+        console.log(parentNodeId)
+        console.log(childNodeId)
+        let projectModel = this._projectMap.get(projectNodeId)
+        console.log(projectModel)
+        let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
+        console.log(parentNodeModel)
+        let childNodeModel =  this._projectMap.get(childNodeId)
+        console.log(childNodeModel)
 
-        let childNodeModel = this._projectMap.get(childNodeId)
-        let parentNodeModel = this._projectMap.get(parentNodeId)
-        let projectModel = this._projectMap.get(parentNodeModel.project)  // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
+         // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
 
         // 1) CORRECT THE JAG ACTIVITY
         let newChildId = parentNodeModel.jag.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
@@ -368,8 +375,8 @@ export default class ControllerAT extends EventTarget {
             nodeStack.push(projectNode);
             while (nodeStack.length > 0) {
                 let currentNode = nodeStack.pop();
-                if ((changedActivityUrn == undefined) || (currentNode.urn == changedActivityUrn)) {
-                    if (changedActivityUrn == undefined) {
+                if ((deletedActivityUrn == undefined) || (currentNode.urn == deletedActivityUrn)) {
+                    if (deletedActivityUrn == undefined) {
                         console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                     }
                     let existingKids = currentNode.children.map(node => {
@@ -561,7 +568,9 @@ export default class ControllerAT extends EventTarget {
     async localJagDeletedHandler(event) {
         console.log("Local>> (jag deleted) ")
         const deadJagModelUrn = event.detail.jagModelUrn;
-        for (let activity of this._jagModelMap) {
+        for (let [activityId, activity] of this._jagModelMap) {
+            console.log(activityId)
+            console.log(activity)
             if (activity.urn != deadJagModelUrn) {
                 let remainingChildren = activity.children.filter(kid => {
                     if (kid.urn != deadJagModelUrn) {

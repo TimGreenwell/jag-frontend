@@ -10,12 +10,13 @@
 import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JAGATValidation from "../utils/validation.js";
-import NodeModel from "../models/node.js";
+import NodeModel from "../models/cell.js";
 import JagModel from "../models/jag.js";
 import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
 import UserPrefs from "../utils/user-prefs.js";
+import JAG from "../models/jag.js";
 // should need JagModel once I can create Jag by giving valid URN
 
 export default class ControllerIA {
@@ -26,7 +27,6 @@ export default class ControllerIA {
         this._iaTable = null;                   // HTMLElement extending Popupable
 
         this._jagModelMap = new Map();          // All JAGs - should be in sync with storage
-        this._nodeModelMap = new Map();         // where used?
         this._analysisModelMap = new Map();     // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;      // type: AnalysisModel
 
@@ -56,16 +56,6 @@ export default class ControllerIA {
     }
     addJagModel(jagModel) {
         this._jagModelMap.set(jagModel.urn, jagModel)
-    }
-
-    get nodeModelMap() {
-        return this.nodeModelList;
-    }
-    set nodeModelMap(newNodeModelMap) {
-        this.nodeModelList = newNodeModelList;
-    }
-    addNodeModel(newNodeModel) {
-        this._nodeModelMap.set(newNodeModel.id, newNodeModel)
     }
 
     get analysisModelMap() {
@@ -98,7 +88,10 @@ export default class ControllerIA {
 
         // @TODO need this?
         let allNodes = await StorageService.all('node')
-        allNodes.forEach(node => this.addNodeModel(node))
+        allNodes.forEach(node => {
+            this.repopulateJag(node)
+            this.repopulateParent(node)
+        });
 
         let allAnalyses = await StorageService.all('analysis')
         allAnalyses.forEach(analysis => this.addAnalysisModel(analysis))
@@ -113,6 +106,7 @@ export default class ControllerIA {
         //this._iaTable.addEventListener('local-analysis-deleted', this.localAnalysisDeletedHandler.bind(this));  // jag structure updates
 
         this._iaTable.addEventListener('local-node-addchild', this.localNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)
+                                                                                                          // does that really need to come up this far?
         this._iaTable.addEventListener('local-node-prunechild', this.localNodePruneChildHandler.bind(this));
         this._iaTable.addEventListener('local-collapse-toggled', this.localCollapseToggledHandler.bind(this));
 
@@ -150,17 +144,45 @@ export default class ControllerIA {
         await StorageService.update(event.detail.analysis, 'analysis');
     }
 
-    async localNodeAddChildHandler(event){
+    async localNodeAddChildHandler(event){ //@TODO see below -- push this down
         // This will not be permanent until a valid URN is set.  Not-persistant.
-        let node = event.detail.node;
-        if (node.canHaveChildren) {
+        //@todo push this back down into iaTable (from there - to there)
+        let parentCell = event.detail.cell;
+        console.log("Thanks")
+        console.log(parentCell)
+        if (parentCell.canHaveChildren) {
             const childJag = new JagModel({urn: UserPrefs.getDefaultUrnPrefix(), name: ''})
-            const childNode = new NodeModel({jag: childJag});
-            childNode.parent = node;
-            node.addChild(childNode)
-            this._iaTable.displayAnalysis();
+            // Normally, we would pass this new Jag up for storage and distribution - however it is only temporary since it does
+            // not yet have a valid URN or name.
+            const childCell = new NodeModel({urn: childJag.urn});
+            childCell.jag = childJag;
+            childCell.parentUrn = parentCell.urn
+            childCell.rootUrn = parentCell.rootUrn
+            parentCell.addChild(childCell)
+            console.log("okokokokokokokokokok")
+            console.log(this._currentAnalysis)
+            this._currentAnalysis.rootNodeModel = this.replaceNodeById(this._currentAnalysis.rootNodeModel,parentCell)
+
+            console.log(this._currentAnalysis)
+
+            this._iaTable.displayAnalysis(this._currentAnalysis);
         } else {
             alert("Node must first be assigned a valid URN")
+        }
+    }
+
+    replaceNodeById(rootNode,replacementItem){
+        let workStack = [];
+        workStack.push(rootNode);
+        while (workStack>0) {
+            let currentNode = workStack.pop();
+            if (currentNode.id == replacementItem.id) {
+                currentNode = replacementItem;
+                return rootNode;
+            }
+            else {
+                currentNode.children.forEach(child => workStack.push(child))
+            }
         }
     }
 
@@ -169,8 +191,10 @@ export default class ControllerIA {
         // Going to just update parent.  Actually prune node?
         // After a quick check we are not pruning the head.
 
-        let parentJag = event.detail.node.parent.jag
-        let childJag = event.detail.node.jag
+        let parentJagUrn = event.detail.node.parent.urn
+        let childJagUrn = event.detail.node.urn
+        let parentJag = this._jagModelMap.get(parentJagUrn)
+        let childJag = this._jagModelMap.get(childJagUrn)
         let parentJagChildren = parentJag.children;
 
         let index = 0;
@@ -198,8 +222,7 @@ export default class ControllerIA {
     async localLibraryAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
         this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-        this._iaTable.analysisModel = this._currentAnalysis;
-        this._iaTable.displayAnalysis();
+        this._iaTable.displayAnalysis(this._currentAnalysis);
         this._editor.team = event.detail.model.team;
     }
 
@@ -212,7 +235,9 @@ export default class ControllerIA {
     }
 
     async localJagCreatedHandler(event){
-        let jagModel = new JagModel(event.detail);
+        let jagModel = new JagModel(event.detail.jagModel);
+        console.log("localJagCreatedHandler  sending up " + jagModel.urn)
+        console.log(jagModel)
         await StorageService.create(jagModel, 'jag');
     }
 
@@ -238,10 +263,11 @@ export default class ControllerIA {
         if (this._currentAnalysis) {
             // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
             this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-            this._iaTable.analysisModel = this._currentAnalysis;
-            this._iaTable.displayAnalysis();
+            this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
+
+
 
     getChildrenToAdd(origJagModel, updatedJagModel) {
         let newKids = updatedJagModel.children.map(entry => {
@@ -271,8 +297,12 @@ export default class ControllerIA {
         // 1) update the jag listing
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surjury
-        let origJagModel = this.jagModelMap.get(updatedJagUrn);  // Get original data from cache
+        let origJagModel = this._jagModelMap.get(updatedJagUrn);  // Get original data from cache
+        console.log("adding")
+        console.log(updatedJagModel)
         this.addJagModel(updatedJagModel);                       // Update cache to current
+        console.log("map")
+        console.log(this._jagModelMap)
         let newKids = updatedJagModel.children.map(entry => {
             return entry.urn
         })
@@ -285,8 +315,7 @@ export default class ControllerIA {
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.analysisModel = this._currentAnalysis;
-                this._iaTable.displayAnalysis();
+                this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
         let kidsToRemove = oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
@@ -295,13 +324,12 @@ export default class ControllerIA {
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.analysisModel = this._currentAnalysis;
-                this._iaTable.displayAnalysis();
+                this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
         if  ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
             // console.log("Brute force change")
-            this._iaTable.displayAnalysis();
+            this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
 
@@ -319,8 +347,7 @@ export default class ControllerIA {
 
         if (this._iaTable.analysisModel){
             createdAnalysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(createdAnalysisModel.rootUrn);
-            this._iaTable.analysisModel = createdAnalysisModel;
-            this._iaTable.displayAnalysis();
+            this._iaTable.displayAnalysis(createdAnalysisModel);
         }}
 
 
@@ -357,8 +384,7 @@ export default class ControllerIA {
     async displayAnalysis(id) {
         let analysisModel = await StorageService.get(id, 'analysis');
         analysisModel.rootNodeModel = await this.buildNodeTreeFromJagUrn(analysisModel.rootUrn);
-        this._iaTable.analysisModel = analysisModel;
-        this._iaTable.displayAnalysis();
+        this._iaTable.displayAnalysis(analysisModel);
     }
 
     // UPDATE JAG --- Cycle through active Projects and rebuild.
@@ -377,7 +403,8 @@ export default class ControllerIA {
             let kidsToAdd = this.getChildrenToAdd(origJagModel, updatedJagModel);
             kidsToAdd.forEach(child => {
                 const childJagModel = this._jagModelMap.get(child.urn);
-                const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+                const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
+                childNodeModel.jag = childJagModel
                 childNodeModel.childId = child.id;
                 currentNode.addChild(childNodeModel, true);
                 // not yet -- nodeStack.push(childNodeModel);
@@ -418,8 +445,7 @@ export default class ControllerIA {
 
             // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
             this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-            this._iaTable.analysisModel = this._currentAnalysis;
-            this._iaTable.displayAnalysis();
+            this._iaTable.displayAnalysis(this._currentAnalysis);
 
         }
 
@@ -428,28 +454,40 @@ export default class ControllerIA {
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
                 this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromJagUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.analysisModel = this._currentAnalysis;
-                this._iaTable.displayAnalysis();
+                this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
         if ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
             // console.log("Brute force change")
-            this._iaTable.displayAnalysis();
+            this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
 
     async buildNodeTreeFromJagUrn(newRootJagUrn) {
         const nodeStack = [];
         const resultStack = [];
-        const rootJagModel = await StorageService.get(newRootJagUrn, 'jag');
-        const rootNodeModel = new NodeModel({jag: rootJagModel, is_root: true});
+        const rootJagModel = await StorageService.get(newRootJagUrn, 'jag');   //@todo use cache
+        const rootNodeModel = new NodeModel({urn: rootJagModel.urn, is_root: true});
+        rootNodeModel.jag = rootJagModel
+        rootNodeModel.parentUrn = null;
+        rootNodeModel.rootUrn = newRootJagUrn;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length != 0) {
             let currentNode = nodeStack.pop();
             for (const child of currentNode.jag.children) {
-                const childJagModel = await StorageService.get(child.urn, 'jag');
-                const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
+                console.log("ERRORING -->")
+                console.log(child.urn)
+                let childJagModel = null;
+                if (await StorageService.get(child.urn, 'jag')) {
+                    childJagModel = await StorageService.get(child.urn, 'jag');    //@todo use cache
+                } else {
+                    childJagModel = new JagModel(child)
+                }
+                const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
+                childNodeModel.jag = childJagModel
                 childNodeModel.childId = child.id;
+                childNodeModel.parentUrn = currentNode.urn
+                childNodeModel.rootUrn = newRootJagUrn;
                 currentNode.addChild(childNodeModel, true);
                 nodeStack.push(childNodeModel);
             }
@@ -623,6 +661,20 @@ export default class ControllerIA {
         this._iaTable.analysisView.detach(node)
         // 6 dispatchers here - Only Listener in views/Jag
         this.dispatchEvent(new CustomEvent('sync'));
+    }
+
+    repopulateJag(currentNode) {
+        currentNode.jag = this._jagModelMap.get(currentNode.urn)
+        for (let child of currentNode.children) {
+            this.repopulateJag(child)
+        }
+    }
+
+    repopulateParent(currentNode) {
+        for (let child of currentNode.children) {
+            child.parent = currentNode;
+            this.repopulateParent(child)
+        }
     }
 
 }

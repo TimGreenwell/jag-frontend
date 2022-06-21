@@ -25,6 +25,7 @@ class IATable extends Popupable {
         this._analysisModel = null;
         this._availableJagUrns = [];
 
+
         this._domElements = {
             name: undefined,
             selector: undefined,
@@ -56,29 +57,29 @@ class IATable extends Popupable {
     }
 
 
-
-    displayAnalysis() {
+    displayAnalysis(analysisModel = this._analysisModel) {
         // remove current view if it exists
         if (this._domElements.analysis !== undefined) {
             this.removeChild(this._domElements.analysis);
         }
-
-        if (this._analysisModel) {
-            // Create and append a new Analysis View to this structure (not sure is iatable is a mis-name)
-            let analysisView = new AnalysisView(this._analysisModel);/////////////////////////////////////////////////////////////////// <<<<new
-            this.appendChild(analysisView);
-            this._domElements.analysis = analysisView;
-            // Enable name and description (@TODO - this might make more sense in a separate panel (like AT Properties)
-            this._domElements.name.removeAttribute('disabled');
-            this._domElements.name.value = this._analysisModel.name;
-            this._domElements.description.removeAttribute('disabled');
-            this._domElements.description.value = this._analysisModel.description;
-            this._analysisModel.team.addEventListener('update', this._boundRefresh);
-            this._agents = this._analysisModel.team.agents;
-            for (const agent of this._agents) {
-                agent.addEventListener('update', this._boundRefresh);
-            }
+console.log("doggy")
+        this._analysisModel = analysisModel;
+        console.log(analysisModel)
+        // Create and append a new Analysis View to this structure (not sure is iatable is a mis-name)
+        let analysisView = new AnalysisView(this._analysisModel);/////////////////////////////////////////////////////////////////// <<<<new
+        this.appendChild(analysisView);
+        this._domElements.analysis = analysisView;
+        // Enable name and description (@TODO - this might make more sense in a separate panel (like AT Properties)
+        this._domElements.name.removeAttribute('disabled');
+        this._domElements.name.value = this._analysisModel.name;
+        this._domElements.description.removeAttribute('disabled');
+        this._domElements.description.value = this._analysisModel.description;
+        this._analysisModel.team.addEventListener('update', this._boundRefresh);
+        this._agents = this._analysisModel.team.agents;
+        for (const agent of this._agents) {
+            agent.addEventListener('update', this._boundRefresh);
         }
+
     }
 
 
