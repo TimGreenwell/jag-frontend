@@ -206,15 +206,9 @@ export default class ControllerAT extends EventTarget {
         let projectNodeId = event.detail.projectNodeId
         let parentNodeId = event.detail.parentNodeId
         let childNodeId = event.detail.childNodeId
-        console.log(projectNodeId)
-        console.log(parentNodeId)
-        console.log(childNodeId)
         let projectModel = this._projectMap.get(projectNodeId)
-        console.log(projectModel)
-        let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
-        console.log(parentNodeModel)
+         let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
         let childNodeModel =  this._projectMap.get(childNodeId)
-        console.log(childNodeModel)
 
          // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
 
@@ -271,13 +265,6 @@ export default class ControllerAT extends EventTarget {
     async localNodeUpdatedHandler(event) {
 
         const updatedNodeModel = event.detail.nodeModel;
-
-        console.log("Local>> (local node updated) ")
-        console.log("Sanity CHECK")
-        console.log(updatedNodeModel)
-        console.log(updatedNodeModel.project)
-        console.log("Should be null-" + updatedNodeModel.childId )
-
         await StorageService.update(updatedNodeModel, 'node');
         console.log("Local<< (local node updated) ")
     }
@@ -347,9 +334,9 @@ export default class ControllerAT extends EventTarget {
         }
         for (let rootNode of orphanedRootStack) {
             if (this.projectMap.has(rootNode.id)) {
-               console.log("Orphans ===  in the project map (should not happen)")
+               console.log("Orphaned (should not happen)")
             } else {
-                console.log("Orphans === let them die")
+                console.log("Orphaned")
             }
         }
         await StorageService.update(projectNode, 'node');
@@ -361,8 +348,7 @@ export default class ControllerAT extends EventTarget {
     // This can have a major impact on other JAGs and thus significantly affect the drawn nodes.
     // Need to update and save the adjusted Projects
     async deletedActivityAffectsProjectHandler(event) {
-        console.log("Local>> (new node affects project) ")
-        let projectId = event.detail.projectModelId; // could have used id
+           let projectId = event.detail.projectModelId; // could have used id
         let projectNode = this._projectMap.get(projectId)
         let deletedActivityUrn = event.detail.activityUrn;
 
@@ -414,9 +400,9 @@ export default class ControllerAT extends EventTarget {
             }
             for (let rootNode of orphanedRootStack) {
                 if (this.projectMap.has(rootNode.id)) {
-                    console.log("Orphans ===  in the project map (should not happen)")
+                    console.log("Orphans =(should not happen)")
                 } else {
-                    console.log("Orphans === let them die")
+                    console.log("Orphans ")
                 }
             }
             await StorageService.update(projectNode, 'node');
@@ -569,8 +555,6 @@ export default class ControllerAT extends EventTarget {
         console.log("Local>> (jag deleted) ")
         const deadJagModelUrn = event.detail.jagModelUrn;
         for (let [activityId, activity] of this._jagModelMap) {
-            console.log(activityId)
-            console.log(activity)
             if (activity.urn != deadJagModelUrn) {
                 let remainingChildren = activity.children.filter(kid => {
                     if (kid.urn != deadJagModelUrn) {
@@ -638,11 +622,8 @@ export default class ControllerAT extends EventTarget {
         let leavingJagChild = event.detail.jagChild
 
         let projectRoot = this._projectMap.get(leavingNodeModel.project)
-        console.log(projectRoot)
         this.repopulateParent(projectRoot)
-        console.log(projectRoot)
         let losingParents = leavingNodeModel.parent;
-        console.log(losingParents)
         let losingParentsJag = this._jagModelMap.get(losingParents.urn)
         let remainingChildren = losingParentsJag.children.filter(entry => {
             if (entry.id != leavingNodeModel.childId) {
@@ -657,9 +638,9 @@ export default class ControllerAT extends EventTarget {
 
     async localNodeDeletedHandler(event) {
         console.log("Local>> (node deleted) ")
-        const deadNodeModel = event.detail.nodeModel;
+        const deadNodeModelId = event.detail.nodeModelId;
         // 3) Removes the project
-         await StorageService.delete(deadNodeModel.id, 'node');
+         await StorageService.delete(deadNodeModelId, 'node');
         console.log("Local<< (node deleted) ")
     }
 

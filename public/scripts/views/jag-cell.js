@@ -108,10 +108,6 @@ class JagCell extends AnalysisCell {
     // Handlers
 
     async _handleNameChange(event) {
-        console.log(">>>")
-        console.log(event)
-        console.log(event)
-        console.log(event)
         // This runs when the Name field of the IATABLE Jag node area loses focus - blurs
         if (this.nameElementEntry !== this.cellModel.jag.name) {
             this.nameElementEntry = this.nameElementEntry.split(':').slice(-1);
@@ -121,22 +117,22 @@ class JagCell extends AnalysisCell {
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     bubbles: true,
                     composed: true,
-                    detail: {jagModel: this._cellModel}
+                    detail: {jagModel: this._cellModel.jag}
                 }));  //tlg changed from node to cellModel  - looks bad
             } else {
                 this._cellModel.jag.urn = this.urnElementEntry;
-                console.log("earlier -" + this.urnElementEntry )
                 this.dispatchEvent(new CustomEvent('local-jag-created', {
                     bubbles: true,
                     composed: true,
-                    detail: {jagModel: this._cellModel}
+                    detail: {jagModel: this._cellModel.jag}
                 }));
-                parent = this.nodeModel.parent.jag;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
-                let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+                let parentJag = this._cellModel.parent.jag;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
+                let id = parentJag.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+
                 this.dispatchEvent(new CustomEvent('local-jag-updated', {
                     bubbles: true,
                     composed: true,
-                    detail: {jagModel: parent}
+                    detail: {jagModel: parentJag}
                 }));
                 //this._htmlElements.urnEntry.focus();   // @TODO -- started getting an error on this.. distraction.
             }
@@ -197,15 +193,13 @@ class JagCell extends AnalysisCell {
                         detail: {urn: this.urnElementEntry, name: this.nameElementEntry}
                     }));
                     parent = this.nodeModel.parent.jag;
-                    console.log(JSON.stringify(this))
                     let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
                     this.dispatchEvent(new CustomEvent('local-jag-updated', {
                         bubbles: true,
                         composed: true,
-                        detail: {jagModel: parent}
+                        detail: {jagModel: parent.jag}
                     }));
-                    console.log(JSON.stringify(this))
-                }
+                  }
             }
             //this.jagModel.urn = this.urnElementEntry
         }

@@ -118,7 +118,6 @@ export default class JAG extends EventTarget {
     }
 
     set children(value) {
-        console.log("in")
         this._children = value;
         if ((this._children.length !== 0) && (this._operator == JAG.OPERATOR.NONE)) {
            this._operator = JAG.OPERATOR.AND;
@@ -126,7 +125,6 @@ export default class JAG extends EventTarget {
     }
 
     get children() {
-        console.log("in2")
         return [...this._children];
     }
     // id: id = UUIDv4(),
@@ -134,7 +132,6 @@ export default class JAG extends EventTarget {
     // jagModel: child
 
     hasChildren(){
-        console.log("Has " + this._children.length + " children")
         return (this._children.length>0)
     }
 

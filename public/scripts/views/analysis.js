@@ -25,7 +25,6 @@ class AnalysisView extends HTMLElement {
 		this._idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		console.log(this._analysisModel.rootNodeModel)
 		this._initializeTree(this._analysisModel.rootNodeModel);
 		this.layout();
 	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
@@ -81,11 +80,8 @@ class AnalysisView extends HTMLElement {
 	
 	// Get the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
 	getMappedJagCell(node, parent) {
-		console.log("Got me here a ")
-		console.log(node)
 		let jagCell = this._idToTableCellMap.get(node.id);
 		if(jagCell == undefined) {
-			console.log("calling it")
 			jagCell = new JagCell(node, parent);
 			this._idToTableCellMap.set(node.id, jagCell);
 		}
@@ -158,8 +154,6 @@ class AnalysisView extends HTMLElement {
 
 		height = this._analysisModel.rootNodeModel.treeDepth;
 		rows = this._analysisModel.rootNodeModel.leafCount;
-		console.log(this._analysisModel.rootNodeModel)
-		console.log(rows)
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);

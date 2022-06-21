@@ -497,9 +497,6 @@ class Playground extends Popupable {
         let yPos = (true) ? currentNodeModel.y : y;
 
         currentNodeModel.setPosition(xPos, yPos)
-        console.log("xxxxxxxxxxxxxxxxxx")
-        console.log(currentNodeModel)
-
         const $newViewNode = this.createJagNode(currentNodeModel)
 
         $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
@@ -543,21 +540,15 @@ class Playground extends Popupable {
 
 
     clearPlayground(projectId = undefined) {                 // clearNodeSet
-        console.log("Clearing playground -- " + projectId)
-        console.log(this._activeJagNodeElementSet)
-
         for (let jagNode of this._activeJagNodeElementSet) {
 
                 if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
-                    console.log("Clearing ")
-                    console.log(jagNode)
                     jagNode.removeAllEdges();
                     jagNode.detachHandlers();
                     this._activeJagNodeElementSet.delete(jagNode);
                     this._nodeContainerDiv.removeChild(jagNode);
                 }}
-        console.log("Cleared ")
-        this._checkBounds();
+         this._checkBounds();
     }
 
     handleClearSelected() {  // you get this on the menu click 'delete node'    @TODO
@@ -755,10 +746,7 @@ class Playground extends Popupable {
     onKeyDown(event) {
         event.stopImmediatePropagation();
         let $node = event.target
-        console.log($node)
-        if (event.key == 'Delete') {
-             console.log(this._selectedJagNodeElementSet)
-
+          if (event.key == 'Delete') {
             if (this._selectedJagNodeElementSet.length>1) {
                 alert("Can only clear/disconnect one selected item")
             }

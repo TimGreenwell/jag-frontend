@@ -281,10 +281,6 @@ export default class Node extends EventTarget {
 	}
 	removeChild(child){
 		let filtered = this.children.filter(entry => {
-			console.log("--");
-
-			console.log(child)
-			console.log(entry)
 			if (entry.id != child.id) {
 				return entry
 			}})

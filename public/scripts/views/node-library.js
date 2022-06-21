@@ -68,7 +68,6 @@ customElements.define('node-library', class extends HTMLElement {
 
 			let lockIconClickedHandler = function (event) {
 				event.stopPropagation();
-				console.log("I see your lock click")
 				this.dispatchEvent(new CustomEvent('local-node-locked', {
 					detail: {
 						nodeModel: newNodeModel
@@ -115,7 +114,6 @@ customElements.define('node-library', class extends HTMLElement {
 
 
 			newNodeModel.addEventListener('refresh', () => {
-				console.log(("Refresh event heard in Library"))
 				this.refreshItem(newNodeModel);
 			});
 

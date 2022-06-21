@@ -62,9 +62,8 @@ class IATable extends Popupable {
         if (this._domElements.analysis !== undefined) {
             this.removeChild(this._domElements.analysis);
         }
-console.log("doggy")
+         console.log("DisplayAnalysis - analysisModel")
         this._analysisModel = analysisModel;
-        console.log(analysisModel)
         // Create and append a new Analysis View to this structure (not sure is iatable is a mis-name)
         let analysisView = new AnalysisView(this._analysisModel);/////////////////////////////////////////////////////////////////// <<<<new
         this.appendChild(analysisView);

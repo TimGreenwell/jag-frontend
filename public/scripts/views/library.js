@@ -66,8 +66,6 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				let deleteIconClickedHandler = function (event) {
 					event.stopPropagation();
-                    console.log(event)
-
 
 					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
 						detail: {
@@ -78,8 +76,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				let lockIconClickedHandler = function (event) {
 					event.stopPropagation();
-					console.log("I see your lock click")
-					this.dispatchEvent(new CustomEvent('local-jag-locked', {
+						this.dispatchEvent(new CustomEvent('local-jag-locked', {
 						detail: {
 							jagModel: newJAGModel
 						}

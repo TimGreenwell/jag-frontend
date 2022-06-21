@@ -71,7 +71,6 @@ export default class RESTStorage {
 	}
 
 	async clear(schema) {
-		console.log("sanity 1");
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.clear.replace("{urlHandle}", urlHandle);
 		const reply = await RESTUtils.clear(this._endpoint + path);

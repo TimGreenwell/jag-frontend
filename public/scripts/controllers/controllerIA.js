@@ -16,7 +16,7 @@ import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
 import UserPrefs from "../utils/user-prefs.js";
-import JAG from "../models/jag.js";
+
 // should need JagModel once I can create Jag by giving valid URN
 
 export default class ControllerIA {
@@ -141,15 +141,18 @@ export default class ControllerIA {
     }
 
     async localAnalysisUpdatedHandler(event) {
+        let analysis = event.detail.analysis;
         await StorageService.update(event.detail.analysis, 'analysis');
     }
+
+
+
 
     async localNodeAddChildHandler(event){ //@TODO see below -- push this down
         // This will not be permanent until a valid URN is set.  Not-persistant.
         //@todo push this back down into iaTable (from there - to there)
         let parentCell = event.detail.cell;
-        console.log("Thanks")
-        console.log(parentCell)
+        this._currentAnalysis = this._iaTable._analysisModel;
         if (parentCell.canHaveChildren) {
             const childJag = new JagModel({urn: UserPrefs.getDefaultUrnPrefix(), name: ''})
             // Normally, we would pass this new Jag up for storage and distribution - however it is only temporary since it does
@@ -159,12 +162,6 @@ export default class ControllerIA {
             childCell.parentUrn = parentCell.urn
             childCell.rootUrn = parentCell.rootUrn
             parentCell.addChild(childCell)
-            console.log("okokokokokokokokokok")
-            console.log(this._currentAnalysis)
-            this._currentAnalysis.rootNodeModel = this.replaceNodeById(this._currentAnalysis.rootNodeModel,parentCell)
-
-            console.log(this._currentAnalysis)
-
             this._iaTable.displayAnalysis(this._currentAnalysis);
         } else {
             alert("Node must first be assigned a valid URN")
@@ -236,8 +233,6 @@ export default class ControllerIA {
 
     async localJagCreatedHandler(event){
         let jagModel = new JagModel(event.detail.jagModel);
-        console.log("localJagCreatedHandler  sending up " + jagModel.urn)
-        console.log(jagModel)
         await StorageService.create(jagModel, 'jag');
     }
 
@@ -298,11 +293,7 @@ export default class ControllerIA {
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surjury
         let origJagModel = this._jagModelMap.get(updatedJagUrn);  // Get original data from cache
-        console.log("adding")
-        console.log(updatedJagModel)
         this.addJagModel(updatedJagModel);                       // Update cache to current
-        console.log("map")
-        console.log(this._jagModelMap)
         let newKids = updatedJagModel.children.map(entry => {
             return entry.urn
         })
@@ -328,7 +319,6 @@ export default class ControllerIA {
             }
         }
         if  ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
-            // console.log("Brute force change")
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
@@ -458,7 +448,6 @@ export default class ControllerIA {
             }
         }
         if ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
-            // console.log("Brute force change")
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
@@ -475,8 +464,6 @@ export default class ControllerIA {
         while (nodeStack.length != 0) {
             let currentNode = nodeStack.pop();
             for (const child of currentNode.jag.children) {
-                console.log("ERRORING -->")
-                console.log(child.urn)
                 let childJagModel = null;
                 if (await StorageService.get(child.urn, 'jag')) {
                     childJagModel = await StorageService.get(child.urn, 'jag');    //@todo use cache
