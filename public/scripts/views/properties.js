@@ -207,16 +207,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
     }
 
-    _handleNameChange(e) {
-        if (this._nodeModel) {
-            this._nodeModel.jag.name = this._nameInput.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
-                bubbles: true,
-                composed: true,
-                detail: {jagModel: this._nodeModel.jag}
-            }));
-        }
-    }
+
     _handleNameEdit(e) {
         if (e.key == "Enter") {
             e.preventDefault();
@@ -233,6 +224,24 @@ customElements.define('jag-properties', class extends HTMLElement {
             this._nodeModel.jag.name = this._nameInput.value;
         }
     }
+
+
+    _handleDescriptionEdit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            let inputs = this.querySelectorAll("input:enabled, textarea");
+            //current position in 'form'
+            const currentPosition = this._descInput.tabIndex;
+            if (currentPosition < inputs.length - 1) {
+                inputs.item(currentPosition + 1).focus();
+            } else {
+                inputs.item(currentPosition).blur();
+            }
+        } else {
+            this._nodeModel.jag.description = this._descInput.value;
+        }
+    }
+
 
     _handleURNChange(e) {
         if (this._nodeModel.jag.urn != this._urnInput.value) {
@@ -261,33 +270,47 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
+    // _handleDescriptionChange(e) {
+    //     if (this._nodeModel.jag) {
+    //         if (this._nodeModel.jag.description != this._descInput.value) {
+    //             this._nodeModel.jag.description = this._descInput.value;
+    //             this.dispatchEvent(new CustomEvent('local-jag-updated', {
+    //                 bubbles: true,
+    //                 composed: true,
+    //                 detail: {jagModel: this._nodeModel.jag}
+    //             }));
+    //         }
+    //     }
+    // }
+
+
+
+
+
+    _handleNameChange(e) {
+        if (this._nodeModel) {
+            this._nodeModel.jag.name = this._nameInput.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._nodeModel.jag}
+            }));
+        }
+    }
+
+
+
     _handleDescriptionChange(e) {
-        if (this._nodeModel.jag) {
-            if (this._nodeModel.jag.description != this._descInput.value) {
-                this._nodeModel.jag.description = this._descInput.value;
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {jagModel: this._nodeModel.jag}
-                }));
-            }
-        }
-    }
-    _handleDescriptionEdit(e) {
-        if (e.key == "Enter") {
-            e.preventDefault();
-            let inputs = this.querySelectorAll("input:enabled, textarea");
-            //current position in 'form'
-            const currentPosition = this._descInput.tabIndex;
-            if (currentPosition < inputs.length - 1) {
-                inputs.item(currentPosition + 1).focus();
-            } else {
-                inputs.item(currentPosition).blur();
-            }
-        } else {
+        if (this._nodeModel) {
             this._nodeModel.jag.description = this._descInput.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._nodeModel.jag}
+            }));
         }
     }
+
 
     _handleContextualNameChange(e) {
         if (this._nodeModel) {

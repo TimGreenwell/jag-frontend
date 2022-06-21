@@ -54,7 +54,9 @@ customElements.define('node-library', class extends HTMLElement {
 			const urn = newNodeModel.urn;
 			const name = newNodeModel.jag.name || '';
 			const description = newNodeModel.jag.description || '';
-
+			console.log("-------------------------------------------")
+console.log(newNodeModel)
+			console.log(newNodeModel.id)
 			const li = document.createElement('li');
 
 			let deleteIconClickedHandler = function (event) {

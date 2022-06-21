@@ -236,7 +236,7 @@ export default class ControllerAT extends EventTarget {
         event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
         await this.localJagUpdatedHandler(event)
 
-        event.detail.nodeModel = childNodeModel;              // delete currently turns children into trees - i cant do that with a join
+        event.detail.nodeModelId = childNodeModel.id;              // delete currently turns children into trees - i cant do that with a join
         await this.localNodeDeletedHandler(event)
 
         console.log("Local<< (local nodes joined) ")
