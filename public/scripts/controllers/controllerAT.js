@@ -189,7 +189,7 @@ export default class ControllerAT extends EventTarget {
         //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         //    let newProjectRootNode = this.buildNodeTreeFromJagUrn(projectSelected.urn);
         //    await StorageService.create(newProjectRootNode, "node");
-        console.log("Local<< (project line item selected) ")
+        console.log("Local<< (project line item selected) \n")
     }
 
 
@@ -211,17 +211,32 @@ export default class ControllerAT extends EventTarget {
          let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
         let childNodeModel =  this._projectMap.get(childNodeId)
 
+
+        console.log("PRE")
+        console.log("projectModel")
+        console.log(projectModel)
+        console.log("parentNodeModel")
+        console.log(parentNodeModel)
+        console.log("childNodeModel")
+        console.log(childNodeModel)
+
          // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
 
         // 1) CORRECT THE JAG ACTIVITY
+        parentNodeModel.addChild(childNodeModel)
+        this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
+        this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
         let newChildId = parentNodeModel.jag.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
+        childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
         this._jagModelMap.set(parentNodeModel.urn, parentNodeModel.jag)  // prob not necessary - first thing that jagupdatehandler does
 
         // 2) CONNECT CHILD TO PARENT
-        parentNodeModel.addChild(childNodeModel)                                    // Parent node adds child node
-        this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
-        this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
-        childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
+                                // Parent node adds child node
+        console.log("DOUBLE THIS -------------->")
+        console.log(parentNodeModel)
+
+
+
 
         // 3) UPDATE PARENT IN PROJECT (is this necessary?)
 
@@ -238,21 +253,56 @@ export default class ControllerAT extends EventTarget {
         // await this.localJagUpdatedHandler(event)
         //
 
+        console.log("BEFORE")
+        console.log("projectModel")
+        console.log(projectModel)
+        console.log("parentNodeModel")
+        console.log(parentNodeModel)
+        console.log("childNodeModel")
+        console.log(childNodeModel)
+
+
         event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
         await this.localJagUpdatedHandler(event)
 
-        event.detail.jagModel = childNodeModel.jag;
-        await this.localJagUpdatedHandler(event)
+        console.log("AFTER PARENT JAG UPDATE")
+        console.log("projectModel")
+        console.log(projectModel)
+        console.log("parentNodeModel")
+        console.log(parentNodeModel)
+        console.log("childNodeModel")
+        console.log(childNodeModel)
 
 
 
+        // event.detail.jagModel = childNodeModel.jag;
+        // await this.localJagUpdatedHandler(event)
+
+
+        console.log("AFTER CHILD JAG UPDATE")
+        console.log("projectModel")
+        console.log(projectModel)
+        console.log("parentNodeModel")
+        console.log(parentNodeModel)
+        console.log("childNodeModel")
+        console.log(childNodeModel)
 
 
 
         event.detail.nodeModelId = childNodeModel.id;              // delete currently turns children into trees - i cant do that with a join
         await this.localNodeDeletedHandler(event)
 
-        console.log("Local<< (local nodes joined) ")
+
+        console.log("AFTER CHILD DELETE")
+        console.log("projectModel")
+        console.log(projectModel)
+        console.log("parentNodeModel")
+        console.log(parentNodeModel)
+        console.log("childNodeModel")
+        console.log(childNodeModel)
+
+
+        console.log("Local<< (local nodes joined) \n")
     }
 
     updateProject(currentNode, projectId) {
@@ -272,21 +322,21 @@ export default class ControllerAT extends EventTarget {
         } else {
             window.alert("Invalid URN");
         }
-        console.log("Local<< (local jag created) ")
+        console.log("Local<< (local jag created) \n")
     }
 
     async localNodeUpdatedHandler(event) {
 
         const updatedNodeModel = event.detail.nodeModel;
         await StorageService.update(updatedNodeModel, 'node');
-        console.log("Local<< (local node updated) ")
+        console.log("Local<< (local node updated) \n")
     }
 
     async localJagUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local jag updated) ")
         const updatedJagModel = event.detail.jagModel;
         await StorageService.update(updatedJagModel, 'jag');
-        console.log("Local<< (local jag updated) ")
+        console.log("Local<< (local jag updated) \n")
     }
 
     playgroundNodesSelectedHandler(event) {
@@ -298,14 +348,24 @@ export default class ControllerAT extends EventTarget {
     // Need to update and save the adjusted Projects
     async newActivityAffectsProjectHandler(event) {
         console.log("Local>> (new node affects project) ")
+        console.log(event)
         let incomingProjectNode = event.detail.projectModel; // could have used id
+
+        console.log("======")
+        console.log(incomingProjectNode)
+
         let projectNode = this._projectMap.get(incomingProjectNode.id)
         let changedActivityUrn = event.detail.activityUrn;
+        console.log("DETECTED CHANGE IN PROJECT (from recent JAG [" + changedActivityUrn + "] update)")
+        console.log(projectNode)
+
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
         while (nodeStack.length > 0) {
             let currentNode = nodeStack.pop();
+            console.log("popped")
+            console.log(currentNode)
             if ((changedActivityUrn == undefined) || (currentNode.urn == changedActivityUrn)) {
                 if (changedActivityUrn == undefined) {
                     console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
@@ -320,7 +380,6 @@ export default class ControllerAT extends EventTarget {
                 let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
 
                 kidsToAdd.forEach(child => {
-console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
                     const childJagModel = this._jagModelMap.get(child.urn);
                     const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
                     childNodeModel.jag = childJagModel
@@ -351,7 +410,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
             }
         }
         await StorageService.update(projectNode, 'node');
-        console.log("Local<< (new node affects project) ")
+        console.log("Local<< (new node affects project) \n")
     }
 
 
@@ -417,7 +476,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
                 }
             }
             await StorageService.update(projectNode, 'node');
-            console.log("Local<< (new node affects project) ")
+            console.log("Local<< (new node affects project) \n")
         }
     }
 
@@ -559,7 +618,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
                 }
             }
         }
-        console.log("Local<< (url renamed) ")
+        console.log("Local<< (url renamed) \n")
     }
 
     async localJagDeletedHandler(event) {
@@ -579,7 +638,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
             }
         }
         await StorageService.delete(deadJagModelUrn, 'jag');
-        console.log("Local<< (jag deleted) ")
+        console.log("Local<< (jag deleted) \n")
     }
 
     async localJagLockedHandler(event) {
@@ -587,7 +646,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         const lockedJagModel = event.detail.jagModel;
         lockedJagModel.isLocked = !lockedJagModel.isLocked;
         await StorageService.update(lockedJagModel, 'jag');
-        console.log("Local<< (jag locked) ")
+        console.log("Local<< (jag locked) \n")
     }
 
     async localNodeLockedHandler(event) {
@@ -595,7 +654,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         const lockedNodeModel = event.detail.nodeModel;
         lockedNodeModel.isLocked = !lockedNodeModel.isLocked;
         await StorageService.update(lockedNodeModel, 'node');
-        console.log("Local<< (node locked) ")
+        console.log("Local<< (node locked) \n")
     }
 
     addNewJagActivityHandler() {
@@ -605,13 +664,13 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
     clearPlaygroundHandler() {
         console.log("Local>> (clear playground) ")
         this._playground.clearPlayground();
-        console.log("Local<< (clear playground) ")
+        console.log("Local<< (clear playground) \n")
     }
 
     clearSelectedHandler(event) {
         console.log("Local>> (clear selected) ")
         this._playground.handleClearSelected(event);
-        console.log("Local<< (clear selected) ")
+        console.log("Local<< (clear selected) \n")
     }
 
     async libraryLineItemSelectedHandler(event) {
@@ -621,7 +680,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         let newProjectRootNode = this.buildNodeTreeFromJagUrn(jagModelSelected.urn);
         await StorageService.create(newProjectRootNode, "node");
-        console.log("Local<< (line item selected) ")
+        console.log("Local<< (line item selected) \n")
     }
 
 
@@ -641,7 +700,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         })
         losingParentsJag.children = remainingChildren
         await StorageService.update(losingParentsJag, 'jag');
-        console.log("Local<< (local nodes disjoined) ")
+        console.log("Local<< (local nodes disjoined) \n")
     }
 
 
@@ -650,7 +709,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         const deadNodeModelId = event.detail.nodeModelId;
         // 3) Removes the project
          await StorageService.delete(deadNodeModelId, 'node');
-        console.log("Local<< (node deleted) ")
+        console.log("Local<< (node deleted) \n")
     }
 
 
@@ -684,7 +743,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
     handleJagStorageUpdated(updatedJagModel, updatedJagUrn) {
         console.log("                          ((OBSERVER IN) >>  Jag Updated - Jag Updated - Jag Updated - Jag Updated - Jag Updated")
         this._jagModelMap.set(updatedJagUrn, updatedJagModel)
-        this._playground.updateJagModel(updatedJagUrn);         // Determine if JAG change affects our graph
+        this._playground.affectProjectView(updatedJagUrn);         // Determine if JAG change affects our graph
         this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
         this._library.updateItem(updatedJagModel);
         console.log("                          ((OBSERVER OUT) <<  Jag Updated - Jag Updated - Jag Updated - Jag Updated - Jag Updated")
@@ -723,15 +782,17 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
     handleNodeStorageUpdated(updatedNodeModel, updatedNodeId) {
         console.log("                          ((OBSERVER IN) >>  Node Updated - Node Updated - Node Updated - Node Updated - Node Updated")
+        console.log(updatedNodeModel)
         let projectNode = this._projectMap.get(updatedNodeModel.project)
+        console.log(projectNode)
         this.repopulateParent(projectNode)
         this.repopulateJag(updatedNodeModel)
         this.repopulateProject(updatedNodeModel,projectNode.id)
 
         this.projectMap.set(projectNode.id, projectNode)
-        console.log("handleNodeStorageUpdated1")
+        console.log("-- Just redrawing view ---")
         this._playground._rebuildNodeView(updatedNodeModel)
-        console.log("handleNodeStorageUpdated2")
+        console.log("-- Fini redrawing view ---")
 
       //  this._projectLibrary.updateItem(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel)
@@ -796,6 +857,7 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
         const rootJagModel = this.jagModelMap.get(newRootJagUrn); /// I could have just passed in the Model...instead of switching to urn and back.
         const rootNodeModel = new NodeModel({urn: newRootJagUrn, is_root: true});
         rootNodeModel.jag = rootJagModel;
+        rootNodeModel.project = rootNodeModel.id;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length != 0) {
             let currentNode = nodeStack.pop();
@@ -803,6 +865,8 @@ console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
                 const childJagModel = this.jagModelMap.get(child.urn);
                 const childNodeModel = new NodeModel({urn: child.urn, childId: child.id, is_root: false});
                 childNodeModel.jag = this.jagModelMap.get(child.urn)
+                childNodeModel.parent = currentNode;
+                childNodeModel.project = currentNode.project
                 currentNode.addChild(childNodeModel, true);
                 nodeStack.push(childNodeModel);
             }

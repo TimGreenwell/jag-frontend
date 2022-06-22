@@ -49,7 +49,8 @@ export default class SharedObservable extends SharedService {
      * be deserialized here before further propagation.
      */
     static async handleReceiveMessage(message) {
-        console.log("             {} - - - Message received from web worker, (" + message.data.id + ") / (" + message.data.topic + ") posting to all subscribers");
+        console.log("             {} - - - Message received from web worker -- posting to all subscribers");
+        console.log("             {} - - - (" + message.data.id + ") / (" + message.data.topic + ")\n")
         let schema = message.data.schema;
         let topic = message.data.topic;
         let description = message.data.description;
@@ -71,9 +72,8 @@ export default class SharedObservable extends SharedService {
      * Local action to be propagated across SharedWorker for remote listeners.
      */
     static confirmStorageChange({topic, schema, id, description}) {
-        console.log("             {POSTING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+        console.log("       {POSTING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
         this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
-        console.log("             {POSTING<} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
     }
 
 
@@ -83,9 +83,7 @@ export default class SharedObservable extends SharedService {
      * Callback functions were provided at initial subscription.
      */
     static notifySubscribers(topic, dataModel, id) {
-        console.log("")
-        console.log("")
-        console.log(" ********  BEGINNING OF GLOBAL HANDLER: (" + topic + ") : (" + id + ") **********")
+        console.log("\n ********  BEGINNING OF GLOBAL HANDLER: (" + topic + ") : (" + id + ") **********")
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {

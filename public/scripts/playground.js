@@ -28,7 +28,7 @@ class Playground extends Popupable {
         this.appendChild(this._nodeContainerDiv);
         this.setPopupBounds(this._nodeContainerDiv);
 
-        this._activeNodeModelMap = new Map();         // All active Jag root nodes - should be in sync with _activeJagNodeElementSet
+        this._viewedProjectsMap = new Map();         // All active Jag root nodes - should be in sync with _activeJagNodeElementSet
 
 
         this._activeJagNodeElementSet = new Set();    // set of JagNodes (view)
@@ -163,17 +163,21 @@ class Playground extends Popupable {
             // childNodeModel.childId = this._created_edge._childId
             // parentNodeModel.addChild(childNodeModel);
 
-          //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
-          //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
+            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
+            //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
 
 
-                   this.dispatchEvent(new CustomEvent('local-nodes-joined', {
-                       bubbles: true,
-                       composed: true,
-                       detail: { projectNodeId: parentNodeModel.project, parentNodeId: parentNodeModel.id, childNodeId: childNodeModel.id }
-                   }));
+            this.dispatchEvent(new CustomEvent('local-nodes-joined', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    projectNodeId: parentNodeModel.project,
+                    parentNodeId: parentNodeModel.id,
+                    childNodeId: childNodeModel.id
+                }
+            }));
 
-   //   //      this._activeNodeModelMap.delete(childNodeModel.id)
+            //   //      this._viewedProjectsMap.delete(childNodeModel.id)
         } else {
             this.cancelEdge();
         }
@@ -347,7 +351,9 @@ class Playground extends Popupable {
         }
 
         let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
-        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {return jagNodeElement.nodeModel})
+        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {
+            return jagNodeElement.nodeModel
+        })
 
         this.dispatchEvent(new CustomEvent('playground-nodes-selected', {
             detail: {
@@ -362,7 +368,9 @@ class Playground extends Popupable {
         if (!e.shiftKey) this.deselectAll();
 
         let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
-        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {return jagNodeElement.nodeModel})
+        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {
+            return jagNodeElement.nodeModel
+        })
 
         this.dispatchEvent(new CustomEvent('playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
         this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
@@ -400,7 +408,7 @@ class Playground extends Popupable {
      * clearPlayground
      * handleClearSelected (@TODO)
      * handleRefresh
-     * updateJagModel
+     * affectProjectView
      * _addJagNodeTree
      * replaceJagNode
      * createJagNode  - called on new Project message from above
@@ -478,26 +486,18 @@ class Playground extends Popupable {
     }
 
 
-
     _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
         // currentNodeModel should be project root at first.
         // if it were smart enough to join up with parent - then it could be anywhere
         // something to consoder for later
         let margin = 20
+        let workStack = []
+        console.log("---Building Node View From Node Model")
+        console.log("MAKE SURE THAT KEYS ARE EQUAL ___ ELSE VERY BAD")
+        console.log(currentNodeModel.project)
+        console.log(currentNodeModel.id)
 
-
-        if (this._activeNodeModelMap.has(currentNodeModel.id)) {
-            console.log("REDRAWING " + currentNodeModel.id)
-
-             }
-        else{
-            console.log("CREATING " + currentNodeModel.id)
-
-        }
-        this._activeNodeModelMap.set(currentNodeModel.id, currentNodeModel);
-        console.log(this._activeNodeModelMap.size)
-
-        if ((!currentNodeModel.x) || (!currentNodeModel.y) ) {
+        if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
             currentNodeModel.x = 10
             currentNodeModel.y = this.clientHeight / 2
         }
@@ -513,6 +513,8 @@ class Playground extends Popupable {
         const x_offset = xPos + $newViewNode.clientWidth + margin;
         const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
         let y_offset = yPos - (preferred_height / 2);
+
+        workStack.push()eeeeeeeeeeeeee
 
         currentNodeModel.children.forEach((child) => {
 
@@ -532,6 +534,8 @@ class Playground extends Popupable {
             // if (child.description) sub_node.setContextualDescription(child.description);
 
         })
+
+        this._viewedProjectsMap.set(currentNodeModel.project, currentNodeModel);
         return $newViewNode
     }
 
@@ -546,17 +550,17 @@ class Playground extends Popupable {
     }
 
 
-
     clearPlayground(projectId = undefined) {                 // clearNodeSet
         for (let jagNode of this._activeJagNodeElementSet) {
 
-                if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
-                    jagNode.removeAllEdges();
-                    jagNode.detachHandlers();
-                    this._activeJagNodeElementSet.delete(jagNode);
-                    this._nodeContainerDiv.removeChild(jagNode);
-                }}
-         this._checkBounds();
+            if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
+                jagNode.removeAllEdges();
+                jagNode.detachHandlers();
+                this._activeJagNodeElementSet.delete(jagNode);
+                this._nodeContainerDiv.removeChild(jagNode);
+            }
+        }
+        this._checkBounds();
     }
 
     handleClearSelected() {  // you get this on the menu click 'delete node'    @TODO
@@ -587,17 +591,21 @@ class Playground extends Popupable {
         }
     }
 
-    updateJagModel(updatedUrn) {             // Activity got updated - does it affect our projects?
-   //     for (let node of this._activeNodeModelMap.values()) { // Return events with affected Project ids and the URN
-        this._activeNodeModelMap.forEach((value, key) => {
+    affectProjectView(updatedUrn) {             // Activity got updated - does it affect our projects?
+        //     for (let node of this._viewedProjectsMap.values()) { // Return events with affected Project ids and the URN
+        // Note: This is not looking at the view-level. Only at the data-level.  This seems accurate.
+        // Would have pushed up higher - but need to know which projects are in viewedProjectsMap (not available above)
 
+        console.log("Updating JAG Model -  Must check each Project to see if JAG exists there  (( if so, update that project ))")
+        console.log(this._viewedProjectsMap)
+        this._viewedProjectsMap.forEach((value, key) => {
             let node = value;
-            console.log("Somehow its running TWICE")
-            console.log(key)
+            console.log("Check Project #" + key)
             console.log(node)
-            console.log(this._activeNodeModelMap.values())
+            console.log(node.jag.urn)
 
             if (node.isActivityInProject(updatedUrn)) {
+                console.log("Found change in : " + node.jag.urn)
                 this.dispatchEvent(new CustomEvent('new-activity-affects-project', {
                     detail: {
                         projectModel: node,
@@ -610,16 +618,17 @@ class Playground extends Popupable {
     }
 
     deleteJagModel(deletedUrn) {             // Activity got updated - does it affect our projects?
-        this._activeNodeModelMap.forEach((value, key) => {
+
+        console.log("Deleting JAG Model -  Must check each Project to see if JAG exists there  (( if so, update that project ))")
+        console.log(JSON.stringify(this._viewedProjectsMap.values()))
+        this._viewedProjectsMap.forEach((value, key) => {
 
             let node = value;
-            console.log("Somehow its running TWICE")
-            console.log(key)
+            console.log("Check Project #" + key)
             console.log(node)
-            console.log(this._activeNodeModelMap.values())
-
+            console.log(node.jag.urn)
             if (node.isActivityInProject(deletedUrn)) {
-
+                console.log("Found change in : " + node.jag.urn)
                 this.dispatchEvent(new CustomEvent('deleted-activity-affects-project', {
                     detail: {
                         projectModelId: node.id,
@@ -687,14 +696,18 @@ class Playground extends Popupable {
         // The deadId is a node marked for deletion.  Death can either be
         // annihilation or absorbtion into another project.  Playground nodes
         // with an ancester matching deadId are removed.
-        // let deadIdModel = this._activeNodeModelMap.get(deadId)
-        this._activeNodeModelMap.delete(deadId)
+        // let deadIdModel = this._viewedProjectsMap.get(deadId)
+        this._viewedProjectsMap.delete(deadId)
+
         console.log("DELETEING = DELETEING _ DELETING + DELETING      --> " + deadId)
-        console.log(this._activeNodeModelMap.size)
+        console.log("Project list down to size: " + this._viewedProjectsMap.size)
 
 
         for (let node of this._activeJagNodeElementSet) {           // search through active elements
+            console.log("Trying to delete " + node.nodeModel.jag.urn)
+            console.log(" Does " + node.nodeModel.project + " = " + deadId)
             if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
+                console.log("deleted something")
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeJagNodeElementSet.delete(node);
@@ -703,65 +716,45 @@ class Playground extends Popupable {
         }
 
 
-
-       // this._activeJagNodeElementSet.forEach((node) => {
-            // Vernichtern
-            // if (!this._activeNodeModelMap.has(node.nodeModel.project)) {
-            //     node.removeAllEdges();
-            //     node.detachHandlers();
-            //     this._activeJagNodeElementSet.delete(node);
-            //     this._nodeContainerDiv.removeChild(node);
-            // }
+        // this._activeJagNodeElementSet.forEach((node) => {
+        // Vernichtern
+        // if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
+        //     node.removeAllEdges();
+        //     node.detachHandlers();
+        //     this._activeJagNodeElementSet.delete(node);
+        //     this._nodeContainerDiv.removeChild(node);
+        // }
         // })
     }
 
-    _rebuildNodeView(projectNodeModel) {                                  // @TODO extremely similar to *deleteNodeModel* + _buildNodeViewFromNodeModel
-        let margin = 20
-
-        // wanted to nix the next three lines - but needed for the getAncestor of each viewNode in the next section
-        // or can I assume all projectModels at this point have been parentized.  (watch for it)
-        // for (let project of this._activeNodeModelMap.values()) {          // @TODO this can be applied at a more sensible place. (when structure changes)
-        //     project.parentize(project);
-        // }
-
-        // This removes all Playground elements === @TODO understand destroy/rebuild is most accurate - but maybe later a more delicate solution
-        for (let node of this._activeJagNodeElementSet) {           // search through active elements
-            if (node.nodeModel.project == projectNodeModel.id) {         // is this node in the tree of the currentNodeModel?
-                node.removeAllEdges();
-                node.detachHandlers();
-                this._activeJagNodeElementSet.delete(node);
-                this._nodeContainerDiv.removeChild(node);
-            }
-        }
-
-    this.deleteNodeModel(projectNodeModel.id)
-    this._buildNodeViewFromNodeModel(projectNodeModel);
-
-
-
-        // for (let rootNode of this._activeNodeModelMap.values()) {
-        //     let workStack = [];
-        //     workStack.push(rootNode);
-        //     while (workStack.length > 0) {
-        //         let currentNodeModel = workStack.pop();
-        //         const $newViewNode = this.createJagNode(currentNodeModel)
-        //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
-        //
-        //         currentNodeModel.children.forEach((child) => {
-        //             let edge = this._createEdge(currentNodeModel, child.id);
-        //             edge.setSubActivityNode(child);
-        //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
-        //             workStack.push(child)
-        //     //        this._edgeContainerDiv.appendChild(edge);
-        //         })
-        //     }
-        //
-        //
-        // }
-
-        // if (child.name) sub_node.setContextualName(child.name);
-        // if (child.description) sub_node.setContextualDescription(child.description);
+    _rebuildNodeView(projectNodeModel) {
+        this.deleteNodeModel(projectNodeModel.id)
+        this._buildNodeViewFromNodeModel(projectNodeModel);
     }
+
+    // for (let rootNode of this._viewedProjectsMap.values()) {
+    //     let workStack = [];
+    //     workStack.push(rootNode);
+    //     while (workStack.length > 0) {
+    //         let currentNodeModel = workStack.pop();
+    //         const $newViewNode = this.createJagNode(currentNodeModel)
+    //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+    //
+    //         currentNodeModel.children.forEach((child) => {
+    //             let edge = this._createEdge(currentNodeModel, child.id);
+    //             edge.setSubActivityNode(child);
+    //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+    //             workStack.push(child)
+    //     //        this._edgeContainerDiv.appendChild(edge);
+    //         })
+    //     }
+    //
+    //
+    // }
+
+    // if (child.name) sub_node.setContextualName(child.name);
+    // if (child.description) sub_node.setContextualDescription(child.description);
+
 
     ////////////////////////////////////////////////////////////////////////
     /////////////  Support Functions  //////////////////////////////////////
@@ -786,26 +779,21 @@ class Playground extends Popupable {
     onKeyDown(event) {
         event.stopImmediatePropagation();
         let $node = event.target
-          if (event.key == 'Delete') {
-            if (this._selectedJagNodeElementSet.length>1) {
+        if (event.key == 'Delete') {
+            if (this._selectedJagNodeElementSet.length > 1) {
                 alert("Can only clear/disconnect one selected item")
-            }
-            else  if (this._selectedJagNodeElementSet.length<1)
-            {
-                    alert("Must select at least one item to clear/disconnect")
-            }
-            else {
-                    // if the selected node is a root - then clear the project from the tree
-                    // if the selected node is a non-root node - then disconnect the jag from its parent
-                    // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
-                    // @TODO - migth consider a delted edge to mean disconnect jag
+            } else if (this._selectedJagNodeElementSet.length < 1) {
+                alert("Must select at least one item to clear/disconnect")
+            } else {
+                // if the selected node is a root - then clear the project from the tree
+                // if the selected node is a non-root node - then disconnect the jag from its parent
+                // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
+                // @TODO - migth consider a delted edge to mean disconnect jag
 
-                    if ($node.nodeModel.project == $node.nodeModel.id) {
-                        this.clearPlayground($node.nodeModel.project);
-                    } else {
-                        if (window.confirm("Are you sure you want to remove this node as a child? (This will change all instances of the parent node to reflect this change.)"))
-
-                        {
+                if ($node.nodeModel.project == $node.nodeModel.id) {
+                    this.clearPlayground($node.nodeModel.project);
+                } else {
+                    if (window.confirm("Are you sure you want to remove this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const edge = $node.getParentEdge();
                         const id = edge.getChildId();
                         const parent = $node.getParent();
@@ -822,17 +810,16 @@ class Playground extends Popupable {
                         }));
 
 
-
-
                         // this.popup({
                         //     content: Playground.NOTICE_REMOVE_CHILD,
                         //     trackEl: $node,
                         //     inputs: {node: $node},
                         //     highlights: [$node]
                         // });
-                    }}
-
+                    }
                 }
+
+            }
         } else if (e.key == 'ArrowLeft') {
             if (this._canMoveView.left) {
                 this._dragView(1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);

@@ -48,7 +48,7 @@ export default class StorageService extends SharedObservable{
         if (typeof this._preferredStorage == "undefined") {
             this._preferredStorage = id
         }
-        console.log("             {} - IndexedDB Storage linked to StorageService")
+        console.log("{} - IndexedDB Storage linked to StorageService")
     }
 
     /**
@@ -81,7 +81,7 @@ export default class StorageService extends SharedObservable{
      */
     static setPreferredStorage(preferredStorage){
         this._preferredStorage=preferredStorage;
-        console.log("             {} - StorageService's preferred storage set to: " + preferredStorage);
+        console.log("{} - StorageService's preferred storage set to: " + preferredStorage);
     }
 
     /**
@@ -154,12 +154,12 @@ export default class StorageService extends SharedObservable{
      */
     static async create(createdModel, schema = this._schema) {
         const createdId = SchemaManager.getKeyValue(schema,createdModel);   // this is not needed - just the log
-        console.log("             {>>> StorageService - CREATE}   (" + schema + ") " + createdId);
+        console.log("       {>>> StorageService - CREATE}   (" + schema + ") " + createdId);
         // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const jsonObj = createdModel.toJSON();
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: jsonObj });
-        console.log("             {<<< StorageService - finished CREATE}   (" + schema + ") " + createdId);
+        console.log("       {<<< StorageService - finished CREATE}   (" + schema + ") " + createdId);
     }
 
     /**
