@@ -221,7 +221,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._nodeModel.jag.name = this._nameInput.value;
+            this._nodeModel.jag.name = "[" + this._descInput.value + "]";
         }
     }
 
@@ -237,8 +237,9 @@ customElements.define('jag-properties', class extends HTMLElement {
             } else {
                 inputs.item(currentPosition).blur();
             }
-        } else {
-            this._nodeModel.jag.description = this._descInput.value;
+        }
+        else {
+            this._nodeModel.jag.description = "[" + this._descInput.value + "]";
         }
     }
 

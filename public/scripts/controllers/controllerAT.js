@@ -34,6 +34,7 @@ export default class ControllerAT extends EventTarget {
         this._jagModelMap = new Map();         // All JagModels - should be in sync with storage
         this._projectMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
+        this._waitLock = null;
 
         StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));   //
         StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   //
@@ -309,7 +310,7 @@ export default class ControllerAT extends EventTarget {
                 let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
 
                 kidsToAdd.forEach(child => {
-
+console.log("Adding a kidzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
                     const childJagModel = this._jagModelMap.get(child.urn);
                     const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
                     childNodeModel.jag = childJagModel
@@ -588,9 +589,7 @@ export default class ControllerAT extends EventTarget {
     }
 
     addNewJagActivityHandler() {
-        console.log("Local>> (new jag activity) ")
         this._playground._handleNewJagActivityPopup();         //@todo consider moving popupable to menu as well
-        console.log("Local<< (new jag activity) ")
     }
 
     clearPlaygroundHandler() {
@@ -720,7 +719,9 @@ export default class ControllerAT extends EventTarget {
         this.repopulateProject(updatedNodeModel,projectNode.id)
 
         this.projectMap.set(projectNode.id, projectNode)
+        console.log("handleNodeStorageUpdated1")
         this._playground._rebuildNodeView(updatedNodeModel)
+        console.log("handleNodeStorageUpdated2")
 
       //  this._projectLibrary.updateItem(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel)

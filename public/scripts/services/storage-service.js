@@ -156,16 +156,13 @@ export default class StorageService extends SharedObservable{
      * Notification (object created, id of object created)
      */
     static async create(createdModel, schema = this._schema) {
-        console.log("             {>>> StorageService - create}")
-        // Service instance creating a model become implicitly responsible for handling updates to that model.
-        // Multiple instances can be attached to a single model instance.
-        // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const createdId = SchemaManager.getKeyValue(schema,createdModel);   // this is not needed - just the log
-        console.log("             {} - Storage request --- create " + createdId + " in " + schema);
+        console.log("             {>>> StorageService - CREATE}   (" + schema + ") " + createdId);
+        // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const jsonObj = createdModel.toJSON();
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
         this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: jsonObj });
-        console.log("             {<<< StorageService - create}")
+        console.log("             {<<< StorageService - finished CREATE}   (" + schema + ") " + createdId);
     }
 
     /**
@@ -173,13 +170,12 @@ export default class StorageService extends SharedObservable{
      * Notification (object updated, id of object updated)
      */
     static async update(updatedModel, schema = this._schema) {
-        console.log("             {>>> StorageService - update}")
-        const jsonObj = updatedModel.toJSON();
         const updatedId = SchemaManager.getKeyValue(schema,updatedModel);
-        console.log("             {} - Storage request --- update " + updatedId + " in " + schema);
+        console.log("             {>>> StorageService - UPDATE}   (" + schema + ") " + updatedId);
+        const jsonObj = updatedModel.toJSON();
         await this._storageInstancesMap.get(this._preferredStorage).update(schema, updatedId ,jsonObj);
         this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: jsonObj});
-        console.log("             {<<< StorageService - update}")
+        console.log("             {<<< StorageService - finished UPDATE}   (" + schema + ") " + updatedId);
     }
 
     /**
@@ -187,12 +183,10 @@ export default class StorageService extends SharedObservable{
      * Notification (null, id of object deleted)
      */
     static async delete(deletedId, schema = this._schema) {
-        console.log("             {>>> StorageService - delete}")
-        console.log("             {} - Storage request --- delete " + deletedId + " in " + schema);
-        //SchemaManager.getKey(schema)
+        console.log("             {>>> StorageService - DELETE}   (" + schema + ") " + deletedId);
         let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
         this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
-        console.log("             {<<< StorageService - delete}")
+        console.log("             {<<< StorageService - finished DELETE}   (" + schema + ") " + deletedId);
     }
 
 
@@ -201,15 +195,14 @@ export default class StorageService extends SharedObservable{
      * Notification (object created, id of object replace)
      */
     static async replace(origId, newId, schema = this._schema) {
-        console.log("             {>>> StorageService - replace}")
-        console.log("             {} - Storage request --- replace " + origId + " with " + newId + " in " + schema);
+        console.log("             {>>> StorageService - REPLACED}   (" + schema + ") "  + origId + " with " + newId);
         const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, origId);   // will this be json or json obj?
         let keyField = await SchemaManager.getKey(schema);
         description[keyField] = newId;
         let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, origId);
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, newId, description);
         this.confirmStorageChange({topic:`${schema}-storage-replaced`,schema: schema, id: origId,  description: description});
-        console.log("             {<<< StorageService - replace}")
+        console.log("             {<<< StorageService - finished REPLACED}   (" + schema + ") "  + origId + " with " + newId);
     }
 
     /**
@@ -217,14 +210,13 @@ export default class StorageService extends SharedObservable{
      * Notification (object created, id of object created)
      */
     static async clone(origId, cloneId, schema = this._schema) {
-        console.log("             {>>> StorageService - clone}")
-        console.log("             {} - Storage request --- clone " + origId + " to make " + cloneId + " in " + schema);
+        console.log("             {>>> StorageService - CLONED}   (" + schema + ") "  + origId + " with " + cloneId);
         const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, origId);
         let index = SchemaManager.getKeyValue(schema,description);
         description[index] = cloneId;
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
         this.confirmStorageChange({topic:`${schema}-storage-cloned`,schema: schema, id: cloneId, description: description});
-        console.log("             {<<< StorageService - clone}")
+        console.log("             {<<< StorageService - finished CLONED}   (" + schema + ") "  + origId + " with " + cloneId);
     }
 }
 

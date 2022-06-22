@@ -485,9 +485,17 @@ class Playground extends Popupable {
         // something to consoder for later
         let margin = 20
 
-        if (currentNodeModel.isRoot()){         // not sure why this is here.
-            this._activeNodeModelMap.set(currentNodeModel.id, currentNodeModel);
+
+        if (this._activeNodeModelMap.has(currentNodeModel.id)) {
+            console.log("REDRAWING " + currentNodeModel.id)
+
+             }
+        else{
+            console.log("CREATING " + currentNodeModel.id)
+
         }
+        this._activeNodeModelMap.set(currentNodeModel.id, currentNodeModel);
+        console.log(this._activeNodeModelMap.size)
 
         if ((!currentNodeModel.x) || (!currentNodeModel.y) ) {
             currentNodeModel.x = 10
@@ -580,7 +588,15 @@ class Playground extends Popupable {
     }
 
     updateJagModel(updatedUrn) {             // Activity got updated - does it affect our projects?
-        for (let node of this._activeNodeModelMap.values()) { // Return events with affected Project ids and the URN
+   //     for (let node of this._activeNodeModelMap.values()) { // Return events with affected Project ids and the URN
+        this._activeNodeModelMap.forEach((value, key) => {
+
+            let node = value;
+            console.log("Somehow its running TWICE")
+            console.log(key)
+            console.log(node)
+            console.log(this._activeNodeModelMap.values())
+
             if (node.isActivityInProject(updatedUrn)) {
                 this.dispatchEvent(new CustomEvent('new-activity-affects-project', {
                     detail: {
@@ -590,11 +606,17 @@ class Playground extends Popupable {
                 })); // local-jag-created in playground uses node
 
             }
-        }
+        })
     }
 
     deleteJagModel(deletedUrn) {             // Activity got updated - does it affect our projects?
-        for (let node of this._activeNodeModelMap.values()) { // Return events with affected Project ids and the URN
+        this._activeNodeModelMap.forEach((value, key) => {
+
+            let node = value;
+            console.log("Somehow its running TWICE")
+            console.log(key)
+            console.log(node)
+            console.log(this._activeNodeModelMap.values())
 
             if (node.isActivityInProject(deletedUrn)) {
 
@@ -606,7 +628,8 @@ class Playground extends Popupable {
                 })); // local-jag-created in playground uses node
 
             }
-        }
+        })
+
     }
 
 
@@ -664,17 +687,32 @@ class Playground extends Popupable {
         // The deadId is a node marked for deletion.  Death can either be
         // annihilation or absorbtion into another project.  Playground nodes
         // with an ancester matching deadId are removed.
-        let deadIdModel = this._activeNodeModelMap.get(deadId)
+        // let deadIdModel = this._activeNodeModelMap.get(deadId)
         this._activeNodeModelMap.delete(deadId)
-        this._activeJagNodeElementSet.forEach((node) => {
-            // Vernichtern
-            if (!this._activeNodeModelMap.has(node.nodeModel.project)) {
+        console.log("DELETEING = DELETEING _ DELETING + DELETING      --> " + deadId)
+        console.log(this._activeNodeModelMap.size)
+
+
+        for (let node of this._activeJagNodeElementSet) {           // search through active elements
+            if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeJagNodeElementSet.delete(node);
                 this._nodeContainerDiv.removeChild(node);
             }
-        })
+        }
+
+
+
+       // this._activeJagNodeElementSet.forEach((node) => {
+            // Vernichtern
+            // if (!this._activeNodeModelMap.has(node.nodeModel.project)) {
+            //     node.removeAllEdges();
+            //     node.detachHandlers();
+            //     this._activeJagNodeElementSet.delete(node);
+            //     this._nodeContainerDiv.removeChild(node);
+            // }
+        // })
     }
 
     _rebuildNodeView(projectNodeModel) {                                  // @TODO extremely similar to *deleteNodeModel* + _buildNodeViewFromNodeModel
@@ -695,7 +733,9 @@ class Playground extends Popupable {
                 this._nodeContainerDiv.removeChild(node);
             }
         }
-        this._buildNodeViewFromNodeModel(projectNodeModel);
+
+    this.deleteNodeModel(projectNodeModel.id)
+    this._buildNodeViewFromNodeModel(projectNodeModel);
 
 
 

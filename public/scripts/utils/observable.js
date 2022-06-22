@@ -61,9 +61,11 @@ export default class SharedObservable extends SharedService {
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }
-        console.log(topic + " --- Notifying subscribers")
+        console.log("              --- Notifying subscribers: " + topic)
         this.notifySubscribers(topic, dataModel, id);
-        console.log(topic + " --- Subscribers notified")
+        console.log("              --- Subscribers notified: " + topic)
+        console.log(" ********  END OF GLOBAL HANDLER: (" + topic + ")  **********")
+        console.log("")
     }
 
     /**
@@ -82,6 +84,8 @@ export default class SharedObservable extends SharedService {
      * Callback functions were provided at initial subscription.
      */
     static notifySubscribers(topic, dataModel, id) {
+        console.log("")
+        console.log(" ********  BEGINNING OF GLOBAL HANDLER: (" + topic + ") : (" + id + ") **********")
         console.log("             {Observer callbacks started>}       (" + id + "/" + topic + ")  (" + id + "/" + topic + ") ")
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
