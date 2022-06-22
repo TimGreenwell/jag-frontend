@@ -21,8 +21,6 @@ export default class SharedObservable extends SharedService {
     }
 
 
-
-
     static get subscribers() {
         return this._subscribers;
     }
@@ -66,6 +64,7 @@ export default class SharedObservable extends SharedService {
         console.log("              --- Subscribers notified: " + topic)
         console.log(" ********  END OF GLOBAL HANDLER: (" + topic + ")  **********")
         console.log("")
+        console.log("")
     }
 
     /**
@@ -85,8 +84,8 @@ export default class SharedObservable extends SharedService {
      */
     static notifySubscribers(topic, dataModel, id) {
         console.log("")
+        console.log("")
         console.log(" ********  BEGINNING OF GLOBAL HANDLER: (" + topic + ") : (" + id + ") **********")
-        console.log("             {Observer callbacks started>}       (" + id + "/" + topic + ")  (" + id + "/" + topic + ") ")
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {
@@ -100,7 +99,6 @@ export default class SharedObservable extends SharedService {
         }
         else
         {console.log("            {No subscribers to : " + topic)}
-        console.log("             {Observer Callbacks complete<}      (" + id + "/" + topic + ")  (" + id + "/" + topic + ")")
     }
 }
 

@@ -107,14 +107,13 @@ export default class StorageService extends SharedObservable{
      * No notification made. (Not a storage change)
      */
     static async all(schema = this._schema) {
-        console.log("             {>>> StorageService - all}")
+        console.log("             {<> StorageService - all}")
         const descriptions = await this._storageInstancesMap.get(this._preferredStorage).all(schema);
         const promisedModels = descriptions.map(async description => {
             const newModel = await SchemaManager.deserialize(schema,description);
             return newModel;
         })
         const newModels = await Promise.all(promisedModels);
-        console.log("             {<<< StorageService - all}")
         return newModels;
     }
 
@@ -123,10 +122,9 @@ export default class StorageService extends SharedObservable{
      * No notification made. (Not a storage change)
      */
     static async get(id, schema = this._schema) {
-        console.log("             {>>> StorageService - get}")
+        console.log("             {<> StorageService - get}")
         const description = await this._storageInstancesMap.get(this._preferredStorage).get(schema, id);
         const model = await SchemaManager.deserialize(schema,description);
-        console.log("             {<<< StorageService - get}")
         return model;
     }
 
@@ -144,10 +142,9 @@ export default class StorageService extends SharedObservable{
      * Notification (null,null)  @TODO Anything useful to return?
      */
     static async clear(schema = this._schema) {
-        console.log("             {>>> StorageService - clear}")
+        console.log("             {<> StorageService - clear}")
         await this._storageInstancesMap.get(this._preferredStorage).clear(schema);
         this.confirmStorageChange({topic:`${schema}-storage-cleared`,schema: schema, id: null, description: null });
-        console.log("             {<<< StorageService - clear}")
     }
 
     /**

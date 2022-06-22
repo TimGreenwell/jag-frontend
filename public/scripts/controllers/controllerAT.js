@@ -231,11 +231,23 @@ export default class ControllerAT extends EventTarget {
 
         // This particular node changed (to preserve that node) otherwise it gets recreated as new
 
-        event.detail.nodeModel = projectModel;
-        await this.localNodeUpdatedHandler(event)
+        // event.detail.nodeModel = projectModel;
+        // await this.localNodeUpdatedHandler(event)
+        //
+        // event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
+        // await this.localJagUpdatedHandler(event)
+        //
 
         event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
         await this.localJagUpdatedHandler(event)
+
+        event.detail.jagModel = childNodeModel.jag;
+        await this.localJagUpdatedHandler(event)
+
+
+
+
+
 
         event.detail.nodeModelId = childNodeModel.id;              // delete currently turns children into trees - i cant do that with a join
         await this.localNodeDeletedHandler(event)
@@ -278,10 +290,8 @@ export default class ControllerAT extends EventTarget {
     }
 
     playgroundNodesSelectedHandler(event) {
-        console.log("Local>> (local node selected) ")
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
         //ide.handleSelectionUpdate(e.detail);
-        console.log("Local<< (local node selected) ")
     }
 
 // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
