@@ -248,7 +248,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         if (this._nodeModel.jag.urn != this._urnInput.value) {
             // if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
             if (Validator.isValidUrn(this._urnInput.value)) {        // && entered urn is valid...
-                this.dispatchEvent(new CustomEvent('local-urn-changed', {
+                this.dispatchEvent(new CustomEvent('event-urn-changed', {
                     bubbles: true,
                     composed: true,
                     detail: {originalUrn: this._urnInput.value, newUrn: this._nodeModel.jag.urn}
@@ -275,7 +275,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     //     if (this._nodeModel.jag) {
     //         if (this._nodeModel.jag.description != this._descInput.value) {
     //             this._nodeModel.jag.description = this._descInput.value;
-    //             this.dispatchEvent(new CustomEvent('local-jag-updated', {
+    //             this.dispatchEvent(new CustomEvent('local-activity-updated', {
     //                 bubbles: true,
     //                 composed: true,
     //                 detail: {jagModel: this._nodeModel.jag}
@@ -289,7 +289,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.description = this._descInput.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this.dispatchEvent(new CustomEvent('local-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {jagModel: this._nodeModel.jag}
@@ -303,7 +303,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.name = this._nameInput.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this.dispatchEvent(new CustomEvent('local-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {jagModel: this._nodeModel.jag}
@@ -319,7 +319,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.contextualName = this._name_ctxInput.value;
-            this.dispatchEvent(new CustomEvent('local-node-updated', {   // This might not be a progectNode. Needs to be added to right spot upstairs.
+            this.dispatchEvent(new CustomEvent('event-node-updated', {   // This might not be a progectNode. Needs to be added to right spot upstairs.
                 bubbles: true,
                 composed: true,
                 detail: {nodeModel: this._nodeModel}
@@ -330,7 +330,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.contextualDescription = this._desc_ctxInput.value;
-            this.dispatchEvent(new CustomEvent('local-node-updated', {
+            this.dispatchEvent(new CustomEvent('event-node-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {nodeModel: this._nodeModel}
@@ -342,7 +342,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.execution = this._executionSelect.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {jagModel: this._nodeModel.jag}
@@ -353,7 +353,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.operator = this._operatorSelect.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+            this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {jagModel: this._nodeModel.jag}
@@ -953,7 +953,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._nodeModel.jag = undefined;
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
-        this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+        this.dispatchEvent(new CustomEvent('event-activity-deleted', {
             detail: {urn: deadJagModel.urn}
         }));
     }
@@ -965,12 +965,12 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Update jagModel references.
         this._node.jagModel = newJagModel; //?
         this._nodeModel.jag = newJagModel;
-        this.dispatchEvent(new CustomEvent('local-jag-created', {
+        this.dispatchEvent(new CustomEvent('event-activity-created', {
             bubbles: true,
             composed: true,
             detail: {node: newJagModel}
         }));    // local-jag-created in playground uses components
-        //await StorageService.create(newJagModel, 'jag');
+        //await StorageService.create(newJagModel, 'activity');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 

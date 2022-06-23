@@ -69,7 +69,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         $centerLiDiv.appendChild($new);
 
         $new.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent('add-new-jag-activity', {}
+            this.dispatchEvent(new CustomEvent('event-add-activity', {}
             ));
         }.bind(this));
 
@@ -79,7 +79,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         $clear.innerText = "clear\nspace";
         $centerLiDiv.appendChild($clear);
         $clear.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("clear-playground"));
+            this.dispatchEvent(new CustomEvent("event-clear-playground"));
         }.bind(this));
 
         const $delete = document.createElement("span");

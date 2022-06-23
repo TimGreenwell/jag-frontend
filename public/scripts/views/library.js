@@ -67,7 +67,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				let deleteIconClickedHandler = function (event) {
 					event.stopPropagation();
 
-					this.dispatchEvent(new CustomEvent('local-jag-deleted', {
+					this.dispatchEvent(new CustomEvent('event-activity-deleted', {
 						detail: {
 							jagModelUrn: newJAGModel.urn
 						}
@@ -76,7 +76,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				let lockIconClickedHandler = function (event) {
 					event.stopPropagation();
-						this.dispatchEvent(new CustomEvent('local-jag-locked', {
+						this.dispatchEvent(new CustomEvent('event-activity-locked', {
 						detail: {
 							jagModel: newJAGModel
 						}
@@ -127,7 +127,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				// Send the newJAGModel and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
 							jagModel: newJAGModel,
 							expanded: event.shiftKey
@@ -135,7 +135,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					}))});
 
 				$topHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('library-lineItem-selected', {
+					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
 							jagModel: newJAGModel,
 							expanded: event.shiftKey

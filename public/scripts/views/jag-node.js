@@ -369,7 +369,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.dispatchEvent(new CustomEvent('drag'));
 		this.removeEventListener('mousemove', this._boundNodeDrag);
 	//	this.parentNode.removeEventListener('mousemove', this._boundDrag);                // tlg I thook this out -- being annoying -- what is parentNode..never defined
-		this.dispatchEvent(new CustomEvent('repositioning-stopped', {
+		this.dispatchEvent(new CustomEvent('event-node-repositioned', {
 			bubbles: true,
 			detail: {
 				nodeModel: this.nodeModel,

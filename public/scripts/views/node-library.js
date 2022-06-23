@@ -58,7 +58,7 @@ customElements.define('node-library', class extends HTMLElement {
 
 			let deleteIconClickedHandler = function (event) {
 				event.stopPropagation();
-				this.dispatchEvent(new CustomEvent('local-node-deleted', {
+				this.dispatchEvent(new CustomEvent('event-project-deleted', {
 					detail: {
 						nodeModelId: newNodeModel.id
 					}
@@ -67,7 +67,7 @@ customElements.define('node-library', class extends HTMLElement {
 
 			let lockIconClickedHandler = function (event) {
 				event.stopPropagation();
-				this.dispatchEvent(new CustomEvent('local-node-locked', {
+				this.dispatchEvent(new CustomEvent('event-project-locked', {
 					detail: {
 						nodeModel: newNodeModel
 					}
@@ -118,7 +118,7 @@ customElements.define('node-library', class extends HTMLElement {
 
 			// Send the newNodeModel and all its children through the dispatch
 			$bottomHalfWrapper.addEventListener('click', (event) => {
-				this.dispatchEvent(new CustomEvent('project-lineItem-selected', {
+				this.dispatchEvent(new CustomEvent('event-project-selected', {
 					detail: {
 						projectModel: newNodeModel,
 						expanded: event.shiftKey
@@ -127,7 +127,7 @@ customElements.define('node-library', class extends HTMLElement {
 			});
 
 			$topHalfWrapper.addEventListener('click', (event) => {
-				this.dispatchEvent(new CustomEvent('project-lineItem-selected', {
+				this.dispatchEvent(new CustomEvent('event-project-selected', {
 					detail: {
 						projectModel: newNodeModel,
 						expanded: event.shiftKey

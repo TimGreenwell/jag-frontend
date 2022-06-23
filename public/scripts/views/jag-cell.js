@@ -180,7 +180,7 @@ class JagCell extends AnalysisCell {
                 this._htmlElements.suggestions.hide();
                 // Is the current URN valid?  (A rename involves more than the initial create)
                 if (Validator.isValidUrn(this.cellModel.jag.urn)) {
-                    this.dispatchEvent(new CustomEvent('local-urn-changed', {
+                    this.dispatchEvent(new CustomEvent('event-urn-changed', {
                         bubbles: true,
                         composed: true,
                         detail: {originalUrn: this.cellModel.jag.urn, newUrn: this.urnElementEntry}
@@ -243,10 +243,10 @@ class JagCell extends AnalysisCell {
 
     async deleteJagModel(deadJagModel) {
         this._cellModel = undefined;
-        await StorageService.get(deadJagModel.urn, 'jag');
+        await StorageService.get(deadJagModel.urn, 'activity');
 
 
-        await StorageService.delete(deadJagModel.urn, 'jag');
+        await StorageService.delete(deadJagModel.urn, 'activity');
         this._urnInput.classList.toggle("edited", false);
         this._clearProperties();
     }
@@ -258,7 +258,7 @@ class JagCell extends AnalysisCell {
         // Update model references.
         this._node.model = newJagModel; //?
         this._cellModel = newJagModel;
-        await StorageService.create(newJagModel, 'jag');
+        await StorageService.create(newJagModel, 'activity');
         // Remove unsaved box shadow on URN property input.
         this._urnInput.classList.toggle("edited", false);
 
@@ -300,7 +300,7 @@ class JagCell extends AnalysisCell {
         }
 
         //let jag = await JAGService.instance('idb-service').get(urn);
-        let jag = await StorageService.get(urn, 'jag');
+        let jag = await StorageService.get(urn, 'activity');
 
         // If the model does not exists create one from the view values.
         // if the model does exists, reset to previous state unless replace is true.
@@ -311,7 +311,7 @@ class JagCell extends AnalysisCell {
             });
 
             //await JAGService.instance('idb-service').create(jag);
-            await StorageService.create(jag, 'jag');
+            await StorageService.create(jag, 'activity');
         } else if (!replace) {
             // If the jag already exists we want to abort unless replace is set to true.
             //@TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
@@ -386,7 +386,7 @@ class JagCell extends AnalysisCell {
 
         //    tg - Both functions are equivalent but neither seem to be of any use.  this._htmlElements is set to auto-complete.
         //    tg - possibly the '.suggestions.suggestions' is a mistake.
-        await StorageService.all('jag').then(jags => this._htmlElements.suggestions.suggestions = jags.map(jag => jag.urn));
+        await StorageService.all('activity').then(jags => this._htmlElements.suggestions.suggestions = jags.map(jag => jag.urn));
         //	allJagModels.forEach(() => this._htmlElements.suggestions.suggestions = allJagModels.map(cellModel => cellModel.jag.urn));
     }
 

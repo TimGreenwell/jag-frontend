@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	body.appendChild(playground);
 	body.appendChild(properties);
 	controller.menu = menu;
-	controller.library = library;
+	controller.activityLibrary = library;
 	controller.projectLibrary = projectLibrary;
 	controller.playground = playground;
 	controller.properties = properties;

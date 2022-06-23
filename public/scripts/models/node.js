@@ -391,7 +391,7 @@ export default class Node extends EventTarget {
 
 
 	// static async fromJSON(json) {
-	// 	const jag = await StorageService.get(json.jag,'jag');
+	// 	const jag = await StorageService.get(json.jag,'activity');
 	// 	if (jag instanceof JagModel) {
 	// 		json.jag = jag;
 	// 	}

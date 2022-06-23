@@ -144,7 +144,7 @@ export default class StorageService extends SharedObservable{
     static async clear(schema = this._schema) {
         console.log("             {<> StorageService - clear}")
         await this._storageInstancesMap.get(this._preferredStorage).clear(schema);
-        this.confirmStorageChange({topic:`${schema}-storage-cleared`,schema: schema, id: null, description: null });
+        this.confirmStorageChange({topic:`command-${schema}-cleared`,schema: schema, id: null, description: null });
     }
 
     /**
@@ -158,7 +158,7 @@ export default class StorageService extends SharedObservable{
         // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const jsonObj = createdModel.toJSON();
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
-        this.confirmStorageChange({topic:`${schema}-storage-created`,schema: schema, id: createdId, description: jsonObj });
+        this.confirmStorageChange({topic:`command-${schema}-created`,schema: schema, id: createdId, description: jsonObj });
         console.log("       {<<< StorageService - finished CREATE}   (" + schema + ") " + createdId);
     }
 
@@ -171,7 +171,7 @@ export default class StorageService extends SharedObservable{
         console.log("             {>>> StorageService - UPDATE}   (" + schema + ") " + updatedId);
         const jsonObj = updatedModel.toJSON();
         await this._storageInstancesMap.get(this._preferredStorage).update(schema, updatedId ,jsonObj);
-        this.confirmStorageChange({topic:`${schema}-storage-updated`,schema: schema, id: updatedId, description: jsonObj});
+        this.confirmStorageChange({topic:`command-${schema}-updated`,schema: schema, id: updatedId, description: jsonObj});
         console.log("             {<<< StorageService - finished UPDATE}   (" + schema + ") " + updatedId);
     }
 
@@ -182,7 +182,7 @@ export default class StorageService extends SharedObservable{
     static async delete(deletedId, schema = this._schema) {
         console.log("             {>>> StorageService - DELETE}   (" + schema + ") " + deletedId);
         let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
-        this.confirmStorageChange({topic:`${schema}-storage-deleted`,schema: schema, id: deletedId, description: null});
+        this.confirmStorageChange({topic:`command-${schema}-deleted`,schema: schema, id: deletedId, description: null});
         console.log("             {<<< StorageService - finished DELETE}   (" + schema + ") " + deletedId);
     }
 
@@ -198,7 +198,7 @@ export default class StorageService extends SharedObservable{
         description[keyField] = newId;
         let result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, origId);
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, newId, description);
-        this.confirmStorageChange({topic:`${schema}-storage-replaced`,schema: schema, id: origId,  description: description});
+        this.confirmStorageChange({topic:`command-${schema}-replaced`,schema: schema, id: origId,  description: description});
         console.log("             {<<< StorageService - finished REPLACED}   (" + schema + ") "  + origId + " with " + newId);
     }
 
@@ -212,7 +212,7 @@ export default class StorageService extends SharedObservable{
         let index = SchemaManager.getKeyValue(schema,description);
         description[index] = cloneId;
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema,description),description);
-        this.confirmStorageChange({topic:`${schema}-storage-cloned`,schema: schema, id: cloneId, description: description});
+        this.confirmStorageChange({topic:`$command-${schema}-cloned`,schema: schema, id: cloneId, description: description});
         console.log("             {<<< StorageService - finished CLONED}   (" + schema + ") "  + origId + " with " + cloneId);
     }
 }

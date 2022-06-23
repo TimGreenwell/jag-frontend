@@ -149,7 +149,7 @@ class Playground extends Popupable {
         if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
             this._is_edge_being_created = false;
             this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
-            this._created_edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+            this._created_edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
 
             // identical issue below
             //parentJag.addChild(childJag);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
@@ -167,7 +167,7 @@ class Playground extends Popupable {
             //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
 
 
-            this.dispatchEvent(new CustomEvent('local-nodes-joined', {
+            this.dispatchEvent(new CustomEvent('event-nodes-connected', {
                 bubbles: true,
                 composed: true,
                 detail: {
@@ -355,7 +355,7 @@ class Playground extends Popupable {
             return jagNodeElement.nodeModel
         })
 
-        this.dispatchEvent(new CustomEvent('playground-nodes-selected', {
+        this.dispatchEvent(new CustomEvent('event-nodes-selected', {
             detail: {
                 selectedNodeArray: selectedNodeArray
             }
@@ -455,7 +455,7 @@ class Playground extends Popupable {
             if (!childrenMap.has(child.id)) {
                 let edge = this._createEdge(node, child.id);
                 edge.setSubActivityNode(sub_node);
-                edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
             }
 
             if (child.name) sub_node.setContextualName(child.name);
@@ -520,7 +520,7 @@ class Playground extends Popupable {
                let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
 
                edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-               edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+               edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
 
                // if (child.name) sub_node.setContextualName(child.name);
                // if (child.description) sub_node.setContextualDescription(child.description);
@@ -597,7 +597,7 @@ class Playground extends Popupable {
 
             if (node.isActivityInProject(updatedUrn)) {
                 console.log("Found change in : " + node.jag.urn)
-                this.dispatchEvent(new CustomEvent('new-activity-affects-project', {
+                this.dispatchEvent(new CustomEvent('response-activity-created', {
                     detail: {
                         projectModel: node,
                         activityUrn: updatedUrn
@@ -620,7 +620,7 @@ class Playground extends Popupable {
             console.log(node.jag.urn)
             if (node.isActivityInProject(deletedUrn)) {
                 console.log("Found change in : " + node.jag.urn)
-                this.dispatchEvent(new CustomEvent('deleted-activity-affects-project', {
+                this.dispatchEvent(new CustomEvent('response-activity-deleted', {
                     detail: {
                         projectModelId: node.id,
                         activityUrn: deletedUrn
@@ -739,7 +739,7 @@ class Playground extends Popupable {
     //         currentNodeModel.children.forEach((child) => {
     //             let edge = this._createEdge(currentNodeModel, child.id);
     //             edge.setSubActivityNode(child);
-    //             edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+    //             edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
     //             workStack.push(child)
     //     //        this._edgeContainerDiv.appendChild(edge);
     //         })
@@ -789,7 +789,7 @@ class Playground extends Popupable {
                 if ($node.nodeModel.project == $node.nodeModel.id) {
                     this.clearPlayground($node.nodeModel.project);
                 } else {
-                    if (window.confirm("Are you sure you want to remove this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
+                    if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const edge = $node.getParentEdge();
                         const id = edge.getChildId();
                         const parent = $node.getParent();
@@ -801,7 +801,7 @@ class Playground extends Popupable {
                             }
                         })
                         parent.nodeModel.jag.children = remainingChildren
-                        this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                        this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {jagModel: parent.nodeModel.jag}
                         }));
 
@@ -922,7 +922,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
 
-                this.dispatchEvent(new CustomEvent('local-jag-created', {
+                this.dispatchEvent(new CustomEvent('event-activity-created', {
                     detail: {
                         urn: popurn,
                         name: popname,
@@ -957,7 +957,7 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
                     }
                 })
                 parent.nodeModel.jag.children = remainingChildren
-                this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                this.dispatchEvent(new CustomEvent('event-activity-updated', {
                     detail: {jagModel: parent.nodeModel.jag}
                 }));
             }

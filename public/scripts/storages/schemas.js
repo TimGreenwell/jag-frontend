@@ -28,8 +28,8 @@ export default class Schemas {
 
 	static
 	{
-		const JAG_STORE = {
-			name: 'jag',
+		const ACTIVITY_STORE = {
+			name: 'activity',
 			key: 'urn',
 			deserialize: JagModel.fromJSON,
 			rest: 'jagActivities',
@@ -98,7 +98,7 @@ export default class Schemas {
 		}
 
 		Schemas.SCHEMA_SET = {
-			'jag': JAG_STORE,
+			'activity': ACTIVITY_STORE,
 			'node': NODE_STORE,
 			'analysis': ANALYSIS_STORE,
 			'agent': AGENT_STORE,

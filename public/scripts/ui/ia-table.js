@@ -349,7 +349,7 @@ class IATable extends Popupable {
             //const service = StorageService.getStorageInstance('idb-service');
 
             for (let jag of jags) {
-                const jagModel = await StorageService.get(jag, 'jag');
+                const jagModel = await StorageService.get(jag, 'activity');
                 json.jags.push(jagModel.toJSON());
             }
         }
@@ -394,7 +394,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
                 const options = [];
 
                 //const jags = await JAGService.instance('idb-service').all();
-                const jags = await StorageService.all('jag');
+                const jags = await StorageService.all('activity');
                 //		const jags = jsonList.map(JagModel.fromJSON);
 
                 for (const jag of jags) {
@@ -468,7 +468,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
                 const newJagModel = JagModel.fromJSON(jag);
                 this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {jagModel: newJagModel}}));
                 // seems like a create - but really an update --- an upstream check for 'isLocked' should be made.
-             //   await StorageService.create(newJagModel, 'jag');              /////  really not sure ... was an undefinced 'service.' (no schema)
+             //   await StorageService.create(newJagModel, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

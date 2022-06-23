@@ -30,12 +30,12 @@ export default class ControllerIA {
         this._analysisModelMap = new Map();     // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;      // type: AnalysisModel
 
-        StorageService.subscribe("jag-storage-created", this.handleJagStorageCreated.bind(this));
-        StorageService.subscribe("jag-storage-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
-        StorageService.subscribe("jag-storage-deleted", this.handleJagStorageDeleted.bind(this));
-        //StorageService.subscribe("jag-storage-cloned", this.handleJagStorageCloned.bind(this));
-        //StorageService.subscribe("jag-storage-replaced", this.handleJagStorageReplaced.bind(this));
-        StorageService.subscribe("analysis-storage-created", this.handleAnalysisStorageCreated.bind(this));
+        StorageService.subscribe("command-activity-created", this.handleJagStorageCreated.bind(this));
+        StorageService.subscribe("command-activity-updated", this.handleJagStorageUpdated.bind(this));   // just blocking for now - troubleshooting
+        StorageService.subscribe("command-activity-deleted", this.handleJagStorageDeleted.bind(this));
+        //StorageService.subscribe("command-jag-cloned", this.handleJagStorageCloned.bind(this));
+        //StorageService.subscribe("command-jag-replaced", this.handleJagStorageReplaced.bind(this));
+        StorageService.subscribe("command-analysis-created", this.handleAnalysisStorageCreated.bind(this));
     }
 
     set analysisLibrary(value) {
@@ -83,7 +83,7 @@ export default class ControllerIA {
     }
     async initializeCache(){
 
-        let allJags = await StorageService.all('jag')
+        let allJags = await StorageService.all('activity')
         allJags.forEach(jag => this.addJagModel(jag))
 
         // @TODO need this?
@@ -110,10 +110,10 @@ export default class ControllerIA {
         this._iaTable.addEventListener('local-node-prunechild', this.localNodePruneChildHandler.bind(this));
         this._iaTable.addEventListener('local-collapse-toggled', this.localCollapseToggledHandler.bind(this));
 
-        this._iaTable.addEventListener('local-urn-changed', this.localUrnChangedHandler.bind(this));
+        this._iaTable.addEventListener('event-urn-changed', this.localUrnChangedHandler.bind(this));
         this._iaTable.addEventListener('local-jag-created', this.localJagCreatedHandler.bind(this));
         this._iaTable.addEventListener('local-jag-updated', this.localJagUpdatedHandler.bind(this));
-       // this._iaTable.addEventListener('local-jag-deleted', this.localJagDeletedHandler.bind(this));
+       // this._iaTable.addEventListener('event-activity-deleted', this.localJagDeletedHandler.bind(this));
 
         this._analysisLibrary.addEventListener('library-analysis-selected', this.localLibraryAnalysisSelected.bind(this));
 
@@ -233,11 +233,11 @@ export default class ControllerIA {
 
     async localJagCreatedHandler(event){
         let jagModel = new JagModel(event.detail.jagModel);
-        await StorageService.create(jagModel, 'jag');
+        await StorageService.create(jagModel, 'activity');
     }
 
     async localJagUpdatedHandler(event){
-        await StorageService.update(event.detail.jagModel, 'jag');
+        await StorageService.update(event.detail.jagModel, 'activity');
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -356,8 +356,8 @@ export default class ControllerIA {
      */
 
     async createStandardAnalysis(analysisName, rootUrn, source) {
-        // if (await StorageService.has(rootUrn, 'jag')) {
-        let rootJagModel = await StorageService.get(rootUrn, 'jag');
+        // if (await StorageService.has(rootUrn, 'activity')) {
+        let rootJagModel = await StorageService.get(rootUrn, 'activity');
         //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
         //tlg   const rootNodeModel = new NodeModel({jag: rootJagModel});
         const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
@@ -412,7 +412,7 @@ export default class ControllerIA {
 
 
             for (const child of currentNode.children) {
-                // const childJagModel = await StorageService.get(child.urn, 'jag');
+                // const childJagModel = await StorageService.get(child.urn, 'activity');
                 // const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
                 // childNodeModel.childId = child.id;
                 // currentNode.addChild(childNodeModel, true);
@@ -455,7 +455,7 @@ export default class ControllerIA {
     async buildNodeTreeFromJagUrn(newRootJagUrn) {
         const nodeStack = [];
         const resultStack = [];
-        const rootJagModel = await StorageService.get(newRootJagUrn, 'jag');   //@todo use cache
+        const rootJagModel = await StorageService.get(newRootJagUrn, 'activity');   //@todo use cache
         const rootNodeModel = new NodeModel({urn: rootJagModel.urn, is_root: true});
         rootNodeModel.jag = rootJagModel
         rootNodeModel.parentUrn = null;
@@ -465,8 +465,8 @@ export default class ControllerIA {
             let currentNode = nodeStack.pop();
             for (const child of currentNode.jag.children) {
                 let childJagModel = null;
-                if (await StorageService.get(child.urn, 'jag')) {
-                    childJagModel = await StorageService.get(child.urn, 'jag');    //@todo use cache
+                if (await StorageService.get(child.urn, 'activity')) {
+                    childJagModel = await StorageService.get(child.urn, 'activity');    //@todo use cache
                 } else {
                     childJagModel = new JagModel(child)
                 }
@@ -497,13 +497,13 @@ export default class ControllerIA {
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(newURN);
         if (isValid) {
-            let origJagModel = await StorageService.get(origURN, 'jag');  // needed to check if 'isLocked'
-            let urnAlreadyBeingUsed = await StorageService.has(newURN, 'jag');
+            let origJagModel = await StorageService.get(origURN, 'activity');  // needed to check if 'isLocked'
+            let urnAlreadyBeingUsed = await StorageService.has(newURN, 'activity');
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
                 // Does user confirm an over-write??
                 if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
-                    let newJagModel = await StorageService.get(origURN, 'jag');
+                    let newJagModel = await StorageService.get(origURN, 'activity');
 
                     // is the target JagModel locked?
                     if (newJagModel.isLocked) {
@@ -512,9 +512,9 @@ export default class ControllerIA {
 
                     { // is the original JagModel locked?
                         if (origJagModel.isLocked) {
-                            await StorageService.clone(origURN, newURN, 'jag');
+                            await StorageService.clone(origURN, newURN, 'activity');
                         } else { /// the original JAGModel is not locked
-                            await StorageService.replace(origURN, newURN, 'jag')
+                            await StorageService.replace(origURN, newURN, 'activity')
                         }
                     }
                 } else {  // user says 'no' to overwrite
@@ -525,7 +525,7 @@ export default class ControllerIA {
                 if (origJagModel.isLocked) {
                     await this.cloneJagModel(origJagModel, newURN)
                 } else {/// the original JAGModel is not locked
-                    await StorageService.replace(origURN, newURN, 'jag');
+                    await StorageService.replace(origURN, newURN, 'activity');
                 }
             }
         }
@@ -545,10 +545,10 @@ export default class ControllerIA {
     }               // possible common area contender
 
     async saveJag() {
-        if (await StorageService.has(this, 'jag')) {
-            await StorageService.update(this, 'jag');
+        if (await StorageService.has(this, 'activity')) {
+            await StorageService.update(this, 'activity');
         } else {
-            await StorageService.create(this, 'jag');
+            await StorageService.create(this, 'activity');
         }
     }
 
@@ -586,7 +586,7 @@ export default class ControllerIA {
     async _createChildren() {
         for (let child of this.jag.children) {
             //const jag = await JAGService.instance('idb-service').get(child.urn);
-            const jag = await StorageService.get(child.urn, 'jag');
+            const jag = await StorageService.get(child.urn, 'activity');
             const model = new Node({jag: jag});
             //await NodeService.instance('idb-service').create(model);
             await StorageService.create(model, 'node');
