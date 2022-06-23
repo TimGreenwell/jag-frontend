@@ -6,7 +6,7 @@
  * @version 0.87
  */
 
-import JagModel from '../models/jag.js';
+import Activity from '../models/activity.js';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
@@ -67,7 +67,7 @@ export default class Edge extends EventTarget {
 	}
 	setLeadActivityNode(node) {
 		this._leadActivityNode = node;
-		this._leadActivityNode.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to jagModel
+		this._leadActivityNode.prepareOutEdge(this); // Note: this only computes and sets graphical edge stroke origin; no change to activity
 
 		// If the parent is atomic, this will make the edge already styled for atomicity on drag.
 		this._updateStroke(this._leadActivityNode.isAtomic());
@@ -79,7 +79,7 @@ export default class Edge extends EventTarget {
 	setSubActivityNode(subActivityNode) {
 		this._subActivityNode = subActivityNode;
 		this._subActivityNode.addInEdge(this);
-		const origin_nodeModel = this._leadActivityNode.nodeModel;  // maybe +.jag
+		const origin_nodeModel = this._leadActivityNode.nodeModel;  // maybe +.activity
 
 		origin_nodeModel.addEventListener('update', this._updateHandler.bind(this));
 
@@ -90,16 +90,16 @@ export default class Edge extends EventTarget {
 		//@TODO First thing - remove child adding inside the abouve completeOutEdge
 		// - Adds edge to graphical node's 'outs'
 		// - Invokes _leadActivityNode#addChild(_subActivityNode), which:
-		//   - Adds _subActivityNode jagModel to _leadActivityNode jagModel's children
-		//   - Sets _subActivityNode jagModel's parent to _leadActivityNode jagModel
+		//   - Adds _subActivityNode activity to _leadActivityNode activity's children
+		//   - Sets _subActivityNode activity's parent to _leadActivityNode activity
 		//   - Dispatches update event
 
-		this._updateOrder(origin_nodeModel.jag.children, origin_nodeModel.jag.execution);
-		this._updateStrokeDash(origin_nodeModel.jag.operator);
+		this._updateOrder(origin_nodeModel.activity.children, origin_nodeModel.activity.execution);
+		this._updateStrokeDash(origin_nodeModel.activity.operator);
 
 
 		// @TODO TLG - DO NOT DELETE THIS COMMENT OR THE BLOCK BELOW.  THIS MAY HAVE BEEN PREMATURLY BLOCKED OFF>
-		// const child = origin_nodeModel.jag.children.reduce((prev, curr) => {
+		// const child = origin_nodeModel.activity.children.reduce((prev, curr) => {
 		// 	if (curr.id == this._childId) {
 		// 		return curr;
 		// 	}
@@ -345,7 +345,7 @@ export default class Edge extends EventTarget {
 
 	_updateStrokeDash(operator) {
 		// OR edges are dashed.
-		if (operator == JagModel.OPERATOR.OR) {
+		if (operator == Activity.OPERATOR.OR) {
 			this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
 		// AND edges are solid.
 		} else {
@@ -373,7 +373,7 @@ export default class Edge extends EventTarget {
 		this._edgeContainerElement.removeEventListener('click', this._handleSelection.bind(this));
 
 		if (this._leadActivityNode != undefined) {
-			this._leadActivityNode.nodeModel.jag.removeEventListener('update', this._updateHandler.bind(this));
+			this._leadActivityNode.nodeModel.activity.removeEventListener('update', this._updateHandler.bind(this));
 			this._leadActivityNode.removeOutEdge(this, this._childId);
 		}
 
@@ -414,7 +414,7 @@ export default class Edge extends EventTarget {
 	_updateOrder(children, execution) {
 		let order = 0;
 
-		if (execution == JagModel.EXECUTION.SEQUENTIAL) {
+		if (execution == Activity.EXECUTION.SEQUENTIAL) {
 			const ordered = children.map(child => child.id);
 			order = ordered.indexOf(this._childId) + 1;
 		}

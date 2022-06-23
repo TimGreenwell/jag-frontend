@@ -27,7 +27,7 @@ class AnalysisView extends HTMLElement {
 		this._initializeStaticHeaders();
 		this._initializeTree(this._analysisModel.rootNodeModel);
 		this.layout();
-	////	await updatedAnalysis.buildAnalysisJagNodes(rootNodeModel);
+	////	await updatedAnalysis.buildAnalysisActivityNodes(rootNodeModel);
 	}
 
 
@@ -79,7 +79,7 @@ class AnalysisView extends HTMLElement {
 
 	
 	// Get the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
-	getMappedJagCell(node, parent) {
+	getMappedActivityCell(node, parent) {
 		let jagCell = this._idToTableCellMap.get(node.id);
 		if(jagCell == undefined) {
 			jagCell = new JagCell(node, parent);
@@ -97,8 +97,8 @@ class AnalysisView extends HTMLElement {
 		if(reference == null) {
 			reference = this.findTableBottomNode(targetNode);
 		}
-		const $targetCell = this.getMappedJagCell(targetNode,targetNodeParent );
-		const $referenceCell = this.getMappedJagCell(reference);
+		const $targetCell = this.getMappedActivityCell(targetNode,targetNodeParent );
+		const $referenceCell = this.getMappedActivityCell(reference);
 		this.insertBefore($targetCell, $referenceCell.nextSibling);
 		if(select) {
 			// Giving --> dom.js:32 addRange(): The given range isn't in document.
@@ -112,7 +112,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	detach({target, layout = true } = {}) {
-		const $target = this.getMappedJagCell(target);
+		const $target = this.getMappedActivityCell(target);
 		this.removeChild($target);
 		if(layout) this.layout();
 	}
@@ -288,7 +288,7 @@ class AnalysisView extends HTMLElement {
 	}
 
 	_layoutJAG(node, row, col) {
-		const $view = this.getMappedJagCell(node);
+		const $view = this.getMappedActivityCell(node);
 
 		if(node.children.length !== 0 && !node.collapsed)
 		{
@@ -322,7 +322,7 @@ class AnalysisView extends HTMLElement {
 
 	_showChildNodes(node, recurse = true) {
 		for(let child of node.children) {
-			const $view = this.getMappedJagCell(child);
+			const $view = this.getMappedActivityCell(child);
 			$view.show();
 
 			if(recurse)
@@ -332,7 +332,7 @@ class AnalysisView extends HTMLElement {
 
 	_hideChildNodes(node, recurse = true) {
 		for(let child of node.children) {
-			const $view = this.getMappedJagCell(child);
+			const $view = this.getMappedActivityCell(child);
 			$view.hide();
 
 			if(recurse)

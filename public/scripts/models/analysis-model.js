@@ -27,7 +27,7 @@ export default class AnalysisModel extends EventTarget {
 		this._rootUrn = rootUrn;
 		this._team = team;
 
-		this._rootNodeModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisJagNodes(rootUrn);
+		this._rootNodeModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
 		                                  //  or when click in analysis library
 
 	};

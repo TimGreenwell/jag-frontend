@@ -14,7 +14,7 @@
 //  This is the playground Jag Node -
 
 const SNAP_SIZE = 10.0;
-import JAG from '../models/jag.js';
+import JAG from '../models/activity.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 
@@ -46,7 +46,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.id = nodeModel.id;
 		this._translation.x = (nodeModel.x) ? nodeModel.x : 0;
 		this._translation.y = (nodeModel.y) ? nodeModel.y : 0;
-		this.setAttribute("urn",nodeModel.jag.urn)
+		this.setAttribute("urn",nodeModel.activity.urn)
 		this.setAttribute("project", nodeModel.id)
 		this._nodeModel = nodeModel;
 		this._nodeModel.addEventListener('update', this._boundUpdateHandler);
@@ -170,7 +170,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		if (id === undefined) this.expanded = true;
 		else this.expanded = this.expanded;
 
-	//	return this._nodeModel.jag.addChild(edge.getSubActivityNode().nodeModel.urn, id);              ////// sorry
+	//	return this._nodeModel.activity.addChild(edge.getSubActivityNode().nodeModel.urn, id);              ////// sorry
 
 		//@todo - wondering if node and jag models need to be modded  < hate this
 	}  // What the holy crap is completeOutEdge returning?  Ans: it returns the ID of the jag child (urn,id) -- for main to refer to subactivity
@@ -181,14 +181,14 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	removeChild(edge, id) {
 		if (edge.getSubActivityNode()) {
-			this._nodeModel.jag.removeChild({ id: id, jagModel: edge.getSubActivityNode().jagModel });
+			this._nodeModel.activity.removeChild({ id: id, activity: edge.getSubActivityNode().activity });
 			this._outs.delete(edge);
 			edge.destroy();
 		}
 	}
 
 	getURN() {
-		return this._nodeModel.jag.urn;
+		return this._nodeModel.activity.urn;
 	}
 
 	getParent() {
@@ -223,7 +223,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	refresh(alreadyRefreshed = new Set()) {
-		this.dispatchEvent(new CustomEvent('refresh', { detail: { jagModel: this._nodeModel.jag, refreshed: alreadyRefreshed } }));
+		this.dispatchEvent(new CustomEvent('refresh', { detail: { activity: this._nodeModel.activity, refreshed: alreadyRefreshed } }));
 	}
 
 	// getChildren() {
@@ -245,9 +245,9 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualName() {
 		if (this._in) {
-			return this._in.getChildName() || this._nodeModel.jag.name;
+			return this._in.getChildName() || this._nodeModel.activity.name;
 		}
-		return this._nodeModel.jag.name;
+		return this._nodeModel.activity.name;
 	}
 
 	setContextualDescription(description) {
@@ -258,18 +258,18 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	getContextualDescription() {
 		if (this._in) {
-			return this._in.getChildDescription() || this._nodeModel.jag.description;
+			return this._in.getChildDescription() || this._nodeModel.activity.description;
 		}
 
-		return this._nodeModel.jag.description;
+		return this._nodeModel.activity.description;
 	}
 
 	setChildName(id, name) {
-		this._nodeModel.jag.setChildName(id, name);
+		this._nodeModel.activity.setChildName(id, name);
 	}
 
 	setChildDescription(id, description) {
-		this._nodeModel.jag.setChildDescription(id, description);
+		this._nodeModel.activity.setChildDescription(id, description);
 	}
 
 
@@ -416,11 +416,11 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._nodeModel = nodeModel;
 		this._translation.x = this._nodeModel.x;
 		this._translation.y = this._nodeModel.y;
-		this.syncViewToJagModel(nodeModel.jag)
+		this.syncViewToActivity(nodeModel.activity)
 	}
 
-	syncViewToJagModel(jagModel) {
-		this._nodeModel.jag = jagModel;
+	syncViewToActivity(activity) {
+		this._nodeModel.activity = activity;
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
@@ -454,7 +454,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_defineModel(e) {
-		this.jagModel = e.detail.jagModel;
+		this.activity = e.detail.activity;
 	}
 
 	translate(dx, dy, recursive = undefined) {
@@ -501,9 +501,9 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_applyOperator() {
 		let op = '';
-		if(this._nodeModel.jag.operator == JAG.OPERATOR.AND)
+		if(this._nodeModel.activity.operator == JAG.OPERATOR.AND)
 			op = 'and';
-		else if(this._nodeModel.jag.operator == JAG.OPERATOR.OR)
+		else if(this._nodeModel.activity.operator == JAG.OPERATOR.OR)
 			op = 'or';
 
 		this._$connector.innerHTML = op;
@@ -520,13 +520,13 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$concurrency.style.display = 'none';
 		this._$concurrency.innerHTML = '';
 
-		if (this._nodeModel.jag.execution != JAG.EXECUTION.SEQUENTIAL)
+		if (this._nodeModel.activity.execution != JAG.EXECUTION.SEQUENTIAL)
 			return;
 
-		if (!this._nodeModel.jag.children || this._nodeModel.jag.children.length == 0)
+		if (!this._nodeModel.activity.children || this._nodeModel.activity.children.length == 0)
 			return;
 
-		for (const child of this._nodeModel.jag.children) {
+		for (const child of this._nodeModel.activity.children) {
 			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
 				return;
 			}

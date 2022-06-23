@@ -10,7 +10,7 @@
 import { UUIDv4 }  from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 import UserPrefs from "../utils/user-prefs.js";
-import JagModel from "../models/jag.js"
+import Activity from "./activity.js"
 
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
@@ -121,7 +121,7 @@ export default class Cell extends EventTarget {
 			if (nodeModel._urn == urn) {
 				matchStack.push(nodeModel);
 			}
-			nodeModel.jag.children.forEach(kid => {workStack.push(kid)})
+			nodeModel.activity.children.forEach(kid => {workStack.push(kid)})
 		}
       return matchStack;
 	}
@@ -201,7 +201,7 @@ export default class Cell extends EventTarget {
 		return this._children[this.children.length - 1]
 	}
 	get canHaveChildren() {  // already pushed to jag model
-		return ((this.jag !== undefined) && (Validation.isValidUrn(this.jag._urn)));
+		return ((this.activity !== undefined) && (Validation.isValidUrn(this.activity._urn)));
 	}
 	get childCount() {
 		return this._children.length;

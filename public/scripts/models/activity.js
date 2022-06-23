@@ -1,5 +1,5 @@
 /**
- * @file JAG model.
+ * @file Activity model.
  *
  * @author mvignati
  * @copyright Copyright © 2019 IHMC, all rights reserved.
@@ -11,13 +11,13 @@ import ValidationUtility from "../utils/validation.js";
 import Validation from "../utils/validation.js";
 
 /**
- * Joint Activity Graph (JAG) model.
+ * Joint Activity Graph (Activity) model.
  *
  * @class
  * @constructor
  * @public
  */
-export default class JAG extends EventTarget {
+export default class Activity extends EventTarget {
 
     constructor({
                     urn,
@@ -38,7 +38,7 @@ export default class JAG extends EventTarget {
         this._description = description;
 
         if (!connector) {
-            connector = {execution: JAG.EXECUTION.NONE, operator: JAG.OPERATOR.NONE};
+            connector = {execution: Activity.EXECUTION.NONE, operator: Activity.OPERATOR.NONE};
         }
         this._execution = connector.execution;
         this._operator = connector.operator;
@@ -119,8 +119,8 @@ export default class JAG extends EventTarget {
 
     set children(value) {
         this._children = value;
-        if ((this._children.length !== 0) && (this._operator == JAG.OPERATOR.NONE)) {
-           this._operator = JAG.OPERATOR.AND;
+        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE)) {
+           this._operator = Activity.OPERATOR.AND;
         }
     }
 
@@ -129,7 +129,7 @@ export default class JAG extends EventTarget {
     }
     // id: id = UUIDv4(),
     // urn: child.urn,
-    // jagModel: child
+    // activity: child
 
     hasChildren(){
         return (this._children.length>0)
@@ -178,13 +178,13 @@ export default class JAG extends EventTarget {
 
     addChild(urn, id = undefined) {  // Add UUIDv4 default here
         /**
-         * Adds the given JAG as a child to this JAG.
+         * Adds the given Activity as a child to this Activity.
          * If an ID already exists, the child already exists, and this was likely called
-         * during creation of a graphical edge for the child of an existing JAG; the call
+         * during creation of a graphical edge for the child of an existing Activity; the call
          * will be ignored and the given ID will be returned.
          * Dispatches an update if ID is undefined.
          *
-         * @param {JAG} child Model to add.
+         * @param {Activity} child Model to add.
          * @param {String} id ID for child, if it exists.
          * @returns {String} UUIDv4 string of the child.
          */
@@ -192,11 +192,11 @@ export default class JAG extends EventTarget {
             this._children.push({
                 urn: urn,
                 id: id = UUIDv4()
-            //    jagModel: child   // dont think this is really there.  would be too much to serialize
+            //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
-        if ((this._children.length !== 0) && (this._operator == JAG.OPERATOR.NONE)) {
-            this._operator = JAG.OPERATOR.AND;
+        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE)) {
+            this._operator = Activity.OPERATOR.AND;
         }
         return id;
     }
@@ -252,34 +252,34 @@ export default class JAG extends EventTarget {
 
 
     /**
-     * Gets the ID, JAG, property name and type of all possible inputs to the child with the given ID.
-     * Includes inputs to this JAG and outputs from sequential children preceding the child with the given ID.
+     * Gets the ID, Activity, property name and type of all possible inputs to the child with the given ID.
+     * Includes inputs to this Activity and outputs from sequential children preceding the child with the given ID.
      *
      * @param {String} id ID of the child for which to seek inputs.
-     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Inputs available to the child with the given ID.
+     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs available to the child with the given ID.
      */
     inputsTo(id) {
         let availableInputs = this._inputs.map((input) => {
             return {
                 id: 'this',
-                jagModel: this,
+                activity: this,
                 property: input.name,
                 type: input.type
             };
         });
 
-        if (this._execution == JAG.EXECUTION.SEQUENTIAL) {
+        if (this._execution == Activity.EXECUTION.SEQUENTIAL) {
             for (let child of this._children) {
                 if (child.id == id)
                     break;
 
-                if (child.jagModel) {
-                    let child_outputs = child.jagModel.outputs;
+                if (child.activity) {
+                    let child_outputs = child.activity.outputs;
 
                     for (let child_output of child_outputs) {
                         availableInputs.push({
                             id: child.id,
-                            jagModel: child.jagModel,
+                            activity: child.activity,
                             property: child_output.name,
                             type: child_output.type
                         });
@@ -292,20 +292,20 @@ export default class JAG extends EventTarget {
     }
 
     /**
-     * Gets the ID, JAG, property name and type of all inputs of children of this JAG.
+     * Gets the ID, Activity, property name and type of all inputs of children of this Activity.
      *
-     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Inputs of children of this JAG.
+     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
      */
     getAvailableInputs() {
         let availableInputs = [];
 
         for (let child of this._children) {
-            if (child.jagModel) {
-                if (child.jagModel.inputs.length > 0) {
+            if (child.activity) {
+                if (child.activity.inputs.length > 0) {
                     availableInputs.push({
                         id: child.id,
-                        jagModel: child.jagModel,
-                        inputs: child.jagModel.inputs
+                        activity: child.activity,
+                        inputs: child.activity.inputs
                     });
                 }
             }
@@ -314,20 +314,20 @@ export default class JAG extends EventTarget {
     }
 
     /**
-     * Gets the ID, JAG, property name and type of all outputs of children of this JAG.
+     * Gets the ID, Activity, property name and type of all outputs of children of this Activity.
      *
-     * @returns {Array<{id:String,jagModel:JAG,property:String,type:String}>} Outputs of children of this JAG.
+     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Outputs of children of this Activity.
      */
     getAvailableOutputs() {
         let availableOutputs = [];
 
         for (let child of this._children) {
-            if (child.jagModel) {
-                if (child.jagModel.outputs.length > 0) {
+            if (child.activity) {
+                if (child.activity.outputs.length > 0) {
                     availableOutputs.push({
                         id: child.id,
-                        jagModel: child.jagModel,
-                        outputs: child.jagModel.outputs
+                        activity: child.activity,
+                        outputs: child.activity.outputs
                     });
                 }
             }
@@ -339,7 +339,7 @@ export default class JAG extends EventTarget {
 
 
     /**
-     * Adds the given binding to the bindings of this JAG.
+     * Adds the given binding to the bindings of this Activity.
      * Will remove an existing binding with the same consumer.
      * Dispatches an update.
      *
@@ -396,15 +396,15 @@ export default class JAG extends EventTarget {
 
 
     /**
-     * Gets the child of this JAG with the given ID.
+     * Gets the child of this Activity with the given ID.
      *
      * @param {String} id
-     * @returns {{id:String,jagModel:JAG}} Child of this JAG with the given ID.
+     * @returns {{id:String,activity:Activity}} Child of this Activity with the given ID.
      */
     getCanonicalNode(id) {
 
         if (id === 'this')
-            return {id: 'this', jagModel: this};
+            return {id: 'this', activity: this};
 
         for (let child of this._children)
             if (child.id == id)
@@ -414,7 +414,7 @@ export default class JAG extends EventTarget {
     }
 
     /**
-     * Adds the given annotation with name and value to the given child JAG.
+     * Adds the given annotation with name and value to the given child Activity.
      * Dispatches an update.
      *
      * @param {String} id UUID of the child to which to add the annotation.
@@ -424,7 +424,7 @@ export default class JAG extends EventTarget {
     addAnnotation(id, name, value) {
         const child = this.getCanonicalNode(id);
 
-        if (!(child == undefined || child.jagModel == this)) {
+        if (!(child == undefined || child.activity == this)) {
             if (!child.annotations || !child.annotations.has(name) || child.annotations.get(name) != value) {
                 if (!child.annotations) child.annotations = new Map();
                 child.annotations.set(name, value);
@@ -433,7 +433,7 @@ export default class JAG extends EventTarget {
     }
 
     /**
-     * Removes the annotation with the given name from the child JAG of the given ID.
+     * Removes the annotation with the given name from the child Activity of the given ID.
      * Dispatches an update.
      *
      * @param {String} id UUID of the child from which to remove the annotation.
@@ -442,7 +442,7 @@ export default class JAG extends EventTarget {
     removeAnnotation(id, name) {
         const child = this.getCanonicalNode(id);
 
-        if (!(child == undefined || child.jagModel == this)) {
+        if (!(child == undefined || child.activity == this)) {
             if (!child.annotations) return;
 
             if (child.annotations.has(name)) {
@@ -468,7 +468,7 @@ export default class JAG extends EventTarget {
     }
 
     getOrderForId(id) {
-        if (this._execution == JAG.EXECUTION.PARALLEL) return 0;
+        if (this._execution == Activity.EXECUTION.PARALLEL) return 0;
 
         for (let i = 0; i < this._children.length; ++i) {
             if (this._children[i].id === id) {
@@ -550,7 +550,7 @@ export default class JAG extends EventTarget {
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
-                return new JAG(element);
+                return new Activity(element);
             })
             return jagList;
         } else {
@@ -559,9 +559,9 @@ export default class JAG extends EventTarget {
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
-            return new JAG(json);
+            return new Activity(json);
             // @TODO: explode the json definition to use the constructor below
-            //return new JAG(urn, name, connector, inputs, outputs, children, bindings);
+            //return new Activity(urn, name, connector, inputs, outputs, children, bindings);
         }
     }
 
@@ -569,13 +569,13 @@ export default class JAG extends EventTarget {
 
 }
 
-JAG.EXECUTION = {
+Activity.EXECUTION = {
     NONE: 'node.execution.none',
     SEQUENTIAL: 'node.execution.sequential',
     PARALLEL: 'node.execution.parallel'
 }
 
-JAG.OPERATOR = {
+Activity.OPERATOR = {
     NONE: 'node.operator.none',
     AND: 'node.operator.and',
     OR: 'node.operator.or'

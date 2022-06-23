@@ -9,7 +9,7 @@
 //
 // import JAGService from '../services/jag-cell.js'
 //
-// export default class JAGModel {
+// export default class Activity {
 //
 // 	constructor({ urn, name, description, type, connector, inputs = [], outputs = [], children = [] } = {}) {
 // 		this._urn = urn;
@@ -23,12 +23,12 @@
 // 	}
 //
 // 	static fromJSON(json) {
-// 		return new JAGModel(json);
+// 		return new Activity(json);
 // 	}
 //
 // 	static async fromURN(urn) {
 // 		const json = await JAGService.get(urn, 'node');
-// 		return JAGModel.fromJSON(json);
+// 		return Activity.fromJSON(json);
 // 	}
 //
 // 	static isValidURN(urn) {
@@ -55,7 +55,7 @@
 // 	}
 //
 // 	get hasValidURN() {
-// 		return JAGModel.isValidURN(this._urn);
+// 		return Activity.isValidURN(this._urn);
 // 	}
 //
 // 	get children() {

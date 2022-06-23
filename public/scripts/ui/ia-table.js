@@ -9,7 +9,7 @@
 
 import AgentModel from '../models/agent.js';
 import AnalysisModel from '../models/analysis-model.js';
-import JagModel from '../models/jag.js';
+import Activity from '../models/activity.js';
 import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
@@ -23,7 +23,7 @@ class IATable extends Popupable {
         this.setPopupBounds(this);
 
         this._analysisModel = null;
-        this._availableJagUrns = [];
+        this._availableActivityUrns = [];
 
 
         this._domElements = {
@@ -43,11 +43,11 @@ class IATable extends Popupable {
         this._analysisModel = newAnalysisModel;
     }
 
-    get availableJagUrns() {
-        return this._availableJagUrns;
+    get availableActivityUrns() {
+        return this._availableActivityUrns;
     }
-    set availableJagUrns(jagUrnList) {
-        this._availableJagUrns = jagUrnList;
+    set availableActivityUrns(jagUrnList) {
+        this._availableActivityUrns = jagUrnList;
     }
 
 
@@ -173,12 +173,12 @@ class IATable extends Popupable {
 
     _handleAnalysisNameChange(event) {
         this._analysisModel.name = event.target.value;
-        this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
     _handleAnalysisDescriptionChange(event) {
         this._analysisModel.description = event.target.value;
-        this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
 
@@ -197,7 +197,7 @@ class IATable extends Popupable {
         if (analysisModel.jags) {
             //const service = JAGService.instance('idb-service');
             for (const jag of analysisModel.jags) {
-                if (this._availableJagUrns.contains(jag.urn)) {
+                if (this._availableActivityUrns.contains(jag.urn)) {
                     this.popup({
                         content: IATable.NOTICE_OVERWRITE_JAG,
                         trackEl: this._domElements.import,                  // To separate: put popups in iatable function.  bring rest up.
@@ -349,8 +349,8 @@ class IATable extends Popupable {
             //const service = StorageService.getStorageInstance('idb-service');
 
             for (let jag of jags) {
-                const jagModel = await StorageService.get(jag, 'activity');
-                json.jags.push(jagModel.toJSON());
+                const activity = await StorageService.get(jag, 'activity');
+                json.jags.push(activity.toJSON());
             }
         }
 
@@ -395,7 +395,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 
                 //const jags = await JAGService.instance('idb-service').all();
                 const jags = await StorageService.all('activity');
-                //		const jags = jsonList.map(JagModel.fromJSON);
+                //		const jags = jsonList.map(Activity.fromJSON);
 
                 for (const jag of jags) {
                     options.push({
@@ -413,7 +413,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
             text: "Create", color: "white", bgColor: "green",
             action: async function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
                 // let id = await this._controller.createAnalysis(name,root);
-                this.dispatchEvent(new CustomEvent('local-analysis-created', {detail: {name: name, rootUrn: root}}));
+                this.dispatchEvent(new CustomEvent('event-analysis-created', {detail: {name: name, rootUrn: root}}));
             }
         },
         {text: "Cancel", color: "black", bgColor: "white"}
@@ -460,15 +460,15 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
     name: "Overwrite JAGs",
-    description: ({inputs: {jag}}) => `The uploaded analysisModel contains a jagModel at (${jag.urn}), which you already have. Replace it?`,
+    description: ({inputs: {jag}}) => `The uploaded analysisModel contains a activity at (${jag.urn}), which you already have. Replace it?`,
     actions: [
         {
             text: "Overwrite", color: "black", bgColor: "red",
             action: async function ({inputs: {jag}}) {
-                const newJagModel = JagModel.fromJSON(jag);
-                this.dispatchEvent(new CustomEvent('local-analysis-updated', {bubbles: true, composed: true, detail: {jagModel: newJagModel}}));
+                const newActivity = Activity.fromJSON(jag);
+                this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {activity: newActivity}}));
                 // seems like a create - but really an update --- an upstream check for 'isLocked' should be made.
-             //   await StorageService.create(newJagModel, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
+             //   await StorageService.create(newActivity, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}

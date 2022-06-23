@@ -33,11 +33,11 @@ class JagCellControls extends HTMLElement {
 
 	_initListeners() {
 		this._addButton.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-node-addchild', {bubbles: true, composed: true, detail: {cell: this._node}}));
+			this.dispatchEvent(new CustomEvent('event-node-addchild', {bubbles: true, composed: true, detail: {cell: this._node}}));
 		});
 
 		this._removeButton.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-node-prunechild', {bubbles: true, composed: true, detail: {cell: this._node}}));
+			this.dispatchEvent(new CustomEvent('event-node-prunechild', {bubbles: true, composed: true, detail: {cell: this._node}}));
 		});
 	}
 

@@ -9,7 +9,7 @@
 
 'use strict';
 
-import JagModel from "../models/jag.js";
+import Activity from "../models/activity.js";
 import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
@@ -24,7 +24,7 @@ export default class ControllerAT extends EventTarget {
         this._projectLibrary = null;
         this._playground = null;
         this._properties = null;
-        this._activityMap = new Map();         // All JagModels - should be in sync with storage
+        this._activityMap = new Map();         // All Activitys - should be in sync with storage
         this._projectMap = new Map();        // All nodes - should be in sync with storage
         this._currentAnalysis = undefined;       // type: AnalysisModel
 
@@ -57,11 +57,11 @@ export default class ControllerAT extends EventTarget {
     get activityMap() {
         return this._activityMap;
     }
-    set activityMap(newJagModelMap) {
-        this._activityMap = newJagModelMap;
+    set activityMap(newActivityMap) {
+        this._activityMap = newActivityMap;
     }
-    addActivity(jagModel) {
-        this._activityMap.set(jagModel.urn, jagModel)
+    addActivity(activity) {
+        this._activityMap.set(activity.urn, activity)
     }
 
     get projectMap() {
@@ -94,7 +94,7 @@ export default class ControllerAT extends EventTarget {
 
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => {
-            this.repopulateJag(node)
+            this.repopulateActivity(node)
             this.repopulateParent(node)
             this.addProject(node);
         });
@@ -191,10 +191,10 @@ export default class ControllerAT extends EventTarget {
         const urn = event.detail.urn;
         const description = event.detail.description;
         const name = event.detail.name;
-        const newJagModel = new JagModel({urn: urn, name: name, description: description});
-        if (InputValidator.isValidUrn(newJagModel.urn)) {
-            await StorageService.create(newJagModel, 'activity');
-            //   this._playground._addJagNodeTree(newJagModel, newJagModel.urn);
+        const newActivity = new Activity({urn: urn, name: name, description: description});
+        if (InputValidator.isValidUrn(newActivity.urn)) {
+            await StorageService.create(newActivity, 'activity');
+            //   this._playground._addActivityNodeTree(newActivity, newActivity.urn);
         } else {
             window.alert("Invalid URN");
         }
@@ -203,8 +203,8 @@ export default class ControllerAT extends EventTarget {
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
-        const updatedJagModel = event.detail.jagModel;
-        await StorageService.update(updatedJagModel, 'activity');
+        const updatedActivity = event.detail.activity;
+        await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
     }
 
@@ -237,16 +237,16 @@ export default class ControllerAT extends EventTarget {
                 let existingKids = currentNode.children.map(node => {
                     return {urn: node.urn, id: node.childId}
                 })
-                let validJag = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
-                let validKids = validJag.children
-                currentNode.jag = validJag;
+                let validActivity = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
+                let validKids = validActivity.children
+                currentNode.activity = validActivity;
                 let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
                 let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
 
                 kidsToAdd.forEach(child => {
-                    const childJagModel = this._activityMap.get(child.urn);
-                    const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
-                    childNodeModel.jag = childJagModel
+                    const childActivity = this._activityMap.get(child.urn);
+                    const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
+                    childNodeModel.activity = childActivity
                     childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
                     currentNode.addChild(childNodeModel, true);
                     childNodeModel.parent = currentNode;
@@ -301,17 +301,17 @@ export default class ControllerAT extends EventTarget {
                     let existingKids = currentNode.children.map(node => {
                         return {urn: node.urn, id: node.childId}
                     })
-                    let validJag = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
-                    let validKids = validJag.children
-                    currentNode.jag = validJag;
+                    let validActivity = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
+                    let validKids = validActivity.children
+                    currentNode.activity = validActivity;
                     let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
                     let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
 
                     kidsToAdd.forEach(child => {
 
-                        const childJagModel = this._activityMap.get(child.urn);
-                        const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
-                        childNodeModel.jag = childJagModel
+                        const childActivity = this._activityMap.get(child.urn);
+                        const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
+                        childNodeModel.activity = childActivity
                         childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
                         currentNode.addChild(childNodeModel, true);
                         childNodeModel.parent = currentNode;
@@ -385,9 +385,9 @@ export default class ControllerAT extends EventTarget {
         parentNodeModel.addChild(childNodeModel)
         this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
         this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
-        let newChildId = parentNodeModel.jag.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
+        let newChildId = parentNodeModel.activity.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
         childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
-        this._activityMap.set(parentNodeModel.urn, parentNodeModel.jag)  // prob not necessary - first thing that jagupdatehandler does
+        this._activityMap.set(parentNodeModel.urn, parentNodeModel.activity)  // prob not necessary - first thing that jagupdatehandler does
 
         // 2) CONNECT CHILD TO PARENT
         // Parent node adds child node
@@ -408,7 +408,7 @@ export default class ControllerAT extends EventTarget {
         // event.detail.nodeModel = projectModel;
         // await this.eventNodeUpdatedHandler(event)
         //
-        // event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
+        // event.detail.activity = parentNodeModel.activity;                                // localJagUpdateHandler wants the new Parent JAG
         // await this.eventActivityUpdatedHandler(event)
         //
 
@@ -421,7 +421,7 @@ export default class ControllerAT extends EventTarget {
         console.log(childNodeModel)
 
 
-        event.detail.jagModel = parentNodeModel.jag;                                // localJagUpdateHandler wants the new Parent JAG
+        event.detail.activity = parentNodeModel.activity;                                // localJagUpdateHandler wants the new Parent JAG
         await this.eventActivityUpdatedHandler(event)
 
         console.log("AFTER PARENT JAG UPDATE")
@@ -434,7 +434,7 @@ export default class ControllerAT extends EventTarget {
 
 
 
-        // event.detail.jagModel = childNodeModel.jag;
+        // event.detail.activity = childNodeModel.activity;
         // await this.eventActivityUpdatedHandler(event)
 
 
@@ -477,40 +477,40 @@ export default class ControllerAT extends EventTarget {
         const URL_RENAME_WARNING_POPUP = "The new URN (" + newUrn + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
         // Changing a URN is either a rename/move or a copy or just not allowed.
         // Proposing we have a 'isLocked' tag.
-        // URN changes are renames until the JagModel is marked as 'isLocked'.
+        // URN changes are renames until the Activity is marked as 'isLocked'.
         // After 'isLocked', URN changes are copies.
 
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(newUrn);
         if (isValid) {
-            let origJagModel = await StorageService.get(originalUrn, 'activity');  // needed to check if 'isLocked'
+            let origActivity = await StorageService.get(originalUrn, 'activity');  // needed to check if 'isLocked'
             let urnAlreadyBeingUsed = await StorageService.has(newUrn, 'activity');
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
                 // Does user confirm an over-write??
                 if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
-                    let newJagModel = await StorageService.get(originalUrn, 'activity');
+                    let newActivity = await StorageService.get(originalUrn, 'activity');
 
-                    // is the target JagModel locked?
-                    if (newJagModel.isLocked) {
-                        // FAIL  - CANT OVERWRITE LOCKED JagModel
-                    } else // target JagModel is NOT locked
+                    // is the target Activity locked?
+                    if (newActivity.isLocked) {
+                        // FAIL  - CANT OVERWRITE LOCKED Activity
+                    } else // target Activity is NOT locked
 
-                    { // is the original JagModel locked?
-                        if (origJagModel.isLocked) {
+                    { // is the original Activity locked?
+                        if (origActivity.isLocked) {
                             await StorageService.clone(originalUrn, newUrn, 'activity');
-                        } else { /// the original JagModel is not locked
+                        } else { /// the original Activity is not locked
                             await StorageService.replace(originalUrn, newUrn, 'activity')
                         }
                     }
                 } else {  // user says 'no' to overwrite
-                    // FAIL -- NOT OVERWRITING EXISTING JagModel
+                    // FAIL -- NOT OVERWRITING EXISTING Activity
                 }
             } else {  // urn not already being used
-                // is the original JagModel locked?
-                if (origJagModel.isLocked) {
-                    await this.cloneJagModel(origJagModel, newUrn)
-                } else {/// the original JagModel is not locked
+                // is the original Activity locked?
+                if (origActivity.isLocked) {
+                    await this.cloneActivity(origActivity, newUrn)
+                } else {/// the original Activity is not locked
                     await StorageService.replace(originalUrn, newUrn, 'activity');
                 }
             }
@@ -543,11 +543,11 @@ export default class ControllerAT extends EventTarget {
 
     async eventActivityDeletedHandler(event) {
         console.log("Local>> (jag deleted) ")
-        const deadJagModelUrn = event.detail.jagModelUrn;
+        const deadActivityUrn = event.detail.activityUrn;
         for (let [activityId, activity] of this._activityMap) {
-            if (activity.urn != deadJagModelUrn) {
+            if (activity.urn != deadActivityUrn) {
                 let remainingChildren = activity.children.filter(kid => {
-                    if (kid.urn != deadJagModelUrn) {
+                    if (kid.urn != deadActivityUrn) {
                         return kid
                     }
                 })
@@ -557,22 +557,22 @@ export default class ControllerAT extends EventTarget {
                 }
             }
         }
-        await StorageService.delete(deadJagModelUrn, 'activity');
+        await StorageService.delete(deadActivityUrn, 'activity');
         console.log("Local<< (jag deleted) \n")
     }
 
     async eventActivityLockedHandler(event) {
         console.log("Local>> (jag locked) ")
-        const lockedJagModel = event.detail.jagModel;
-        lockedJagModel.isLocked = !lockedJagModel.isLocked;
-        await StorageService.update(lockedJagModel, 'activity');
+        const lockedActivity = event.detail.activity;
+        lockedActivity.isLocked = !lockedActivity.isLocked;
+        await StorageService.update(lockedActivity, 'activity');
         console.log("Local<< (jag locked) \n")
     }
 
     /**   -- Menu --  */
 
     eventAddActivityHandler() {
-        this._playground._handleNewJagActivityPopup();         //@todo consider moving popupable to menu as well
+        this._playground._handleNewActivityActivityPopup();         //@todo consider moving popupable to menu as well
     }
 
     eventClearPlaygroundHandler() {
@@ -585,10 +585,10 @@ export default class ControllerAT extends EventTarget {
 
     async eventActivitySelectedHandler(event) {
         console.log("Local>> (line item selected) ")
-        const jagModelSelected = event.detail.jagModel;
+        const activitySelected = event.detail.activity;
         const expandRequested = event.detail.expanded;
-        //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
-        let newProjectRootNode = this.buildNodeTreeFromJagUrn(jagModelSelected.urn);
+        //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
+        let newProjectRootNode = this.buildNodeTreeFromActivityUrn(activitySelected.urn);
         await StorageService.create(newProjectRootNode, "node");
         console.log("Local<< (line item selected) \n")
     }
@@ -601,8 +601,8 @@ export default class ControllerAT extends EventTarget {
         const expandRequested = event.detail.expanded;
 
         this._playground._rebuildNodeView(projectSelected)
-        //  let childrenMap = this._getChildModels(jagModelSelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
-        //    let newProjectRootNode = this.buildNodeTreeFromJagUrn(projectSelected.urn);
+        //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
+        //    let newProjectRootNode = this.buildNodeTreeFromActivityUrn(projectSelected.urn);
         //    await StorageService.create(newProjectRootNode, "node");
         console.log("Local<< (project line item selected) \n")
     }
@@ -642,51 +642,51 @@ export default class ControllerAT extends EventTarget {
      *
      */
 
-    commandActivityCreatedHandler(createdJagModel, createdJagUrn) {
-        console.log("                          ((OBSERVER IN) >>  Jag Created - Jag Created - Jag Created - Jag Created - Jag Created")
-        this._activityMap.set(createdJagUrn, createdJagModel)
-        UserPrefs.setDefaultUrnPrefixFromUrn(createdJagUrn)
-        this._activityLibrary.addListItem(createdJagModel);                                   // Add JagModel list item to Library
-        console.log("                          ((OBSERVER OUT) <<  Jag Created - Jag Created - Jag Created - Jag Created - Jag Created")
+    commandActivityCreatedHandler(createdActivity, createdActivityUrn) {
+        console.log("                          ((OBSERVER IN) >>  Activity Created - Activity Created - Activity Created - Activity Created - Activity Created")
+        this._activityMap.set(createdActivityUrn, createdActivity)
+        UserPrefs.setDefaultUrnPrefixFromUrn(createdActivityUrn)
+        this._activityLibrary.addListItem(createdActivity);                                   // Add Activity list item to Library
+        console.log("                          ((OBSERVER OUT) <<  Activity Created - Activity Created - Activity Created - Activity Created - Activity Created")
     }
 
-    commandActivityUpdatedHandler(updatedJagModel, updatedJagUrn) {
-        console.log("                          ((OBSERVER IN) >>  Jag Updated - Jag Updated - Jag Updated - Jag Updated - Jag Updated")
-        this._activityMap.set(updatedJagUrn, updatedJagModel)
-        this._playground.affectProjectView(updatedJagUrn);         // Determine if JAG change affects our graph
-        this._properties.handleStorageUpdate(updatedJagModel, updatedJagUrn);   // change property window values if that one is changed in IA
-        this._activityLibrary.updateItem(updatedJagModel);
-        console.log("                          ((OBSERVER OUT) <<  Jag Updated - Jag Updated - Jag Updated - Jag Updated - Jag Updated")
+    commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
+        console.log("                          ((OBSERVER IN) >>  Activity Updated - Activity Updated - Activity Updated - Activity Updated - Activity Updated")
+        this._activityMap.set(updatedActivityUrn, updatedActivity)
+        this._playground.affectProjectView(updatedActivityUrn);         // Determine if JAG change affects our graph
+        this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
+        this._activityLibrary.updateItem(updatedActivity);
+        console.log("                          ((OBSERVER OUT) <<  Activity Updated - Activity Updated - Activity Updated - Activity Updated - Activity Updated")
     }
 
-    commandActivityDeletedHandler(deletedJagUrn) {
-        console.log("                          ((OBSERVER IN) >>  Jag Deleted - Jag Deleted - Jag Deleted - Jag Deleted - Jag Deleted")
-        this._activityMap.delete(deletedJagUrn)
-        this._playground.deleteJagModel(deletedJagUrn)
-        this._activityLibrary.removeLibraryListItem(deletedJagUrn)
-        console.log("                          ((OBSERVER OUT) <<  Jag Deleted - Jag Deleted - Jag Deleted - Jag Deleted - Jag Deleted")
+    commandActivityDeletedHandler(deletedActivityUrn) {
+        console.log("                          ((OBSERVER IN) >>  Activity Deleted - Activity Deleted - Activity Deleted - Activity Deleted - Activity Deleted")
+        this._activityMap.delete(deletedActivityUrn)
+        this._playground.deleteActivity(deletedActivityUrn)
+        this._activityLibrary.removeLibraryListItem(deletedActivityUrn)
+        console.log("                          ((OBSERVER OUT) <<  Activity Deleted - Activity Deleted - Activity Deleted - Activity Deleted - Activity Deleted")
     }
 
-    commandActivityClonedHandler(clonedJagModel, clonedJagUrn) {
-        UserPrefs.setDefaultUrnPrefixFromUrn(clonedJagUrn)
-        this._playground._addJagNodeTree(clonedJagModel, clonedJagUrn)
+    commandActivityClonedHandler(clonedActivity, clonedActivityUrn) {
+        UserPrefs.setDefaultUrnPrefixFromUrn(clonedActivityUrn)
+        this._playground._addActivityNodeTree(clonedActivity, clonedActivityUrn)
     }
 
-    commandActivityReplacedHandler(newJagModel, replacedJagUrn) {
-        //  UserPrefs.setDefaultUrnPrefixFromUrn(newJagModel.urn)
-        this._playground.replaceJagNode(newJagModel, replacedJagUrn)
-        this._activityLibrary.replaceItem(newJagModel, replacedJagUrn)                   // Replace JagModel list item in activityLibrary
+    commandActivityReplacedHandler(newActivity, replacedActivityUrn) {
+        //  UserPrefs.setDefaultUrnPrefixFromUrn(newActivity.urn)
+        this._playground.replaceActivityNode(newActivity, replacedActivityUrn)
+        this._activityLibrary.replaceItem(newActivity, replacedActivityUrn)                   // Replace Activity list item in activityLibrary
     }
 
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) { /// this coming in is no good
         console.log("                          ((OBSERVER IN) >>  Node Created - Node Created - Node Created - Node Created - Node Created")
         this.repopulateParent(createdNodeModel)
-        this.repopulateJag(createdNodeModel);
+        this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id)
         this._projectMap.set(createdNodeId, createdNodeModel)
-        this._projectLibrary.addListItem(createdNodeModel);                                        // Add JagModel list item to Library
+        this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
         this._playground.addNodeModel(createdNodeModel)
-        //   this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
+        //   this._playground.createActivityNode(createdNodeModel, true);                        // default expand tree = true
         console.log("                          ((OBSERVER OUT) <<  Node Created - Node Created - Node Created - Node Created - Node Created")
     }
 
@@ -696,7 +696,7 @@ export default class ControllerAT extends EventTarget {
         let projectNode = this._projectMap.get(updatedNodeModel.project)
         console.log(projectNode)
         this.repopulateParent(projectNode)
-        this.repopulateJag(updatedNodeModel)
+        this.repopulateActivity(updatedNodeModel)
         this.repopulateProject(updatedNodeModel,projectNode.id)
 
         this.projectMap.set(projectNode.id, projectNode)
@@ -724,26 +724,26 @@ export default class ControllerAT extends EventTarget {
 
     /**
      *                                  Support Functions
-     * buildNodeTreeFromJagUrn   Build node tree given root URN
+     * buildNodeTreeFromActivityUrn   Build node tree given root URN
      *
      *
      *
      */
 
-    buildNodeTreeFromJagUrn(newRootJagUrn) {
+    buildNodeTreeFromActivityUrn(newRootActivityUrn) {
         const nodeStack = [];
         const resultStack = [];
-        const rootJagModel = this.activityMap.get(newRootJagUrn); /// I could have just passed in the Model...instead of switching to urn and back.
-        const rootNodeModel = new NodeModel({urn: newRootJagUrn, is_root: true});
-        rootNodeModel.jag = rootJagModel;
+        const rootActivity = this.activityMap.get(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
+        const rootNodeModel = new NodeModel({urn: newRootActivityUrn, is_root: true});
+        rootNodeModel.activity = rootActivity;
         rootNodeModel.project = rootNodeModel.id;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length != 0) {
             let currentNode = nodeStack.pop();
-            for (const child of currentNode.jag.children) {
-                const childJagModel = this.activityMap.get(child.urn);
+            for (const child of currentNode.activity.children) {
+                const childActivity = this.activityMap.get(child.urn);
                 const childNodeModel = new NodeModel({urn: child.urn, childId: child.id, is_root: false});
-                childNodeModel.jag = this.activityMap.get(child.urn)
+                childNodeModel.activity = this.activityMap.get(child.urn)
                 childNodeModel.parent = currentNode;
                 childNodeModel.project = currentNode.project
                 currentNode.addChild(childNodeModel, true);
@@ -773,11 +773,11 @@ export default class ControllerAT extends EventTarget {
         let kidsToAdd = this.getChildrenToAdd(newKids, oldKids);
         let kidsToRemove = this.getChildrenToRemove(newKids, oldKids);
         kidsToAdd.forEach(child => {
-            const childJagModel = this._activityMap.get(child.urn);
-            const childNodeModel = new NodeModel({urn: childJagModel.urn, is_root: false});
+            const childActivity = this._activityMap.get(child.urn);
+            const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
             currentNode.addChild(childNodeModel, true);
             childNodeModel.childId = child.id;    // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
-            this.repopulateJag(childNodeModel)
+            this.repopulateActivity(childNodeModel)
             this.repopulateParent(currentNode)
             this.repopulateProject(childNodeModel, currentNode.project)
         })
@@ -787,7 +787,7 @@ export default class ControllerAT extends EventTarget {
             childNodeModel.isRoot(true);
             newlyFormedRootStack.push(childNodeModel);
             currentNode.removeChild();
-            this.repopulateJag(childNodeModel)
+            this.repopulateActivity(childNodeModel)
             this.repopulateParent(childNodeModel)
             this.repopulateProject(childNodeModel, childNodeModel.id)   // 100% avoid race condition
 
@@ -838,8 +838,8 @@ export default class ControllerAT extends EventTarget {
 
     async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
         console.log("Local>> (local nodes disjoined) ")
-        let changingJagModel = event.detail.jagUrn
-        let leavingJagChild = event.detail.jagChild
+        let changingActivity = event.detail.activityUrn
+        let leavingJagChild = event.detail.activityChild
 
         let projectRoot = this._projectMap.get(leavingNodeModel.project)
         this.repopulateParent(projectRoot)
@@ -857,10 +857,10 @@ export default class ControllerAT extends EventTarget {
 
 
 
-    repopulateJag(currentNode) {
-        currentNode.jag = this._activityMap.get(currentNode.urn)
+    repopulateActivity(currentNode) {
+        currentNode.activity = this._activityMap.get(currentNode.urn)
         for (let child of currentNode.children) {
-            this.repopulateJag(child)
+            this.repopulateActivity(child)
         }
     }
 
@@ -881,13 +881,13 @@ export default class ControllerAT extends EventTarget {
 
 
 
-    // _getChildModels(parentJAGModel, childrenJAGMap) {
-    //     if (!parentJAGModel.children)              // @TODO or.. if (parentJAGModel.children) then for loop...  return childrenJAGMap
+    // _getChildModels(parentActivity, childrenJAGMap) {
+    //     if (!parentActivity.children)              // @TODO or.. if (parentActivity.children) then for loop...  return childrenJAGMap
     //         return childrenJAGMap;
-    //     for (let childDetails of parentJAGModel.children) {
-    //         const childJAGModel = this._activityMap.get(childDetails.urn)
-    //         childrenJAGMap.set(childDetails.urn, childJAGModel);
-    //         childrenJAGMap = this._getChildModels(childJAGModel, childrenJAGMap);
+    //     for (let childDetails of parentActivity.children) {
+    //         const childActivity = this._activityMap.get(childDetails.urn)
+    //         childrenJAGMap.set(childDetails.urn, childActivity);
+    //         childrenJAGMap = this._getChildModels(childActivity, childrenJAGMap);
     //     }
     //     return childrenJAGMap;
     // }

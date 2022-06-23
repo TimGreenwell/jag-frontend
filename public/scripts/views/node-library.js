@@ -52,8 +52,8 @@ customElements.define('node-library', class extends HTMLElement {
 	createListItem(newNodeModel) {
 		if (newNodeModel instanceof NodeModel) {
 			const urn = newNodeModel.urn;
-			const name = newNodeModel.jag.name || '';
-			const description = newNodeModel.jag.description || '';
+			const name = newNodeModel.activity.name || '';
+			const description = newNodeModel.activity.description || '';
 			const li = document.createElement('li');
 
 			let deleteIconClickedHandler = function (event) {
@@ -220,9 +220,9 @@ projectNodes.forEach(project => this.createListItem(project))
 
 	//??
 	// handleJagStorageReplaced (@controllerAT)
-	replaceItem(newJAGModel, replacedUrn) {
+	replaceItem(newActivity, replacedUrn) {
 		this.removeLibraryListItem(replacedUrn);
-		this.addItem(newJAGModel);
+		this.addItem(newActivity);
 	}
 
 

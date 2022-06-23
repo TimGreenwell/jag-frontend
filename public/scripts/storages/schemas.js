@@ -17,7 +17,7 @@
 
 
 import AnalysisModel from '../models/analysis-model.js';
-import JagModel from "../models/jag.js";
+import Activity from "../models/activity.js";
 import Agent from  '../models/agent.js';
 import Team from  '../models/team.js';
 import NodeModel from  '../models/node.js';
@@ -31,7 +31,7 @@ export default class Schemas {
 		const ACTIVITY_STORE = {
 			name: 'activity',
 			key: 'urn',
-			deserialize: JagModel.fromJSON,
+			deserialize: Activity.fromJSON,
 			rest: 'jagActivities',
 			indexList: [{
 					name: 'urn-index',

@@ -10,7 +10,7 @@
 import { UUIDv4 }  from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 import UserPrefs from "../utils/user-prefs.js";
-import JagModel from "../models/jag.js"
+import Activity from "./activity.js"
 
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
@@ -32,7 +32,7 @@ export default class Node extends EventTarget {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
-		this._jag = undefined;
+		this._activity = undefined;
 		this._project = project;
 
         this._urn = urn;
@@ -73,12 +73,21 @@ export default class Node extends EventTarget {
 		this._childId = value;
 	}
 	get jag() {
-		return this._jag;
+		console.log("NNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!");
 	}
 	set jag(value) {
-		this._jag = value;
+		console.log("NNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!");
+		this._activity = value;
 	}
 
+	get activity() {
+		return this._activity;
+	}
+	set activity(value) {
+		this._activity = value;
+	}
+	
+	
 
 	get project() {
 		return this._project;
@@ -171,27 +180,27 @@ export default class Node extends EventTarget {
 	/////////////////////   ( This will go away once extending JAG Model )    /////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 	get name() {
-		return (this.jag === undefined) ? '' : this.jag.name;
+		return (this.activity === undefined) ? '' : this.activity.name;
 	}
 	set name(name) {
-		if (this.jag !== undefined) {
-			this.jag.name = name;
+		if (this.activity !== undefined) {
+			this.activity.name = name;
 		}
 	}
 	// get urn() {
-	// 	return (this.jag === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.jag.urn;
+	// 	return (this.activity === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.activity.urn;
 	// }
 	// set urn(urn) {
-	// 		if (this.jag !== undefined) {
-	// 		this.jag.urn = urn                    // Remember - can't update if urn is valid. (enforced at jagModel)
+	// 		if (this.activity !== undefined) {
+	// 		this.activity.urn = urn                    // Remember - can't update if urn is valid. (enforced at activity)
 	// 	}
 	// }
 	get description() {
-		return (this.jag === undefined) ? '' : this.jag.description;
+		return (this.activity === undefined) ? '' : this.activity.description;
 	}
 	set description(name) {
-		if (this.jag !== undefined) {
-			this.jag.name = name;
+		if (this.activity !== undefined) {
+			this.activity.name = name;
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +221,7 @@ export default class Node extends EventTarget {
 		while (workStack.length > 0 ){
 			let nodeModel = workStack.pop();
 
-			if (nodeModel.jag.urn == urn) {
+			if (nodeModel.activity.urn == urn) {
 				matchStack.push(nodeModel);
 			}
 			nodeModel.children.forEach(kid => {workStack.push(kid)})
@@ -328,8 +337,8 @@ export default class Node extends EventTarget {
 	getLastChild(){
 		return this._children[this.children.length - 1]
 	}
-	get canHaveChildren() {  // already pushed to jag model
-		return ((this.jag !== undefined) && (Validation.isValidUrn(this.jag.urn)));
+	get canHaveChildren() {  // already pushed to activity model
+		return ((this.activity !== undefined) && (Validation.isValidUrn(this.activity.urn)));
 	}
 	get childCount() {
 		return this._children.length;
@@ -391,14 +400,14 @@ export default class Node extends EventTarget {
 
 
 	// static async fromJSON(json) {
-	// 	const jag = await StorageService.get(json.jag,'activity');
-	// 	if (jag instanceof JagModel) {
-	// 		json.jag = jag;
+	// 	const activity = await StorageService.get(json.activity,'activity');
+	// 	if (activity instanceof Activity) {
+	// 		json.activity = activity;
 	// 	}
 	// 	else {
-	// 		json.jag = undefined;
+	// 		json.activity = undefined;
 	// 	}
-	// 	//json.jag = (jag != null) ? jag : undefined;
+	// 	//json.activity = (activity != null) ? activity : undefined;
 	//
 	// 	const node = new Node(json);
 	//

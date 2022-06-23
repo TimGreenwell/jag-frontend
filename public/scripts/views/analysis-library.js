@@ -6,10 +6,7 @@
  * @version 0.16
  */
 
-//import AnalysisService from '../services/analysis-model.js';
 import StorageService from "../services/storage-service.js";
-import AnalysisModel from "../models/analysis-model.js";
-import JAG from "../models/jag.js";
 
 customElements.define('analysis-library', class extends HTMLElement {
 
@@ -36,19 +33,19 @@ customElements.define('analysis-library', class extends HTMLElement {
 		this._defined.clear();
 	}
 
-	// updateItem(updatedJAGModel) {
+	// updateItem(updatedActivity) {
 	// 	for (let idx in this._libraryList) {
-	// 		if (this._libraryList[idx].model.urn == updatedJAGModel.urn) {
-	// 			this._libraryList[idx].model = updatedJAGModel;
-	// 			this._libraryList[idx].element.id=updatedJAGModel.urn;
-	// 			this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedJAGModel.name;
-	// 			this._libraryList[idx].element.querySelectorAll("p").item(0).innerHTML = updatedJAGModel.description;
+	// 		if (this._libraryList[idx].model.urn == updatedActivity.urn) {
+	// 			this._libraryList[idx].model = updatedActivity;
+	// 			this._libraryList[idx].element.id=updatedActivity.urn;
+	// 			this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedActivity.name;
+	// 			this._libraryList[idx].element.querySelectorAll("p").item(0).innerHTML = updatedActivity.description;
 	// 			let search_params =[];
-	// 			search_params.push(updatedJAGModel.urn.toLowerCase());
-	// 			search_params.push(updatedJAGModel.name.toLowerCase());
-	// 			search_params.push(updatedJAGModel.description.toLowerCase());
+	// 			search_params.push(updatedActivity.urn.toLowerCase());
+	// 			search_params.push(updatedActivity.name.toLowerCase());
+	// 			search_params.push(updatedActivity.description.toLowerCase());
 	// 			this._libraryList[idx].search_content = search_params.join(" ");
-	// 			this.refreshItem(updatedJAGModel);
+	// 			this.refreshItem(updatedActivity);
 	// 		}
 	// 	}
 	// }
@@ -117,7 +114,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 		});
 
 		li.addEventListener('click', (event) => {
-			this.dispatchEvent(new CustomEvent('library-analysis-selected', {
+			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
 				detail: {
 					model: model
 				}

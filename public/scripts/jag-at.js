@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'refresh' (storage-sync-requested)(?)
 	playground.addEventListener('refresh', (e) => {
-		library.refreshItem(e.detail.jagModel, e.detail.refreshed);
+		library.refreshItem(e.detail.activity, e.detail.refreshed);
 	});
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'resources' (???)

@@ -6,13 +6,13 @@
  * @version 0.43
  */
 
-import JagModel from '../models/jag.js';
+import Activity from '../models/activity.js';
 
 customElements.define('jag-library', class extends HTMLElement {
 
 	constructor() {
 		super();
-		this._libraryList = [];                         // <li> elements holding jagModel.name & description + (search context) + jagModel
+		this._libraryList = [];                         // <li> elements holding activity.name & description + (search context) + activity
 		this._initUI();
 		this._initListeners();
 		this.clearLibraryList();
@@ -52,15 +52,15 @@ customElements.define('jag-library', class extends HTMLElement {
 
 
 	// handleJagStorageCreated (@controllerAT)
-	createListItem(newJAGModel) {
+	createListItem(newActivity) {
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;
 		})
-		if (!existingUrns.includes(newJAGModel.urn)) {
-			if (newJAGModel instanceof JagModel) {
-				const urn = newJAGModel.urn;
-				const name = newJAGModel.name || '';
-				const description = newJAGModel.description || '';
+		if (!existingUrns.includes(newActivity.urn)) {
+			if (newActivity instanceof Activity) {
+				const urn = newActivity.urn;
+				const name = newActivity.name || '';
+				const description = newActivity.description || '';
 
 				const li = document.createElement('li');
 
@@ -69,7 +69,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 					this.dispatchEvent(new CustomEvent('event-activity-deleted', {
 						detail: {
-							jagModelUrn: newJAGModel.urn
+							activityUrn: newActivity.urn
 						}
 					}))
 				}
@@ -78,7 +78,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					event.stopPropagation();
 						this.dispatchEvent(new CustomEvent('event-activity-locked', {
 						detail: {
-							jagModel: newJAGModel
+							activity: newActivity
 						}
 					}))
 				}
@@ -89,7 +89,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				const $topHalfWrapper = document.createElement('h3');
 				const $nameEntry = document.createElement('span')
 				$nameEntry.classList.add('name-entry')
-				$nameEntry.innerText = newJAGModel.name;
+				$nameEntry.innerText = newActivity.name;
 
 				const toggleLock = document.createElement('div');
 				toggleLock.classList.add('jag-button', 'lock-button');
@@ -101,10 +101,10 @@ customElements.define('jag-library', class extends HTMLElement {
 				const $bottomHalfWrapper = document.createElement('h3');
 				const $descriptionEntry = document.createElement('span')
 				$descriptionEntry.classList.add('description-entry')
-				$descriptionEntry.innerText = newJAGModel.description;
+				$descriptionEntry.innerText = newActivity.description;
 
 				const deleteJag = document.createElement('div');
-				if (!newJAGModel.isLocked) {
+				if (!newActivity.isLocked) {
 					deleteJag.classList.add('jag-button', 'delete-button');
 					deleteJag.addEventListener('click',  deleteIconClickedHandler.bind(this))
 				}
@@ -120,16 +120,16 @@ customElements.define('jag-library', class extends HTMLElement {
 				search_params.push(name.toLowerCase());
 				search_params.push(description.toLowerCase());
 
-				newJAGModel.addEventListener('refresh', () => {
-					this.refreshItem(newJAGModel);
+				newActivity.addEventListener('refresh', () => {
+					this.refreshItem(newActivity);
 				});
 
 
-				// Send the newJAGModel and all its children through the dispatch
+				// Send the newActivity and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
 					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
-							jagModel: newJAGModel,
+							activity: newActivity,
 							expanded: event.shiftKey
 						}
 					}))});
@@ -137,7 +137,7 @@ customElements.define('jag-library', class extends HTMLElement {
 				$topHalfWrapper.addEventListener('click', (event) => {
 					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
-							jagModel: newJAGModel,
+							activity: newActivity,
 							expanded: event.shiftKey
 						}
 					}))
@@ -147,43 +147,43 @@ customElements.define('jag-library', class extends HTMLElement {
 				let newItem = {
 					element: li,
 					search_content: search_params.join(" "),
-					jagModel: newJAGModel
+					activity: newActivity
 				};
 
 				return newItem;
 
-				//	jagModel.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
+				//	activity.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
-				console.log("ERROR -- unexpected type for newJAGModel [library-addItem]")
+				console.log("ERROR -- unexpected type for newActivity [library-addItem]")
 			}
 		} else {
 			console.log("ERROR -- URN already exists [library-addItem]")
 		}
 	}
 
-	addListItem(newJAGModel) {
+	addListItem(newActivity) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItem(newJAGModel)
+		let listItemElement = this.createListItem(newActivity)
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}
 
 
-	addListItems(jagModelArray) {
+	addListItems(activityArray) {
 		// initializePanels (@controllerAT)
-		jagModelArray.forEach(jagModel => {
-			this.addListItem(jagModel)
+		activityArray.forEach(activity => {
+			this.addListItem(activity)
 		});
 	}
 
 
-	updateItem(updatedJAGModel) {
-		let listItemElement = this.createListItem(updatedJAGModel)
+	updateItem(updatedActivity) {
+		let listItemElement = this.createListItem(updatedActivity)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 		for (let idx in this._libraryList) {
-			if (this._libraryList[idx].jagModel.urn == updatedJAGModel.urn) {
+			if (this._libraryList[idx].activity.urn == updatedActivity.urn) {
 				this._libraryList[idx] = listItemElement;
 			}
 		}
@@ -195,10 +195,10 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	// @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
-	replaceItem(newJAGModel, replacedUrn) {
+	replaceItem(newActivity, replacedUrn) {
 		// handleJagStorageReplaced (@controllerAT)
 		this.removeLibraryListItem(replacedUrn);
-		this.appendChild(newJAGModel);
+		this.appendChild(newActivity);
 	}
 
 
@@ -209,7 +209,7 @@ customElements.define('jag-library', class extends HTMLElement {
 			this._$list.removeChild(item.element);
 		}
 		this._libraryList = this._libraryList.filter(entry => {
-			return entry.jagModel.urn != deletedUrn
+			return entry.activity.urn != deletedUrn
 		})
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
@@ -218,9 +218,9 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	//??
 	// handleJagStorageReplaced (@controllerAT)
-	replaceItem(newJAGModel, replacedUrn) {
+	replaceItem(newActivity, replacedUrn) {
 		this.removeLibraryListItem(replacedUrn);
-		this.addListItem(newJAGModel);
+		this.addListItem(newActivity);
 	}
 
 
@@ -256,12 +256,12 @@ customElements.define('jag-library', class extends HTMLElement {
 
 
 	// @TODO  understand this guy
-	async refreshItem(newJAGModel, refreshedSet = new Set()) {
-		this._getChildModels(newJAGModel, new Map()).then(function (all_jagModels) {
+	async refreshItem(newActivity, refreshedSet = new Set()) {
+		this._getChildModels(newActivity, new Map()).then(function (all_activitys) {
 			this.dispatchEvent(new CustomEvent('refresh', {
 				detail: {
-					jagModel: newJAGModel,
-					jagModel_set: all_jagModels,
+					activity: newActivity,
+					activity_set: all_activitys,
 					refreshed: refreshedSet
 				}
 			}))

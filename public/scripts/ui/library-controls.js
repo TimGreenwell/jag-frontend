@@ -9,9 +9,9 @@
 
 class LibraryControls extends HTMLElement {
 
-	constructor(jagModel) {
+	constructor(activity) {
 		super();
-		this._jagModel = jagModel;
+		this._activity = activity;
 
 		this._initUI();
 		this._initListeners();
@@ -30,11 +30,11 @@ class LibraryControls extends HTMLElement {
 
 	_initListeners() {
 		this._toggleLock.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-lock-toggle', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
+			this.dispatchEvent(new CustomEvent('local-lock-toggle', {bubbles: true, composed: true, detail: {node: this._activity}}));
 		});
 
 		this._deleteJag.addEventListener('click', () => {
-			this.dispatchEvent(new CustomEvent('local-jag-delete', {bubbles: true, composed: true, detail: {node: this._jagModel}}));
+			this.dispatchEvent(new CustomEvent('local-jag-delete', {bubbles: true, composed: true, detail: {node: this._activity}}));
 		});
 	}
 

@@ -7,7 +7,7 @@
  * @version 0.80
  */
 
-import JagNodeElement from './views/jag-node.js';
+import ActivityNodeElement from './views/jag-node.js';
 import EdgeElement from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import UserPrefs from "./utils/user-prefs.js";
@@ -28,11 +28,11 @@ class Playground extends Popupable {
         this.appendChild(this._nodeContainerDiv);
         this.setPopupBounds(this._nodeContainerDiv);
 
-        this._viewedProjectsMap = new Map();         // All active Jag root nodes - should be in sync with _activeJagNodeElementSet
+        this._viewedProjectsMap = new Map();         // All active Jag root nodes - should be in sync with _activeActivityNodeElementSet
 
 
-        this._activeJagNodeElementSet = new Set();    // set of JagNodes (view)
-        this._selectedJagNodeElementSet = new Set();  // set of JagNodes (view)
+        this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (view)
+        this._selectedActivityNodeElementSet = new Set();  // set of ActivityNodes (view)
         this._is_edge_being_created = false;
 
         this._cardinals = {
@@ -96,18 +96,11 @@ class Playground extends Popupable {
      *
      */
 
-
-
-    delay(time) {
-        return new Promise(resolve => setTimeout(resolve, time));
-    }
-
-
     _handleEdgeSelected(e) {
         if (e.detail.selected) {
-            this._selectedJagNodeElementSet.add(e.target);
+            this._selectedActivityNodeElementSet.add(e.target);
         } else {
-            this._selectedJagNodeElementSet.delete(e.target);
+            this._selectedActivityNodeElementSet.delete(e.target);
         }
     }
 
@@ -152,7 +145,7 @@ class Playground extends Popupable {
             this._created_edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
 
             // identical issue below
-            //parentJag.addChild(childJag);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
+            //parentActivity.addChild(childActivity);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
             // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
             // @TODO consider bringing it up here (separation of functionality)
 
@@ -235,7 +228,7 @@ class Playground extends Popupable {
         return cardinal;
     }
 
-    _checkBounds(nodes = this._activeJagNodeElementSet) {
+    _checkBounds(nodes = this._activeActivityNodeElementSet) {
         const bounds = this.getBoundingClientRect();
         let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
         let showLeft, showRight, showUp, showDown;
@@ -251,7 +244,7 @@ class Playground extends Popupable {
             }
         }
 
-        if (nodes == this._activeJagNodeElementSet) {
+        if (nodes == this._activeActivityNodeElementSet) {
             return this._showCardinals({
                 left: showLeft || false,
                 right: showRight || false,
@@ -294,7 +287,7 @@ class Playground extends Popupable {
     }
 
     _dragView(dx, dy) {
-        for (let node of this._activeJagNodeElementSet) {
+        for (let node of this._activeActivityNodeElementSet) {
             node.translate(dx, dy, false);
 
             node.nodeModel.x = node.nodeModel.x + dx;
@@ -333,25 +326,25 @@ class Playground extends Popupable {
     handlePlaygroundSelectedNodes(e) {           // on mousedown  applied during jag-node create
         let $node = e.target.offsetParent
         if (!e.shiftKey) {
-            this._selectedJagNodeElementSet.forEach(local_node => {
+            this._selectedActivityNodeElementSet.forEach(local_node => {
                 if (local_node != $node)
                     local_node.setSelected(false);
             });
-            this._selectedJagNodeElementSet.clear();
+            this._selectedActivityNodeElementSet.clear();
         }
 
-        this._selectedJagNodeElementSet.add($node);
+        this._selectedActivityNodeElementSet.add($node);
 
         if (e.ctrlKey) {
             const all_selected = $node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
             for (const sub_node of all_selected)
-                this._selectedJagNodeElementSet.add(sub_node);
+                this._selectedActivityNodeElementSet.add(sub_node);
         } else {
             $node.setSelected(true);
         }
 
-        let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
-        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {
+        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
 
@@ -367,8 +360,8 @@ class Playground extends Popupable {
         // The background clicker
         if (!e.shiftKey) this.deselectAll();
 
-        let selectedJagNodeElementArray = [...this._selectedJagNodeElementSet];
-        let selectedNodeArray = selectedJagNodeElementArray.map(jagNodeElement => {
+        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
 
@@ -404,22 +397,22 @@ class Playground extends Popupable {
      * Handlers for ControllerAT
      *
      * _buildNodeViewFromNodeModel
-     * _handleNewJagActivityPopup
+     * _handleNewActivityActivityPopup
      * clearPlayground
      * handleClearSelected (@TODO)
      * handleRefresh
      * affectProjectView
-     * _addJagNodeTree
-     * replaceJagNode
-     * createJagNode  - called on new Project message from above
+     * _addActivityNodeTree
+     * replaceActivityNode
+     * createActivityNode  - called on new Project message from above
      * deleteNodeModel
      */
     //  the way with HEAD + child map   ===> want to go to the tree method.
     // replaced -- but keep for now - new method missing some things still
-    traverseJagNodeTree(currentParentJagNode, descendantJagNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
-        // if no child...  createJagNode
+    traverseActivityNodeTree(currentParentActivityNode, descendantActivityNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+        // if no child...  createActivityNode
         // else proceed with the current child
-        const node = childURN || this.createJagNode(currentParentJagNode, isExpanded);
+        const node = childURN || this.createActivityNode(currentParentActivityNode, isExpanded);
 
         if (context) {
             if (context.name) node.setContextualName(context.name);
@@ -428,10 +421,10 @@ class Playground extends Popupable {
 
         node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
 
-        if (!currentParentJagNode.children)
+        if (!currentParentActivityNode.children)
             return node;
 
-        const preferred_size = this._getNodePreferredHeight(currentParentJagNode, descendantJagNodeMap);          // hhhh
+        const preferred_size = this._getNodePreferredHeight(currentParentActivityNode, descendantActivityNodeMap);          // hhhh
 
         // assume all children have same height as the parent.
         const node_height = node.clientHeight + margin;
@@ -444,12 +437,12 @@ class Playground extends Popupable {
             childrenMap.set(child_edge.getChildId(), child_edge.getSubActivityNode());
         }
 
-        currentParentJagNode.children.forEach((child) => {
-            const currentChildJagNode = descendantJagNodeMap.get(child.urn);
-            const local_preferred_size = this._getNodePreferredHeight(currentChildJagNode, descendantJagNodeMap);
+        currentParentActivityNode.children.forEach((child) => {
+            const currentChildActivityNode = descendantActivityNodeMap.get(child.urn);
+            const local_preferred_size = this._getNodePreferredHeight(currentChildActivityNode, descendantActivityNodeMap);
             y_offset += (local_preferred_size * node_height) / 2;
 
-            const sub_node = this._traverseJagNodeTree(currentChildJagNode, descendantJagNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+            const sub_node = this._traverseActivityNodeTree(currentChildActivityNode, descendantActivityNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
             y_offset += (local_preferred_size * node_height) / 2;
 
             if (!childrenMap.has(child.id)) {
@@ -465,7 +458,7 @@ class Playground extends Popupable {
         for (const [id, child] of childrenMap.entries()) {
             let actual = false;
 
-            for (const actual_child of currentParentJagNode.children) {
+            for (const actual_child of currentParentActivityNode.children) {
                 if (actual_child.id == id) {
                     actual = true;
                     break;
@@ -477,7 +470,7 @@ class Playground extends Popupable {
                 for (const node of tree) {
                     node.removeAllEdges();
                     node.detachHandlers();
-                    this._activeJagNodeElementSet.delete(node);
+                    this._activeActivityNodeElementSet.delete(node);
                     this._nodeContainerDiv.removeChild(node);
                 }
             }
@@ -498,7 +491,7 @@ class Playground extends Popupable {
            let yPos = (true) ? currentNodeModel.y : y;
 
            currentNodeModel.setPosition(xPos, yPos)
-           const $newViewNode = this.createJagNode(currentNodeModel)
+           const $newViewNode = this.createActivityNode(currentNodeModel)
 
            $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
 
@@ -530,7 +523,7 @@ class Playground extends Popupable {
         return $newViewNode
     }
 
-    _handleNewJagActivityPopup(e) {
+    _handleNewActivityActivityPopup(e) {
         const $initiator = document.getElementById('menu-new');
         this.popup({
             content: Playground.NOTICE_CREATE_JAG,
@@ -542,12 +535,12 @@ class Playground extends Popupable {
 
 
     clearPlayground(projectId = undefined) {                 // clearNodeSet
-        for (let jagNode of this._activeJagNodeElementSet) {
+        for (let jagNode of this._activeActivityNodeElementSet) {
 
             if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
-                this._activeJagNodeElementSet.delete(jagNode);
+                this._activeActivityNodeElementSet.delete(jagNode);
                 this._nodeContainerDiv.removeChild(jagNode);
             }
         }
@@ -556,19 +549,19 @@ class Playground extends Popupable {
 
     handleClearSelected() {  // you get this on the menu click 'delete node'    @TODO
         console.log("When implemented.. these nodes will be pruned:")
-        console.log(this._selectedJagNodeElementSet)
+        console.log(this._selectedActivityNodeElementSet)
     }     // @TODO
 
-    handleRefresh({jagModel, jagModel_set, alreadyRefreshedNodes = new Set()}) {
+    handleRefresh({activity, activity_set, alreadyRefreshedNodes = new Set()}) {
         const margin = 50;
 
-        for (let node of this._activeJagNodeElementSet) {
-            if (!alreadyRefreshedNodes.has(node) && node.jagModel === jagModel) {
+        for (let node of this._activeActivityNodeElementSet) {
+            if (!alreadyRefreshedNodes.has(node) && node.activity === activity) {
                 const root = node.getRoot();
 
                 if (root == node) {
                     const [x, y] = node.getPosition();
-                    this._traverseJagNodeTree(jagModel, jagModel_set, true, margin, x, y, node);
+                    this._traverseActivityNodeTree(activity, activity_set, true, margin, x, y, node);
 
                     const tree = node.getTree();
 
@@ -593,22 +586,22 @@ class Playground extends Popupable {
             let node = value;
             console.log("Check Project #" + key)
             console.log(node)
-            console.log(node.jag.urn)
+            console.log(node.activity.urn)
 
             if (node.isActivityInProject(updatedUrn)) {
-                console.log("Found change in : " + node.jag.urn)
+                console.log("Found change in : " + node.activity.urn)
                 this.dispatchEvent(new CustomEvent('response-activity-created', {
                     detail: {
                         projectModel: node,
                         activityUrn: updatedUrn
                     }
-                })); // local-jag-created in playground uses node
+                })); // event-activity-created in playground uses node
 
             }
         })
     }
 
-    deleteJagModel(deletedUrn) {             // Activity got updated - does it affect our projects?
+    deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
 
         console.log("Deleting JAG Model -  Must check each Project to see if JAG exists there  (( if so, update that project ))")
         console.log(JSON.stringify(this._viewedProjectsMap.values()))
@@ -617,15 +610,15 @@ class Playground extends Popupable {
             let node = value;
             console.log("Check Project #" + key)
             console.log(node)
-            console.log(node.jag.urn)
+            console.log(node.activity.urn)
             if (node.isActivityInProject(deletedUrn)) {
-                console.log("Found change in : " + node.jag.urn)
+                console.log("Found change in : " + node.activity.urn)
                 this.dispatchEvent(new CustomEvent('response-activity-deleted', {
                     detail: {
                         projectModelId: node.id,
                         activityUrn: deletedUrn
                     }
-                })); // local-jag-created in playground uses node
+                })); // event-activity-created in playground uses node
 
             }
         })
@@ -633,26 +626,26 @@ class Playground extends Popupable {
     }
 
 
-    // add JagNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
-    _addJagNodeTree(selectedJag, selectedJagDescendants = new Map(), isExpanded = false) {
+    // add ActivityNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
+    _addActivityNodeTree(selectedActivity, selectedActivityDescendants = new Map(), isExpanded = false) {
         //const margin = 50;
         const height = this.clientHeight;
-        const node = this._traverseJagNodeTree(selectedJag, selectedJagDescendants, isExpanded, margin, 10, height / 2);
+        const node = this._traverseActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded, margin, 10, height / 2);
         this._checkBounds(node.getTree());
     }
 
-    replaceJagNode(newJagModel, deadUrn) {
-        this._activeJagNodeElementSet.forEach((node) => {
-            if (node.nodeModel.jag.urn == deadUrn) {
-                node.nodeModel.jag = newJagModel;
+    replaceActivityNode(newActivity, deadUrn) {
+        this._activeActivityNodeElementSet.forEach((node) => {
+            if (node.nodeModel.activity.urn == deadUrn) {
+                node.nodeModel.activity = newActivity;
             }
         })
     }
 
     // this is called when a new jag appears from above --- applies?
-    //note: creates a view based on JagModel xxx now NodeModel
-    createJagNode(nodeModel, expanded) {
-        const $node = new JagNodeElement(nodeModel, expanded);
+    //note: creates a view based on Activity xxx now NodeModel
+    createActivityNode(nodeModel, expanded) {
+        const $node = new ActivityNodeElement(nodeModel, expanded);
         $node.addEventListener('mousedown', this.handlePlaygroundSelectedNodes.bind(this));
 
         $node.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -678,7 +671,7 @@ class Playground extends Popupable {
         $node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
         $node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
 
-        this._activeJagNodeElementSet.add($node);
+        this._activeActivityNodeElementSet.add($node);
         this._nodeContainerDiv.appendChild($node);
         return $node;
     }
@@ -689,26 +682,15 @@ class Playground extends Popupable {
         // with an ancester matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
-        for (let node of this._activeJagNodeElementSet) {           // search through active elements
+        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
             if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
                 console.log("deleted something")
                 node.removeAllEdges();
                 node.detachHandlers();
-                this._activeJagNodeElementSet.delete(node);
+                this._activeActivityNodeElementSet.delete(node);
                 this._nodeContainerDiv.removeChild(node);
             }
         }
-
-
-        // this._activeJagNodeElementSet.forEach((node) => {
-        // Vernichtern
-        // if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
-        //     node.removeAllEdges();
-        //     node.detachHandlers();
-        //     this._activeJagNodeElementSet.delete(node);
-        //     this._nodeContainerDiv.removeChild(node);
-        // }
-        // })
     }
 
 
@@ -733,7 +715,7 @@ class Playground extends Popupable {
     //     workStack.push(rootNode);
     //     while (workStack.length > 0) {
     //         let currentNodeModel = workStack.pop();
-    //         const $newViewNode = this.createJagNode(currentNodeModel)
+    //         const $newViewNode = this.createActivityNode(currentNodeModel)
     //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
     //
     //         currentNodeModel.children.forEach((child) => {
@@ -759,26 +741,26 @@ class Playground extends Popupable {
      *
      * Support Functions
      *
-     * _traverseJagNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addJagNodeTree
+     * _traverseActivityNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addActivityNodeTree
      * deselectAll             : Required by : playgroundClicked
-     * onKeyDown               : Required by : createJagNode
-     * _getNodePreferredHeight : Required by : _traverseJagNodeTree
+     * onKeyDown               : Required by : createActivityNode
+     * _getNodePreferredHeight : Required by : _traverseActivityNodeTree
      *
      */
 
 
     deselectAll() {
-        this._selectedJagNodeElementSet.forEach(n => n.setSelected(false));
-        this._selectedJagNodeElementSet.clear();
+        this._selectedActivityNodeElementSet.forEach(n => n.setSelected(false));
+        this._selectedActivityNodeElementSet.clear();
     }
 
     onKeyDown(event) {
         event.stopImmediatePropagation();
         let $node = event.target
         if (event.key == 'Delete') {
-            if (this._selectedJagNodeElementSet.length > 1) {
+            if (this._selectedActivityNodeElementSet.length > 1) {
                 alert("Can only clear/disconnect one selected item")
-            } else if (this._selectedJagNodeElementSet.length < 1) {
+            } else if (this._selectedActivityNodeElementSet.length < 1) {
                 alert("Must select at least one item to clear/disconnect")
             } else {
                 // if the selected node is a root - then clear the project from the tree
@@ -795,14 +777,14 @@ class Playground extends Popupable {
                         const parent = $node.getParent();
                         const jagUrn = parent.nodeModel.urn
                         const jagChild = {urn: $node.nodeModel.urn, id: $node.nodeModel.childId}
-                        let remainingChildren = parent.nodeModel.jag.children.filter(entry => {
+                        let remainingChildren = parent.nodeModel.activity.children.filter(entry => {
                             if (entry.id != jagChild.id) {
                                 return entry;
                             }
                         })
-                        parent.nodeModel.jag.children = remainingChildren
+                        parent.nodeModel.activity.children = remainingChildren
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
-                            detail: {jagModel: parent.nodeModel.jag}
+                            detail: {activity: parent.nodeModel.activity}
                         }));
 
 
@@ -857,11 +839,11 @@ class Playground extends Popupable {
     //////////////////////////////////////////////////////////////////////////////////////
 
     handleLibraryListItemSelected({
-                                      jagModel: selectedJag,
-                                      jagModel_set: selectedJagDescendants = new Map(),
+                                      activity: selectedActivity,
+                                      activity_set: selectedActivityDescendants = new Map(),
                                       expanded: isExpanded = false
                                   }) {
-        this._addJagNodeTree(selectedJag, selectedJagDescendants, isExpanded);
+        this._addActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded);
     }
 
 
@@ -928,7 +910,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
                         name: popname,
                         description: popdescription
                     }
-                })); // local-jag-created in playground uses node
+                })); // event-activity-created in playground uses node
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
@@ -951,14 +933,14 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
                 const parent = node.getParent();
                 const jagUrn = parent.nodeModel.urn
                 const jagChild = {urn: node.nodeModel.urn, id: node.nodeModel.childId}
-                let remainingChildren = parent.nodeModel.jag.children.filter(entry => {
+                let remainingChildren = parent.nodeModel.activity.children.filter(entry => {
                     if (entry.id != jagChild.id) {
                         return entry;
                     }
                 })
-                parent.nodeModel.jag.children = remainingChildren
+                parent.nodeModel.activity.children = remainingChildren
                 this.dispatchEvent(new CustomEvent('event-activity-updated', {
-                    detail: {jagModel: parent.nodeModel.jag}
+                    detail: {activity: parent.nodeModel.activity}
                 }));
             }
         },
@@ -1015,17 +997,17 @@ export default customElements.get('jag-playground');
  *
  *
  *    // getSelectedAsJSON() {
- *     // 	if(this._selectedJagNodeElementSet.size == 0)
+ *     // 	if(this._selectedActivityNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedJagNodeElementSet.values().next().value.jagModel.toJSON();
+ *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.toJSON();
  *     // }
  *
  *     // getSelectedURN() {
- *     // 	if(this._selectedJagNodeElementSet.size == 0)
+ *     // 	if(this._selectedActivityNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedJagNodeElementSet.values().next().value.jagModel.urn;
+ *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.urn;
  *     // }
  *
  *
