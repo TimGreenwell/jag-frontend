@@ -487,55 +487,46 @@ class Playground extends Popupable {
 
 
     _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
-        // currentNodeModel should be project root at first.
-        // if it were smart enough to join up with parent - then it could be anywhere
-        // something to consoder for later
         let margin = 20
-        let workStack = []
-        console.log("---Building Node View From Node Model")
-        console.log("MAKE SURE THAT KEYS ARE EQUAL ___ ELSE VERY BAD")
-        console.log(currentNodeModel.project)
-        console.log(currentNodeModel.id)
-
-        if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
-            currentNodeModel.x = 10
-            currentNodeModel.y = this.clientHeight / 2
-        }
-        let xPos = (true) ? currentNodeModel.x : x;
-        let yPos = (true) ? currentNodeModel.y : y;
-
-        currentNodeModel.setPosition(xPos, yPos)
-        const $newViewNode = this.createJagNode(currentNodeModel)
-
-        $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
-
-        // assume all children have same height as the parent.
-        const x_offset = xPos + $newViewNode.clientWidth + margin;
-        const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
-        let y_offset = yPos - (preferred_height / 2);
-
-        workStack.push()eeeeeeeeeeeeee
-
-        currentNodeModel.children.forEach((child) => {
-
-            //  local_preferred_size Getting NaN here  VV why?
-            const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
-            y_offset = y_offset + (local_preferred_size) / 2;
-
-            let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
 
 
-            let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
+           if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
+               currentNodeModel.x = 20 + Math.floor(Math.random() * 10);
+               currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 30);
+           }
+           let xPos = (true) ? currentNodeModel.x : x;
+           let yPos = (true) ? currentNodeModel.y : y;
 
-            edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-            edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+           currentNodeModel.setPosition(xPos, yPos)
+           const $newViewNode = this.createJagNode(currentNodeModel)
 
-            // if (child.name) sub_node.setContextualName(child.name);
-            // if (child.description) sub_node.setContextualDescription(child.description);
+           $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
 
-        })
+           // assume all children have same height as the parent.
+           const x_offset = xPos + $newViewNode.clientWidth + margin;
+           const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
+           let y_offset = yPos - (preferred_height / 2);
 
-        this._viewedProjectsMap.set(currentNodeModel.project, currentNodeModel);
+
+           currentNodeModel.children.forEach((child) => {
+
+               //  local_preferred_size Getting NaN here  VV why?
+               const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
+               y_offset = y_offset + (local_preferred_size) / 2;
+
+               let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+
+
+               let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
+
+               edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
+               edge.addEventListener('playground-nodes-selected', this._boundHandleEdgeSelected);
+
+               // if (child.name) sub_node.setContextualName(child.name);
+               // if (child.description) sub_node.setContextualDescription(child.description);
+
+           })
+
         return $newViewNode
     }
 
@@ -698,14 +689,7 @@ class Playground extends Popupable {
         // with an ancester matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
-
-        console.log("DELETEING = DELETEING _ DELETING + DELETING      --> " + deadId)
-        console.log("Project list down to size: " + this._viewedProjectsMap.size)
-
-
         for (let node of this._activeJagNodeElementSet) {           // search through active elements
-            console.log("Trying to delete " + node.nodeModel.jag.urn)
-            console.log(" Does " + node.nodeModel.project + " = " + deadId)
             if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
                 console.log("deleted something")
                 node.removeAllEdges();
@@ -727,9 +711,21 @@ class Playground extends Popupable {
         // })
     }
 
+
+
+    addNodeModel(projectNodeModel){
+        this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
+        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+    }
+
     _rebuildNodeView(projectNodeModel) {
+        console.log(projectNodeModel)
         this.deleteNodeModel(projectNodeModel.id)
-        this._buildNodeViewFromNodeModel(projectNodeModel);
+        console.log("DO I HAVE A GOOD PROJECT NODE MODEL?")
+        console.log(projectNodeModel)
+        console.log("Answer: ?")
+        this.addNodeModel(projectNodeModel)
+        console.log(projectNodeModel)
     }
 
     // for (let rootNode of this._viewedProjectsMap.values()) {

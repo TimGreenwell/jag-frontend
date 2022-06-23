@@ -287,6 +287,37 @@ export default class Node extends EventTarget {
 		this.children = filtered;
 	}
 
+
+	replaceChild(newChild){
+		console.log("!")
+		let workStack = [];
+		if (this.id == newChild.id){
+			console.log("?")
+			return newChild
+		}
+		else {
+			console.log("else")
+			workStack.push(this)
+			while (workStack.length > 0) {
+				let workingNode = workStack.pop();
+				workingNode.children.forEach(child => {
+					console.log("comaparing")
+					console.log(child.id)
+					console.log(newChild.id)
+					if (child.id == newChild.id) {
+						console.log("Found it")
+						workingNode.removeChild(child)
+						workingNode.addChild(newChild)
+						return this;
+					}
+					else {
+						workingNode.push(child)
+					}
+				})
+			}
+		}
+	}
+
 	removeChildById(id){
 		this.children.forEach(child => {
 			if (child.id == id) {

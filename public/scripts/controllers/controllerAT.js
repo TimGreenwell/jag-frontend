@@ -300,8 +300,6 @@ export default class ControllerAT extends EventTarget {
         console.log(parentNodeModel)
         console.log("childNodeModel")
         console.log(childNodeModel)
-
-
         console.log("Local<< (local nodes joined) \n")
     }
 
@@ -326,9 +324,25 @@ export default class ControllerAT extends EventTarget {
     }
 
     async localNodeUpdatedHandler(event) {
-
+        let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        await StorageService.update(updatedNodeModel, 'node');
+        console.log("iiiiiiiiiiiiii")
+        console.log(updatedNodeModel)
+        // This migth not be necessarily the projectNode that is needed by Storage.
+        // If its not the root, it needs to be inserted at the right place in the Project
+        if (updatedNodeModel.id == updatedNodeModel.project) {
+            projectNode = updatedNodeModel
+        }
+        else {
+            projectNode = this.projectMap.get(updatedNodeModel.project)
+            projectNode.replaceChild(updatedNodeModel)
+            console.log("a")
+            console.log(projectNode)
+        }
+        console.log("b")
+        console.log(projectNode)
+        console.log("c")
+        await StorageService.update(projectNode, 'node');
         console.log("Local<< (local node updated) \n")
     }
 
@@ -775,7 +789,7 @@ export default class ControllerAT extends EventTarget {
         this.repopulateProject(createdNodeModel, createdNodeModel.id)
         this._projectMap.set(createdNodeId, createdNodeModel)
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add JagModel list item to Library
-        this._playground._buildNodeViewFromNodeModel(createdNodeModel)
+        this._playground.addNodeModel(createdNodeModel)
         //   this._playground.createJagNode(createdNodeModel, true);                        // default expand tree = true
         console.log("                          ((OBSERVER OUT) <<  Node Created - Node Created - Node Created - Node Created - Node Created")
     }

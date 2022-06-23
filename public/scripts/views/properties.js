@@ -285,10 +285,22 @@ customElements.define('jag-properties', class extends HTMLElement {
     // }
 
 
+    _handleDescriptionChange(e) {
+        e.stopImmediatePropagation();
+        if (this._nodeModel) {
+            this._nodeModel.jag.description = this._descInput.value;
+            this.dispatchEvent(new CustomEvent('local-jag-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {jagModel: this._nodeModel.jag}
+            }));
+        }
+    }
 
 
 
     _handleNameChange(e) {
+        e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.name = this._nameInput.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
@@ -301,22 +313,13 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 
 
-    _handleDescriptionChange(e) {
-        if (this._nodeModel) {
-            this._nodeModel.jag.description = this._descInput.value;
-            this.dispatchEvent(new CustomEvent('local-jag-updated', {
-                bubbles: true,
-                composed: true,
-                detail: {jagModel: this._nodeModel.jag}
-            }));
-        }
-    }
 
 
     _handleContextualNameChange(e) {
+        e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.contextualName = this._name_ctxInput.value;
-            this.dispatchEvent(new CustomEvent('local-node-updated', {
+            this.dispatchEvent(new CustomEvent('local-node-updated', {   // This might not be a progectNode. Needs to be added to right spot upstairs.
                 bubbles: true,
                 composed: true,
                 detail: {nodeModel: this._nodeModel}
@@ -324,6 +327,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
     _handleContextualDescriptionChange(e) {
+        e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.contextualDescription = this._desc_ctxInput.value;
             this.dispatchEvent(new CustomEvent('local-node-updated', {
@@ -335,6 +339,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _handleExecutionChange(e) {
+        e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.execution = this._executionSelect.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
@@ -345,6 +350,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
     _handleOperatorChange(e) {
+        e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.jag.operator = this._operatorSelect.value;
             this.dispatchEvent(new CustomEvent('local-jag-updated', {
@@ -356,6 +362,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _handleExportClick(e) {
+        e.stopImmediatePropagation();
         const node = this._nodeModel;
         const json = JSON.stringify(node.toJSON());
         const a = document.createElement('a');
