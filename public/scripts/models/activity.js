@@ -203,7 +203,7 @@ export default class Activity extends EventTarget {
 
 
 
-    removeChildXXX(child) {
+    removeChild(child) {
         for (let index in this._children) {
             if (this._children[index].id === child.id) {
                 this._children.splice(index, 1);

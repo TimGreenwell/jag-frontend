@@ -124,7 +124,7 @@ class JagCell extends AnalysisCell {
                 this.dispatchEvent(new CustomEvent('event-activity-created', {
                     bubbles: true,
                     composed: true,
-                    detail: {activity: this._cellModel.activity}
+                    detail: {activityConstruct: this._cellModel.activity}
                 }));
                 let parentActivity = this._cellModel.parent.activity;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
                 let id = parentActivity.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
@@ -187,10 +187,11 @@ class JagCell extends AnalysisCell {
                     }));
                     //ControllerIA.updateURN(this.urn, this.cellModel.activity.urn);  // orig, new
                 } else {
+                    let activityConstruct={urn: this.urnElementEntry, name: this.nameElementEntry}
                     this.dispatchEvent(new CustomEvent('event-activity-created', {
                         bubbles: true,
                         composed: true,
-                        detail: {urn: this.urnElementEntry, name: this.nameElementEntry}
+                        detail: {activityConstruct: activityConstruct}
                     }));
                     parent = this.nodeModel.parent.activity;
                     let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used

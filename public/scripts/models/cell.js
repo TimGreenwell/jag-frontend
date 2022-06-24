@@ -16,11 +16,10 @@ import Activity from "./activity.js"
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Cell extends EventTarget {
 
-	constructor({
-					id = UUIDv4(),
+	constructor({	id = UUIDv4(),
 					jag,
 					urn,
-		childId,
+		            childId,
 					parentUrn,
 					rootUrn,
 					children = []
@@ -214,7 +213,7 @@ export default class Cell extends EventTarget {
 	}
 
 	isRoot() {
-		return this._parent === undefined;
+		return this._rootUrn === this._urn;
 	}         // is determined by lack of parent.
 
     getAncestor() {

@@ -82,14 +82,13 @@ customElements.define('jag-menu', class extends HTMLElement {
             this.dispatchEvent(new CustomEvent("event-clear-playground"));
         }.bind(this));
 
-        const $delete = document.createElement("span");
-        $delete.id = "menu-clear-node";
-        $delete.classList.add("menu-item");
-        $delete.innerText = "clear\nnode";
-        $centerLiDiv.appendChild($delete);
-        // @ TODO implement -- clear - or really delete
-        $delete.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("clear-selected"));
+        const $redraw = document.createElement("span");
+        $redraw.id = "menu-redraw-nodes";
+        $redraw.classList.add("menu-item");
+        $redraw.innerText = "redraw\nnodes";
+        $centerLiDiv.appendChild($redraw);
+        $redraw.addEventListener('click', function (e) {
+            this.dispatchEvent(new CustomEvent("redraw-nodes"));
         }.bind(this));
 
         //

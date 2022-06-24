@@ -547,10 +547,6 @@ class Playground extends Popupable {
         this._checkBounds();
     }
 
-    handleClearSelected() {  // you get this on the menu click 'delete node'    @TODO
-        console.log("When implemented.. these nodes will be pruned:")
-        console.log(this._selectedActivityNodeElementSet)
-    }     // @TODO
 
     handleRefresh({activity, activity_set, alreadyRefreshedNodes = new Set()}) {
         const margin = 50;
@@ -855,24 +851,24 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
     description: "Be precise.  You can always edit this later.",
     properties: [
         {
-            name: 'popname', label: 'Name', type: 'text', options: function () {
+            name: 'name', label: 'Name', type: 'text', options: function () {
                 let eventMap = new Map();
                 eventMap.set('input', () => {
-                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('popname').value;
+                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('name').value;
                     const convName = newName.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
-                    document.getElementById('popurn').value = convName;
+                    document.getElementById('urn').value = convName;
                 });
                 return eventMap;
             }
         },
         {
-            name: 'popurn', label: 'URN', type: 'text', options: function () {
+            name: 'urn', label: 'URN', type: 'text', options: function () {
                 let eventMap = new Map();
                 return eventMap;
             }
         },
         {
-            name: 'popdescription', label: 'Description', type: 'textarea',
+            name: 'description', label: 'Description', type: 'textarea',
             options: async function () {
                 let paramMap = new Map();
                 paramMap.set('cols', 24);
@@ -884,15 +880,14 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
     actions: [
         {
             text: "Create", color: "black", bgColor: "red",
-            action: async function ({inputs: {}, outputs: {popname, popurn, popdescription}}) {
-
+            action: async function ({inputs: {}, outputs: activityConstruct}) {
+                console.log("kkkkkkk")
+console.log(activityConstruct)
                 this.dispatchEvent(new CustomEvent('event-activity-created', {
-                    detail: {
-                        urn: popurn,
-                        name: popname,
-                        description: popdescription
-                    }
-                })); // event-activity-created in playground uses node
+                    bubbles: true,
+                    composed: true,
+                    detail: {activityConstruct: activityConstruct}
+                }));
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
@@ -966,7 +961,7 @@ export default customElements.get('jag-playground');
   	// 			node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
   	// 			node.getConnector().setType(subgoal.item.connectorType);
   	// 		} else {
-  	// 			node = this.addActivity(subgoal.item.name, subgoal.item.description);
+  	// 			node = this.cacheActivity(subgoal.item.name, subgoal.item.description);
   	// 		}
   	//
   	// 		node.setTranslation(x_start, y_offset);

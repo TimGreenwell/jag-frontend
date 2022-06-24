@@ -968,7 +968,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this.dispatchEvent(new CustomEvent('event-activity-created', {
             bubbles: true,
             composed: true,
-            detail: {node: newActivity}
+            detail: {activityConstruct: newActivity}
         }));    // event-activity-created in playground uses components
         //await StorageService.create(newActivity, 'activity');
         // Remove unsaved box shadow on URN property input.

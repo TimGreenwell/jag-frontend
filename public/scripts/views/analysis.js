@@ -25,9 +25,9 @@ class AnalysisView extends HTMLElement {
 		this._idToTableCellMap = new Map();
 		this._initializeContextMenus();
 		this._initializeStaticHeaders();
-		this._initializeTree(this._analysisModel.rootNodeModel);
+		this._initializeTree(this._analysisModel.rootCellModel);
 		this.layout();
-	////	await updatedAnalysis.buildAnalysisActivityNodes(rootNodeModel);
+	////	await updatedAnalysis.buildAnalysisActivityNodes(rootCellModel);
 	}
 
 
@@ -141,7 +141,7 @@ class AnalysisView extends HTMLElement {
 		// @TODO: Investigate changing that so the update only happens when necessary
 		// and only on branches that need it.
 
-		//this._analysisModel.rootNodeModel.update();  //@TODO - either break this in two functions: getNumOfLeaves(breadth) & getTreeDepth(height)
+		//this._analysisModel.rootCellModel.update();  //@TODO - either break this in two functions: getNumOfLeaves(breadth) & getTreeDepth(height)
 
 		// Resets the leaf set.
 		this._leafArray.length = 0;
@@ -149,11 +149,11 @@ class AnalysisView extends HTMLElement {
 		let height = -1;
 		let rows = 0;
 
-		this._layoutJAG(this._analysisModel.rootNodeModel, AnalysisView.HEADER_DEPTH, 0);
+		this._layoutJAG(this._analysisModel.rootCellModel, AnalysisView.HEADER_DEPTH, 0);
 
 
-		height = this._analysisModel.rootNodeModel.treeDepth;
-		rows = this._analysisModel.rootNodeModel.leafCount;
+		height = this._analysisModel.rootCellModel.treeDepth;
+		rows = this._analysisModel.rootCellModel.leafCount;
 
 		const level_count = height + 1;                                        //  this is the depth actually.
 		const agent_count = this._layoutHeaders(level_count);

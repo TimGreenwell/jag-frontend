@@ -14,8 +14,9 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
 import UserPrefs from "../utils/user-prefs.js";
+import Controller from "./controller.js";
 
-export default class ControllerAT extends EventTarget {
+export default class ControllerAT extends Controller {
 
     constructor() {
         super();
@@ -24,9 +25,7 @@ export default class ControllerAT extends EventTarget {
         this._projectLibrary = null;
         this._playground = null;
         this._properties = null;
-        this._activityMap = new Map();         // All Activitys - should be in sync with storage
-        this._projectMap = new Map();        // All nodes - should be in sync with storage
-        this._currentAnalysis = undefined;       // type: AnalysisModel
+
 
         StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));   // }
         StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // }
@@ -60,27 +59,11 @@ export default class ControllerAT extends EventTarget {
     set activityMap(newActivityMap) {
         this._activityMap = newActivityMap;
     }
-    addActivity(activity) {
+    cacheActivity(activity) {
         this._activityMap.set(activity.urn, activity)
     }
 
-    get projectMap() {
-        return this._projectMap;
-    }
-    set projectMap(newNodeModelMap) {
-        this._projectMap = newNodeModelMap;
-    }
-    addProject(newNodeModel) {
-        this._projectMap.set(newNodeModel.id, newNodeModel)
-    }
 
-    get currentAnalysis() {
-        return this._currentAnalysis;
-    }
-    set currentAnalysis(newAnalysisModel) {
-        this._currentAnalysis = newAnalysisModel;
-    }
-    
     async initialize() {
         UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
@@ -90,13 +73,13 @@ export default class ControllerAT extends EventTarget {
 
     async initializeCache() {
         let allActivities = await StorageService.all('activity')
-        allActivities.forEach(activity => this.addActivity(activity));
+        allActivities.forEach(activity => this.cacheActivity(activity));
 
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => {
             this.repopulateActivity(node)
             this.repopulateParent(node)
-            this.addProject(node);
+            this.cacheProject(node);
         });
 
         window.onblur = function (ev) {
@@ -150,9 +133,10 @@ export default class ControllerAT extends EventTarget {
      *  example: a user changing an Activity name will produce a standardized command to 'update Activity' to be
      *  stored and distributed.
      *
+     * (C) indicates common methods between controllers (share code)
      *    -- playground --
-     * eventActivityCreatedHandler            - popup create Activity (original event in menu starts playground popup)
-     * eventActivityUpdatedHandler            - structure change
+     * eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
+     * eventActivityUpdatedHandler       (C)  - structure change
      * responseActivityCreatedHandler         - does command to change particular Activity change our Playground view
      * responseActivityDeletedHandler         - does command to delete particular Activity change our Playground view
      * eventNodesSelectedHandler              - user selects Node in graph
@@ -162,8 +146,8 @@ export default class ControllerAT extends EventTarget {
      * eventNodeDisconnectedHandler  *        - user selected Node and hit 'delete'
      * 
      *    -- properties --
-     * eventUrnChangedHandler                 - URN field is changed
-     * eventActivityUpdatedHandler            - user updates an Activity related field
+     * eventUrnChangedHandler            (C)  - URN field is changed
+     * eventActivityUpdatedHandler       (C)  - user updates an Activity related field
      * eventNodeUpdatedHandler                - user updates a Node related field
      * eventActivityDeletedHandler  *         - user permanently deletes Activity
      * eventActivityLockedHandler   *         - user locks Activity against delete/updates
@@ -186,27 +170,8 @@ export default class ControllerAT extends EventTarget {
 
     /**   -- Playground --  */
     
-    async eventActivityCreatedHandler(event) {
-        console.log("Local>> (local activity created) ")
-        const urn = event.detail.urn;
-        const description = event.detail.description;
-        const name = event.detail.name;
-        const newActivity = new Activity({urn: urn, name: name, description: description});
-        if (InputValidator.isValidUrn(newActivity.urn)) {
-            await StorageService.create(newActivity, 'activity');
-            //   this._playground._addActivityNodeTree(newActivity, newActivity.urn);
-        } else {
-            window.alert("Invalid URN");
-        }
-        console.log("Local<< (local activity created) \n")
-    }
 
-    async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
-        console.log("Local>> (local activity updated) ")
-        const updatedActivity = event.detail.activity;
-        await StorageService.update(updatedActivity, 'activity');
-        console.log("Local<< (local activity updated) \n")
-    }
+
 
     async responseActivityCreatedHandler(event) {
         // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
@@ -214,54 +179,10 @@ export default class ControllerAT extends EventTarget {
         let incomingProjectNode = event.detail.projectModel; // could have used id
         let projectNode = this._projectMap.get(incomingProjectNode.id)
         let changedActivityUrn = event.detail.activityUrn;
-        const nodeStack = [];
-        const orphanedRootStack = [];
-        nodeStack.push(projectNode);
-        while (nodeStack.length > 0) {
-            let currentNode = nodeStack.pop();
-            if ((changedActivityUrn == undefined) || (currentNode.urn == changedActivityUrn)) {
-                if (changedActivityUrn == undefined) {
-                    console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
-                }
-                let existingKids = currentNode.children.map(node => {
-                    return {urn: node.urn, id: node.childId}
-                })
-                let validActivity = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
-                let validKids = validActivity.children
-                currentNode.activity = validActivity;
-                let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
-                let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
-
-                kidsToAdd.forEach(child => {
-                    const childActivity = this._activityMap.get(child.urn);
-                    const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
-                    childNodeModel.activity = childActivity
-                    childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
-                    currentNode.addChild(childNodeModel, true);
-                    childNodeModel.parent = currentNode;
-                    this.repopulateProject(childNodeModel, projectNode.project)
-                })
-
-                kidsToRemove.forEach(child => {
-                    let childNodeModel =  this.searchTreeForChildId(currentNode,child.id)    //currentNode.getChildById(child.id)
-                    currentNode.removeChild(childNodeModel);
-                    childNodeModel.parent = null;
-                    childNodeModel.childId = null;
-                    this.repopulateProject(childNodeModel, childNodeModel.id)
-                    orphanedRootStack.push(childNodeModel);
-                })
-            }
-            for (const child of currentNode.children) {
-                nodeStack.push(child);
-            }
-        }
-        for (let rootNode of orphanedRootStack) {
-            if (this.projectMap.has(rootNode.id)) {
-                console.log("Orphaned (should not happen)")
-            } else {
-                console.log("Orphaned")
-            }
-        }
+        console.log(JSON.stringify(projectNode,null,2))
+        console.log("--")
+        projectNode = this.updateTreeWithActivityChange(projectNode,changedActivityUrn);
+        console.log(JSON.stringify(projectNode,null,2))
         await StorageService.update(projectNode, 'node');
         console.log("Local<< (new node affects project) \n")
     }
@@ -273,60 +194,10 @@ export default class ControllerAT extends EventTarget {
         let projectId = event.detail.projectModelId; // could have used id
         let projectNode = this._projectMap.get(projectId)
         let deletedActivityUrn = event.detail.activityUrn;
-
         if (projectNode.urn == deletedActivityUrn) {
             await StorageService.delete(projectNode.id, 'node');
         } else {
-
-            const nodeStack = [];
-            const orphanedRootStack = [];
-            nodeStack.push(projectNode);
-            while (nodeStack.length > 0) {
-                let currentNode = nodeStack.pop();
-                if ((deletedActivityUrn == undefined) || (currentNode.urn == deletedActivityUrn)) {
-                    if (deletedActivityUrn == undefined) {
-                        console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
-                    }
-                    let existingKids = currentNode.children.map(node => {
-                        return {urn: node.urn, id: node.childId}
-                    })
-                    let validActivity = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
-                    let validKids = validActivity.children
-                    currentNode.activity = validActivity;
-                    let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
-                    let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
-
-                    kidsToAdd.forEach(child => {
-
-                        const childActivity = this._activityMap.get(child.urn);
-                        const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
-                        childNodeModel.activity = childActivity
-                        childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
-                        currentNode.addChild(childNodeModel, true);
-                        childNodeModel.parent = currentNode;
-                        this.repopulateProject(childNodeModel, projectNode.project)
-                    })
-
-                    kidsToRemove.forEach(child => {
-                        let childNodeModel = this.searchTreeForChildId(currentNode, child.id)    //currentNode.getChildById(child.id)
-                        currentNode.removeChild(childNodeModel);
-                        childNodeModel.parent = null;
-                        childNodeModel.childId = null;
-                        this.repopulateProject(childNodeModel, childNodeModel.id)
-                        orphanedRootStack.push(childNodeModel);
-                    })
-                }
-                for (const child of currentNode.children) {
-                    nodeStack.push(child);
-                }
-            }
-            for (let rootNode of orphanedRootStack) {
-                if (this.projectMap.has(rootNode.id)) {
-                    console.log("Orphans =(should not happen)")
-                } else {
-                    console.log("Orphans ")
-                }
-            }
+            projectNode = this.updateTreeWithActivityChange(projectNode,deletedActivityUrn)
             await StorageService.update(projectNode, 'node');
             console.log("Local<< (new node affects project) \n")
         }
@@ -381,58 +252,6 @@ export default class ControllerAT extends EventTarget {
     
     /**   -- Properties --  */
 
-    async eventUrnChangedHandler(event) {
-        // This is an identical copy (hopefully) of the URN updater found in views/Properties
-        // I can't decide on a common area for updates such as this.  Views arent shared.  A controller area?
-        // Maybe just the model (storage is data) but circular reference problem with schema.
-        // Currently thinking a controller area if more can be found.
-        const eventDetail = event.detail;
-        const newUrn = eventDetail.newUrn;
-        const originalUrn = eventDetail.originalUrn;
-        const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newUrn + ")? (URN cannot be modified except to create a new model.)";
-        const URL_RENAME_WARNING_POPUP = "The new URN (" + newUrn + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
-        // Changing a URN is either a rename/move or a copy or just not allowed.
-        // Proposing we have a 'isLocked' tag.
-        // URN changes are renames until the Activity is marked as 'isLocked'.
-        // After 'isLocked', URN changes are copies.
-
-        //  Is it a valid URN?
-        let isValid = InputValidator.isValidUrn(newUrn);
-        if (isValid) {
-            let origActivity = await StorageService.get(originalUrn, 'activity');  // needed to check if 'isLocked'
-            let urnAlreadyBeingUsed = await StorageService.has(newUrn, 'activity');
-            // Is the URN already taken?
-            if (urnAlreadyBeingUsed) {
-                // Does user confirm an over-write??
-                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
-                    let newActivity = await StorageService.get(originalUrn, 'activity');
-
-                    // is the target Activity locked?
-                    if (newActivity.isLocked) {
-                        // FAIL  - CANT OVERWRITE LOCKED Activity
-                    } else // target Activity is NOT locked
-
-                    { // is the original Activity locked?
-                        if (origActivity.isLocked) {
-                            await StorageService.clone(originalUrn, newUrn, 'activity');
-                        } else { /// the original Activity is not locked
-                            await StorageService.replace(originalUrn, newUrn, 'activity')
-                        }
-                    }
-                } else {  // user says 'no' to overwrite
-                    // FAIL -- NOT OVERWRITING EXISTING Activity
-                }
-            } else {  // urn not already being used
-                // is the original Activity locked?
-                if (origActivity.isLocked) {
-                    await this.cloneActivity(origActivity, newUrn)
-                } else {/// the original Activity is not locked
-                    await StorageService.replace(originalUrn, newUrn, 'activity');
-                }
-            }
-        }
-        console.log("Local<< (url renamed) \n")
-    }
 
     async eventNodeUpdatedHandler(event) {
         let projectNode = null;
@@ -527,8 +346,6 @@ export default class ControllerAT extends EventTarget {
         console.log("Local<< (node locked) \n")
     }
 
-
-
     /**
      *                                   Downward Command Handlers
      * 'Command handlers' refer to the process that starts when our Subscribers are notified and continues until
@@ -610,9 +427,6 @@ export default class ControllerAT extends EventTarget {
         this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
     }
 
-
-
-
     /**
      *                                  Support Functions
      * buildNodeTreeFromActivityUrn   Build node tree given root URN
@@ -646,44 +460,9 @@ export default class ControllerAT extends EventTarget {
         return returnNode;
     }
 
-
-
-
     updateProject(currentNode, projectId) {
         currentNode.project = projectId
         currentNode.children.forEach(child => this.updateProject(child))
-    }
-
-
-
-    restructureProject(currentNode) {                                         ///  This should be replaced
-        let existingKids = currentNode.children.map(node => {
-            return {urn: node.urn, id: node.childId}
-        })
-        let validKids = this._activityMap.get(currentNode.urn)
-        let kidsToAdd = this.getChildrenToAdd(newKids, oldKids);
-        let kidsToRemove = this.getChildrenToRemove(newKids, oldKids);
-        kidsToAdd.forEach(child => {
-            const childActivity = this._activityMap.get(child.urn);
-            const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
-            currentNode.addChild(childNodeModel, true);
-            childNodeModel.childId = child.id;    // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
-            this.repopulateActivity(childNodeModel)
-            this.repopulateParent(currentNode)
-            this.repopulateProject(childNodeModel, currentNode.project)
-        })
-
-        kidsToRemove.forEach(child => {
-            let childNodeModel = currentNode.getChildById(child.id)
-            childNodeModel.isRoot(true);
-            newlyFormedRootStack.push(childNodeModel);
-            currentNode.removeChild();
-            this.repopulateActivity(childNodeModel)
-            this.repopulateParent(childNodeModel)
-            this.repopulateProject(childNodeModel, childNodeModel.id)   // 100% avoid race condition
-
-        })
-
     }
 
     getChildrenToAdd(oldKids, newKids) {
@@ -718,14 +497,6 @@ export default class ControllerAT extends EventTarget {
         }
         return null
     }
-
-
-    clearSelectedHandler(event) {
-        console.log("Local>> (clear selected) ")
-        this._playground.handleClearSelected(event);
-        console.log("Local<< (clear selected) \n")
-    }
-
 
     async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
         console.log("Local>> (local nodes disjoined) ")
@@ -769,22 +540,5 @@ export default class ControllerAT extends EventTarget {
             this.repopulateParent(child, projectId)
         }
     }
-
-
-
-    // _getChildModels(parentActivity, childrenJAGMap) {
-    //     if (!parentActivity.children)              // @TODO or.. if (parentActivity.children) then for loop...  return childrenJAGMap
-    //         return childrenJAGMap;
-    //     for (let childDetails of parentActivity.children) {
-    //         const childActivity = this._activityMap.get(childDetails.urn)
-    //         childrenJAGMap.set(childDetails.urn, childActivity);
-    //         childrenJAGMap = this._getChildModels(childActivity, childrenJAGMap);
-    //     }
-    //     return childrenJAGMap;
-    // }
-
-    // The brute force rebuild  - put in URN and get back rootNode of a fully armed and operational NodeModelTree.
-
-
 
 }

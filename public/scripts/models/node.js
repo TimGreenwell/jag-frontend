@@ -344,7 +344,7 @@ export default class Node extends EventTarget {
 	}
 
 	isRoot() {
-		return this._parent === undefined;
+		return this._id == this._project;
 	}         // is determined by lack of parent.
 
     getAncestor() {

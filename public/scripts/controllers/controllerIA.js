@@ -10,22 +10,24 @@
 import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JAGATValidation from "../utils/validation.js";
-import NodeModel from "../models/cell.js";
+import CellModel from "../models/cell.js";
 import Activity from "../models/activity.js";
 import AnalysisModel from "../models/analysis-model.js";
 import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
 import UserPrefs from "../utils/user-prefs.js";
+import Controller from "./controller.js";
 
-export default class ControllerIA {
+export default class ControllerIA extends Controller{
 
     constructor() {
+        super();
         this._analysisLibrary = null;           // HTMLElement
         this._editor = null;                    // HTML Element
         this._iaTable = null;                   // HTMLElement extending Popupable
 
         this._activityMap = new Map();          // All JAGs - should be in sync with storage
-        this._analysisModelMap = new Map();     // All analyses - should be in sync with storage
+        this._analysisMap = new Map();     // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;      // type: AnalysisModel
 
         StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));
@@ -46,32 +48,9 @@ export default class ControllerIA {
         this._iaTable = value;
     }
 
-    get activityMap() {
-        return this._activityMap;
-    }
-    set activityMap(newActivityMap) {
-        this._activityMap = newActivityMap;
-    }
-    addActivity(activity) {
-        this._activityMap.set(activity.urn, activity)
-    }
 
-    get analysisModelMap() {
-        return this._analysisModelMap;
-    }
-    set analysisModelMap(value) {
-        this._analysisModelMap = value;
-    }
-    addAnalysisModel(newAnalysisModel) {
-        this._analysisModelMap.set(newAnalysisModel.id, newAnalysisModel)
-    }
 
-    get currentAnalysis() {
-        return this._currentAnalysis;
-    }
-    set currentAnalysis(newAnalysisModel) {
-        this._currentAnalysis = newAnalysisModel;
-    }
+
 
     async initialize() {
         UserPrefs.setDefaultUrnPrefix("us:tim:")
@@ -83,7 +62,7 @@ export default class ControllerIA {
     async initializeCache() {
 
         let allActivities = await StorageService.all('activity')
-        allActivities.forEach(activity => this.addActivity(activity))
+        allActivities.forEach(activity => this.cacheActivity(activity))
 
         // @TODO need this?
         let allNodes = await StorageService.all('node')
@@ -93,19 +72,19 @@ export default class ControllerIA {
         });
 
         let allAnalyses = await StorageService.all('analysis')
-        allAnalyses.forEach(analysis => this.addAnalysisModel(analysis))
+        allAnalyses.forEach(analysis => this.cacheAnalysis(analysis))
     }
 
     initializePanels() {
-        this._analysisLibrary.addListItems([...this._analysisModelMap.values()])
+        this._analysisLibrary.addListItems([...this._analysisMap.values()])
     }
 
     initializeHandlers() {
         this._iaTable.addEventListener('event-analysis-created', this.eventAnalysisCreatedHandler.bind(this));  // popup create
         this._iaTable.addEventListener('event-analysis-updated', this.eventAnalysisUpdatedHandler.bind(this));  // jag structure updates
         //this._iaTable.addEventListener('event-analysis-deleted', this.eventAnalysisDeletedHandler.bind(this));  // jag structure updates
-        this._iaTable.addEventListener('event-node-addchild', this.eventNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)         // does that really need to come up this far?
-        this._iaTable.addEventListener('event-node-prunechild', this.eventNodePruneChildHandler.bind(this));
+        this._iaTable.addEventListener('event-cell-addchild', this.eventNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)         // does that really need to come up this far?
+        this._iaTable.addEventListener('event-cell-prunechild', this.eventNodePruneChildHandler.bind(this));
         this._iaTable.addEventListener('event-collapse-toggled', this.eventCollapseToggledHandler.bind(this));
         this._iaTable.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));
         this._iaTable.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));
@@ -136,11 +115,11 @@ export default class ControllerIA {
      * eventAnalysisUpdatedHandler
      * eventAnalysisDeletedHandler  *
      * eventNodeAddChildHandler
-     * eventNodePruneChildHandler
+     * eventNodePruneChildHandler  - this is a disconnect (not a delete) of a chilid activity from its parent
      * eventCollapseToggledHandler
-     * eventUrnChangedHandler
-     * eventActivityCreatedHandler
-     * eventActivityUpdatedHandler
+     * eventUrnChangedHandler      (C)
+     * eventActivityCreatedHandler (C)
+     * eventActivityUpdatedHandler (C)
      * eventJagDeletedHandler       *
      * eventAnalysisSelected
      *
@@ -164,7 +143,7 @@ export default class ControllerIA {
             const childActivity = new Activity({urn: UserPrefs.getDefaultUrnPrefix(), name: ''})
             // Normally, we would pass this new Jag up for storage and distribution - however it is only temporary since it does
             // not yet have a valid URN or name.
-            const childCell = new NodeModel({urn: childActivity.urn});
+            const childCell = new CellModel({urn: childActivity.urn});
             childCell.activity = childActivity;
             childCell.parentUrn = parentCell.urn
             childCell.rootUrn = parentCell.rootUrn
@@ -180,12 +159,11 @@ export default class ControllerIA {
         // Going to just update parent.  Actually prune node?
         // After a quick check we are not pruning the head.
 
-        let parentActivityUrn = event.detail.node.parent.urn
-        let childActivityUrn = event.detail.node.urn
+        let parentActivityUrn = event.detail.cell.parent.urn
+        let childActivityUrn = event.detail.cell.urn
         let parentActivity = this._activityMap.get(parentActivityUrn)
         let childActivity = this._activityMap.get(childActivityUrn)
         let parentActivityChildren = parentActivity.children;
-
         let index = 0;
         let found = false;
         while ((index < parentActivityChildren.length) && (!found)) {
@@ -197,7 +175,7 @@ export default class ControllerIA {
             }
         }
         parentActivity.children = parentActivityChildren;
-        await StorageService.update(parentActivity, "jag")
+        await StorageService.update(parentActivity, "activity")
     }
 
     eventCollapseToggledHandler(event) {
@@ -208,24 +186,12 @@ export default class ControllerIA {
         this._iaTable.analysisView.layout();
     }
 
-    async eventUrnChangedHandler(event) {
-        let originalUrn = event.detail.originalUrn;
-        let newUrn = event.detail.newUrn;
-        await this.updateURN(originalUrn, newUrn)
-    }
 
-    async eventActivityCreatedHandler(event) {
-        let activity = new Activity(event.detail.activity);
-        await StorageService.create(activity, 'activity');
-    }
 
-    async eventActivityUpdatedHandler(event) {
-        await StorageService.update(event.detail.activity, 'activity');
-    }
 
     async eventAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
-        this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+        this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
         this._iaTable.displayAnalysis(this._currentAnalysis);
         this._editor.team = event.detail.model.team;
     }
@@ -246,13 +212,13 @@ export default class ControllerIA {
      */
 
     async commandActivityCreatedHandler(createdActivity, createdActivityUrn) {
-        this.addActivity(createdActivity);
+        this.cacheActivity(createdActivity);
         UserPrefs.setDefaultUrnPrefixFromUrn(createdActivityUrn)
         // thought below is to surgically add it to the node tree - if its in the currentAnalysis
         // until then, just drawing the whole thing.
         if (this._currentAnalysis) {
             // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-            this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+            this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
@@ -262,7 +228,11 @@ export default class ControllerIA {
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surgery
         let origActivity = this._activityMap.get(updatedActivityUrn);  // Get original data from cache
-        this.addActivity(updatedActivity);                       // Update cache to current
+        this.cacheActivity(updatedActivity);                       // Update cache to current
+
+        // let kidsToAdd = this.getChildrenToAdd(origActivity, updatedActivity);
+        // let kidsToRemove = this.getChildrenToRemove(origActivity, updatedActivity);
+
         let newKids = updatedActivity.children.map(entry => {
             return entry.urn
         })
@@ -274,7 +244,7 @@ export default class ControllerIA {
 
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+                this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
                 this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
@@ -283,7 +253,7 @@ export default class ControllerIA {
 
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+                this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
                 this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
@@ -291,6 +261,18 @@ export default class ControllerIA {
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
     async commandActivityDeletedHandler(deletedActivityUrn) {
         if (this._iaTable.analysisModel) {
@@ -305,11 +287,11 @@ export default class ControllerIA {
 
         console.log("see you")
 
-        this.addAnalysisModel(createdAnalysisModel);
+        this.cacheAnalysis(createdAnalysisModel);
 
 
         if (this._iaTable.analysisModel) {
-            createdAnalysisModel.rootNodeModel = await this.buildNodeTreeFromActivityUrn(createdAnalysisModel.rootUrn);
+            createdAnalysisModel.rootCellModel = await this.buildNodeTreeFromActivityUrn(createdAnalysisModel.rootUrn);
             this._iaTable.displayAnalysis(createdAnalysisModel);
         }
 
@@ -373,7 +355,7 @@ export default class ControllerIA {
         // if (await StorageService.has(rootUrn, 'activity')) {
         let rootActivity = await StorageService.get(rootUrn, 'activity');
         //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
-        //tlg   const rootNodeModel = new NodeModel({jag: rootActivity});
+        //tlg   const rootCellModel = new CellModel({jag: rootActivity});
         const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
         // currently buildAnalysis builds and stores the mapset.
         newAnalysisModel.team = new TeamModel();
@@ -387,94 +369,22 @@ export default class ControllerIA {
 
     async displayAnalysis(id) {
         let analysisModel = await StorageService.get(id, 'analysis');
-        analysisModel.rootNodeModel = await this.buildNodeTreeFromActivityUrn(analysisModel.rootUrn);
+        analysisModel.rootCellModel = await this.buildNodeTreeFromActivityUrn(analysisModel.rootUrn);
         this._iaTable.displayAnalysis(analysisModel);
     }
 
-    // UPDATE JAG --- Cycle through active Projects and rebuild.
-
-    async rebuildNodeTree(rootNodeModel) {
-        const nodeStack = [];
-        const resultStack = [];
-        nodeStack.push(rootNodeModel);
-
-        while (nodeStack.length != 0) {
-            let currentNode = nodeStack.pop();
-            let origActivity = currentNode.activity;
-            let updatedActivity = this._activityMap.get(origActivity.urn);
-            currentNode.activity = updatedActivity;
-
-            let kidsToAdd = this.getChildrenToAdd(origActivity, updatedActivity);
-            kidsToAdd.forEach(child => {
-                const childActivity = this._activityMap.get(child.urn);
-                const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
-                childNodeModel.activity = childActivity
-                childNodeModel.childId = child.id;
-                currentNode.addChild(childNodeModel, true);
-                // not yet -- nodeStack.push(childNodeModel);
-            })
-            let kidsToRemove = this.getChildrenToRemove(origActivity, updatedActivity);
-            kidsToRemove.forEach(child => {
-                let childNodeModel = currentNode.getChildById(child.id)
-                //   In AT, the following must be done  how: [sperate similar functions?, event call to add this? , parameter to split or delete?, or two functions same name in
-                //  different places? -> seperateChild(child).[[one would remove it... the other save and projectize it]]
-                //       ---childNodeModel.is_root(true);
-                //       --- StorageServer.create(childNodeModel,"node");
-                //            ----   ----   this._nodeModelMap.set(child.id, childNodeModel)
-                currentNode.removeChild();
-            })
-
-
-            for (const child of currentNode.children) {
-                // const childActivity = await StorageService.get(child.urn, 'activity');
-                // const childNodeModel = new NodeModel({jag: childActivity, is_root: false});
-                // childNodeModel.childId = child.id;
-                // currentNode.addChild(childNodeModel, true);
-                // nodeStack.push(childNodeModel);
-                nodeStack.push(child);
-            }
-            resultStack.push(currentNode);
-        }
-        return resultStack.shift();
-    }    // possible common area contender
-
 // blending these two together --- update the projectModel to the existing activityModels.
 
-    async commandActivityUpdatedHandler2(updatedActivity, updatedActivityUrn) {
-        let origActivity = this.activityMap.get(updatedActivityUrn);  // Get original data from cache
-        this.addActivity(updatedActivity);                       // Update cache to current
-        let kidsToAdd = this.getChildrenToAdd(origActivity, updatedActivity);
-        if (kidsToAdd.length != 0) {
-
-
-            // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-            this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-            this._iaTable.displayAnalysis(this._currentAnalysis);
-
-        }
-
-        let kidsToRemove = this.getChildrenToRemove(origActivity, updatedActivity);
-        if (kidsToRemove.length != 0) {
-            if (this._currentAnalysis) {
-                // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootNodeModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.displayAnalysis(this._currentAnalysis);
-            }
-        }
-        if ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
-            this._iaTable.displayAnalysis(this._currentAnalysis);
-        }
-    }
 
     async buildNodeTreeFromActivityUrn(newRootActivityUrn) {
         const nodeStack = [];
         const resultStack = [];
         const rootActivity = await StorageService.get(newRootActivityUrn, 'activity');   //@todo use cache
-        const rootNodeModel = new NodeModel({urn: rootActivity.urn, is_root: true});
-        rootNodeModel.activity = rootActivity
-        rootNodeModel.parentUrn = null;
-        rootNodeModel.rootUrn = newRootActivityUrn;
-        nodeStack.push(rootNodeModel);
+        const rootCellModel = new CellModel({urn: rootActivity.urn, is_root: true});
+        rootCellModel.activity = rootActivity
+        rootCellModel.parentUrn = null;
+        rootCellModel.rootUrn = newRootActivityUrn;
+        nodeStack.push(rootCellModel);
         while (nodeStack.length != 0) {
             let currentNode = nodeStack.pop();
             for (const child of currentNode.activity.children) {
@@ -484,13 +394,13 @@ export default class ControllerIA {
                 } else {
                     childActivity = new Activity(child)
                 }
-                const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
-                childNodeModel.activity = childActivity
-                childNodeModel.childId = child.id;
-                childNodeModel.parentUrn = currentNode.urn
-                childNodeModel.rootUrn = newRootActivityUrn;
-                currentNode.addChild(childNodeModel, true);
-                nodeStack.push(childNodeModel);
+                const childCellModel = new CellModel({urn: childActivity.urn, is_root: false});
+                childCellModel.activity = childActivity
+                childCellModel.childId = child.id;
+                childCellModel.parentUrn = currentNode.urn
+                childCellModel.rootUrn = newRootActivityUrn;
+                currentNode.addChild(childCellModel, true);
+                nodeStack.push(childCellModel);
             }
             resultStack.push(currentNode);
         }
@@ -498,58 +408,14 @@ export default class ControllerIA {
     }    // possible common area contender
 
 
-    async updateURN(origURN, newURN) {
-        // Currently thinking a controller area if more can be found.
-        const URL_CHANGED_WARNING_POPUP = "The URN has changed. Would you like to save this model to the new URN (" + newURN + ")? (URN cannot be modified except to create a new model.)";
-        const URL_RENAME_WARNING_POPUP = "The new URN (" + newURN + ") is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)";
-        // Changing a URN is either a rename/move or a copy or just not allowed.
-        // Proposing we have a 'isLocked' tag.
-        // URN changes are renames until the Activity is marked as 'isLocked'.
-        // After 'isLocked', URN changes are copies.
-        //  Is it a valid URN?
-        let isValid = InputValidator.isValidUrn(newURN);
-        if (isValid) {
-            let origActivity = await StorageService.get(origURN, 'activity');  // needed to check if 'isLocked'
-            let urnAlreadyBeingUsed = await StorageService.has(newURN, 'activity');
-            // Is the URN already taken?
-            if (urnAlreadyBeingUsed) {
-                // Does user confirm an over-write??
-                if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
-                    let newActivity = await StorageService.get(origURN, 'activity');
+           // possible common area contender
 
-                    // is the target Activity locked?
-                    if (newActivity.isLocked) {
-                        // FAIL  - CANT OVERWRITE LOCKED JAG-MODEL
-                    } else // target Activity is NOT locked
-
-                    { // is the original Activity locked?
-                        if (origActivity.isLocked) {
-                            await StorageService.clone(origURN, newURN, 'activity');
-                        } else { /// the original Activity is not locked
-                            await StorageService.replace(origURN, newURN, 'activity')
-                        }
-                    }
-                } else {  // user says 'no' to overwrite
-                    // FAIL -- NOT OVERWRITING EXISTING JAG-MODEL
-                }
-            } else {  // urn not already being used
-                // is the original Activity locked?
-                if (origActivity.isLocked) {
-                    await this.cloneActivity(origActivity, newURN)
-                } else {/// the original Activity is not locked
-                    await StorageService.replace(origURN, newURN, 'activity');
-                }
-            }
-        }
-
-    }                // possible common area contender
-
-    async saveNodeModel(newNodeModel) {
-        if (await StorageService.has(newNodeModel, 'node')) {
-            await StorageService.update(newNodeModel, 'node');
+    async saveCellModel(newCellModel) {
+        if (await StorageService.has(newCellModel, 'node')) {
+            await StorageService.update(newCellModel, 'node');
         } else {
-            if (newNodeModel.isValid()) {
-                await StorageService.create(newNodeModel, 'node');
+            if (newCellModel.isValid()) {
+                await StorageService.create(newCellModel, 'node');
             } else {
                 window.alert("Invalid URN");
             }
@@ -676,4 +542,15 @@ export default class ControllerIA {
         }
     }
 
+
 }
+
+
+
+
+
+
+
+
+
+

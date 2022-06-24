@@ -12,7 +12,7 @@ import StorageService from '../services/storage-service.js';
 
 export default class AnalysisModel extends EventTarget {
 
-	// constructor : why pass in root into a new NodeModel? results in same.  hrm
+	// constructor : why pass in root into a new CellModel? results in same.  hrm
 	constructor({
 					id = UUIDv4(),
 					name = AnalysisModel.DEFAULT_NAME,
@@ -27,7 +27,7 @@ export default class AnalysisModel extends EventTarget {
 		this._rootUrn = rootUrn;
 		this._team = team;
 
-		this._rootNodeModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
+		this._rootCellModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
 		                                  //  or when click in analysis library
 
 	};
@@ -66,17 +66,17 @@ export default class AnalysisModel extends EventTarget {
 	set team(newTeam){
 		this._team = newTeam;
 	}
-	get rootNodeModel() {
-		return this._rootNodeModel;
+	get rootCellModel() {
+		return this._rootCellModel;
 	}
-	set rootNodeModel(value) {
-		this._rootNodeModel = value;
+	set rootCellModel(value) {
+		this._rootCellModel = value;
 	}
 
 
 	findNode(id){
 		const searchStack = []
-		searchStack.push(this._rootNodeModel)
+		searchStack.push(this._rootCellModel)
 		while (searchStack.length != 0) {
 			let currentNode = searchStack.pop();
 			if (currentNode.id == id) {
