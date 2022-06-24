@@ -580,16 +580,10 @@ class Playground extends Popupable {
         // Note: This is not looking at the view-level. Only at the data-level.  This seems accurate.
         // Would have pushed up higher - but need to know which projects are in viewedProjectsMap (not available above)
 
-        console.log("Updating JAG Model -  Must check each Project to see if JAG exists there  (( if so, update that project ))")
-        console.log(this._viewedProjectsMap)
         this._viewedProjectsMap.forEach((value, key) => {
             let node = value;
-            console.log("Check Project #" + key)
-            console.log(node)
-            console.log(node.activity.urn)
 
             if (node.isActivityInProject(updatedUrn)) {
-                console.log("Found change in : " + node.activity.urn)
                 this.dispatchEvent(new CustomEvent('response-activity-created', {
                     detail: {
                         projectModel: node,
@@ -603,16 +597,10 @@ class Playground extends Popupable {
 
     deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
 
-        console.log("Deleting JAG Model -  Must check each Project to see if JAG exists there  (( if so, update that project ))")
-        console.log(JSON.stringify(this._viewedProjectsMap.values()))
         this._viewedProjectsMap.forEach((value, key) => {
 
             let node = value;
-            console.log("Check Project #" + key)
-            console.log(node)
-            console.log(node.activity.urn)
             if (node.isActivityInProject(deletedUrn)) {
-                console.log("Found change in : " + node.activity.urn)
                 this.dispatchEvent(new CustomEvent('response-activity-deleted', {
                     detail: {
                         projectModelId: node.id,
@@ -684,7 +672,6 @@ class Playground extends Popupable {
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
             if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
-                console.log("deleted something")
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeActivityNodeElementSet.delete(node);
@@ -701,13 +688,8 @@ class Playground extends Popupable {
     }
 
     _rebuildNodeView(projectNodeModel) {
-        console.log(projectNodeModel)
         this.deleteNodeModel(projectNodeModel.id)
-        console.log("DO I HAVE A GOOD PROJECT NODE MODEL?")
-        console.log(projectNodeModel)
-        console.log("Answer: ?")
         this.addNodeModel(projectNodeModel)
-        console.log(projectNodeModel)
     }
 
     // for (let rootNode of this._viewedProjectsMap.values()) {

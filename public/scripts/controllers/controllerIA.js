@@ -201,8 +201,7 @@ export default class ControllerIA {
     }
 
     eventCollapseToggledHandler(event) {
-        let eventDetail = event.detail;
-        let node = eventDetail.node;
+        let node = event.detail.node;
         node.toggleCollapse();             //  -- think this is going to be moved to an Analysis array if we want it saved.
         // just initialize tree would be nice - but think it needs to start from scratch.
         // earlier version of this just call a 'layout'event - whats that?
@@ -210,9 +209,8 @@ export default class ControllerIA {
     }
 
     async eventUrnChangedHandler(event) {
-        let eventDetail = event.detail;
-        let originalUrn = eventDetail.originalUrn;
-        let newUrn = eventDetail.newUrn;
+        let originalUrn = event.detail.originalUrn;
+        let newUrn = event.detail.newUrn;
         await this.updateURN(originalUrn, newUrn)
     }
 
@@ -263,7 +261,6 @@ export default class ControllerIA {
         // 1) update the jag listing
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surgery
-        console.log("see new activity!")
         let origActivity = this._activityMap.get(updatedActivityUrn);  // Get original data from cache
         this.addActivity(updatedActivity);                       // Update cache to current
         let newKids = updatedActivity.children.map(entry => {
@@ -509,7 +506,6 @@ export default class ControllerIA {
         // Proposing we have a 'isLocked' tag.
         // URN changes are renames until the Activity is marked as 'isLocked'.
         // After 'isLocked', URN changes are copies.
-
         //  Is it a valid URN?
         let isValid = InputValidator.isValidUrn(newURN);
         if (isValid) {
