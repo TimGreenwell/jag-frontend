@@ -36,7 +36,7 @@ export default class Activity extends EventTarget {
                     isLocked,
 
                     collapsed = false,
-                } ) {
+                }) {
         super();
 
         this._urn = urn;
@@ -89,15 +89,17 @@ export default class Activity extends EventTarget {
     }
 
     set name(name) {
-            this._name = name;
+        this._name = name;
     }
+
     get name() {
         return this._name;
     }
 
     set description(description) {
-            this._description = description;
+        this._description = description;
     }
+
     get description() {
         return this._description;
     }
@@ -145,6 +147,7 @@ export default class Activity extends EventTarget {
     set connector(value) {
         this._connector = value;
     }
+
     get connector() {
         return this._connector;
     }
@@ -152,9 +155,11 @@ export default class Activity extends EventTarget {
     set inputs(value) {
         this._inputs = value;
     }
+
     get inputs() {
         return [...this._inputs];
     }
+
     addInput(input) {
         this._inputs.push(input);
     }
@@ -162,9 +167,11 @@ export default class Activity extends EventTarget {
     set outputs(value) {
         this._outputs = value;
     }
+
     get outputs() {
         return [...this._outputs];
     }
+
     addOutput(output) {
         this._outputs.push(output);
     }
@@ -172,19 +179,20 @@ export default class Activity extends EventTarget {
     set children(value) {
         this._children = value;
         if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
-           this._operator = Activity.OPERATOR.AND.name;
+            this._operator = Activity.OPERATOR.AND.name;
         }
     }
 
     get children() {
         return [...this._children];
     }
+
     // id: id = UUIDv4(),
     // urn: child.urn,
     // activity: child
 
-    hasChildren(){
-        return (this._children.length>0)
+    hasChildren() {
+        return (this._children.length > 0)
     }
 
     get canHaveChildren() {
@@ -194,20 +202,23 @@ export default class Activity extends EventTarget {
     set bindings(value) {
         this._bindings = value;
     }
+
     get bindings() {
         return [...this._bindings];
     }
 
     set execution(type) {
-            this._execution = type;
+        this._execution = type;
     }
+
     get execution() {
         return this._execution;
     }
 
     set operator(type) {
-            this._operator = type;
+        this._operator = type;
     }
+
     get operator() {
         return this._operator;
     }
@@ -215,6 +226,7 @@ export default class Activity extends EventTarget {
     set isLocked(bool) {
         this._isLocked = bool;
     }
+
     get isLocked() {
         return this._isLocked;
     }
@@ -244,7 +256,7 @@ export default class Activity extends EventTarget {
             this._children.push({
                 urn: urn,
                 id: id = UUIDv4()
-            //    activity: child   // dont think this is really there.  would be too much to serialize
+                //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
         if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
@@ -252,7 +264,6 @@ export default class Activity extends EventTarget {
         }
         return id;
     }
-
 
 
     removeChild(child) {
@@ -300,7 +311,6 @@ export default class Activity extends EventTarget {
             }
         }
     }
-
 
 
     /**
@@ -387,7 +397,6 @@ export default class Activity extends EventTarget {
 
         return availableOutputs;
     }
-
 
 
     /**
@@ -532,8 +541,6 @@ export default class Activity extends EventTarget {
     }
 
 
-
-
     toJSON() {
         const json = {
             urn: this._urn,
@@ -623,10 +630,6 @@ Activity.EXECUTION = {
     NONE: {
         name: 'node.execution.none',
         text: "none",
-        symbol: '',
-        fn: function (a, b) {
-            return a + b
-        }
     },
     SEQUENTIAL:
         {
@@ -647,65 +650,177 @@ Activity.EXECUTION = {
     }
 }
 
+
+Activity.EXECUTION = {
+    NONE: {
+        name: 'node.execution.none',
+        text: "none",
+        description: 'No reporting sub-activities'
+    },
+    PARALLEL: {
+        name: 'node.execution.parallel',
+        text: "parallel",
+        description: 'Sub-activities execute simultaneously'
+    },
+    SEQUENTIAL:
+        {
+            name: 'node.execution.sequential',
+            text: "sequential",
+            description: 'Sub-activities execute in order'
+        },
+    RETRY: {
+        name: 'node.execution.retry',
+        text: 'sequential w/retry',
+        description: 'Recover and retry all if one sub-activity fails'
+    },
+    LOOP: {
+        name: 'node.execution.loop',
+        text: "sequential loop",
+        description: 'First sub-activity resumes after last finishes'
+    },
+    OVERLAP: {
+        name: 'node.execution.overlap',
+        text: "sequential w/overlap",
+        description: 'Following sub-activity begins before the previous ends'
+    },
+    PARALLELX: {
+        name: 'node.execution.parallelx',
+        text: "parallel subset",
+        description: 'Some sub-activities execute simultaneously'
+    },
+}
+
+
+Activity.RETURNS = {
+    AVAILABLE: {
+        name: 'node.returns.available',
+        text: 'all available',
+        description: 'All children with currently available output',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+    },
+    ALL: {
+        name: 'node.returns.all',
+        text: 'all (or none)',
+        description: 'All children data when all become available',
+        condition: ['node.execution.parallel', 'node.execution.parallelx']
+    },
+    LATEST: {
+        name: 'node.returns.latest',
+        text: 'most recent',
+        description: 'Only data from most recently reporting child',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap']
+    },
+    PRIORITY: {
+        name: 'node.returns.priority',
+        text: 'highest priority',
+        description: 'Child with highest priority available input',
+        condition: ['node.execution.parallel']
+    },
+    FINAL: {
+        name: 'node.returns.final',
+        text: 'final output',
+        description: 'Final result from last child in sequence',
+        condition: ['node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap']
+    },
+}
+
+
 Activity.OPERATOR = {
     NONE: {
         name: 'node.operator.none',                  // does not return a value    (maybe just a state?) (maybe nada)
         text: 'none',
-        symbol: ''
+        symbol: '',
+        condition: ['node.returns.available', 'node.returns.all', 'node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     AND: {
         name: 'node.operator.and',                    // AND(boolean,boolean,...)
         text: 'and',
-        symbol: '&'
+        symbol: 'and',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     OR: {
         name: 'node.operator.or',                      // OR(boolean,boolean,...)        @TODO  XOR?!    NAND NOR
-        text: '\uD83D\uDE00',
-        symbol: '||'
+        text: 'or',
+        symbol: 'or',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     FIRST: {
         name: 'node.operator.first',
         text: 'first reporting',
-        symbol: '1st'
+        symbol: '1st',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     LAST: {
         name: 'node.operator.last',
         text: 'last reporting',
-        symbol: 'nth'
+        symbol: 'nth',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     MAX: {
         name: 'node.operator.max',
         text: 'largest',
-        symbol: 'max'
+        symbol: 'max',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     MIN: {
         name: 'node.operator.min',
         text: 'smallest',
-        symbol: 'min'
+        symbol: 'min',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     SUM: {
         name: 'node.operator.sum',
         text: 'sum',
-        symbol: '+'
+        symbol: 'sum',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     AVG: {
         name: 'node.operator.avg',
         text: 'average',
-        symbol: 'avg'
+        symbol: 'avg',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     UNION: {
         name: 'node.operator.union',
         text: 'union',
-        symbol: 'U'
+        symbol: 'U',
+        condition: ['node.returns.available', 'node.returns.all']
     },
     INT: {
         name: 'node.operator.intersection',
-        text: 'and',
-        symbol: '\uD83D\uDE00'
+        text: 'intersection',
+        symbol: '\uD83D\uDE00',
+        condition: ['node.returns.available', 'node.returns.all']
     },
-    CUSTOM: {
-        name: 'node.operator.custom',
-        text: 'custom',
-        symbol: '@'
+    CONVERT: {
+        name: 'node.operator.convert',
+        text: 'convert',
+        symbol: '><',
+        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+    },
+    INVERSE: {
+        name: 'node.operator.inverse',
+        text: 'inverse',
+        symbol: '1/x',
+        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+    },
+    NEGATE: {
+        name: 'node.operator.negate',
+        text: 'negate',
+        symbol: '-x',
+        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+    },
+    ABS: {
+        name: 'node.operator.absolute',
+        text: 'absolute',
+        symbol: '|x|',
+        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+    },
+    NOT: {
+        name: 'node.operator.not',
+        text: 'not',
+        symbol: '!',
+        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
     }
+
 }

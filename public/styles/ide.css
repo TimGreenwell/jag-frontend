@@ -1,0 +1,135 @@
+
+/* IDE   - was earlier part of screen.css*/
+
+side#ide {
+    background: var(--main-bg-darker);
+    color: var(--main-fg);
+}
+
+
+side#ide {
+    height: var(--ide-height);
+    border-top: 1px solid darkgray;
+    width: 100%;
+}
+
+side#ide div#ide-toolbar {
+    display: flex;
+    box-shadow: 0px 1px 5px var(--main-fg-lighter);
+}
+
+side#ide div#ide-toolbar div#ide-feedback {
+    font-size: 1.25em;
+    margin-right: 1.5em;
+    margin-left: auto;
+    align-self: center;
+    transition: color 350ms var(--transition-function);
+}
+
+side#ide div#ide-toolbar div#ide-feedback.error {
+    color: red;
+}
+
+side#ide div.ide-button {
+    cursor: pointer;
+    margin: 0.75em;
+    width: calc(24px + 0.25em*2);
+    height: calc(24px + 0.25em*2);
+    border: 1px solid var(--main-fg-lighter);
+    transition: border 350ms var(--transition-function), background 350ms var(--transition-function);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+side#ide div.ide-button:hover {
+    border: 1px solid var(--main-fg);
+    background: var(--main-fg-lighter);
+}
+
+side#ide div.ide-button:active {
+    transition: none;
+    border: 1px solid var(--input-active);
+}
+
+side#ide div.ide-button div.button-icon,
+side#ide div.ide-button div.button-progress {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+side#ide div.ide-button div.button-icon {
+    background-repeat: no-repeat;
+    margin: 0.25em;
+    opacity: 0.75;
+}
+
+side#ide div.ide-button div.button-progress{
+    transform: translateY(-120%) scaleX(0);
+    transition: transform 1s ease-out;
+    background: var(--main-fg);
+    opacity: 0.2;
+    z-index: 4;
+}
+
+side#ide div.ide-button div.button-progress.progress-reset {
+    animation-duration: 0.5s;
+    animation-name: progress-reset;
+    animation-iteration-count: 1;
+}
+
+side#ide div.ide-button#connect div.button-icon {
+    background-image: url('../icons/ic_engine_outline_black_24dp.png');
+}
+
+side#ide div.ide-button#upload div.button-icon {
+    background-image: url('../icons/ic_publish_black_24dp.png');
+}
+
+side#ide div.ide-button#run div.button-icon {
+    background-image: url('../icons/ic_play_arrow_black_24dp.png');
+}
+
+@keyframes progress-reset {
+    from {
+        transform: translateY(-120%) scaleX(1.0);
+    }
+
+    98% {
+        transform: translateY(0) scaleX(1.0)
+    }
+
+    99% {
+        transform: translateY(0) scaleX(0.0)
+    }
+
+    to {
+        transform: translateY(-120%) scaleX(0.0);
+    }
+}
+
+side#ide h1 {
+    margin: 0.75em;
+}
+
+side#ide ul {
+    width: 100%;
+}
+
+side#ide ul li {
+    display: flex;
+}
+
+side#ide ul li > label {
+    font-size: 1.25em;
+}
+
+side#ide ul li > label,
+side#ide ul li > select,
+side#ide ul li > input
+{
+    margin: 0.75em;
+    align-self: center;
+    width: 15%;
+}

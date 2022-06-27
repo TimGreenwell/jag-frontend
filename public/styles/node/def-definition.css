@@ -2,8 +2,8 @@
 def-definition {
     /* Reset layout */
     display: flex;
-    flex-direction: column;
-    height: 95%;          /* was 95 */
+    flex-direction: row;
+    height: 100%;          /* was 95 */
     width: 60%;
     z-index: 100;                      /* new */
     background: var(--main-bg-darker); /* new */
@@ -14,8 +14,9 @@ def-definition {
     flex-grow: 1;
 }
 
-def-definition  div {
-    width: 100%;
+def-definition  div .definition-block {
+    display: flex;
+    width: 95%;
     height: 35%;   /* was 100% */
     position: absolute;
 }

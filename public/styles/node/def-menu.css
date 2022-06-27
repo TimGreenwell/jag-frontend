@@ -12,6 +12,16 @@ def-menu ul {
     width: 100%;
 }
 
+def-menu .menu-options {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+def-menu .return .operator .executor {
+    display: flex;
+    justify-content: space-between;
+}
+
 def-menu li {
     height: 100%;
     float: left;
@@ -32,6 +42,10 @@ def-menu li div {
     display: table;
     height: 100%;
     float: left;
+}
+
+def-menu .selector {
+    width: max-content;
 }
 
 def-menu li:last-child div {

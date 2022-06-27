@@ -18,7 +18,6 @@ class Definition extends HTMLElement {
         this._definingProjectId = null;
         this._definingNodeId = null;
         this._functionString = String;
-        this._testMap = new Map();
         this._failTrigger = false;
         this._winTrigger = false;
         this._output = null;
@@ -69,95 +68,50 @@ class Definition extends HTMLElement {
             console.log(child)
             this.addTestItem(child);
         })
-
-
-
     }
 
     createChildTesterElement(node) {
-        const li = document.createElement('li');
-        const test_el = FormUtils.createPropertyElement('sub' + node.id, 'Name');
-        this._nameInput = FormUtils.createTextInput('name-property');
-        this._nameInput.setAttribute("placeholder", "display name");
-        this._nameInput.setAttribute("tabIndex", "0");
-        this._nameInput.className = "direct-property";
+        const test_el = FormUtils.createPropertyElement("test-" + node.id, node.urn);
+        this._nameInput = FormUtils.createTextInput('test-name-' + node.id);
+        this._nameInput.setAttribute("placeholder", "test value");
+        this._nameInput.className = "test-property";
         test_el.appendChild(this._nameInput);
-        li.appendChild(test_el)
-        return li
+        return test_el
     }
 
 
     addTestItem(childNode) {
         // handleNodeStorageCreated (@controllerAT)
         let childTester = this.createChildTesterElement(childNode)
+        console.log(childNode)
         console.log(childTester)
         this._testBank.push(childTester);
-        this._$testerList.appendChild(childTester);
+        this.$testerDiv.appendChild(childTester)
     }
-
-
-
-
 
     _initUI() {
 
-        const $testerList = document.createElement('ol');
+        this.$testerDiv = document.createElement('div');                   // TEST BLOCK Div - Mock input
+        this.$testerDiv.className = 'tester definition-block';
+        this.appendChild(this.$testerDiv);
 
-        const $testerDiv = document.createElement('div');
-        $testerDiv.className = 'tester';
-        this._testerP = document.createElement('p');
-        this._testerP.innerHTML = 'Test: ';
-        this._testerP.className = 'tester-p';
-        this._testerP.id = 'tester-p';
-        $testerDiv.appendChild(this._testerP);
-        $testerDiv.appendChild($testerList);
+        const $conditionsDiv = document.createElement('div');             // CONDITIONS BLOCK Div - Abort,Fail,Success conditions
+        $conditionsDiv.className = 'conditions definition-block';
+        this.appendChild($conditionsDiv);
 
+        const $functionDiv = document.createElement('div');               // Synthensis / logic between input and output
+        $functionDiv.className = 'function definition-block';
+        this.appendChild($functionDiv);
 
-        const test_el = FormUtils.createPropertyElement('name-property', 'Name');
-        this._nameInput = FormUtils.createTextInput('name-property');
-        this._nameInput.setAttribute("placeholder", "display name");
-        this._nameInput.setAttribute("tabIndex", "0");
-        this._nameInput.className = "direct-property";
-        this._testerP.appendChild(this._nameInput);
-        $testerDiv.appendChild(this._testerP);
-
-        const $conditionsDiv = document.createElement('div');
-        $conditionsDiv.className = 'conditions';
         this._conditionsP = document.createElement('p');
         this._conditionsP.className = 'conditions-p';
         this._conditionsP.id = 'conditions-p';
         $conditionsDiv.appendChild(this._conditionsP);
 
-
-        const $functionDiv = document.createElement('div');
-        $functionDiv.className = 'function-string';
         this._functionsP = document.createElement('p');
         this._functionsP.className = 'conditions-p';
         this._functionsP.id = 'functions-p';
         $functionDiv.appendChild(this._functionsP);
-
-
-        this._$testerList = $testerList;
-
-
-
-        this._executionSelect = FormUtils.createSelect('execution-property', [{
-            value: Activity.EXECUTION.NONE.name,
-            text: Activity.EXECUTION.NONE.text
-        }, {
-            value: Activity.EXECUTION.SEQUENTIAL.name,
-            text: Activity.EXECUTION.SEQUENTIAL.text
-        }, {
-            value: Activity.EXECUTION.PARALLEL.name,
-            text: Activity.EXECUTION.PARALLEL.text
-        }]);
-        this._executionSelect.className = 'direct-property';
-        $functionDiv.appendChild(this._executionSelect);
-
-
-        this.appendChild($testerDiv);
-        this.appendChild($conditionsDiv);
-        this.appendChild($functionDiv);
 
 
         // this._nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN

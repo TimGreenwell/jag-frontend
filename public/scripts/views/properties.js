@@ -93,59 +93,26 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._desc_ctxInput.className = "contextual";
         desc_ctx_el.appendChild(this._desc_ctxInput);
 
+        let executionOptions = []
+        let execution = Activity.EXECUTION;
+        for (let step in execution) {
+            executionOptions.push({value: execution[step].name, text: execution[step].text})
+        }
+
         const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
-        this._executionSelect = FormUtils.createSelect('execution-property', [{                         //@TODO Map this from original structure
-            value: Activity.EXECUTION.NONE.name,
-            text: Activity.EXECUTION.NONE.text
-        }, {
-            value: Activity.EXECUTION.SEQUENTIAL.name,
-            text: Activity.EXECUTION.SEQUENTIAL.text
-        }, {
-            value: Activity.EXECUTION.PARALLEL.name,
-            text: Activity.EXECUTION.PARALLEL.text
-        }]);
+        this._executionSelect = FormUtils.createSelect('execution-property', executionOptions);
         this._executionSelect.className = 'direct-property';
         execution_el.appendChild(this._executionSelect);
 
+
+        let operatorOptions = []
+        let operator = Activity.OPERATOR;
+        for (let step in operator) {
+            operatorOptions.push({value: operator[step].name, text: operator[step].text})
+        }
+
         const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');             //@TODO Map this from original structure
-        this._operatorSelect = FormUtils.createSelect('operator-property', [{
-            value: Activity.OPERATOR.NONE.name,
-            text: Activity.OPERATOR.NONE.text
-        }, {
-            value: Activity.OPERATOR.AND.name,
-            text: Activity.OPERATOR.AND.text
-        }, {
-            value: Activity.OPERATOR.OR.name,
-            text: Activity.OPERATOR.OR.text
-        }, {
-            value: Activity.OPERATOR.FIRST.name,
-            text: Activity.OPERATOR.FIRST.text
-        }, {
-            value: Activity.OPERATOR.LAST.name,
-            text: Activity.OPERATOR.LAST.text
-        }, {
-            value: Activity.OPERATOR.MAX.name,
-            text: Activity.OPERATOR.MAX.text
-        }, {
-            value: Activity.OPERATOR.MIN.name,
-            text: Activity.OPERATOR.MIN.text
-        }, {
-            value: Activity.OPERATOR.OR.name,
-            text: Activity.OPERATOR.OR.text
-        }, {
-            value: Activity.OPERATOR.OR.name,
-            text: Activity.OPERATOR.OR.text
-        }, {
-            value: Activity.OPERATOR.OR.name,
-            text: Activity.OPERATOR.OR.text
-        }, {
-            value: Activity.OPERATOR.OR.name,
-            text: Activity.OPERATOR.OR.text
-        },         {
-                value: Activity.OPERATOR.OR.name,
-                text: Activity.OPERATOR.OR.text
-            }
-        ]);
+        this._operatorSelect = FormUtils.createSelect('operator-property',  operatorOptions) ;
         this._operatorSelect.className = 'direct-property';
         operator_el.appendChild(this._operatorSelect);
 

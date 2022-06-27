@@ -2,6 +2,8 @@
 // What is this.parentNode.    Used but not defined.
 
 
+import Activity from "../models/activity.js";
+
 /**
  * @file Graphical node representation of a JAG.
  *
@@ -501,10 +503,13 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_applyOperator() {
 		let op = '';
-		if(this._nodeModel.activity.operator == JAG.OPERATOR.AND.name)
-			op = 'and';
-		else if(this._nodeModel.activity.operator == JAG.OPERATOR.OR.name)
-			op = 'or';
+
+		let operator = Activity.OPERATOR;
+		for (let step in operator) {
+			if (operator[step].name == this._nodeModel.activity.operator) {
+				op = operator[step].symbol;
+			}
+		}
 
 		this._$connector.innerHTML = op;
 		// @TODO: move this to styling;
