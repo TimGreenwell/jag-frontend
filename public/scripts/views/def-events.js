@@ -8,11 +8,11 @@
 
 import Activity from '../models/activity.js';
 
-customElements.define('jag-library', class extends HTMLElement {
+customElements.define('def-events', class extends HTMLElement {
 
 	constructor() {
 		super();
-		this._libraryList = [];                         // <li> elements holding activity.name & description + (search context) + activity
+		this._libraryList = [];                         // <li> elements holding activity.name & description + activity
 		this._initUI();
 		this._initListeners();
 		this.clearLibraryList();
@@ -21,21 +21,17 @@ customElements.define('jag-library', class extends HTMLElement {
 	_initUI() {
 
 		const $header = document.createElement('header');
-		const $search = document.createElement('input');
 		const $list = document.createElement('ol');
 
-		$search.classList.add('library-search');
 		$list.classList.add('library-list');
 
-		this.appendChild($search);
 		this.appendChild($list);
 
 		this._$list = $list;
-		this._$search = $search;
 	}
 
 	_initListeners() {
-		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+
 	}
 
 	clearLibraryList() {
@@ -115,10 +111,6 @@ customElements.define('jag-library', class extends HTMLElement {
 				li.appendChild($topHalfWrapper);
 				li.appendChild($bottomHalfWrapper);
 
-				let search_params = [];
-				search_params.push(urn.toLowerCase());
-				search_params.push(name.toLowerCase());
-				search_params.push(description.toLowerCase());
 
 				newActivity.addEventListener('refresh', () => {
 					this.refreshItem(newActivity);
@@ -146,7 +138,6 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				let newItem = {
 					element: li,
-					search_content: search_params.join(" "),
 					activity: newActivity
 				};
 
@@ -229,17 +220,6 @@ customElements.define('jag-library', class extends HTMLElement {
 	//////////////////////////////////////////////////////////////////////////////////
 
 
-	_filterFromSearchInput(e) {
-		const search_text = e.srcElement.value.toLowerCase();
-		this._libraryList.forEach((item) => {
-			if (item.element) {
-				item.element.style.display = 'block';
-				if(!item.search_content.includes(search_text))
-					item.element.style.display = 'none';
-			}
-		});
-	}
-
 
 	//  called by jag-at when listener on graph-service hears 'resources'
 
@@ -270,10 +250,9 @@ customElements.define('jag-library', class extends HTMLElement {
 
 });
 
-export default customElements.get('jag-library');
+export default customElements.get('def-events');
 
 // <jag-library> (this)
-//   <input class='library-search'></input>
 //   <ol class='library-list'>
 //      ( Line items added later by addItems )
 //   </ol>

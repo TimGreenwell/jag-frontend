@@ -191,7 +191,7 @@ export default class ControllerIA extends Controller{
 
     async eventAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
-        this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+        this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
         this._iaTable.displayAnalysis(this._currentAnalysis);
         this._editor.team = event.detail.model.team;
     }
@@ -218,7 +218,7 @@ export default class ControllerIA extends Controller{
         // until then, just drawing the whole thing.
         if (this._currentAnalysis) {
             // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-            this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+            this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
@@ -227,33 +227,24 @@ export default class ControllerIA extends Controller{
         // 1) update the jag listing
         // 2) @todo if urn is in current Analysis.nodeModel tree
         //         then a) redraw or b) surgery
-        let origActivity = this._activityMap.get(updatedActivityUrn);  // Get original data from cache
+        let originalActivity = this.fetchActivity(updatedActivityUrn);  // Get original data from cache
         this.cacheActivity(updatedActivity);                       // Update cache to current
 
-        // let kidsToAdd = this.getChildrenToAdd(origActivity, updatedActivity);
-        // let kidsToRemove = this.getChildrenToRemove(origActivity, updatedActivity);
+        let kidsToAdd = this.getChildrenToAdd(originalActivity, updatedActivity);
+        let kidsToRemove = this.getChildrenToRemove(originalActivity, updatedActivity);
 
-        let newKids = updatedActivity.children.map(entry => {
-            return entry.urn
-        })
-        let oldKids = origActivity.children.map(entry => {
-            return entry.urn
-        });
-        let kidsToAdd = newKids.filter(newKid => !oldKids.find(oldKid => newKid === oldKid))
-        if (kidsToAdd.length != 0) {
-
+        if (kidsToAdd.length > 0) {
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+                this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
                 this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
-        let kidsToRemove = oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
-        if (kidsToRemove.length != 0) {
 
+        if (kidsToRemove.length > 0) {
             if (this._currentAnalysis) {
                 // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootCellModel = await this.buildNodeTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+                this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
                 this._iaTable.displayAnalysis(this._currentAnalysis);
             }
         }
@@ -284,19 +275,12 @@ export default class ControllerIA extends Controller{
     }
 
     async commandAnalysisCreatedHandler(createdAnalysisModel, createdAnalysisId) {
-
-        console.log("see you")
-
         this.cacheAnalysis(createdAnalysisModel);
-
-
         if (this._iaTable.analysisModel) {
-            createdAnalysisModel.rootCellModel = await this.buildNodeTreeFromActivityUrn(createdAnalysisModel.rootUrn);
+            createdAnalysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
             this._iaTable.displayAnalysis(createdAnalysisModel);
         }
-
         this._analysisLibrary.addListItem(createdAnalysisModel)
-
     }
 
 
@@ -308,7 +292,7 @@ export default class ControllerIA extends Controller{
      * displayAnalysis -         redraws the analysis table
      *                           required by 1) eventAnalysisCreatedHandler
      *
-     * buildNodeTreeFromActivityUrn   Build node tree given root URN
+     * buildCellTreeFromActivityUrn   Build node tree given root URN
      *                           required by: eventAnalysisSelected
      *                           @TODO same nodes as Project nodes? similar / non-permanent
      *
@@ -330,32 +314,8 @@ export default class ControllerIA extends Controller{
         }
     }
 
-    getChildrenToAdd(origActivity, updatedActivity) {
-        let newKids = updatedActivity.children.map(entry => {
-            return entry
-        })
-        let oldKids = origActivity.children.map(entry => {
-            return entry
-        });
-        return newKids.filter(newKid => !oldKids.find(oldKid => newKid === oldKid))
-    }
-
-    getChildrenToRemove(origActivity, updatedActivity) {
-        let newKids = updatedActivity.children.map(entry => {
-            return entry
-        })
-        let oldKids = origActivity.children.map(entry => {
-            return entry
-        });
-        return oldKids.filter(oldKid => !newKids.find(newKid => oldKid === newKid))
-    }
-
-
     async createStandardAnalysis(analysisName, rootUrn, source) {
-        // if (await StorageService.has(rootUrn, 'activity')) {
         let rootActivity = await StorageService.get(rootUrn, 'activity');
-        //     window.alert("There must be an initial Joint Activity Graph before an assessment can be made.")
-        //tlg   const rootCellModel = new CellModel({jag: rootActivity});
         const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
         // currently buildAnalysis builds and stores the mapset.
         newAnalysisModel.team = new TeamModel();
@@ -369,43 +329,14 @@ export default class ControllerIA extends Controller{
 
     async displayAnalysis(id) {
         let analysisModel = await StorageService.get(id, 'analysis');
-        analysisModel.rootCellModel = await this.buildNodeTreeFromActivityUrn(analysisModel.rootUrn);
+        analysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(analysisModel.rootUrn);
         this._iaTable.displayAnalysis(analysisModel);
     }
 
 // blending these two together --- update the projectModel to the existing activityModels.
 
 
-    async buildNodeTreeFromActivityUrn(newRootActivityUrn) {
-        const nodeStack = [];
-        const resultStack = [];
-        const rootActivity = await StorageService.get(newRootActivityUrn, 'activity');   //@todo use cache
-        const rootCellModel = new CellModel({urn: rootActivity.urn, is_root: true});
-        rootCellModel.activity = rootActivity
-        rootCellModel.parentUrn = null;
-        rootCellModel.rootUrn = newRootActivityUrn;
-        nodeStack.push(rootCellModel);
-        while (nodeStack.length != 0) {
-            let currentNode = nodeStack.pop();
-            for (const child of currentNode.activity.children) {
-                let childActivity = null;
-                if (await StorageService.get(child.urn, 'activity')) {
-                    childActivity = await StorageService.get(child.urn, 'activity');    //@todo use cache
-                } else {
-                    childActivity = new Activity(child)
-                }
-                const childCellModel = new CellModel({urn: childActivity.urn, is_root: false});
-                childCellModel.activity = childActivity
-                childCellModel.childId = child.id;
-                childCellModel.parentUrn = currentNode.urn
-                childCellModel.rootUrn = newRootActivityUrn;
-                currentNode.addChild(childCellModel, true);
-                nodeStack.push(childCellModel);
-            }
-            resultStack.push(currentNode);
-        }
-        return resultStack.shift();
-    }    // possible common area contender
+
 
 
            // possible common area contender
@@ -542,15 +473,4 @@ export default class ControllerIA extends Controller{
         }
     }
 
-
 }
-
-
-
-
-
-
-
-
-
-

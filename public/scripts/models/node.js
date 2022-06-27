@@ -21,6 +21,7 @@ export default class Node extends EventTarget {
 					urn,
 					color,
 					project = id,
+		            parentId,
 					link_status = true,
 					collapsed = false,
 					isLocked = false,
@@ -28,12 +29,15 @@ export default class Node extends EventTarget {
 					x, y ,
 					contextualName = '-',
 					contextualDescription = '--',
+		            subscribes = new Map(),        // still unknown implementation (hopefully observer)
+		            alerts = new Map(),
 					children = new Array()} = {}) {
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
 		this._activity = undefined;
 		this._project = project;
+		this._parentId = parentId;
 
         this._urn = urn;
 		this._children = children;            // Links to actual children [objects]
@@ -48,7 +52,9 @@ export default class Node extends EventTarget {
 		this._leafCount = 1;
 		this._treeDepth = 0;
 		this._contextualName = contextualName;
-		this._contextualDescription = contextualDescription
+		this._contextualDescription = contextualDescription;
+		this._subscribes = subscribes;
+		this._alerts = alerts;
 		this._isLocked = isLocked;
 
 
@@ -72,6 +78,16 @@ export default class Node extends EventTarget {
 	set childId(value) {
 		this._childId = value;
 	}
+
+
+	get parentId() {
+		return this._parentId;
+	}
+
+	set parentId(value) {
+		this._parentId = value;
+	}
+
 	get jag() {
 		console.log("NNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!");
 	}
@@ -261,19 +277,6 @@ export default class Node extends EventTarget {
 		return (this.children.length !== 0);
 	}
 
-	getChildById(id) {
-		if (id == this.is) {
-			return this
-		} else {
-			this.children.forEach(child => {
-				child.getChildById(id)
-			})
-
-		}}
-
-
-
-
 
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
@@ -313,7 +316,7 @@ export default class Node extends EventTarget {
 						return this;
 					}
 					else {
-						workingNode.push(child)
+						workStack.push(child)
 					}
 				})
 			}

@@ -63,9 +63,7 @@ export default class SharedObservable extends SharedService {
         console.log("              --- Notifying subscribers: " + topic)
         this.notifySubscribers(topic, dataModel, id);
         console.log("              --- Subscribers notified: " + topic)
-        console.log(" ********  END OF GLOBAL HANDLER: (" + topic + ")  **********")
-        console.log("")
-        console.log("")
+        console.log(" ********  END OF GLOBAL HANDLER: (" + topic + ")  **********\n\n")
     }
 
     /**

@@ -1,0 +1,173 @@
+************************************************************************************************************************
+************************************************************************************************************************
+From Playground:
+This used to be used when 'nodes' were more 'activity-like' and construction was done with a root and an array of children.
+There are pieces worth reviewing but deletion is imminent unless we go back to the old way.
+ See (_buildNodeViewFromNodeModel) for its later version
+
+    //  the way with HEAD + child map   ===> want to go to the tree method.
+    // replaced -- but keep for now - new method missing some things still
+    traverseActivityNodeTree(currentParentActivityNode, descendantActivityNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+        // if no child...  createActivityNode
+        // else proceed with the current child
+        const node = childURN || this.createActivityNode(currentParentActivityNode, isExpanded);
+
+        if (context) {
+            if (context.name) node.setContextualName(context.name);
+            if (context.description) node.setContextualDescription(context.description);
+        }
+
+        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
+
+        if (!currentParentActivityNode.children)
+            return node;
+
+        const preferred_size = this._getNodePreferredHeight(currentParentActivityNode, descendantActivityNodeMap);          // hhhh
+
+        // assume all children have same height as the parent.
+        const node_height = node.clientHeight + margin;
+        const preferred_height = preferred_size * node_height;
+        const x_offset = x + node.clientWidth + margin;
+        let y_offset = y - preferred_height / 2;
+
+        const childrenMap = new Map();
+        for (const child_edge of node.getChildEdges()) {
+            childrenMap.set(child_edge.getChildId(), child_edge.getSubActivityNode());
+        }
+
+        currentParentActivityNode.children.forEach((child) => {
+            const currentChildActivityNode = descendantActivityNodeMap.get(child.urn);
+            const local_preferred_size = this._getNodePreferredHeight(currentChildActivityNode, descendantActivityNodeMap);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            const sub_node = this._traverseActivityNodeTree(currentChildActivityNode, descendantActivityNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            if (!childrenMap.has(child.id)) {
+                let edge = this._createEdge(node, child.id);
+                edge.setSubActivityNode(sub_node);
+                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+            }
+
+            if (child.name) sub_node.setContextualName(child.name);
+            if (child.description) sub_node.setContextualDescription(child.description);
+        });
+
+        for (const [id, child] of childrenMap.entries()) {
+            let actual = false;
+
+            for (const actual_child of currentParentActivityNode.children) {
+                if (actual_child.id == id) {
+                    actual = true;
+                    break;
+                }
+            }
+
+            if (!actual) {
+                const tree = child.getTree();
+                for (const node of tree) {
+                    node.removeAllEdges();
+                    node.detachHandlers();
+                    this._activeActivityNodeElementSet.delete(node);
+                    this._nodeContainerDiv.removeChild(node);
+                }
+            }
+        }
+        return node;
+    }
+
+    part 2
+
+
+    // add ActivityNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
+    _addActivityNodeTree(selectedActivity, selectedActivityDescendants = new Map(), isExpanded = false) {
+        //const margin = 50;
+        const height = this.clientHeight;
+        const node = this._traverseActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded, margin, 10, height / 2);
+        this._checkBounds(node.getTree());
+    }
+
+************************************************************************************************************************
+************************************************************************************************************************
+I am unsure of the origin of this code clip.  It looks like a traverse at the view level.  It migth be nice to step through
+slowly once, understand well and then trash.  Maybe it offers improvements in technique.
+
+    // for (let rootNode of this._viewedProjectsMap.values()) {
+    //     let workStack = [];
+    //     workStack.push(rootNode);
+    //     while (workStack.length > 0) {
+    //         let currentNodeModel = workStack.pop();
+    //         const $newViewNode = this.createActivityNode(currentNodeModel)
+    //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+    //
+    //         currentNodeModel.children.forEach((child) => {
+    //             let edge = this._createEdge(currentNodeModel, child.id);
+    //             edge.setSubActivityNode(child);
+    //             edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+    //             workStack.push(child)
+    //     //        this._edgeContainerDiv.appendChild(edge);
+    //         })
+    //     }
+    //
+    //
+    // }
+
+    // if (child.name) sub_node.setContextualName(child.name);
+    // if (child.description) sub_node.setContextualDescription(child.description);
+************************************************************************************************************************
+************************************************************************************************************************
+Random - also from playground.. look through and wipe.
+/**
+ * Apparently UNUSED???
+ *
+ // _generateActivityGraphFromJSON(json) {
+  	// 	let root_goal = json.rootGoal;
+  	// 	let root_node = this.addRootGoal(root_goal.name, root_goal.description);
+  	// 	root_node.getConnector().setType(root_goal.connectorType);
+  	// 	root_node.setTranslation(50, 50);
+  	// 	this._generateSubGoals(root_node, root_goal);
+  	// }
+ //
+ // _generateSubGoals(root_node, root) {
+  	// 	let x_start = root_node._translation.x,
+  	// 		y_offset = root_node._translation.y + 150;
+  	//
+  	// 	if(!root.subgoals)
+  	// 		return;
+  	//
+  	// 	root.subgoals.forEach(subgoal => {
+  	// 		let node;
+  	// 		if(subgoal.type == 'GOAL') {
+  	// 			node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
+  	// 			node.getConnector().setType(subgoal.item.connectorType);
+  	// 		} else {
+  	// 			node = this.addActivity(subgoal.item.name, subgoal.item.description);
+  	// 		}
+  	//
+  	// 		node.setTranslation(x_start, y_offset);
+  	// 		let edge = this._createEdge(root_node);
+  	// 		edge.setSubActivityNode(node);
+  	// 		this._generateSubGoals(node, subgoal.item);
+  	// 		x_start += 175;
+  	// 	});
+  	// }
+ *
+ *
+ *    // getSelectedAsJSON() {
+ *     // 	if(this._selectedActivityNodeElementSet.size == 0)
+ *     // 		return undefined;
+ *     //
+ *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.toJSON();
+ *     // }
+ *
+ *     // getSelectedURN() {
+ *     // 	if(this._selectedActivityNodeElementSet.size == 0)
+ *     // 		return undefined;
+ *     //
+ *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.urn;
+ *     // }
+ *
+ *
+ */
+ ************************************************************************************************************************
+ ************************************************************************************************************************

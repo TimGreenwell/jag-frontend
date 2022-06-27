@@ -1,0 +1,32 @@
+/* Playground */
+def-definition {
+    /* Reset layout */
+    display: flex;
+    flex-direction: column;
+    height: 95%;          /* was 95 */
+    width: 60%;
+    z-index: 100;                      /* new */
+    background: var(--main-bg-darker); /* new */
+    color: var(--main-fg);             /* new */
+    overflow-y: scroll;
+
+    position: relative;
+    flex-grow: 1;
+}
+
+def-definition  div {
+    width: 100%;
+    height: 35%;   /* was 100% */
+    position: absolute;
+}
+
+def-definition li {
+    padding: 0.25em;
+    border-bottom: 1px solid white;
+    cursor: pointer;
+    transition: background-color 350ms var(--transition-function);
+}
+
+def-definition li:hover {
+    background-color: var(--main-fg-lighter);
+}

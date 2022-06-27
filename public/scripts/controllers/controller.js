@@ -14,6 +14,7 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
 import UserPrefs from "../utils/user-prefs.js";
+import CellModel from "../models/cell.js";
 
 export default class Controller extends EventTarget {
 
@@ -43,7 +44,7 @@ export default class Controller extends EventTarget {
     }
 
     fetchActivity(activityId) {
-        return this._activityMap(activityId)
+        return this._activityMap.get(activityId)
     }
 
     get projectMap() {
@@ -63,7 +64,7 @@ export default class Controller extends EventTarget {
     }
 
     fetchProject(projectId) {
-        return this._projectMap(projectId)
+        return this._projectMap.get(projectId)
     }
 
 
@@ -96,9 +97,26 @@ export default class Controller extends EventTarget {
     }
 
 
+/**
+ *                                   Upward Event Handlers
+ * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
+ * the resulting data for storage and distribution.
+ *
+ *  'initial event' = some user interaction or detected remote change that requires initiates another local action
+ *  Data processing in this phase is minimal - it is primarily concerned with translating the initial
+ *  event into a standard command that is understood across the application.
+ *
+ *  These Handlers were identical across multiple tabs
+ *   eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
+ *   eventActivityUpdatedHandler       (C)  - structure change
+ *   eventUrnChangedHandler            (C)  - URN field is changed
+ */
+
+
     async eventActivityCreatedHandler(event) {
         console.log("Local>> (local activity created) ")
         const newActivity = new Activity(event.detail.activityConstruct);
+        newActivity.createdDate = Date.now();
         if (InputValidator.isValidUrn(newActivity.urn)) {
             await StorageService.create(newActivity, 'activity');
         } else {
@@ -110,10 +128,10 @@ export default class Controller extends EventTarget {
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
         const updatedActivity = event.detail.activity;
+        updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
     }
-
 
     async eventUrnChangedHandler(event) {
         const originalUrn = event.detail.originalUrn;
@@ -164,6 +182,13 @@ export default class Controller extends EventTarget {
         console.log("Local<< (url renamed) \n")
     }
 
+
+    /**
+     *
+     *                Support Methods
+     */
+
+
     updateTreeWithActivityChange(projectNode, activityUrn) {
 
         const nodeStack = [];
@@ -175,23 +200,26 @@ export default class Controller extends EventTarget {
                 if (activityUrn == undefined) {
                     console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                 }
-                let existingKids = currentNode.children.map(node => {
-                    return {urn: node.urn, id: node.childId}
-                })
-                let validActivity = (this._activityMap.has(currentNode.urn)) ? this._activityMap.get(currentNode.urn) : [];
-                let validKids = validActivity.children
+                let originalActivity = currentNode.activity;
+                let validActivity = this.fetchActivity(currentNode.urn)
                 currentNode.activity = validActivity;
-                let kidsToAdd = this.getChildrenToAdd(existingKids, validKids);
-                let kidsToRemove = this.getChildrenToRemove(existingKids, validKids);
+                let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
+                let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
+
+                console.log("kidsToAdd")
+                console.log(kidsToAdd)
+                console.log("kidsToRemove")
+                console.log(kidsToRemove)
 
                 kidsToAdd.forEach(child => {
-                    const childActivity = this._activityMap.get(child.urn);
+                    // 1) get newly created activity from map. 2) Create Node
+                    const childActivity = this.fetchActivity(child.urn);
                     const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
                     childNodeModel.activity = childActivity
                     childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
-                    currentNode.addChild(childNodeModel, true);
-                    childNodeModel.parent = currentNode;
+                    childNodeModel.parent = currentNode
                     this.repopulateProject(childNodeModel, projectNode.project)
+                    currentNode.addChild(childNodeModel);
                 })
 
                 kidsToRemove.forEach(child => {
@@ -220,8 +248,107 @@ export default class Controller extends EventTarget {
 
     }
 
+    buildCellTreeFromActivityUrn(newRootActivityUrn) {
+        const nodeStack = [];
+        const resultStack = [];
+        const rootActivity = this.fetchActivity(newRootActivityUrn);
+        const rootCellModel = new CellModel({urn: rootActivity.urn, is_root: true});
+        rootCellModel.activity = rootActivity
+        rootCellModel.parentUrn = null;
+        rootCellModel.rootUrn = newRootActivityUrn;
+        nodeStack.push(rootCellModel);
+        while (nodeStack.length > 0) {
+            let currentNode = nodeStack.pop();
+            for (const child of currentNode.activity.children) {
+                let childActivity = this.fetchActivity(child.urn);
+                // @TODO - add try/catch in case not in cache/storage (new Activity)
+                const childCellModel = new CellModel({urn: childActivity.urn, is_root: false});
+                childCellModel.activity = childActivity
+                childCellModel.childId = child.id;
+                childCellModel.parentUrn = currentNode.urn
+                childCellModel.rootUrn = newRootActivityUrn;
+                currentNode.addChild(childCellModel, true);
+                nodeStack.push(childCellModel);
+            }
+            resultStack.push(currentNode);
+        }
+        const returnNode = resultStack.shift();
+        return returnNode;
+    }
+
+    buildNodeTreeFromActivity(rootActivity) {
+        const nodeStack = [];
+        const resultStack = [];
+      //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
+        const rootNodeModel = new NodeModel({urn: rootActivity.urn});
+        rootNodeModel.activity = rootActivity;
+        rootNodeModel.parentUrn = null;
+        rootNodeModel.project = rootNodeModel.id;
+        nodeStack.push(rootNodeModel);
+        while (nodeStack.length > 0) {
+            let currentNode = nodeStack.pop();
+            for (const child of currentNode.activity.children) {
+                let childActivity = this.fetchActivity(child.urn);
+                // @TODO - add try/catch in case not in cache/storage (new Activity)
+                const childNodeModel = new NodeModel({urn: child.urn, childId: child.id});
+                childNodeModel.activity = childActivity
+                childNodeModel.childId = child.id;
+                childNodeModel.parentId = currentNode.id;
+                childNodeModel.project = currentNode.project
+                currentNode.addChild(childNodeModel, true);
+                nodeStack.push(childNodeModel);
+            }
+            resultStack.push(currentNode);
+        }
+        const returnNode = resultStack.shift();
+        return returnNode;
+    }
+
+    getChildrenToAdd(originalActivity, updatedActivity) {
+        let validKids = updatedActivity.children.map(entry => {
+            return entry
+        })
+        let existingKids = originalActivity.children.map(entry => {
+            return entry
+        });
+        const returnValue = validKids.filter(validKid => !existingKids.find(existingKid => JSON.stringify(validKid) === JSON.stringify(existingKid)))
+        return returnValue
+    }
+
+    getChildrenToRemove(originalActivity, updatedActivity) {
+        let validKids = updatedActivity.children.map(entry => {
+            return entry
+        })
+        let existingKids = originalActivity.children.map(entry => {
+            return entry
+        });
+        const returnValue = existingKids.filter(existingKid => !validKids.find(validKid => JSON.stringify(existingKid) === JSON.stringify(validKid)))
+        return returnValue
+    }
 
 
+    searchTreeForId(treeNode,id) {
+        let workStack = []
+        workStack.push(treeNode)
+        while(workStack.length>0){
+            let checkNode = workStack.pop();
+            if (checkNode.id == id) {return checkNode}
+            checkNode.children.forEach(child => workStack.push(child))
+        }
+        return null
+    }
+
+
+    searchTreeForChildId(treeNode,childId) {
+        let workStack = []
+        workStack.push(treeNode)
+        while(workStack.length>0){
+            let checkNode = workStack.pop();
+            if (checkNode.childId == childId) {return checkNode}
+            checkNode.children.forEach(child => workStack.push(child))
+        }
+        return null
+    }
 
 
 }

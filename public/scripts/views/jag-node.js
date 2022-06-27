@@ -501,9 +501,9 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	_applyOperator() {
 		let op = '';
-		if(this._nodeModel.activity.operator == JAG.OPERATOR.AND)
+		if(this._nodeModel.activity.operator == JAG.OPERATOR.AND.name)
 			op = 'and';
-		else if(this._nodeModel.activity.operator == JAG.OPERATOR.OR)
+		else if(this._nodeModel.activity.operator == JAG.OPERATOR.OR.name)
 			op = 'or';
 
 		this._$connector.innerHTML = op;
@@ -520,7 +520,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._$concurrency.style.display = 'none';
 		this._$concurrency.innerHTML = '';
 
-		if (this._nodeModel.activity.execution != JAG.EXECUTION.SEQUENTIAL)
+		if (this._nodeModel.activity.execution != JAG.EXECUTION.SEQUENTIAL.name)
 			return;
 
 		if (!this._nodeModel.activity.children || this._nodeModel.activity.children.length == 0)

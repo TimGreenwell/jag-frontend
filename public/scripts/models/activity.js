@@ -23,12 +23,18 @@ export default class Activity extends EventTarget {
                     urn,
                     name,
                     description = '',
+                    definition = '',
                     connector,
                     inputs,
                     outputs,
                     children,
                     bindings,
+                    author,
+                    createdDate,
+                    modifiedDate,
+                    lockedBy,
                     isLocked,
+
                     collapsed = false,
                 } ) {
         super();
@@ -36,9 +42,14 @@ export default class Activity extends EventTarget {
         this._urn = urn;
         this._name = name;
         this._description = description;
+        this._definition = definition;
+        this._author = author;
+        this._createdDate = createdDate;
+        this._modifiedDate = modifiedDate;
+        this._lockedBy = lockedBy;
 
         if (!connector) {
-            connector = {execution: Activity.EXECUTION.NONE, operator: Activity.OPERATOR.NONE};
+            connector = {execution: Activity.EXECUTION.NONE.name, operator: Activity.OPERATOR.NONE.name};
         }
         this._execution = connector.execution;
         this._operator = connector.operator;
@@ -63,6 +74,7 @@ export default class Activity extends EventTarget {
 
         this._isLocked = isLocked;
         this._collapsed = collapsed;
+        this._definition = definition;
     }
 
 
@@ -88,6 +100,46 @@ export default class Activity extends EventTarget {
     }
     get description() {
         return this._description;
+    }
+
+    get definition() {
+        return this._definition;
+    }
+
+    set definition(value) {
+        this._definition = value;
+    }
+
+    get author() {
+        return this._author;
+    }
+
+    set author(value) {
+        this._author = value;
+    }
+
+    get createdDate() {
+        return this._createdDate;
+    }
+
+    set createdDate(value) {
+        this._createdDate = value;
+    }
+
+    get modifiedDate() {
+        return this._modifiedDate;
+    }
+
+    set modifiedDate(value) {
+        this._modifiedDate = value;
+    }
+
+    get lockedBy() {
+        return this._lockedBy;
+    }
+
+    set lockedBy(value) {
+        this._lockedBy = value;
     }
 
     set connector(value) {
@@ -119,8 +171,8 @@ export default class Activity extends EventTarget {
 
     set children(value) {
         this._children = value;
-        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE)) {
-           this._operator = Activity.OPERATOR.AND;
+        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
+           this._operator = Activity.OPERATOR.AND.name;
         }
     }
 
@@ -195,8 +247,8 @@ export default class Activity extends EventTarget {
             //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
-        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE)) {
-            this._operator = Activity.OPERATOR.AND;
+        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
+            this._operator = Activity.OPERATOR.AND.name;
         }
         return id;
     }
@@ -268,7 +320,7 @@ export default class Activity extends EventTarget {
             };
         });
 
-        if (this._execution == Activity.EXECUTION.SEQUENTIAL) {
+        if (this._execution == Activity.EXECUTION.SEQUENTIAL.name) {
             for (let child of this._children) {
                 if (child.id == id)
                     break;
@@ -468,7 +520,7 @@ export default class Activity extends EventTarget {
     }
 
     getOrderForId(id) {
-        if (this._execution == Activity.EXECUTION.PARALLEL) return 0;
+        if (this._execution == Activity.EXECUTION.PARALLEL.name) return 0;
 
         for (let i = 0; i < this._children.length; ++i) {
             if (this._children[i].id === id) {
@@ -565,18 +617,95 @@ export default class Activity extends EventTarget {
         }
     }
 
-
-
 }
 
 Activity.EXECUTION = {
-    NONE: 'node.execution.none',
-    SEQUENTIAL: 'node.execution.sequential',
-    PARALLEL: 'node.execution.parallel'
+    NONE: {
+        name: 'node.execution.none',
+        text: "none",
+        symbol: '',
+        fn: function (a, b) {
+            return a + b
+        }
+    },
+    SEQUENTIAL:
+        {
+            name: 'node.execution.sequential',
+            text: "sequential"
+        },
+    PARALLEL: {
+        name: 'node.execution.parallel',
+        text: "parallel"
+    },
+    RETRY: {
+        name: 'node.execution.retry',
+        text: 'sequential w/retry'
+    },
+    LOOP: {
+        name: 'node.execution.loop',
+        text: "sequential loop"
+    }
 }
 
 Activity.OPERATOR = {
-    NONE: 'node.operator.none',
-    AND: 'node.operator.and',
-    OR: 'node.operator.or'
+    NONE: {
+        name: 'node.operator.none',                  // does not return a value    (maybe just a state?) (maybe nada)
+        text: 'none',
+        symbol: ''
+    },
+    AND: {
+        name: 'node.operator.and',                    // AND(boolean,boolean,...)
+        text: 'and',
+        symbol: '&'
+    },
+    OR: {
+        name: 'node.operator.or',                      // OR(boolean,boolean,...)        @TODO  XOR?!    NAND NOR
+        text: '\uD83D\uDE00',
+        symbol: '||'
+    },
+    FIRST: {
+        name: 'node.operator.first',
+        text: 'first reporting',
+        symbol: '1st'
+    },
+    LAST: {
+        name: 'node.operator.last',
+        text: 'last reporting',
+        symbol: 'nth'
+    },
+    MAX: {
+        name: 'node.operator.max',
+        text: 'largest',
+        symbol: 'max'
+    },
+    MIN: {
+        name: 'node.operator.min',
+        text: 'smallest',
+        symbol: 'min'
+    },
+    SUM: {
+        name: 'node.operator.sum',
+        text: 'sum',
+        symbol: '+'
+    },
+    AVG: {
+        name: 'node.operator.avg',
+        text: 'average',
+        symbol: 'avg'
+    },
+    UNION: {
+        name: 'node.operator.union',
+        text: 'union',
+        symbol: 'U'
+    },
+    INT: {
+        name: 'node.operator.intersection',
+        text: 'and',
+        symbol: '\uD83D\uDE00'
+    },
+    CUSTOM: {
+        name: 'node.operator.custom',
+        text: 'custom',
+        symbol: '@'
+    }
 }

@@ -1,0 +1,66 @@
+/* Menu bar */
+def-menu {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 5%;
+    box-shadow: inset 0 0 3px darkgray;
+}
+
+def-menu ul {
+    list-style: none;
+    width: 100%;
+}
+
+def-menu li {
+    height: 100%;
+    float: left;
+}
+
+def-menu li:first-child {
+    border-right: 1px solid darkgray;
+    min-width: 20%;
+}
+
+def-menu li:last-child {
+    float: right;
+    border-left: 1px solid darkgray;
+    min-width: 20%;
+}
+
+def-menu li div {
+    display: table;
+    height: 100%;
+    float: left;
+}
+
+def-menu li:last-child div {
+    float: left;
+}
+
+def-menu .menu-item {
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+def-menu .menu-item:hover {
+    background: var(--main-fg-lighter);
+}
+
+def-menu .menu-item img {
+    height: 80%;
+    vertical-align: middle;
+}
+
+def-menu #def-menu-title {
+    font-size: 16px;
+}
+
+def-menu #def-menu-title:hover {
+    background: none;
+    cursor: default;
+}
+

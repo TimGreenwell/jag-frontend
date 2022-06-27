@@ -94,30 +94,58 @@ customElements.define('jag-properties', class extends HTMLElement {
         desc_ctx_el.appendChild(this._desc_ctxInput);
 
         const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
-        this._executionSelect = FormUtils.createSelect('execution-property', [{
-            value: Activity.EXECUTION.NONE,
-            text: 'None'
+        this._executionSelect = FormUtils.createSelect('execution-property', [{                         //@TODO Map this from original structure
+            value: Activity.EXECUTION.NONE.name,
+            text: Activity.EXECUTION.NONE.text
         }, {
-            value: Activity.EXECUTION.SEQUENTIAL,
-            text: 'Sequential'
+            value: Activity.EXECUTION.SEQUENTIAL.name,
+            text: Activity.EXECUTION.SEQUENTIAL.text
         }, {
-            value: Activity.EXECUTION.PARALLEL,
-            text: 'Parallel'
+            value: Activity.EXECUTION.PARALLEL.name,
+            text: Activity.EXECUTION.PARALLEL.text
         }]);
         this._executionSelect.className = 'direct-property';
         execution_el.appendChild(this._executionSelect);
 
-        const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
+        const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');             //@TODO Map this from original structure
         this._operatorSelect = FormUtils.createSelect('operator-property', [{
-            value: Activity.OPERATOR.NONE,
-            text: 'None'
+            value: Activity.OPERATOR.NONE.name,
+            text: Activity.OPERATOR.NONE.text
         }, {
-            value: Activity.OPERATOR.AND,
-            text: 'And'
+            value: Activity.OPERATOR.AND.name,
+            text: Activity.OPERATOR.AND.text
         }, {
-            value: Activity.OPERATOR.OR,
-            text: 'Or'
-        }]);
+            value: Activity.OPERATOR.OR.name,
+            text: Activity.OPERATOR.OR.text
+        }, {
+            value: Activity.OPERATOR.FIRST.name,
+            text: Activity.OPERATOR.FIRST.text
+        }, {
+            value: Activity.OPERATOR.LAST.name,
+            text: Activity.OPERATOR.LAST.text
+        }, {
+            value: Activity.OPERATOR.MAX.name,
+            text: Activity.OPERATOR.MAX.text
+        }, {
+            value: Activity.OPERATOR.MIN.name,
+            text: Activity.OPERATOR.MIN.text
+        }, {
+            value: Activity.OPERATOR.OR.name,
+            text: Activity.OPERATOR.OR.text
+        }, {
+            value: Activity.OPERATOR.OR.name,
+            text: Activity.OPERATOR.OR.text
+        }, {
+            value: Activity.OPERATOR.OR.name,
+            text: Activity.OPERATOR.OR.text
+        }, {
+            value: Activity.OPERATOR.OR.name,
+            text: Activity.OPERATOR.OR.text
+        },         {
+                value: Activity.OPERATOR.OR.name,
+                text: Activity.OPERATOR.OR.text
+            }
+        ]);
         this._operatorSelect.className = 'direct-property';
         operator_el.appendChild(this._operatorSelect);
 
@@ -237,8 +265,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             } else {
                 inputs.item(currentPosition).blur();
             }
-        }
-        else {
+        } else {
             this._nodeModel.activity.description = "[" + this._descInput.value + "]";
         }
     }
@@ -256,6 +283,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }
         }
     }
+
     _handleUrnEdit(e) {
         if (e.key == "Enter") {
             e.preventDefault();
@@ -298,7 +326,6 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-
     _handleNameChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
@@ -312,9 +339,6 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-
-
-
     _handleContextualNameChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
@@ -326,6 +350,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }));
         }
     }
+
     _handleContextualDescriptionChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
@@ -349,6 +374,7 @@ customElements.define('jag-properties', class extends HTMLElement {
             }));
         }
     }
+
     _handleOperatorChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
@@ -373,8 +399,6 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-
-
     handleStorageUpdate(newActivity, newActivityUrn) {
         if (newActivityUrn == this._urnInput) {
             this._nodeModel.activity = newActivity;
@@ -387,18 +411,18 @@ customElements.define('jag-properties', class extends HTMLElement {
     handleSelectionUpdate(selection) {       // (selectedNodeArray)
         if (this._nodeModel) {
             this._nodeModel.removeEventListener('update', this._boundUpdate);
-          //  this._node = undefined;
+            //  this._node = undefined;
             this._nodeModel = undefined;
         }
         this._clearProperties();
         if (selection.length == 1) {
             const selectedNodeModel = selection[0];
-        //    if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
-        //        this._node = selectedNodeModel;
-                this._nodeModel = selectedNodeModel;
-                this._updateProperties();
-                this._nodeModel.addEventListener('update', this._boundUpdate);
-        //    }
+            //    if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
+            //        this._node = selectedNodeModel;
+            this._nodeModel = selectedNodeModel;
+            this._updateProperties();
+            this._nodeModel.addEventListener('update', this._boundUpdate);
+            //    }
         } else {
             this._enableProperties(false);
         }
@@ -409,7 +433,7 @@ customElements.define('jag-properties', class extends HTMLElement {
 
         this._urnInput.value = this._nodeModel.activity.urn
         this._nameInput.value = this._nodeModel.activity.name;
-        this._executionSelect.value = this._nodeModel.activity.execution || 'none';
+        this._executionSelect.value = this._nodeModel.activity.execution.name || 'none';
         this._operatorSelect.value = this._nodeModel.activity.operator || 'none';
         this._descInput.value = this._nodeModel.activity.description;
         this._name_ctxInput.value = this._nodeModel.contextualName;
@@ -728,7 +752,7 @@ customElements.define('jag-properties', class extends HTMLElement {
                         // TODO: Check if type matches selected output type (probably need to get output type first)
                         this._nodeModel.activity.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
 
-                        if (this._nodeModel.activity.execution == Activity.EXECUTION.SEQUENTIAL) {
+                        if (this._nodeModel.activity.execution == Activity.EXECUTION.SEQUENTIAL.name) {
                             if (provider[0] == 'any') {
                                 const all_cumulative_outputs = new Set();
 
@@ -859,7 +883,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         if (this._nodeModel.children.length > 0) {
             for (const child of this._nodeModel.children) {
 
-        //        child.nodeModel(child.nodeModel)
+                //        child.nodeModel(child.nodeModel)
                 let child_name = child.id;
                 if (child.activity) child_name = child.activity.name;
 
@@ -978,17 +1002,14 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
 
-
-
-
     _clearProperties() {
         this._urnInput.value = '';
         this._nameInput.value = '';
         this._descInput.value = '';
         this._name_ctxInput.value = '';
         this._desc_ctxInput.value = '';
-        this._executionSelect.value = Activity.EXECUTION.NONE;
-        this._operatorSelect.value = Activity.OPERATOR.NONE;
+        this._executionSelect.value = Activity.EXECUTION.NONE.name;
+        this._operatorSelect.value = Activity.OPERATOR.NONE.name;
 
         this._urnInput.classList.toggle("edited", false);
 
@@ -1035,7 +1056,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
 
-        if (this._nodeModel &&  (enabled)) {//} || this._nodeModel.activity instanceof UndefinedJAG)) {
+        if (this._nodeModel && (enabled)) {//} || this._nodeModel.activity instanceof UndefinedJAG)) {
             this._childOf.innerHTML = `As child of ${this._nodeModel.parent}`;
             this.classList.toggle('root-node', false);
             this._name_ctxInput.disabled = false;

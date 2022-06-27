@@ -8,7 +8,7 @@
 
 import Activity from '../models/activity.js';
 
-customElements.define('jag-library', class extends HTMLElement {
+customElements.define('def-subactivity', class extends HTMLElement {
 
 	constructor() {
 		super();
@@ -270,7 +270,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 });
 
-export default customElements.get('jag-library');
+export default customElements.get('def-subactivity');
 
 // <jag-library> (this)
 //   <input class='library-search'></input>

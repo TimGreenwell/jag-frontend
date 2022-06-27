@@ -6,7 +6,7 @@
  * @version 0.23
  */
 
-customElements.define('jag-menu', class extends HTMLElement {
+customElements.define('def-menu', class extends HTMLElement {
 
     constructor() {
         super();
@@ -17,7 +17,7 @@ customElements.define('jag-menu', class extends HTMLElement {
 
     _createMenuItem(id, img, text) {
         const $el = document.createElement("span");
-        $el.id = `menu-${id}`;
+        $el.id = `def-menu-${id}`;
         $el.classList.add("menu-item");
 
         if (img) {
@@ -48,7 +48,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         $leftLi.appendChild($leftLiDiv);
 
         const $title = document.createElement("span");
-        $title.id = "menu-title";
+        $title.id = "def-menu-title";
         $title.classList.add("menu-item");
         $title.innerText = "JAG Authoring Tool";
         $leftLiDiv.appendChild($title);
@@ -62,43 +62,15 @@ customElements.define('jag-menu', class extends HTMLElement {
         const $centerLiDiv = document.createElement("div");
         $centerLi.appendChild($centerLiDiv);
 
-        const $new = document.createElement("span");
-        $new.id = "menu-new";
-        $new.classList.add("menu-item");
-        $new.innerText = " new\nactivity";
-        $centerLiDiv.appendChild($new);
 
-        $new.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent('event-add-activity', {}
-            ));
-        }.bind(this));
-
-        const $clear = document.createElement("span");
-        $clear.id = "menu-clear-all";
-        $clear.classList.add("menu-item");
-        $clear.innerText = "clear\nspace";
-        $centerLiDiv.appendChild($clear);
-        $clear.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("event-clear-playground"));
-        }.bind(this));
-
-        const $redraw = document.createElement("span");
-        $redraw.id = "menu-redraw-nodes";
-        $redraw.classList.add("menu-item");
-        $redraw.innerText = "redraw\nnodes";
-        $centerLiDiv.appendChild($redraw);
-        $redraw.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("redraw-nodes"));
-        }.bind(this));
-
-        const $define = document.createElement("span");
-        $define.id = "menu-define-node";
-        $define.classList.add("menu-item");
-        $define.innerText = "define\nnode";
-        $centerLiDiv.appendChild($define);
-        $define.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("define-node"));
-        }.bind(this));
+        // const $clear = document.createElement("span");
+        // $clear.id = "menu-clear-all";
+        // $clear.classList.add("menu-item");
+        // $clear.innerText = "clear\nspace";
+        // $centerLiDiv.appendChild($clear);
+        // $clear.addEventListener('click', function (e) {
+        //     this.dispatchEvent(new CustomEvent("event-clear-playground"));
+        // }.bind(this));
 
 
         //
@@ -126,5 +98,5 @@ customElements.define('jag-menu', class extends HTMLElement {
     }
 });
 
-export default customElements.get('jag-menu');
+export default customElements.get('def-menu');
 

@@ -345,7 +345,7 @@ export default class Edge extends EventTarget {
 
 	_updateStrokeDash(operator) {
 		// OR edges are dashed.
-		if (operator == Activity.OPERATOR.OR) {
+		if (operator == Activity.OPERATOR.OR.name) {
 			this._edge_el.setAttributeNS(null, 'stroke-dasharray', '4');
 		// AND edges are solid.
 		} else {
@@ -414,7 +414,7 @@ export default class Edge extends EventTarget {
 	_updateOrder(children, execution) {
 		let order = 0;
 
-		if (execution == Activity.EXECUTION.SEQUENTIAL) {
+		if (execution == Activity.EXECUTION.SEQUENTIAL.name) {
 			const ordered = children.map(child => child.id);
 			order = ordered.indexOf(this._childId) + 1;
 		}

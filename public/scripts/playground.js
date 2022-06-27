@@ -30,7 +30,6 @@ class Playground extends Popupable {
 
         this._viewedProjectsMap = new Map();         // All active Jag root nodes - should be in sync with _activeActivityNodeElementSet
 
-
         this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (view)
         this._selectedActivityNodeElementSet = new Set();  // set of ActivityNodes (view)
         this._is_edge_being_created = false;
@@ -77,10 +76,20 @@ class Playground extends Popupable {
 
     }
 
+    get selectedNodes() {
+        let selectedIdArray = [...this._selectedActivityNodeElementSet].map( element => {return element.nodeModel})
+        return selectedIdArray;
+    }
+    get viewedNodes() {
+        let viewedIdArray = [...this._activeActivityNodeElementSet].map( element => {return element.nodeModel})
+        return viewedIdArray;
+    }
+
 
     /**
      *      Local Handlers
      *         -- Edge Handling
+     *         -- Pan and Zoom
      */
 
     /**
@@ -306,7 +315,7 @@ class Playground extends Popupable {
         this._initialMouse = {x: e.clientX, y: e.clientY};
     }
 
-    stopDragView(e) {
+    stopDragView(event) {
         this.removeEventListener('mousemove', this._boundDragView);
     }
 
@@ -398,7 +407,7 @@ class Playground extends Popupable {
      *
      * _buildNodeViewFromNodeModel
      * _handleNewActivityActivityPopup
-     * clearPlayground
+     * clearPlayground                        - Clears project(s) from playground (@arg: project Id or 'undefined' for all active projects)
      * handleClearSelected (@TODO)
      * handleRefresh
      * affectProjectView
@@ -407,88 +416,16 @@ class Playground extends Popupable {
      * createActivityNode  - called on new Project message from above
      * deleteNodeModel
      */
-    //  the way with HEAD + child map   ===> want to go to the tree method.
-    // replaced -- but keep for now - new method missing some things still
-    traverseActivityNodeTree(currentParentActivityNode, descendantActivityNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
-        // if no child...  createActivityNode
-        // else proceed with the current child
-        const node = childURN || this.createActivityNode(currentParentActivityNode, isExpanded);
-
-        if (context) {
-            if (context.name) node.setContextualName(context.name);
-            if (context.description) node.setContextualDescription(context.description);
-        }
-
-        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
-
-        if (!currentParentActivityNode.children)
-            return node;
-
-        const preferred_size = this._getNodePreferredHeight(currentParentActivityNode, descendantActivityNodeMap);          // hhhh
-
-        // assume all children have same height as the parent.
-        const node_height = node.clientHeight + margin;
-        const preferred_height = preferred_size * node_height;
-        const x_offset = x + node.clientWidth + margin;
-        let y_offset = y - preferred_height / 2;
-
-        const childrenMap = new Map();
-        for (const child_edge of node.getChildEdges()) {
-            childrenMap.set(child_edge.getChildId(), child_edge.getSubActivityNode());
-        }
-
-        currentParentActivityNode.children.forEach((child) => {
-            const currentChildActivityNode = descendantActivityNodeMap.get(child.urn);
-            const local_preferred_size = this._getNodePreferredHeight(currentChildActivityNode, descendantActivityNodeMap);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            const sub_node = this._traverseActivityNodeTree(currentChildActivityNode, descendantActivityNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
-            y_offset += (local_preferred_size * node_height) / 2;
-
-            if (!childrenMap.has(child.id)) {
-                let edge = this._createEdge(node, child.id);
-                edge.setSubActivityNode(sub_node);
-                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-            }
-
-            if (child.name) sub_node.setContextualName(child.name);
-            if (child.description) sub_node.setContextualDescription(child.description);
-        });
-
-        for (const [id, child] of childrenMap.entries()) {
-            let actual = false;
-
-            for (const actual_child of currentParentActivityNode.children) {
-                if (actual_child.id == id) {
-                    actual = true;
-                    break;
-                }
-            }
-
-            if (!actual) {
-                const tree = child.getTree();
-                for (const node of tree) {
-                    node.removeAllEdges();
-                    node.detachHandlers();
-                    this._activeActivityNodeElementSet.delete(node);
-                    this._nodeContainerDiv.removeChild(node);
-                }
-            }
-        }
-        return node;
-    }
 
 
     _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
         let margin = 20
-
-
            if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
                currentNodeModel.x = 20 + Math.floor(Math.random() * 10);
                currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 30);
            }
-           let xPos = (true) ? currentNodeModel.x : x;
-           let yPos = (true) ? currentNodeModel.y : y;
+           let xPos = true ? currentNodeModel.x : x;
+           let yPos = true ? currentNodeModel.y : y;
 
            currentNodeModel.setPosition(xPos, yPos)
            const $newViewNode = this.createActivityNode(currentNodeModel)
@@ -500,7 +437,6 @@ class Playground extends Popupable {
            const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
            let y_offset = yPos - (preferred_height / 2);
 
-
            currentNodeModel.children.forEach((child) => {
 
                //  local_preferred_size Getting NaN here  VV why?
@@ -508,15 +444,10 @@ class Playground extends Popupable {
                y_offset = y_offset + (local_preferred_size) / 2;
 
                let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-
-
                let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
 
                edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-
-               // if (child.name) sub_node.setContextualName(child.name);
-               // if (child.description) sub_node.setContextualDescription(child.description);
 
            })
 
@@ -534,7 +465,7 @@ class Playground extends Popupable {
     }
 
 
-    clearPlayground(projectId = undefined) {                 // clearNodeSet
+    clearPlayground(projectId = undefined) {
         for (let jagNode of this._activeActivityNodeElementSet) {
 
             if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
@@ -547,29 +478,28 @@ class Playground extends Popupable {
         this._checkBounds();
     }
 
-
-    handleRefresh({activity, activity_set, alreadyRefreshedNodes = new Set()}) {
-        const margin = 50;
-
-        for (let node of this._activeActivityNodeElementSet) {
-            if (!alreadyRefreshedNodes.has(node) && node.activity === activity) {
-                const root = node.getRoot();
-
-                if (root == node) {
-                    const [x, y] = node.getPosition();
-                    this._traverseActivityNodeTree(activity, activity_set, true, margin, x, y, node);
-
-                    const tree = node.getTree();
-
-                    for (const node of tree) {
-                        alreadyRefreshedNodes.add(node);
-                    }
-                } else {
-                    root.refresh(alreadyRefreshedNodes);
-                }
-            }
-        }
-    }
+    // handleRefresh({activity, activity_set, alreadyRefreshedNodes = new Set()}) {
+    //     const margin = 50;
+    //
+    //     for (let node of this._activeActivityNodeElementSet) {
+    //         if (!alreadyRefreshedNodes.has(node) && node.activity === activity) {
+    //             const root = node.getRoot();
+    //
+    //             if (root == node) {
+    //                 const [x, y] = node.getPosition();
+    //                 this._traverseActivityNodeTree(activity, activity_set, true, margin, x, y, node);
+    //
+    //                 const tree = node.getTree();
+    //
+    //                 for (const node of tree) {
+    //                     alreadyRefreshedNodes.add(node);
+    //                 }
+    //             } else {
+    //                 root.refresh(alreadyRefreshedNodes);
+    //             }
+    //         }
+    //     }
+    // }
 
     affectProjectView(updatedUrn) {             // Activity got updated - does it affect our projects?
         //     for (let node of this._viewedProjectsMap.values()) { // Return events with affected Project ids and the URN
@@ -580,21 +510,18 @@ class Playground extends Popupable {
             let node = value;
 
             if (node.isActivityInProject(updatedUrn)) {
-                this.dispatchEvent(new CustomEvent('response-activity-created', {
+                this.dispatchEvent(new CustomEvent('response-activity-updated', {
                     detail: {
-                        projectModel: node,
+                        projectId: node.id,
                         activityUrn: updatedUrn
                     }
                 })); // event-activity-created in playground uses node
-
             }
         })
     }
 
     deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
-
         this._viewedProjectsMap.forEach((value, key) => {
-
             let node = value;
             if (node.isActivityInProject(deletedUrn)) {
                 this.dispatchEvent(new CustomEvent('response-activity-deleted', {
@@ -609,14 +536,6 @@ class Playground extends Popupable {
 
     }
 
-
-    // add ActivityNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
-    _addActivityNodeTree(selectedActivity, selectedActivityDescendants = new Map(), isExpanded = false) {
-        //const margin = 50;
-        const height = this.clientHeight;
-        const node = this._traverseActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded, margin, 10, height / 2);
-        this._checkBounds(node.getTree());
-    }
 
     replaceActivityNode(newActivity, deadUrn) {
         this._activeActivityNodeElementSet.forEach((node) => {
@@ -676,8 +595,6 @@ class Playground extends Popupable {
         }
     }
 
-
-
     addNodeModel(projectNodeModel){
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
         let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
@@ -687,30 +604,6 @@ class Playground extends Popupable {
         this.deleteNodeModel(projectNodeModel.id)
         this.addNodeModel(projectNodeModel)
     }
-
-    // for (let rootNode of this._viewedProjectsMap.values()) {
-    //     let workStack = [];
-    //     workStack.push(rootNode);
-    //     while (workStack.length > 0) {
-    //         let currentNodeModel = workStack.pop();
-    //         const $newViewNode = this.createActivityNode(currentNodeModel)
-    //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
-    //
-    //         currentNodeModel.children.forEach((child) => {
-    //             let edge = this._createEdge(currentNodeModel, child.id);
-    //             edge.setSubActivityNode(child);
-    //             edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-    //             workStack.push(child)
-    //     //        this._edgeContainerDiv.appendChild(edge);
-    //         })
-    //     }
-    //
-    //
-    // }
-
-    // if (child.name) sub_node.setContextualName(child.name);
-    // if (child.description) sub_node.setContextualDescription(child.description);
-
 
     ////////////////////////////////////////////////////////////////////////
     /////////////  Support Functions  //////////////////////////////////////
@@ -765,13 +658,6 @@ class Playground extends Popupable {
                             detail: {activity: parent.nodeModel.activity}
                         }));
 
-
-                        // this.popup({
-                        //     content: Playground.NOTICE_REMOVE_CHILD,
-                        //     trackEl: $node,
-                        //     inputs: {node: $node},
-                        //     highlights: [$node]
-                        // });
                     }
                 }
 
@@ -809,25 +695,13 @@ class Playground extends Popupable {
         }, 0);
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////
-
-    handleLibraryListItemSelected({
-                                      activity: selectedActivity,
-                                      activity_set: selectedActivityDescendants = new Map(),
-                                      expanded: isExpanded = false
-                                  }) {
-        this._addActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded);
-    }
-
-
-//  I think this just returns the number of leaves.
-// if so, we already keep track of leaf count at each node during build.
-
+    // handleLibraryListItemSelected({
+    //                                   activity: selectedActivity,
+    //                                   activity_set: selectedActivityDescendants = new Map(),
+    //                                   expanded: isExpanded = false
+    //                               }) {
+    //     this._addActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded);
+    // }
 
 }
 
@@ -881,8 +755,6 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: activityConstruct}) {
-                console.log("kkkkkkk")
-console.log(activityConstruct)
                 this.dispatchEvent(new CustomEvent('event-activity-created', {
                     bubbles: true,
                     composed: true,
@@ -937,55 +809,3 @@ customElements.define('jag-playground', Playground);
 export default customElements.get('jag-playground');
 
 
-/**
- * Apparently UNUSED???
- *
- // _generateActivityGraphFromJSON(json) {
-  	// 	let root_goal = json.rootGoal;
-  	// 	let root_node = this.addRootGoal(root_goal.name, root_goal.description);
-  	// 	root_node.getConnector().setType(root_goal.connectorType);
-  	// 	root_node.setTranslation(50, 50);
-  	// 	this._generateSubGoals(root_node, root_goal);
-  	// }
- //
- // _generateSubGoals(root_node, root) {
-  	// 	let x_start = root_node._translation.x,
-  	// 		y_offset = root_node._translation.y + 150;
-  	//
-  	// 	if(!root.subgoals)
-  	// 		return;
-  	//
-  	// 	root.subgoals.forEach(subgoal => {
-  	// 		let node;
-  	// 		if(subgoal.type == 'GOAL') {
-  	// 			node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
-  	// 			node.getConnector().setType(subgoal.item.connectorType);
-  	// 		} else {
-  	// 			node = this.cacheActivity(subgoal.item.name, subgoal.item.description);
-  	// 		}
-  	//
-  	// 		node.setTranslation(x_start, y_offset);
-  	// 		let edge = this._createEdge(root_node);
-  	// 		edge.setSubActivityNode(node);
-  	// 		this._generateSubGoals(node, subgoal.item);
-  	// 		x_start += 175;
-  	// 	});
-  	// }
- *
- *
- *    // getSelectedAsJSON() {
- *     // 	if(this._selectedActivityNodeElementSet.size == 0)
- *     // 		return undefined;
- *     //
- *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.toJSON();
- *     // }
- *
- *     // getSelectedURN() {
- *     // 	if(this._selectedActivityNodeElementSet.size == 0)
- *     // 		return undefined;
- *     //
- *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.urn;
- *     // }
- *
- *
- */
