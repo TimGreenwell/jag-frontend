@@ -130,9 +130,6 @@ export default class Controller extends EventTarget {
         console.log("Local>> (local activity updated) ")
         const updatedActivity = event.detail.activity;                               // Locally updated Activity - uncached.
         updatedActivity.modifiedDate = Date.now();
-        console.log("2nd earliest on           ------------------------------         new vs old")
-        console.log(JSON.stringify(updatedActivity,null,2))                               // correct here --- this has it
-        console.log(JSON.stringify(this.fetchActivity(updatedActivity.urn),null,2))       //  and not yet here
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
     }
@@ -193,11 +190,8 @@ export default class Controller extends EventTarget {
      */
 
    // originalActivity, changedActivity, projectNode
-    updateTreeWithActivityChange(originalActivity, changedActivity, projectNode) {
+    updateTreeWithActivityChange(         changedActivity, projectNode) {
 
-        console.log("DOUBLE CHECK THIS")
-        console.log(JSON.stringify(originalActivity,null,2))
-        console.log(JSON.stringify(changedActivity,null,2))
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
@@ -209,12 +203,20 @@ export default class Controller extends EventTarget {
                 }
                 let originalActivity = currentNode.activity;
                 let validActivity = changedActivity         //this.fetchActivity(currentNode.urn)
-                currentNode.activity = validActivity;
+                console.log("SHould be the same");
+                console.log(originalActivity)
+                console.log(validActivity)
+                console.log(currentNode.children)
+                console.log("Beer if you win by 5:00")
+
+            //    currentNode.activity = validActivity;
                 let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
                 let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
+
+                console.log(projectNode)
                 console.log(JSON.stringify(originalActivity,null,2))
                 console.log(JSON.stringify(validActivity,null,2))
-
+                console.log("add")
                 console.log(kidsToAdd)
                 console.log("remove")
                 console.log(kidsToRemove)

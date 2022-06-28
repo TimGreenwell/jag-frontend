@@ -644,20 +644,31 @@ class Playground extends Popupable {
                 if ($node.nodeModel.project == $node.nodeModel.id) {
                     this.clearPlayground($node.nodeModel.project);
                 } else {
+
+                    //
+                    // this.popup({
+                    //     content: Playground.NOTICE_REMOVE_CHILD,
+                    //     trackEl: this,
+                    //     inputs: {},//event: e},
+                    //     highlights: []
+                    // });
+
                     if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
-                        const edge = $node.getParentEdge();
-                        const id = edge.getChildId();
-                        const parent = $node.getParent();
-                        const jagUrn = parent.nodeModel.urn
-                        const jagChild = {urn: $node.nodeModel.urn, id: $node.nodeModel.childId}
-                        let remainingChildren = parent.nodeModel.activity.children.filter(entry => {
-                            if (entry.id != jagChild.id) {
+                        const parentActivity = $node.getParent().nodeModel.activity;
+                        const childActivityChildId =  $node.nodeModel.childId
+                        console.log(parentActivity)
+                        console.log(parentActivity._children)
+
+                        let remainingChildren = parentActivity._children.filter(entry => {
+                            if (entry.id != childActivityChildId) {
                                 return entry;
                             }
                         })
-                        parent.nodeModel.activity.children = remainingChildren
+                        parentActivity.children = remainingChildren
+
+
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
-                            detail: {activity: parent.nodeModel.activity}
+                            detail: {activity: parentActivity}
                         }));
 
                     }
