@@ -241,11 +241,16 @@ export default class ControllerAT extends Controller {
 
         // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
         console.log(JSON.stringify(this.fetchActivity(parentNodeModel.activity.urn)))
-        // 1) CORRECT THE JAG ACTIVITY
+
+        let updatedActivity = new Activity(parentNodeModel.activity)
+        let newChildId = updatedActivity.addChild(childNodeModel.urn)
+
+
+            // 1) CORRECT THE JAG ACTIVITY
   //tlg      parentNodeModel.addChild(childNodeModel)
   //tlg      this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
    //tlg     this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
-        let newChildId = parentNodeModel.activity.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
+    //tlg    let newChildId = parentNodeModel.activity.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
   //tlg      childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
 
        // this.cacheActivity(parentNodeModel.activity)  // prob not necessary - first thing that jagupdatehandler does
@@ -255,8 +260,9 @@ export default class ControllerAT extends Controller {
 
 
         console.log(JSON.stringify(parentNodeModel.activity))
-        event.detail.activity = parentNodeModel.activity;                                // localJagUpdateHandler wants the new Parent JAG
-        await this.eventActivityUpdatedHandler(event)
+//tlg        event.detail.activity = parentNodeModel.activity;                                // localJagUpdateHandler wants the new Parent JAG
+        event.detail.activity = updatedActivity;
+            await this.eventActivityUpdatedHandler(event)
 
         event.detail.nodeModelId = childNodeModel.id;              // delete currently turns children into trees - i cant do that with a join
         await this.eventProjectDeletedHandler(event)
@@ -404,11 +410,13 @@ export default class ControllerAT extends Controller {
     //    this._playground.affectProjectView(updatedActivityUrn);         // Determine if JAG change affects our graph
                                                                         // @TODO maybe use new playground.viewedNodes to skip a step. (things work - so low priority)
         /////////////////
+
+
         console.log("++++++++++++++++++++++++ updated vs not+++++++++++++++++++++++++++++++++++++++++++++++")
         console.log(JSON.stringify(updatedActivity))
         console.log(JSON.stringify(this.fetchActivity(updatedActivity.urn)))                // still correct here --- not yet updated in cache
         let originalActivity = this.fetchActivity(updatedActivity.urn)
-
+        this.cacheActivity(updatedActivity)
         for (let viewedNode of this._playground.viewedNodes )  {
             console.log("checking viewedNode")
             console.log(viewedNode.id)
@@ -429,7 +437,7 @@ export default class ControllerAT extends Controller {
 
 
         ////////////////
-        this.cacheActivity(updatedActivity)
+
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
