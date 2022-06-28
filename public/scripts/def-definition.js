@@ -15,31 +15,22 @@ class Definition extends HTMLElement {
 
     constructor() {
         super();
-        this._definingProjectId = null;
-        this._definingNodeId = null;
+        this._definingNode = null;
         this._functionString = String;
         this._failTrigger = false;
         this._winTrigger = false;
         this._output = null;
-        this._testBank = [];
+        this._testBankMap = new Map();
 
         this._initUI();
     }
 
-    get definingProjectId() {
-        return this._definingProjectId;
+    get definingNode() {
+        return this._definingNode;
     }
 
-    set definingProjectId(id) {
-        this._definingProjectId = id;
-    }
-
-    get definingNodeId() {
-        return this._definingNodeId;
-    }
-
-    set definingNodeId(id) {
-        this._definingNodeId = id;
+    set definingNode(node) {
+        this._definingNode = node;
     }
 
     get functionString() {
@@ -62,32 +53,43 @@ class Definition extends HTMLElement {
         return this._failTrigger();
     }
 
-    buildTestBank(testNode){
+    reset(node) {
+        this._definingNode = node  // necessary? could just pass it all at this level
+        this.buildTestBank(node)
+    }
 
+    removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
+
+    buildTestBank(testNode = this._definingNode){
+        console.log("Building TestBank")
+        this.removeAllChildNodes(this.$testerDiv)
         testNode.children.forEach(child => {
+            console.log("Looking at child...")
             console.log(child)
-            this.addTestItem(child);
+            let childTester = this.createChildTesterElement(child)
+            this.$testerDiv.appendChild(childTester)
         })
     }
 
+
     createChildTesterElement(node) {
-        const test_el = FormUtils.createPropertyElement("test-" + node.id, node.urn);
+        let label = node.urn + " / " + node.contextualName;
+        const test_el = FormUtils.createPropertyElement("test-" + node.id, label);
         this._nameInput = FormUtils.createTextInput('test-name-' + node.id);
         this._nameInput.setAttribute("placeholder", "test value");
         this._nameInput.className = "test-property";
+        if (this._testBankMap.has(node.id)){
+        this._nameInput.value = this._testBankMap.get(node.id)
+        }
         test_el.appendChild(this._nameInput);
         return test_el
     }
 
 
-    addTestItem(childNode) {
-        // handleNodeStorageCreated (@controllerAT)
-        let childTester = this.createChildTesterElement(childNode)
-        console.log(childNode)
-        console.log(childTester)
-        this._testBank.push(childTester);
-        this.$testerDiv.appendChild(childTester)
-    }
 
     _initUI() {
 
@@ -126,6 +128,8 @@ class Definition extends HTMLElement {
         // this._export.addEventListener('click', this._handleExportClick.bind(this));
 
     }
+
+    // When updating a test input --- update the testBankMap... stores test settings across reloads.
 
 }
 

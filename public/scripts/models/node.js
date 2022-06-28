@@ -27,8 +27,8 @@ export default class Node extends EventTarget {
 					isLocked = false,
 					is_root = false,
 					x, y ,
-					contextualName = '-',
-					contextualDescription = '--',
+					contextualName = '',
+					contextualDescription = '',
 		            subscribes = new Map(),        // still unknown implementation (hopefully observer)
 		            alerts = new Map(),
 					children = new Array()} = {}) {
@@ -179,14 +179,22 @@ export default class Node extends EventTarget {
 	}
 
 	get contextualName() {
-		return this._contextualName;
+		if (this._contextualName == '' ){
+			return this._activity.name;
+		} else {
+		return this._contextualName;}
 	}
 	set contextualName(value) {
 		this._contextualName = value;
 	}
+
 	get contextualDescription() {
-		return this._contextualDescription;
-	}
+		if (this._contextualDescription == '' ){
+			return this.activity.contextualDescription;
+		} else {
+			return this._contextualDescription;}
+		}
+
 	set contextualDescription(value) {
 		this._contextualDescription = value;
 	}

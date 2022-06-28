@@ -164,16 +164,35 @@ export default class ControllerAT extends Controller {
 
 
 
-    async responseActivityUpdatedHandler(event) {
+    // async responseActivityUpdatedHandler(event) {
+    //     // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
+    //     // Need to update and save the adjusted Projects
+    //     let projectId = event.detail.projectId; // could have used id
+    //     let projectNode = this.fetchProject(projectId)   // < -- this should be the old project we need to see the changes.
+    //     console.log("SANITY CHECK")
+    //     console.log(JSON.stringify(projectNode, null, 2))
+    //     let changedActivityUrn = event.detail.activityUrn;
+    //     projectNode = this.updateTreeWithActivityChange(projectNode,changedActivityUrn);
+    //     await StorageService.update(projectNode, 'node');
+    //     console.log("Local<< (new node affects project) \n")
+    // }
+
+
+    async responseActivityUpdatedHandler( originalActivity, changedActivity, projectNode) {
         // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
         // Need to update and save the adjusted Projects
-        let projectId = event.detail.projectId; // could have used id
-        let projectNode = this.fetchProject(projectId)
-        let changedActivityUrn = event.detail.activityUrn;
-        projectNode = this.updateTreeWithActivityChange(projectNode,changedActivityUrn);
+
+        console.log("SINGLE CHECK THIS")
+        console.log(JSON.stringify(originalActivity,null,2))
+        console.log(JSON.stringify(changedActivity,null,2))
+
+        projectNode = this.updateTreeWithActivityChange( originalActivity, changedActivity, projectNode);
         await StorageService.update(projectNode, 'node');
         console.log("Local<< (new node affects project) \n")
     }
+
+
+
 
     async responseActivityDeletedHandler(event) {
         // The Event: Playground just alerted that an activity JAG has been deleted.
@@ -210,6 +229,7 @@ export default class ControllerAT extends Controller {
 
     async eventNodesConnectedHandler(event) {            // only needed id's
         console.log("Local>> (local nodes joined) ")
+        console.log("Earliest on.........!......................")
 
         let projectNodeId = event.detail.projectNodeId
         let parentNodeId = event.detail.parentNodeId
@@ -220,17 +240,21 @@ export default class ControllerAT extends Controller {
 
 
         // <-note to me--- here somewhere -- looks like projectId isnt spreading down.  try joining children 2 or three deep.
-
+        console.log(JSON.stringify(this.fetchActivity(parentNodeModel.activity.urn)))
         // 1) CORRECT THE JAG ACTIVITY
-        parentNodeModel.addChild(childNodeModel)
-        this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
-        this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
+  //tlg      parentNodeModel.addChild(childNodeModel)
+  //tlg      this.repopulateParent(parentNodeModel)                                       // give node's children reference to parent
+   //tlg     this.repopulateProject(childNodeModel, parentNodeModel.project)             // change project id for all new children
         let newChildId = parentNodeModel.activity.addChild(childNodeModel.urn)   // Add child to parent's JAG and return child.id
-        childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
+  //tlg      childNodeModel.childId = newChildId                                         // set childId to distinguish child relationship
 
-        this.cacheActivity(parentNodeModel.activity)  // prob not necessary - first thing that jagupdatehandler does
-        this.uncacheProject(childNodeModel.id) //// prob not necessary - first thing that nodeupdatehandler does
+       // this.cacheActivity(parentNodeModel.activity)  // prob not necessary - first thing that jagupdatehandler does
+       // this.uncacheProject(childNodeModel.id) //// prob not necessary - first thing that nodeupdatehandler does
+        console.log("Earliest on...............................")
+        console.log(JSON.stringify(this.fetchActivity(parentNodeModel.activity.urn)))
 
+
+        console.log(JSON.stringify(parentNodeModel.activity))
         event.detail.activity = parentNodeModel.activity;                                // localJagUpdateHandler wants the new Parent JAG
         await this.eventActivityUpdatedHandler(event)
 
@@ -375,11 +399,37 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.addListItem(createdActivity);                                   // Add Activity list item to Library
     }
 
-    commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
+    async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         console.log("((COMMAND INCOMING)) >> Activity Updated")
-        this.cacheActivity(updatedActivity)
-        this._playground.affectProjectView(updatedActivityUrn);         // Determine if JAG change affects our graph
+    //    this._playground.affectProjectView(updatedActivityUrn);         // Determine if JAG change affects our graph
                                                                         // @TODO maybe use new playground.viewedNodes to skip a step. (things work - so low priority)
+        /////////////////
+        console.log("++++++++++++++++++++++++ updated vs not+++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log(JSON.stringify(updatedActivity))
+        console.log(JSON.stringify(this.fetchActivity(updatedActivity.urn)))                // still correct here --- not yet updated in cache
+        let originalActivity = this.fetchActivity(updatedActivity.urn)
+
+        for (let viewedNode of this._playground.viewedNodes )  {
+            console.log("checking viewedNode")
+            console.log(viewedNode.id)
+            if (viewedNode.isActivityInProject(updatedActivityUrn)) {
+                console.log("found a match")
+                console.log(viewedNode.id)
+                let projectId = viewedNode.project;
+                let nodeId = viewedNode.id;
+                this.repopulateActivity(viewedNode)
+                console.log(viewedNode)
+                console.log("PRE CHECK THIS")
+                console.log(JSON.stringify(originalActivity,null,2))
+                console.log(JSON.stringify(updatedActivity,null,2))
+
+                await this.responseActivityUpdatedHandler(originalActivity, updatedActivity, viewedNode)
+            }
+        }
+
+
+        ////////////////
+        this.cacheActivity(updatedActivity)
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
@@ -473,26 +523,6 @@ export default class ControllerAT extends Controller {
 
 
 
-    repopulateActivity(currentNode) {
-        currentNode.activity = this.fetchActivity(currentNode.urn)
-        for (let child of currentNode.children) {
-            this.repopulateActivity(child)
-        }
-    }
 
-    repopulateParent(currentNode) {
-        for (let child of currentNode.children) {
-            child.parent = currentNode;
-            this.repopulateParent(child)
-        }
-    }
-
-    repopulateProject(currentNode, projectId) {
-        currentNode.project = projectId
-        for (let child of currentNode.children) {
-            child.project = projectId;
-            this.repopulateParent(child, projectId)
-        }
-    }
 
 }

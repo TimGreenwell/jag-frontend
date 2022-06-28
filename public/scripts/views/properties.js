@@ -270,7 +270,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     //     if (this._nodeModel.activity) {
     //         if (this._nodeModel.activity.description != this._descInput.value) {
     //             this._nodeModel.activity.description = this._descInput.value;
-    //             this.dispatchEvent(new CustomEvent('local-activity-updated', {
+    //             this.dispatchEvent(new CustomEvent('event-activity-updated', {
     //                 bubbles: true,
     //                 composed: true,
     //                 detail: {activity: this._nodeModel.activity}
@@ -284,7 +284,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.activity.description = this._descInput.value;
-            this.dispatchEvent(new CustomEvent('local-activity-updated', {
+            this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {activity: this._nodeModel.activity}
@@ -297,7 +297,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
             this._nodeModel.activity.name = this._nameInput.value;
-            this.dispatchEvent(new CustomEvent('local-activity-updated', {
+            this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
                 detail: {activity: this._nodeModel.activity}

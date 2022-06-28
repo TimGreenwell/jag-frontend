@@ -19,7 +19,9 @@ def-definition  div .definition-block {
     width: 95%;
     height: 35%;   /* was 100% */
     position: absolute;
+    outline: 2px solid blue;
 }
+
 
 def-definition li {
     padding: 0.25em;

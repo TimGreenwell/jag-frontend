@@ -508,6 +508,8 @@ class Playground extends Popupable {
 
         this._viewedProjectsMap.forEach((value, key) => {
             let node = value;
+            console.log("is this old?------->")
+            console.log(node)
 
             if (node.isActivityInProject(updatedUrn)) {
                 this.dispatchEvent(new CustomEvent('response-activity-updated', {

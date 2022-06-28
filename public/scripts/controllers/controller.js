@@ -40,6 +40,7 @@ export default class Controller extends EventTarget {
     }
 
     cacheActivity(activity) {
+        console.log("elrgelrkghlrekglerkglrekjghlerkghlrkghlerkghlerkghlerkghlerkghlerkghlerkghlerkhglerkghlerkhglerkghlerkghlerkghlerkg")
         this._activityMap.set(activity.urn, activity)
     }
 
@@ -127,8 +128,11 @@ export default class Controller extends EventTarget {
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
-        const updatedActivity = event.detail.activity;
+        const updatedActivity = event.detail.activity;                               // Locally updated Activity - uncached.
         updatedActivity.modifiedDate = Date.now();
+        console.log("2nd earliest on           ------------------------------         new vs old")
+        console.log(JSON.stringify(updatedActivity,null,2))                               // correct here --- this has it
+        console.log(JSON.stringify(this.fetchActivity(updatedActivity.urn),null,2))       //  and not yet here
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
     }
@@ -188,27 +192,31 @@ export default class Controller extends EventTarget {
      *                Support Methods
      */
 
+   // originalActivity, changedActivity, projectNode
+    updateTreeWithActivityChange(originalActivity, changedActivity, projectNode) {
 
-    updateTreeWithActivityChange(projectNode, activityUrn) {
-
+        console.log("DOUBLE CHECK THIS")
+        console.log(JSON.stringify(originalActivity,null,2))
+        console.log(JSON.stringify(changedActivity,null,2))
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
         while (nodeStack.length > 0) {
             let currentNode = nodeStack.pop();
-            if ((activityUrn == undefined) || (currentNode.urn == activityUrn)) {
-                if (activityUrn == undefined) {
+            if ((changedActivity.urn == undefined) || (currentNode.urn == changedActivity.urn)) {
+                if (changedActivity.urn == undefined) {
                     console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                 }
                 let originalActivity = currentNode.activity;
-                let validActivity = this.fetchActivity(currentNode.urn)
+                let validActivity = changedActivity         //this.fetchActivity(currentNode.urn)
                 currentNode.activity = validActivity;
                 let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
                 let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
+                console.log(JSON.stringify(originalActivity,null,2))
+                console.log(JSON.stringify(validActivity,null,2))
 
-                console.log("kidsToAdd")
                 console.log(kidsToAdd)
-                console.log("kidsToRemove")
+                console.log("remove")
                 console.log(kidsToRemove)
 
                 kidsToAdd.forEach(child => {
@@ -348,6 +356,35 @@ export default class Controller extends EventTarget {
             checkNode.children.forEach(child => workStack.push(child))
         }
         return null
+    }
+
+    removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
+
+
+    repopulateActivity(currentNode) {
+        currentNode.activity = this.fetchActivity(currentNode.urn)
+        for (let child of currentNode.children) {
+            this.repopulateActivity(child)
+        }
+    }
+
+    repopulateParent(currentNode) {
+        for (let child of currentNode.children) {
+            child.parent = currentNode;
+            this.repopulateParent(child)
+        }
+    }
+
+    repopulateProject(currentNode, projectId) {
+        currentNode.project = projectId
+        for (let child of currentNode.children) {
+            child.project = projectId;
+            this.repopulateParent(child, projectId)
+        }
     }
 
 

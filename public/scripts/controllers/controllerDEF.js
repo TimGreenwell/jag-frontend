@@ -48,12 +48,22 @@ export default class ControllerDEF extends Controller {
         this.initializeHandlers();
     }
 
-    async initializeCache() {
+    async initializeCache() {         //@TODO --- it might not be worth caching this -- might should just hit DB..
+
+        let allActivities = await StorageService.all('activity')
+        allActivities.forEach(activity => {
+            this.cacheActivity(activity)
+        });
+
+
         let allProjects = await StorageService.all('node')
         allProjects.forEach(project => {
-            this.repopulateActivity(project)
-            this.repopulateParent(project)
-            this.cacheProject(project);
+            if (this._currentProjectId == project.id) {
+                this.repopulateParent(project)
+                this.repopulateActivity(project)
+                this.repopulateProject(project, project.id)
+                this.cacheProject(project)
+            }
         });
 
         window.onblur = function (ev) {
@@ -64,8 +74,12 @@ export default class ControllerDEF extends Controller {
     initializePanels() {
 
       let project = this.fetchProject(this._currentProjectId);
-     let node = this.searchTreeForId(project,this._currentNodeId)
-        this._definition.buildTestBank(node)
+
+      let node = this.searchTreeForId(project,this._currentNodeId)
+        console.log("Where is my Activity")
+        console.log(node)
+      this._definition.definingNode = node
+      this._definition.buildTestBank()
     }
 
     initializeHandlers() {
@@ -155,24 +169,25 @@ export default class ControllerDEF extends Controller {
      */
 
 
-    commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
+    commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
         console.log("((COMMAND INCOMING) >>  Node Updated")
-        let projectNode = this.fetchProject(updatedNodeModel.project)
-        this.repopulateParent(projectNode)
-        this.repopulateActivity(updatedNodeModel)
-        this.repopulateProject(updatedNodeModel,projectNode.id)
-        this.cacheProject(projectNode)
-        this._playground._rebuildNodeView(updatedNodeModel)
-        this._projectLibrary.updateItem(updatedNodeModel)
-        this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
-        // update playground
+        console.log(updatedProject)
+        if (this._currentProjectId == updatedProjectIdId) {
+            this.repopulateParent(updatedProject)
+            this.repopulateActivity(updatedProject)
+            this.repopulateProject(updatedProject, updatedProjectIdId)
+            this.cacheProject(updatedProject)
+            let node = this.searchTreeForId(updatedProject,this._currentNodeId)
+            console.log(updatedProject)
+            console.log("...")
+            this._definition.reset(node)
+        }
     }
 
     commandNodeDeletedHandler(deletedNodeId) {
         console.log("((COMMAND INCOMING) >>  Node Deleted")
         this.uncacheProject(deletedNodeId)
-        this._playground.deleteNodeModel(deletedNodeId)
-        this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
+
     }
 
     /**
@@ -235,27 +250,5 @@ export default class ControllerDEF extends Controller {
     }
 
 
-
-    repopulateActivity(currentNode) {
-        currentNode.activity = this.fetchActivity(currentNode.urn)
-        for (let child of currentNode.children) {
-            this.repopulateActivity(child)
-        }
-    }
-
-    repopulateParent(currentNode) {
-        for (let child of currentNode.children) {
-            child.parent = currentNode;
-            this.repopulateParent(child)
-        }
-    }
-
-    repopulateProject(currentNode, projectId) {
-        currentNode.project = projectId
-        for (let child of currentNode.children) {
-            child.project = projectId;
-            this.repopulateParent(child, projectId)
-        }
-    }
 
 }
