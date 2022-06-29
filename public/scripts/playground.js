@@ -167,7 +167,9 @@ class Playground extends Popupable {
 
             //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
             //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
-
+console.log(parentNodeModel.project)
+            console.log(parentNodeModel.id)
+            console.log(childNodeModel.id)
 
             this.dispatchEvent(new CustomEvent('event-nodes-connected', {
                 bubbles: true,
@@ -419,6 +421,7 @@ class Playground extends Popupable {
 
 
     _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
+        console.log("")
         let margin = 20
            if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
                currentNodeModel.x = 20 + Math.floor(Math.random() * 10);
@@ -598,8 +601,11 @@ class Playground extends Popupable {
     }
 
     addNodeModel(projectNodeModel){
+        console.log("I am rebuilding the node model for playground view - this has to be right so I can later delet if necessary")
+        console.log(JSON.stringify(projectNodeModel, null, 4))
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
         let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+        console.log($roodNode)
     }
 
     _rebuildNodeView(projectNodeModel) {
@@ -656,6 +662,7 @@ class Playground extends Popupable {
                     if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId =  $node.nodeModel.childId
+                        console.log($node.getParent().nodeModel)
                         console.log(parentActivity)
                         console.log(parentActivity._children)
 
@@ -782,7 +789,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
     // skip: ?
 });
 
-Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({
+Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
     type: Playground.POPUP_TYPES.NOTICE,
     name: "Disconnect Child",
     description: "Disconnect this child JAG from parent JAG?",

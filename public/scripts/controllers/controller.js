@@ -128,7 +128,11 @@ export default class Controller extends EventTarget {
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
-        const updatedActivity = event.detail.activity;                               // Locally updated Activity - uncached.
+        const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
+        console.log("Updated or deleted update going out:")
+        console.log("Activity just before stroage")
+        console.log(JSON.stringify(updatedActivity,null,2))
+
         updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
@@ -191,6 +195,8 @@ export default class Controller extends EventTarget {
 
    // originalActivity, changedActivity, projectNode
     updateTreeWithActivityChange(         changedActivity, projectNode) {
+console.log("Charlie")
+        console.log(JSON.stringify(projectNode,null,5))
 
         const nodeStack = [];
         const orphanedRootStack = [];
@@ -201,21 +207,31 @@ export default class Controller extends EventTarget {
                 if (changedActivity.urn == undefined) {
                     console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                 }
-                let originalActivity = currentNode.activity;
-                let validActivity = changedActivity         //this.fetchActivity(currentNode.urn)
-                console.log("SHould be the same");
-                console.log(originalActivity)
-                console.log(validActivity)
-                console.log(currentNode.children)
+                let existingNodeChildren = currentNode.children.map(child => {
+                  return {urn: child.urn, id: child.childId}
+                })
+                let validNodeChildren = changedActivity.children;
+
+                // let originalActivity = currentNode.activity;
+                // let validActivity = changedActivity         //this.fetchActivity(currentNode.urn)
+                console.log("4SHould be the same");
+                console.log(JSON.stringify(projectNode,null, 6))
+                console.log(JSON.stringify(changedActivity))
+                // console.log(originalActivity)
+                // console.log(validActivity)
+                console.log(currentNode.children)                     // <<  this doesnt look good --- has no children in the node
                 console.log("Beer if you win by 5:00")
 
             //    currentNode.activity = validActivity;
-                let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
-                let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
+            //     let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
+            //     let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
+                let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
+                let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
 
-                console.log(projectNode)
-                console.log(JSON.stringify(originalActivity,null,2))
-                console.log(JSON.stringify(validActivity,null,2))
+console.log("existingNodeChildren")
+                console.log(existingNodeChildren)
+                console.log("validNodeChildren")
+                console.log(validNodeChildren)
                 console.log("add")
                 console.log(kidsToAdd)
                 console.log("remove")
@@ -233,12 +249,12 @@ export default class Controller extends EventTarget {
                 })
 
                 kidsToRemove.forEach(child => {
-                    let childNodeModel = this.searchTreeForChildId(currentNode, child.id)    //currentNode.getChildById(child.id)
+                    let childNodeModel = this.searchTreeForChildId(projectNode, child.id)    //currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
-                    childNodeModel.parent = null;
-                    childNodeModel.childId = null;
-                    this.repopulateProject(childNodeModel, childNodeModel.id)
-                    orphanedRootStack.push(childNodeModel);
+                    // childNodeModel.parent = null;
+                    // childNodeModel.childId = null;
+                    // this.repopulateProject(childNodeModel, childNodeModel.id)
+                    // orphanedRootStack.push(childNodeModel);
                 })
 
             }
@@ -253,6 +269,8 @@ export default class Controller extends EventTarget {
                 console.log("Orphans ")
             }
         }
+        console.log("The End")
+        console.log(JSON.stringify(projectNode, null, 2))
         return projectNode;
         console.log("Local<< (new node affects project) \n")
 
@@ -314,24 +332,24 @@ export default class Controller extends EventTarget {
         return returnNode;
     }
 
-    getChildrenToAdd(originalActivity, updatedActivity) {
-        let validKids = updatedActivity.children.map(entry => {
-            return entry
-        })
-        let existingKids = originalActivity.children.map(entry => {
-            return entry
-        });
+    getChildrenToAdd(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+        // let validKids = updatedActivity.children.map(entry => {
+        //     return entry
+        // })
+        // let existingKids = originalActivity.children.map(entry => {
+        //     return entry
+        // });
         const returnValue = validKids.filter(validKid => !existingKids.find(existingKid => JSON.stringify(validKid) === JSON.stringify(existingKid)))
         return returnValue
     }
 
-    getChildrenToRemove(originalActivity, updatedActivity) {
-        let validKids = updatedActivity.children.map(entry => {
-            return entry
-        })
-        let existingKids = originalActivity.children.map(entry => {
-            return entry
-        });
+    getChildrenToRemove(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+        // let validKids = updatedActivity.children.map(entry => {
+        //     return entry
+        // })
+        // let existingKids = originalActivity.children.map(entry => {
+        //     return entry
+        // });
         const returnValue = existingKids.filter(existingKid => !validKids.find(validKid => JSON.stringify(existingKid) === JSON.stringify(validKid)))
         return returnValue
     }
@@ -377,6 +395,7 @@ export default class Controller extends EventTarget {
     repopulateParent(currentNode) {
         for (let child of currentNode.children) {
             child.parent = currentNode;
+            child.parentId = currentNode.id
             this.repopulateParent(child)
         }
     }
