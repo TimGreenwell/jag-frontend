@@ -88,14 +88,6 @@ export default class Node extends EventTarget {
 		this._parentId = value;
 	}
 
-	get jag() {
-		console.log("NNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!");
-	}
-	set jag(value) {
-		console.log("NNNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!");
-		this._activity = value;
-	}
-
 	get activity() {
 		return this._activity;
 	}

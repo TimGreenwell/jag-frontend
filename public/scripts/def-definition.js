@@ -65,11 +65,8 @@ class Definition extends HTMLElement {
     }
 
     buildTestBank(testNode = this._definingNode){
-        console.log("Building TestBank")
         this.removeAllChildNodes(this.$testerDiv)
         testNode.children.forEach(child => {
-            console.log("Looking at child...")
-            console.log(child)
             let childTester = this.createChildTesterElement(child)
             this.$testerDiv.appendChild(childTester)
         })

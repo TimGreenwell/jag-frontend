@@ -40,7 +40,6 @@ export default class Controller extends EventTarget {
     }
 
     cacheActivity(activity) {
-        console.log("elrgelrkghlrekglerkglrekjghlerkghlrkghlerkghlerkghlerkghlerkghlerkghlerkghlerkhglerkghlerkhglerkghlerkghlerkghlerkg")
         this._activityMap.set(activity.urn, activity)
     }
 
@@ -129,10 +128,6 @@ export default class Controller extends EventTarget {
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
-        console.log("Updated or deleted update going out:")
-        console.log("Activity just before stroage")
-        console.log(JSON.stringify(updatedActivity,null,2))
-
         updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
@@ -195,9 +190,6 @@ export default class Controller extends EventTarget {
 
    // originalActivity, changedActivity, projectNode
     updateTreeWithActivityChange(         changedActivity, projectNode) {
-console.log("Charlie")
-        console.log(JSON.stringify(projectNode,null,5))
-
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
@@ -211,31 +203,8 @@ console.log("Charlie")
                   return {urn: child.urn, id: child.childId}
                 })
                 let validNodeChildren = changedActivity.children;
-
-                // let originalActivity = currentNode.activity;
-                // let validActivity = changedActivity         //this.fetchActivity(currentNode.urn)
-                console.log("4SHould be the same");
-                console.log(JSON.stringify(projectNode,null, 6))
-                console.log(JSON.stringify(changedActivity))
-                // console.log(originalActivity)
-                // console.log(validActivity)
-                console.log(currentNode.children)                     // <<  this doesnt look good --- has no children in the node
-                console.log("Beer if you win by 5:00")
-
-            //    currentNode.activity = validActivity;
-            //     let kidsToAdd = this.getChildrenToAdd(originalActivity, validActivity);
-            //     let kidsToRemove = this.getChildrenToRemove(originalActivity, validActivity);
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
                 let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-
-console.log("existingNodeChildren")
-                console.log(existingNodeChildren)
-                console.log("validNodeChildren")
-                console.log(validNodeChildren)
-                console.log("add")
-                console.log(kidsToAdd)
-                console.log("remove")
-                console.log(kidsToRemove)
 
                 kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
@@ -269,8 +238,6 @@ console.log("existingNodeChildren")
                 console.log("Orphans ")
             }
         }
-        console.log("The End")
-        console.log(JSON.stringify(projectNode, null, 2))
         return projectNode;
         console.log("Local<< (new node affects project) \n")
 

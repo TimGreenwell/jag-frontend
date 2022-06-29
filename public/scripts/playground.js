@@ -601,11 +601,8 @@ console.log(parentNodeModel.project)
     }
 
     addNodeModel(projectNodeModel){
-        console.log("I am rebuilding the node model for playground view - this has to be right so I can later delet if necessary")
-        console.log(JSON.stringify(projectNodeModel, null, 4))
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
         let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
-        console.log($roodNode)
     }
 
     _rebuildNodeView(projectNodeModel) {

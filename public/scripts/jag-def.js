@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Args
     const QueryString = window.location.search;
     const urlParams = new URLSearchParams(QueryString);
-    console.log(urlParams)
     let startProjectId = urlParams.get('project')
     let startNodeId = urlParams.get('node');
 
