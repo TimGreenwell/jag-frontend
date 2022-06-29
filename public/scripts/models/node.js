@@ -170,6 +170,10 @@ export default class Node extends EventTarget {
 		return this._leafCount;
 	}
 
+	set leafCount(value){
+		this._leafCount = value;
+	}
+
 	get contextualName() {
 		if (this._contextualName == '' ){
 			return this._activity.name;
@@ -257,8 +261,8 @@ export default class Node extends EventTarget {
 			}
 		}
 	}
-	incrementLeafCount() {
-		this._leafCount = this._leafCount + 1;
+	incrementLeafCount(moreLeaves) {
+		this._leafCount = this._leafCount + moreLeaves;
 		if (this.parent){
 			this.parent.incrementLeafCount();
 		}
@@ -284,13 +288,36 @@ export default class Node extends EventTarget {
 			this._children.push(node);
 			node.parent = this;
 			this.incrementDepth(1);
-			if (this.childCount>1){
-				this.incrementLeafCount();
-			}
+			// if (node.childCount>1){
+			// 	this.incrementLeafCount(child.leafCount);
+			// }
+			// else {
+			// 	this.incrementLeafCount(child.leafCount-1);
+			// }
 		} else {
 			alert("Node must first be assigned a valid URN")
 		}
 	}
+
+
+	leafcounter(){
+		if (this.hasChildren()) {
+			let sum = 0;
+			this.children.forEach(child => {
+				child.leafCount = child.leafcounter()
+				sum = sum + child.leafCount
+				console.log(sum)
+			    })
+			this.leafCount = sum
+			return sum}
+
+		else {
+			this.leafCount = 1;
+			return this.leafCount;
+		}
+	}
+
+
 	removeChild(child){
 		let filtered = this.children.filter(entry => {
 			if (entry.id != child.id) {

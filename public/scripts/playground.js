@@ -28,9 +28,8 @@ class Playground extends Popupable {
         this.appendChild(this._nodeContainerDiv);
         this.setPopupBounds(this._nodeContainerDiv);
 
-        this._viewedProjectsMap = new Map();         // All active Jag root nodes - should be in sync with _activeActivityNodeElementSet
-
-        this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (view)
+        this._viewedProjectsMap = new Map();         // All active Jag root nodes
+        this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (view) -- All elements (see viewedNodes for the supprting nodeModel)
         this._selectedActivityNodeElementSet = new Set();  // set of ActivityNodes (view)
         this._is_edge_being_created = false;
 
@@ -80,9 +79,13 @@ class Playground extends Popupable {
         let selectedIdArray = [...this._selectedActivityNodeElementSet].map( element => {return element.nodeModel})
         return selectedIdArray;
     }
-    get viewedNodes() {
+    get viewedNodes() {             // Returns the nodeModels inside the active elements
         let viewedIdArray = [...this._activeActivityNodeElementSet].map( element => {return element.nodeModel})
         return viewedIdArray;
+    }
+    get viewedProjects() {
+        let viewedRootNodes = Array.from(this._viewedProjectsMap.values());
+        return viewedRootNodes
     }
 
 
@@ -167,9 +170,6 @@ class Playground extends Popupable {
 
             //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
             //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
-console.log(parentNodeModel.project)
-            console.log(parentNodeModel.id)
-            console.log(childNodeModel.id)
 
             this.dispatchEvent(new CustomEvent('event-nodes-connected', {
                 bubbles: true,
@@ -420,39 +420,62 @@ console.log(parentNodeModel.project)
      */
 
 
-    _buildNodeViewFromNodeModel(currentNodeModel, x, y) {
-        console.log("")
-        let margin = 20
+    _buildNodeViewFromNodeModel(currentNodeModel) {
            if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
-               currentNodeModel.x = 20 + Math.floor(Math.random() * 10);
-               currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 30);
+               currentNodeModel.x = 30 + Math.floor(Math.random() * 20);
+               currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 70);
            }
-           let xPos = true ? currentNodeModel.x : x;
-           let yPos = true ? currentNodeModel.y : y;
-
-           currentNodeModel.setPosition(xPos, yPos)
+           currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
            const $newViewNode = this.createActivityNode(currentNodeModel)
-
-           $newViewNode.setTranslation(xPos + $newViewNode.clientWidth / 2.0, yPos + $newViewNode.clientHeight / 2.0);
-
-           // assume all children have same height as the parent.
-           const x_offset = xPos + $newViewNode.clientWidth + margin;
-           const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
-           let y_offset = yPos - (preferred_height / 2);
+           $newViewNode.setTranslation(currentNodeModel.x , currentNodeModel.y );
 
            currentNodeModel.children.forEach((child) => {
-
-               //  local_preferred_size Getting NaN here  VV why?
-               const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
-               y_offset = y_offset + (local_preferred_size) / 2;
-
                let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-               let $childViewNode = this._buildNodeViewFromNodeModel(child, x_offset, y_offset)                          // first build child
-
+               let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
                edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-
            })
+        return $newViewNode
+    }
+
+
+    redrawSelectedNodes(){
+        this.selectedNodes.forEach(node => {
+            this._redrawNodes(node)
+        })
+    }
+
+    _redrawNodes(currentNodeModel, x = null, y = null) {
+console.log(this.clientHeight)
+        let margin = 25
+        if (x && y) {
+            console.log("doing it mysekf")
+            currentNodeModel.x = x;
+            currentNodeModel.y = y;
+        }
+        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
+        const $newViewNode = this.getNodeViewById(currentNodeModel.id)
+    //    const $newViewNode = this.createActivityNode(currentNodeModel)
+        $newViewNode.setTranslation(currentNodeModel.x , currentNodeModel.y );
+
+        // assume all children have same height as the parent.
+        const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
+        const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
+        console.log("going to nedd a height of : " + preferred_height + "  " + currentNodeModel.leafCount + " * " +  ($newViewNode.clientHeight + margin))
+        let y_offset = currentNodeModel.y - (preferred_height / 2);
+        console.log(" starting offset = " + y_offset)
+
+        currentNodeModel.children.forEach((child) => {
+            const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
+            y_offset = y_offset + (local_preferred_size)
+             console.log("child y offset = " + y_offset)
+       //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
+            let $childViewNode = this._redrawNodes(child, x_offset, y_offset)                          // first build child
+
+       //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
+       //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+            console.log("Leaf count of " + child.urn + " is " + child.leafCount)
+        })
 
         return $newViewNode
     }
@@ -511,9 +534,6 @@ console.log(parentNodeModel.project)
 
         this._viewedProjectsMap.forEach((value, key) => {
             let node = value;
-            console.log("is this old?------->")
-            console.log(node)
-
             if (node.isActivityInProject(updatedUrn)) {
                 this.dispatchEvent(new CustomEvent('response-activity-updated', {
                     detail: {
@@ -600,10 +620,21 @@ console.log(parentNodeModel.project)
         }
     }
 
+
+    getNodeViewById(id) {
+        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
+                return node
+            }
+        }
+    }
+
+
+
+
     addNodeModel(projectNodeModel){
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
-        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
-    }
+        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);            }
 
     _rebuildNodeView(projectNodeModel) {
         this.deleteNodeModel(projectNodeModel.id)
@@ -659,10 +690,6 @@ console.log(parentNodeModel.project)
                     if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId =  $node.nodeModel.childId
-                        console.log($node.getParent().nodeModel)
-                        console.log(parentActivity)
-                        console.log(parentActivity._children)
-
                         let remainingChildren = parentActivity._children.filter(entry => {
                             if (entry.id != childActivityChildId) {
                                 return entry;

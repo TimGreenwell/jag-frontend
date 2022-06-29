@@ -88,7 +88,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         $redraw.innerText = "redraw\nnodes";
         $centerLiDiv.appendChild($redraw);
         $redraw.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("redraw-nodes"));
+            this.dispatchEvent(new CustomEvent("event-redraw-nodes"));
         }.bind(this));
 
         const $define = document.createElement("span");
@@ -97,7 +97,7 @@ customElements.define('jag-menu', class extends HTMLElement {
         $define.innerText = "define\nnode";
         $centerLiDiv.appendChild($define);
         $define.addEventListener('click', function (e) {
-            this.dispatchEvent(new CustomEvent("define-node"));
+            this.dispatchEvent(new CustomEvent("event-define-node"));
         }.bind(this));
 
 

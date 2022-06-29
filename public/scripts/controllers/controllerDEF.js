@@ -76,8 +76,6 @@ export default class ControllerDEF extends Controller {
       let project = this.fetchProject(this._currentProjectId);
 
       let node = this.searchTreeForId(project,this._currentNodeId)
-        console.log("Where is my Activity")
-        console.log(node)
       this._definition.definingNode = node
       this._definition.buildTestBank()
     }
@@ -171,15 +169,12 @@ export default class ControllerDEF extends Controller {
 
     commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
         console.log("((COMMAND INCOMING) >>  Node Updated")
-        console.log(updatedProject)
         if (this._currentProjectId == updatedProjectIdId) {
             this.repopulateParent(updatedProject)
             this.repopulateActivity(updatedProject)
             this.repopulateProject(updatedProject, updatedProjectIdId)
             this.cacheProject(updatedProject)
             let node = this.searchTreeForId(updatedProject,this._currentNodeId)
-            console.log(updatedProject)
-            console.log("...")
             this._definition.reset(node)
         }
     }

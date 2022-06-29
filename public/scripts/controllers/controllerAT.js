@@ -100,7 +100,8 @@ export default class ControllerAT extends Controller {
 
         this._menu.addEventListener('event-add-activity', this.eventAddActivityHandler.bind(this));
         this._menu.addEventListener('event-clear-playground', this.eventClearPlaygroundHandler.bind(this));  // Event: 'event-clear-playground' - menu item selected to clear nodes from playground
-        this._menu.addEventListener('define-node', this.eventDefineNodeHandler.bind(this));
+        this._menu.addEventListener('event-define-node', this.eventDefineNodeHandler.bind(this));
+        this._menu.addEventListener('event-redraw-nodes',this.eventRedrawNodesHandler.bind(this));
 
         this._activityLibrary.addEventListener('event-project-created', this.eventProjectCreatedHandler.bind(this));
         this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));
@@ -166,6 +167,7 @@ export default class ControllerAT extends Controller {
         // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
         // Need to update and save the adjusted Projects
         projectNode = this.updateTreeWithActivityChange(    updatedActivity, projectNode);
+        console.log("Updating the fucking nodes!")
         await StorageService.update(projectNode, 'node');
         console.log("Local<< (new node affects project) \n")
     }
@@ -180,7 +182,8 @@ export default class ControllerAT extends Controller {
         if (projectNode.urn == deletedActivityUrn) {
             await StorageService.delete(projectNode.id, 'node');
         } else {
-            projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)        /  vvvvvvvvvvvvvvvvvvvvvvvvvv
+            projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)
+
             await StorageService.update(projectNode, 'node');
             console.log("Local<< (new node affects project) \n")
         }
@@ -199,6 +202,16 @@ export default class ControllerAT extends Controller {
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
+    gatherUrns(childNodeModel, badStack = []){
+        badStack.push(childNodeModel.urn);
+       childNodeModel.children.forEach(child => {
+           this.gatherUrns(child, badStack)
+       })
+        return badStack;dddddddddddddd
+       }
+
+
+
     async eventNodesConnectedHandler(event) {            // only needed id's
         console.log("Local>> (local nodes joined - eventNodesConnectedHandler) ")
 
@@ -210,13 +223,29 @@ export default class ControllerAT extends Controller {
         let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
         let childNodeModel =  this.fetchProject(childNodeId)
 
-        let updatedActivity = new Activity(parentNodeModel.activity)
-        updatedActivity.addChild(childNodeModel.urn)
-        event.detail.activity = updatedActivity;
+
+
+       // let updatedActivity = new Activity(parentNodeModel.activity)  // replaced by following two line.
+       // updatedActivity.addChild(childNodeModel.urn)
+       // event.detail.activity = updatedActivity;
+
+        let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
+        event.detail.activity = parentNodeModel.activity;
+
+        // Note: Normally, adding a child to an activity invokes a new child creation.  However,
+        // in this case, there is already a child to 'adopt'.
+        // options: clone child, attach it to parent and delete the original (keeps others in sync)
+        // option2: attach child, then delete project number and hope that doesnt affect the kid
+        let losingProjectId = childNodeModel.project;
+
+        parentNodeModel.addChild(childNodeModel);
+        childNodeModel.project = parentNodeModel.project;
+        childNodeModel.parent = parentNodeModel;
+        childNodeModel.childId = childId;
 
         await this.eventActivityUpdatedHandler(event)
 
-        event.detail.nodeModelId = childNodeModel.id;
+        event.detail.nodeModelId = losingProjectId
         await this.eventProjectDeletedHandler(event)
     }
     
@@ -294,6 +323,12 @@ export default class ControllerAT extends Controller {
         })
     }
 
+    eventRedrawNodesHandler() {
+        this._playground.redrawSelectedNodes();
+
+    }
+
+
     /**   -- Activity Library --  */
 
     async eventProjectCreatedHandler(event) {
@@ -363,11 +398,9 @@ export default class ControllerAT extends Controller {
 
    //     let originalActivity = this.fetchActivity(updatedActivity.urn)
         this.cacheActivity(updatedActivity)
-        for (let viewedNode of this._playground.viewedNodes )  {
-            if (viewedNode.isActivityInProject(updatedActivityUrn)) {
-                console.log("2")
-                console.log(JSON.stringify(updatedActivity))
-                await this.responseActivityUpdatedHandler(updatedActivity, viewedNode)
+        for (let viewedProject of this._playground.viewedProjects )  {
+            if (viewedProject.isActivityInProject(updatedActivityUrn)) {
+                await this.responseActivityUpdatedHandler(updatedActivity, viewedProject)
             }
         }
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
@@ -397,6 +430,9 @@ export default class ControllerAT extends Controller {
         this.repopulateParent(createdNodeModel)
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id)
+        createdNodeModel.leafCount = createdNodeModel.leafcounter()
+        console.log("MY LEAFER")
+        console.log(createdNodeModel.leafCount )
         this.cacheProject(createdNodeModel)
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
         this._playground.addNodeModel(createdNodeModel)
@@ -406,28 +442,21 @@ export default class ControllerAT extends Controller {
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log("((COMMAND INCOMING) >>  Node Updated " + updatedNodeModel.urn + " / " + updatedNodeId)
 
-        //let projectNode = this.fetchProject(updatedNodeModel.project)
-       // console.log(JSON.stringify(projectNode))
         this.repopulateParent(updatedNodeModel)
         this.repopulateActivity(updatedNodeModel)
         this.repopulateProject(updatedNodeModel,updatedNodeModel.project)
-        console.log("THE FINAL AFTER ADDING --- THIS IS GOING TO CACHE AFTER REPOPULATES")
-        console.log(JSON.stringify(updatedNodeModel))
-        console.log(updatedNodeModel)
+        updatedNodeModel.leafCount = updatedNodeModel.leafcounter()
+        console.log("MY LEAFER")
+        console.log(updatedNodeModel.leafCount )
         this.cacheProject(updatedNodeModel)
 
         this._playground._rebuildNodeView(updatedNodeModel)
         this._projectLibrary.updateItem(updatedNodeModel)
         this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
-        console.log("HALFWAY ---- ")
-        console.log(JSON.stringify(updatedNodeModel,null,3))
-            console.log(updatedNodeModel)
-        console.log("Where is activity annd parent?")
         // update playground
     }
 
     commandNodeDeletedHandler(deletedNodeId) {
-        console.log("((COMMAND INCOMING) >>  Node Deleted")
         this.uncacheProject(deletedNodeId)
         this._playground.deleteNodeModel(deletedNodeId)
         this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
