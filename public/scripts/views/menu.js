@@ -100,6 +100,15 @@ customElements.define('jag-menu', class extends HTMLElement {
             this.dispatchEvent(new CustomEvent("event-define-node"));
         }.bind(this));
 
+        const $import = document.createElement("span");
+        $import.id = "menu-import-data";
+        $import.classList.add("menu-item");
+        $import.innerText = "import\nJAG";
+        $centerLiDiv.appendChild($import);
+        $import.addEventListener('click', function (e) {
+            this.dispatchEvent(new CustomEvent("event-popup-importer"));
+        }.bind(this))
+
 
         //
         // The right section containing the IHMC logo

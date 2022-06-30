@@ -375,8 +375,10 @@ class Playground extends Popupable {
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
+        console.log("Clicked the background")
+        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
 
-        this.dispatchEvent(new CustomEvent('playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
+
         this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -522,23 +524,6 @@ class Playground extends Popupable {
     //     }
     // }
 
-    affectProjectView(updatedUrn) {             // Activity got updated - does it affect our projects?
-        //     for (let node of this._viewedProjectsMap.values()) { // Return events with affected Project ids and the URN
-        // Note: This is not looking at the view-level. Only at the data-level.  This seems accurate.
-        // Would have pushed up higher - but need to know which projects are in viewedProjectsMap (not available above)
-
-        this._viewedProjectsMap.forEach((value, key) => {
-            let node = value;
-            if (node.isActivityInProject(updatedUrn)) {
-                this.dispatchEvent(new CustomEvent('response-activity-updated', {
-                    detail: {
-                        projectId: node.id,
-                        activityUrn: updatedUrn
-                    }
-                })); // event-activity-created in playground uses node
-            }
-        })
-    }
 
     deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
         this._viewedProjectsMap.forEach((value, key) => {
@@ -742,6 +727,24 @@ class Playground extends Popupable {
     //     this._addActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded);
     // }
 
+
+    _eventImportJagHandler(e) {
+        console.log(e)
+        const $initiator = document.getElementById('menu-new');
+        this.popup({
+            content: Playground.NOTICE_PASTE_JAG,
+            trackEl: this,
+            inputs: {},//event: e},
+            highlights: [$initiator]
+        });
+    }
+
+
+
+
+
+
+
 }
 
 // END OF CLASS
@@ -794,6 +797,7 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: activityConstruct}) {
+                console.log(activityConstruct)
                 this.dispatchEvent(new CustomEvent('event-activity-created', {
                     bubbles: true,
                     composed: true,
@@ -835,6 +839,46 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this ru
         {text: "No", color: "white", bgColor: "black"}
     ]
 });
+
+// why cant this go inside scope.? Does anyone else need it?
+Playground.NOTICE_PASTE_JAG = Popupable._createPopup({
+    type: Playground.POPUP_TYPES.NOTICE,
+    name: "Paste in JAG json description",
+    description: "Paste from previously saved JAG",
+    properties: [
+        {
+            name: 'description', label: 'Description', type: 'textarea',
+            options: async function () {
+                let paramMap = new Map();
+                paramMap.set('cols', 24);
+                paramMap.set('rows', 4);
+                return paramMap;
+            }
+        }
+    ],
+    actions: [
+        {
+            text: "Create", color: "black", bgColor: "red",
+            action: async function ({inputs: {}, outputs: json}) {
+console.log(json)
+                this.dispatchEvent(new CustomEvent('event-import-jag', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {result: json.description}
+                }));
+            }
+        },
+        {text: "Cancel", color: "white", bgColor: "black"}
+    ]
+    // display: ?
+    // fallback: ?
+    // skip: ?
+});
+
+
+
+
+
 
 
 Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;

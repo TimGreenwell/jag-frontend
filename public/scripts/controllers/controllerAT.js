@@ -13,12 +13,13 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
-import Activity from "../models/activity.js";
+//const fs = require('fs')
 
 export default class ControllerAT extends Controller {
 
     constructor() {
         super();
+
         this._menu = null;
         this._activityLibrary = null;
         this._projectLibrary = null;
@@ -82,36 +83,67 @@ export default class ControllerAT extends Controller {
     }
 
     initializeHandlers() {
-        this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));
-        this._playground.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));                        // Any structural or property change at Activity level
-        this._playground.addEventListener('response-activity-updated', this.responseActivityUpdatedHandler.bind(this));   // is changed activity in active viewing
-        this._playground.addEventListener('response-activity-deleted', this.responseActivityDeletedHandler.bind(this));   // is changed activity in active viewing
-        this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));        // mouse click event
-        this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));               // mouse movement event
-        this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));                      // onEdgeFinalized between nodes (user connects)
+        this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
+        this._playground.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
+        this._playground.addEventListener('response-activity-deleted', this.responseActivityDeletedHandler.bind(this));     // is changed activity in active viewing
+        this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
+        this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
+        this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
+        this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));
+        this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this)); // onEdgeFinalized between nodes (user connects)
         // this._playground.addEventListener('event-project-removed', this.eventProjectRemovedHandler.bind(this));
         // this._playground.addEventListener('event-node-disconnected', this.eventNodeDisconnectedHandler.bind(this));
 
-        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));
-        this._properties.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));  // activity property updates
-        this._properties.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));  // activity property updates
-        //    this._properties.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));  // @todo - button to add
-        //    this._properties.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));  // @todo - button to add
+        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));console.log("WTF?")
+        this._properties.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
+        this._properties.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
+        //    this._properties.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));     // @todo - button to add
+        //    this._properties.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));       // @todo - button to add
 
-        this._menu.addEventListener('event-add-activity', this.eventAddActivityHandler.bind(this));
-        this._menu.addEventListener('event-clear-playground', this.eventClearPlaygroundHandler.bind(this));  // Event: 'event-clear-playground' - menu item selected to clear nodes from playground
-        this._menu.addEventListener('event-define-node', this.eventDefineNodeHandler.bind(this));
-        this._menu.addEventListener('event-redraw-nodes',this.eventRedrawNodesHandler.bind(this));
+        this._menu.addEventListener('event-add-activity', this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
+        this._menu.addEventListener('event-clear-playground', this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
+        this._menu.addEventListener('event-define-node', this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
+        this._menu.addEventListener('event-redraw-nodes',this.eventRedrawNodesHandler.bind(this));                          // menu item: auto-place nodes @todo still not pretty
+        this._menu.addEventListener('event-popup-importer',this.eventPopupImporterHandler.bind(this));                          // menu item:
 
-        this._activityLibrary.addEventListener('event-project-created', this.eventProjectCreatedHandler.bind(this));
-        this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));
-        this._activityLibrary.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));
+        this._activityLibrary.addEventListener('event-project-created', this.eventProjectCreatedHandler.bind(this));        // Clicking Activity instantiates Node in playground
+        this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
+        this._activityLibrary.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));        // 'Lock' Activity (restrict deletes and renames)
 
-        this._projectLibrary.addEventListener('event-project-selected', this.eventProjectSelectedHandler.bind(this));   // list item chosen
-        this._projectLibrary.addEventListener('event-project-deleted', this.eventProjectDeletedHandler.bind(this));             // delete icon
-        this._projectLibrary.addEventListener('event-project-locked', this.eventProjectLockedHandler.bind(this));             // lock icon
+        this._projectLibrary.addEventListener('event-project-selected', this.eventProjectSelectedHandler.bind(this));      // Project chosen for playground
+        this._projectLibrary.addEventListener('event-project-deleted', this.eventProjectDeletedHandler.bind(this));        // Permanently delete a project
+        this._projectLibrary.addEventListener('event-project-locked', this.eventProjectLockedHandler.bind(this));          // 'Lock' Project (restrict deletes and updates)
 
     }
+
+    eventPopupImporterHandler(){
+        // This just calls the popup to get the data.  That result calls:eventImportJagHandler
+        this._playground._eventImportJagHandler();
+    }
+
+    async eventImportJagHandler(event){
+        let json = event.detail.result
+
+
+
+        console.log(json)
+        let jsonDescriptor = JSON.parse(json)
+        console.log(jsonDescriptor)
+
+        let projectNode = await NodeModel.fromJSON(jsonDescriptor)
+        console.log(projectNode)
+
+        let descendantUrns =  this.gatherDescendentUrns(projectNode);
+
+        console.log("piggies")
+        console.log(descendantUrns)
+
+
+
+
+
+    }
+
 
     /**
      *                                   Upward Event Handlers
@@ -129,7 +161,7 @@ export default class ControllerAT extends Controller {
      *    -- playground --
      * eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
      * eventActivityUpdatedHandler       (C)  - structure change
-     * responseActivityUpdatedHandler         - does command to change particular Activity change our Playground view
+     //* responseActivityUpdatedHandler         - does command to change particular Activity change our Playground view
      * responseActivityDeletedHandler         - does command to delete particular Activity change our Playground view
      * eventNodesSelectedHandler              - user selects Node in graph
      * eventNodeRepositionedHandler           - user repositioned Node
@@ -162,20 +194,17 @@ export default class ControllerAT extends Controller {
 
     /**   -- Playground --  */
 
+    // eventActivityCreatedHandler --- hosted by common controller.
 
-    async responseActivityUpdatedHandler( updatedActivity, projectNode) {
-        // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
-        // Need to update and save the adjusted Projects
-        projectNode = this.updateTreeWithActivityChange(    updatedActivity, projectNode);
-        console.log("Updating the fucking nodes!")
-        await StorageService.update(projectNode, 'node');
-        console.log("Local<< (new node affects project) \n")
-    }
+    // eventActivityUpdatedHandler --- hosted by common controller.
+
+
 
     async responseActivityDeletedHandler(event) {
         // The Event: Playground just alerted that an activity JAG has been deleted.
         // This can have a major impact on other JAGs and thus significantly affect the drawn nodes.
         // Need to update and save the adjusted Projects
+        console.log("Local>> (deleted Activity affects Viewed Project) \n")
         let projectId = event.detail.projectModelId; // could have used id
         let projectNode = this.fetchProject(projectId)
         let deletedActivityUrn = event.detail.activityUrn;
@@ -183,9 +212,7 @@ export default class ControllerAT extends Controller {
             await StorageService.delete(projectNode.id, 'node');
         } else {
             projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)
-
             await StorageService.update(projectNode, 'node');
-            console.log("Local<< (new node affects project) \n")
         }
     }
 
@@ -202,36 +229,6 @@ export default class ControllerAT extends Controller {
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
-    gatherDescendentUrns(childNodeModel, workStack = []){
-        workStack.push(childNodeModel.urn);
-       childNodeModel.children.forEach(child => {
-           this.gatherDescendentUrns(child, workStack)
-       })
-        return workStack;
-       }
-
-    gatherAncestorUrns(projectModelId, parentModelId) {
-        let urnStack = []
-        let projectNode = this.fetchProject(projectModelId)
-        do {
-            let checkNode = projectNode.findChildById(parentModelId)
-            urnStack.push(checkNode.urn)
-            parentModelId = checkNode.parentId;
-        } while (parentModelId != undefined);
-        return urnStack;
-    }
-
-
-       loopDetection(projectModel, parentNodeModel, childNodeModel){
-        let descendentStack = this.gatherDescendentUrns(childNodeModel);
-        let ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id)
-        let intersection =  descendentStack.filter(x => ancestorStack.includes(x));
-        if (intersection.length > 0) {
-            return true}
-        else {return false}
-       }
-
-
     async eventNodesConnectedHandler(event) {            // only needed id's
         console.log("Local>> (local nodes joined - eventNodesConnectedHandler) ")
 
@@ -243,16 +240,10 @@ export default class ControllerAT extends Controller {
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
         let childNodeModel = this.fetchProject(childNodeId)
 
-
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert("That node join results in an infinite loop problem - please consider an alternative design")
             this._playground._rebuildNodeView(projectModel)
         } else {
-
-            // let updatedActivity = new Activity(parentNodeModel.activity)  // replaced by following two line.
-            // updatedActivity.addChild(childNodeModel.urn)
-            // event.detail.activity = updatedActivity;
-
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
             event.detail.activity = parentNodeModel.activity;
 
@@ -268,14 +259,23 @@ export default class ControllerAT extends Controller {
             childNodeModel.childId = childId;
 
             await this.eventActivityUpdatedHandler(event)
-
             event.detail.nodeModelId = losingProjectId
             await this.eventProjectDeletedHandler(event)
         }
     }
+
+    eventPlaygroundClickedHandler() {
+        console.log("handler THIS")
+        this._properties.handleSelectionUnselected()
+
+
+    }
+
     
     /**   -- Properties --  */
 
+    // eventUrnChangedHandler --- hosted by common controller.
+    // eventActivityUpdatedHandler --- hosted by common controller.
 
     async eventNodeUpdatedHandler(event) {
         let projectNode = null;
@@ -418,19 +418,23 @@ export default class ControllerAT extends Controller {
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         console.log("((COMMAND INCOMING)) >> Activity Updated")
-    //    this._playground.affectProjectView(updatedActivityUrn);         // Determine if JAG change affects our graph
-                                                                        // @TODO maybe use new playground.viewedNodes to skip a step. (things work - so low priority)
-
-   //     let originalActivity = this.fetchActivity(updatedActivity.urn)
         this.cacheActivity(updatedActivity)
         for (let viewedProject of this._playground.viewedProjects )  {
             if (viewedProject.isActivityInProject(updatedActivityUrn)) {
-                await this.responseActivityUpdatedHandler(updatedActivity, viewedProject)
+                console.log("Local>> (new Activity affects Viewed Project) \n")
+                let updatedProject = this.updateTreeWithActivityChange(    updatedActivity, viewedProject);
+                await StorageService.update(updatedProject, 'node');
             }
         }
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
+
+
+
+
+
+
 
     commandActivityDeletedHandler(deletedActivityUrn) {
         console.log("((COMMAND INCOMING)) >> Activity Deleted")
@@ -500,7 +504,34 @@ export default class ControllerAT extends Controller {
 
 
 
+    gatherDescendentUrns(childNodeModel, workStack = []){   // need this in nodes
+        workStack.push(childNodeModel.urn);
+        childNodeModel.children.forEach(child => {
+            this.gatherDescendentUrns(child, workStack)
+        })
+        return workStack;
+    }
 
+    gatherAncestorUrns(projectModelId, parentModelId) {
+        let urnStack = []
+        let projectNode = this.fetchProject(projectModelId)
+        do {
+            let checkNode = projectNode.findChildById(parentModelId)
+            urnStack.push(checkNode.urn)
+            parentModelId = checkNode.parentId;
+        } while (parentModelId != undefined);
+        return urnStack;
+    }
+
+
+    loopDetection(projectModel, parentNodeModel, childNodeModel){
+        let descendentStack = this.gatherDescendentUrns(childNodeModel);
+        let ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id)
+        let intersection =  descendentStack.filter(x => ancestorStack.includes(x));
+        if (intersection.length > 0) {
+            return true}
+        else {return false}
+    }
 
     async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
         console.log("Local>> (local nodes disjoined) ")

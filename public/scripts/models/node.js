@@ -32,6 +32,8 @@ export default class Node extends EventTarget {
 		            subscribes = new Map(),        // still unknown implementation (hopefully observer)
 		            alerts = new Map(),
 					children = new Array()} = {}) {
+
+
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
 		this._childId = childId;                       // child differentiating id
@@ -232,6 +234,15 @@ export default class Node extends EventTarget {
 	/////////////////////////////////// Supporting Functions  ////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
+	gatherDescendentUrns(childNodeModel = this, workStack = []){   // need this in nodes
+		workStack.push(childNodeModel.urn);
+		childNodeModel.children.forEach(child => {
+			this.gatherDescendentUrns(child, workStack)
+		})
+		return workStack;
+	}
+
+
 
 	activitiesInProject(urn){    // return array of nodes matching urn
 		let matchStack = [];
@@ -423,7 +434,11 @@ export default class Node extends EventTarget {
 			x: this._x,
 			y: this._y,
 			contextualName: this._contextualName,
-			contextualDescription: this._contextualDescription
+			contextualDescription: this._contextualDescription,
+			subscribes: [],
+			alerts: [],
+			parentId: this._parentId
+
 		};
 		let childStack = [];
 		for (let child of this._children) {
@@ -432,6 +447,7 @@ export default class Node extends EventTarget {
 		json.children = childStack
 		return json;
 	}
+
 
 	static async fromJSON(json) {
 		let childStack = [];

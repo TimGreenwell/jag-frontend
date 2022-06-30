@@ -171,3 +171,29 @@ Random - also from playground.. look through and wipe.
  */
  ************************************************************************************************************************
  ************************************************************************************************************************
+ /*
+ * Replaced by having playground provide the viewed project instead of this alert.
+ *
+ *    affectProjectView(updatedUrn) {             // Activity got updated - does it affect our projects?
+ *        //     for (let node of this._viewedProjectsMap.values()) { // Return events with affected Project ids and the URN
+ *        // Note: This is not looking at the view-level. Only at the data-level.  This seems accurate.
+ *        // Would have pushed up higher - but need to know which projects are in viewedProjectsMap (not available above)
+ *
+ *        this._viewedProjectsMap.forEach((value, key) => {
+ *            let node = value;
+ *            if (node.isActivityInProject(updatedUrn)) {
+ *                this.dispatchEvent(new CustomEvent('response-activity-updated', {
+ *                    detail: {
+ *                        projectId: node.id,
+ *                        activityUrn: updatedUrn
+ *                    }
+ *                })); // event-activity-created in playground uses node
+ *            }
+ *        })
+ *    }
+ *
+ *
+ *
+ *
+ *
+ */

@@ -11,16 +11,16 @@ import Activity from '../models/activity.js';
 import FormUtils from '../utils/forms.js';
 import Validator from "../utils/validation.js";
 
+
+
 customElements.define('jag-properties', class extends HTMLElement {
 
     constructor() {
         super();
-
         this._nodeModel = undefined;
         this._consumesMap = new Map();
         this._producesMap = new Map();
         this._initUI();
-
 
         this._boundUpdate = function (e) {
             const property = e.detail.property;
@@ -39,6 +39,9 @@ customElements.define('jag-properties', class extends HTMLElement {
 
             this._updateProperties();
         }.bind(this);
+
+        this._$nameInput.value = "kk";
+
     }
 
 
@@ -61,37 +64,37 @@ customElements.define('jag-properties', class extends HTMLElement {
         leafNode_el.appendChild(this._leafNode);
 
         const name_el = FormUtils.createPropertyElement('name-property', 'Name');
-        this._nameInput = FormUtils.createTextInput('name-property');
-        this._nameInput.setAttribute("placeholder", "display name");
-        this._nameInput.setAttribute("tabIndex", "0");
-        this._nameInput.className = "direct-property";
-        name_el.appendChild(this._nameInput);
+        this._$nameInput = FormUtils.createTextInput('name-property');
+        this._$nameInput.setAttribute("placeholder", "display name");
+        this._$nameInput.setAttribute("tabIndex", "0");
+        this._$nameInput.className = "direct-property";
+        name_el.appendChild(this._$nameInput);
 
         const urn_el = FormUtils.createPropertyElement('urn-property', 'URN');
-        this._urnInput = FormUtils.createTextInput('urn-property');
-        this._urnInput.setAttribute("tabIndex", "1");
-        this._urnInput.className = "direct-property";
-        urn_el.appendChild(this._urnInput);
+        this._$urnInput = FormUtils.createTextInput('urn-property');
+        this._$urnInput.setAttribute("tabIndex", "1");
+        this._$urnInput.className = "direct-property";
+        urn_el.appendChild(this._$urnInput);
 
         const desc_el = FormUtils.createPropertyElement('desc-property', 'Description');
-        this._descInput = document.createElement('textarea');
-        this._descInput.setAttribute('id', 'desc-property');
-        this._descInput.setAttribute('width', '100%');
-        this._descInput.setAttribute('rows', '3');
-        this._descInput.setAttribute("placeholder", "Enter your description of node here...");
-        this._descInput.setAttribute("tabIndex", "2");
-        this._descInput.className = "direct-property";
-        desc_el.appendChild(this._descInput);
+        this._$descInput = document.createElement('textarea');
+        this._$descInput.setAttribute('id', 'desc-property');
+        this._$descInput.setAttribute('width', '100%');
+        this._$descInput.setAttribute('rows', '3');
+        this._$descInput.setAttribute("placeholder", "Enter your description of node here...");
+        this._$descInput.setAttribute("tabIndex", "2");
+        this._$descInput.className = "direct-property";
+        desc_el.appendChild(this._$descInput);
 
         const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
-        this._name_ctxInput = FormUtils.createTextInput('name-ctx-property');
-        this._name_ctxInput.className = "contextual";
-        name_ctx_el.appendChild(this._name_ctxInput);
+        this._$name_ctxInput = FormUtils.createTextInput('name-ctx-property');
+        this._$name_ctxInput.className = "contextual";
+        name_ctx_el.appendChild(this._$name_ctxInput);
 
         const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
-        this._desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
-        this._desc_ctxInput.className = "contextual";
-        desc_ctx_el.appendChild(this._desc_ctxInput);
+        this._$desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
+        this._$desc_ctxInput.className = "contextual";
+        desc_ctx_el.appendChild(this._$desc_ctxInput);
 
         let executionOptions = []
         let execution = Activity.EXECUTION;
@@ -100,9 +103,9 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
 
         const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
-        this._executionSelect = FormUtils.createSelect('execution-property', executionOptions);
-        this._executionSelect.className = 'direct-property';
-        execution_el.appendChild(this._executionSelect);
+        this._$executionSelect = FormUtils.createSelect('execution-property', executionOptions);
+        this._$executionSelect.className = 'direct-property';
+        execution_el.appendChild(this._$executionSelect);
 
 
         let operatorOptions = []
@@ -112,9 +115,9 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
 
         const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');             //@TODO Map this from original structure
-        this._operatorSelect = FormUtils.createSelect('operator-property',  operatorOptions) ;
-        this._operatorSelect.className = 'direct-property';
-        operator_el.appendChild(this._operatorSelect);
+        this._$operatorSelect = FormUtils.createSelect('operator-property',  operatorOptions) ;
+        this._$operatorSelect.className = 'direct-property';
+        operator_el.appendChild(this._$operatorSelect);
 
         // Create inputs area
         const inputs_el = FormUtils.createPropertyElement('inputs-property', 'Inputs');
@@ -159,7 +162,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         // Create export area
         const export_el = FormUtils.createEmptyInputContainer('export');
         this._export = document.createElement('button');
-        this._export.innerHTML = 'export';
+        this._export.innerHTML = 'Export to File';
         export_el.appendChild(this._export);
 
         this._enableProperties(false);
@@ -179,85 +182,73 @@ customElements.define('jag-properties', class extends HTMLElement {
         this.appendChild(annotations_el);
         this.appendChild(export_el);
 
-        // this._urnInput.addEventListener('keyup', e => {
-        // 	this._urnInput.classList.toggle('edited', this._urnInput.value != this._nodeModel.activity.urn);
+        // this._$urnInput.addEventListener('keyup', e => {
+        // 	this._$urnInput.classList.toggle('edited', this._$urnInput.value != this._nodeModel.activity.urn);
         // });
 
-        this._nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
-        this._nameInput.addEventListener('keyup', this._handleNameEdit.bind(this));
+        this._$nameInput.addEventListener('blur', this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._$nameInput.addEventListener('keyup', this._handleNameEdit.bind(this));
 
-        this._urnInput.addEventListener('focusout', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
-        this._urnInput.addEventListener('keyup', this._handleUrnEdit.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._$urnInput.addEventListener('focusout', this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._$urnInput.addEventListener('keyup', this._handleUrnEdit.bind(this));  // pass urn change to ControllerIA.updateURN
 
-        this._descInput.addEventListener('blur', this._handleDescriptionChange.bind(this));
-        this._descInput.addEventListener('keyup', this._handleDescriptionEdit.bind(this));
+        this._$descInput.addEventListener('blur', this._handleDescriptionChange.bind(this));
+        this._$descInput.addEventListener('keyup', this._handleDescriptionEdit.bind(this));
 
-        this._name_ctxInput.addEventListener('blur', this._handleContextualNameChange.bind(this));
-        this._desc_ctxInput.addEventListener('blur', this._handleContextualDescriptionChange.bind(this));
+        this._$name_ctxInput.addEventListener('blur', this._handleContextualNameChange.bind(this));
+        this._$desc_ctxInput.addEventListener('blur', this._handleContextualDescriptionChange.bind(this));
 
-        this._executionSelect.addEventListener('change', this._handleExecutionChange.bind(this));
-        this._operatorSelect.addEventListener('change', this._handleOperatorChange.bind(this));
+        this._$executionSelect.addEventListener('change', this._handleExecutionChange.bind(this));
+        this._$operatorSelect.addEventListener('change', this._handleOperatorChange.bind(this));
 
         this._export.addEventListener('click', this._handleExportClick.bind(this));
 
     }
 
-
+    _handleNameChange(e) {
+        e.stopImmediatePropagation();
+        if (this._nodeModel) {
+            this._nodeModel.activity.name = this._$nameInput.value;
+            this.dispatchEvent(new CustomEvent('event-activity-updated', {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._nodeModel.activity}
+            }));
+        }
+    }
     _handleNameEdit(e) {
         if (e.key == "Enter") {
             e.preventDefault();
             let inputs = this.querySelectorAll("input:enabled, textarea");
-
-            //current position in 'form'
-            const currentPosition = this._nameInput.tabIndex;
+            const currentPosition = this._$nameInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
             } else {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._nodeModel.activity.name = "[" + this._descInput.value + "]";
+            this._nodeModel.activity.name = "[" + this._$nameInput.value + "]";
         }
     }
-
-
-    _handleDescriptionEdit(e) {
-        if (e.key == "Enter") {
-            e.preventDefault();
-            let inputs = this.querySelectorAll("input:enabled, textarea");
-            //current position in 'form'
-            const currentPosition = this._descInput.tabIndex;
-            if (currentPosition < inputs.length - 1) {
-                inputs.item(currentPosition + 1).focus();
-            } else {
-                inputs.item(currentPosition).blur();
-            }
-        } else {
-            this._nodeModel.activity.description = "[" + this._descInput.value + "]";
-        }
-    }
-
 
     _handleURNChange(e) {
-        if (this._nodeModel.activity.urn != this._urnInput.value) {
-            // if (this.urnElementEntry !== this.nodeModel.urn) {           // if urn was changed
-            if (Validator.isValidUrn(this._urnInput.value)) {        // && entered urn is valid...
+        if (this._nodeModel.activity.urn != this._$urnInput.value) {
+            if (Validator.isValidUrn(this._$urnInput.value)) {        // && entered urn is valid...
                 this.dispatchEvent(new CustomEvent('event-urn-changed', {
                     bubbles: true,
                     composed: true,
-                    detail: {originalUrn: this._urnInput.value, newUrn: this._nodeModel.activity.urn}
+                    detail: {originalUrn: this._$urnInput.value, newUrn: this._nodeModel.activity.urn}
                 }));
             }
         }
     }
-
     _handleUrnEdit(e) {
         if (e.key == "Enter") {
             e.preventDefault();
             let inputs = this.querySelectorAll("input:enabled, textarea");
-            this._urnInput.classList.toggle('edited', this._urnInput.value != this._nodeModel.activity.urn);
+            this._$urnInput.classList.toggle('edited', this._$urnInput.value != this._nodeModel.activity.urn);
             //current position in 'form'
-            const currentPosition = this._urnInput.tabIndex;
+            const currentPosition = this._$urnInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
             } else {
@@ -266,24 +257,11 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-    // _handleDescriptionChange(e) {
-    //     if (this._nodeModel.activity) {
-    //         if (this._nodeModel.activity.description != this._descInput.value) {
-    //             this._nodeModel.activity.description = this._descInput.value;
-    //             this.dispatchEvent(new CustomEvent('event-activity-updated', {
-    //                 bubbles: true,
-    //                 composed: true,
-    //                 detail: {activity: this._nodeModel.activity}
-    //             }));
-    //         }
-    //     }
-    // }
-
 
     _handleDescriptionChange(e) {
         e.stopImmediatePropagation();
-        if (this._nodeModel) {
-            this._nodeModel.activity.description = this._descInput.value;
+        if ((this._nodeModel) && (this._nodeModel.activity)){
+            this._nodeModel.activity.description = this._$descInput.value;
             this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
@@ -291,37 +269,36 @@ customElements.define('jag-properties', class extends HTMLElement {
             }));
         }
     }
-
-
-    _handleNameChange(e) {
-        e.stopImmediatePropagation();
-        if (this._nodeModel) {
-            this._nodeModel.activity.name = this._nameInput.value;
-            this.dispatchEvent(new CustomEvent('event-activity-updated', {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._nodeModel.activity}
-            }));
+    _handleDescriptionEdit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            let inputs = this.querySelectorAll("input:enabled, textarea");
+            const currentPosition = this._$descInput.tabIndex;
+            if (currentPosition < inputs.length - 1) {
+                inputs.item(currentPosition + 1).focus();
+            } else {
+                inputs.item(currentPosition).blur();
+            }
+        } else {
+            this._nodeModel.activity.description = "[" + this._$descInput.value + "]";
         }
     }
-
 
     _handleContextualNameChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            this._nodeModel.contextualName = this._name_ctxInput.value;
-            this.dispatchEvent(new CustomEvent('event-node-updated', {   // This might not be a progectNode. Needs to be added to right spot upstairs.
+            this._nodeModel.contextualName = this._$name_ctxInput.value;
+            this.dispatchEvent(new CustomEvent('event-node-updated', {   //
                 bubbles: true,
                 composed: true,
                 detail: {nodeModel: this._nodeModel}
             }));
         }
     }
-
     _handleContextualDescriptionChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            this._nodeModel.contextualDescription = this._desc_ctxInput.value;
+            this._nodeModel.contextualDescription = this._$desc_ctxInput.value;
             this.dispatchEvent(new CustomEvent('event-node-updated', {
                 bubbles: true,
                 composed: true,
@@ -333,7 +310,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            this._nodeModel.activity.execution = this._executionSelect.value;
+            this._nodeModel.activity.execution = this._$executionSelect.value;
             this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
@@ -345,7 +322,7 @@ customElements.define('jag-properties', class extends HTMLElement {
     _handleOperatorChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            this._nodeModel.activity.operator = this._operatorSelect.value;
+            this._nodeModel.activity.operator = this._$operatorSelect.value;
             this.dispatchEvent(new CustomEvent('event-activity-updated', {
                 bubbles: true,
                 composed: true,
@@ -354,24 +331,34 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-    _handleExportClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._nodeModel;
-        const json = JSON.stringify(node.toJSON());
-        const a = document.createElement('a');
-        const data = `data:application/json,${encodeURI(json)}`;
-        a.href = data;
-        a.download = `${node.activity.name}.json`;
-        a.click();
-    }
+
+     _handleExportClick(e) {
+         e.stopImmediatePropagation();
+         const node = this._nodeModel;
+
+
+
+         const json = JSON.stringify(node.toJSON(), null, 4);
+         const a = document.createElement('a');
+         const data = `data:application/json,${encodeURI(json)}`;
+         a.href = data;
+         a.download = `${node.activity.name}.json`;
+         a.click();
+     }
+
+
 
 
     handleStorageUpdate(newActivity, newActivityUrn) {
-        if (newActivityUrn == this._urnInput) {
+        if (newActivityUrn == this._$urnInput) {
             this._nodeModel.activity = newActivity;
             this._updateProperties();
         }
     }
+
+
+
+
 
     // Called by user selecting one or more Nodes in the playground
 
@@ -395,242 +382,67 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-
-    _updateProperties() {
-
-        this._urnInput.value = this._nodeModel.activity.urn
-        this._nameInput.value = this._nodeModel.activity.name;
-        this._executionSelect.value = this._nodeModel.activity.execution.name || 'none';
-        this._operatorSelect.value = this._nodeModel.activity.operator || 'none';
-        this._descInput.value = this._nodeModel.activity.description;
-        this._name_ctxInput.value = this._nodeModel.contextualName;
-        this._desc_ctxInput.value = this._nodeModel.contextualDescription;
-        this._enableProperties(true);
-        this._updateIO();
-        this._updateAnnotations();
-        for (const input of this.querySelectorAll("input")) {
-            input.title = input.value;
-            input.onchange = () => input.title = input.value;
-        }
+    handleSelectionUnselected(){
+        this._clearProperties();
+        this._enableProperties(false);
     }
 
-    _addInput(e) {
-        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
-            const name = window.prompt('Input name');
-            if (name === null)
-                return;
 
-            const type = window.prompt('Input type');
-            if (type === null)
-                return;
-
-            const input = {
-                name: name,
-                type: type
-            };
-
-            this._nodeModel.activity.addInput(input);
-        }
+    //@TODO Add a button to properties to delete the Jag. --
+    //@TODO Same for 'publish'/'lock'
+    deleteActivity(deadActivity) {
+        this._nodeModel.activity = undefined;
+        this._$urnInput.classList.toggle("edited", false);
+        this._clearProperties();
+        this.dispatchEvent(new CustomEvent('event-activity-deleted', {
+            detail: {urn: deadActivity.urn}
+        }));
     }
 
-    _addOutput(e) {
-        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
-            const name = window.prompt('Output name');
-            if (name === null)
-                return;
+    async cloneActivity(sourceActivity, newURN) {
+        const description = sourceActivity.toJSON();
+        description.urn = newURN;
+        const newActivity = Activity.fromJSON(description);
+        // Update activity references.
+        this._node.activity = newActivity; //?
+        this._nodeModel.activity = newActivity;
+        this.dispatchEvent(new CustomEvent('event-activity-created', {
+            bubbles: true,
+            composed: true,
+            detail: {activityConstruct: newActivity}
+        }));    // event-activity-created in playground uses components
+        //await StorageService.create(newActivity, 'activity');
+        // Remove unsaved box shadow on URN property input.
+        this._$urnInput.classList.toggle("edited", false);
 
-            const type = window.prompt('Output type');
-            if (type === null)
-                return;
-
-            const output = {
-                name: name,
-                type: type
-            };
-
-            this._nodeModel.activity.addOutput(output);
-        }
+        //  WHEN GOOD -->             this._nodeModel.activity.url = this._$urnInput.value;
     }
 
-    _addAnnotation(id) {
-        const name = window.prompt('Annotation name');
-        if (name === null)
-            return;
 
-        let value = window.prompt('Annotation value');
-        if (value === null)
-            return;
 
-        let parsed = false;
 
-        if (value == "true" || value == "false") {
-            const boolean_type = window.confirm('Treat this value as a boolean?');
-            if (boolean_type) value = (value == "true");
-            parsed = boolean_type;
-        } else if (value.match(/^(\+|\-)?[0-9]+(\.[0-9]+)?$/)) {
 
-            if (value.match(/^(\+|\-)?[0-9]+$/)) {
-                const integer_type = window.confirm('Treat this value as an integer?');
-                if (integer_type) value = parseInt(value);
-                parsed = integer_type;
-            }
 
-            if (!parsed) {
-                const float_type = window.confirm('Treat this value as a floating-point number?');
-                if (float_type) value = parseFloat(value);
-                parsed = float_type;
-            }
-        }
 
-        if (!parsed) {
-            const json_type = window.confirm('Treat this value as an abstract JSON structure?');
 
-            if (json_type) {
-                try {
-                    value = JSON.parse(value);
-                } catch {
-                    window.alert('Failed to parse value: please try again with a valid JSON string.');
-                    return;
-                }
-            }
-        }
 
-        this._nodeModel.activity.addAnnotation(id, name, value);
-    }
 
-    _addInputElement(id, input) {
-        const input_el = FormUtils.createPropertyElement(id, input);
 
-        this._inputs.appendChild(input_el);
-    }
 
-    _addOutputElement(id, output) {
-        const output_el = FormUtils.createPropertyElement(id, output);
 
-        this._outputs.appendChild(output_el);
-    }
+    /**
+     * _updateIO
+     *  _clearIO - Wipes the Consume/Input and Produce/Output and Binding -- both map and displays
+     *  _addInput
+     *  _addOutput
+     *  _addInputElement
+     *  _addOutputElement
+     *  _createBindingInputs
+     *  _createBindingOutputs
+     *  _findInputOptions
+     *  _findOutputOptions
+     */
 
-    _createBindingInputs(options) {
-        const select_el = FormUtils.createSelect('binding-inputs', options.map(node => {
-            let label = node.id;
-            if (node.id != 'this') {
-                label = node.nodeModel.activity.name;
-                const order = this._nodeModel.activity.getOrderForId(node.id);
-                if (order != 0) {
-                    label += ` (${order})`;
-                }
-            }
-
-            return [{
-                label: label,
-                options: node.inputs.map((input) => {
-                    return {
-                        text: input.name,
-                        value: `${node.id}:${input.name}`
-                    }
-                })
-            }];
-        }).reduce((c, n) => c.concat(n)));
-
-        select_el.onfocus = function (e) {
-            this._previous_value = this.value;
-        }.bind(select_el);
-
-        return select_el;
-    }
-
-    _createBindingOutputs(options) {
-        const select_el = FormUtils.createSelect('binding-outputs', options.map(node => {
-
-            let label = node.id;
-            if (node.id != 'this' && node.id != 'any') {
-                label = node.nodeModel.activity.name;
-                const order = this._nodeModel.activity.getOrderForId(node.id);
-                if (order != 0) {
-                    label += ` (${order})`;
-                }
-            }
-
-            return [{
-                label: label,
-                options: node.outputs.map((output) => {
-                    return {
-                        text: output.name,
-                        value: `${node.id}:${output.name}`
-                    }
-                })
-            }];
-        }).reduce((c, n) => c.concat(n)));
-
-        select_el.onfocus = function (e) {
-            this._previous_value = this.value;
-        }.bind(select_el);
-
-        return select_el;
-    }
-
-    _findInputOptions() {
-        // We can "input" a value into any of this node's children's inputs.
-        const options = this._nodeModel.activity.getAvailableInputs();
-
-        // We can also "input" a value to this node's outputs.
-        if (this._nodeModel.activity.outputs.length > 0) {
-            options.push({
-                id: 'this',
-                activity: this._nodeModel.activity,
-                inputs: this._nodeModel.activity.outputs
-            });
-        }
-
-        return options;
-    }
-
-    _findOutputOptions() {
-        const options = [];
-
-        // We can "output" a value from this node's inputs.
-        if (this._nodeModel.activity.inputs.length > 0) {
-            options.push({
-                id: 'this',
-                activity: this._nodeModel.activity,
-                outputs: this._nodeModel.activity.inputs
-            });
-        }
-
-        // We can also "output" a value from this node's children's outputs.
-        this._nodeModel.activity.getAvailableOutputs().forEach(node => options.push(node));
-
-        // We can also opt to accept any output with a matching name based on all available outputs.
-        if (this._nodeModel.activity.inputs.length > 0 && this._nodeModel.activity.children.length > 0) {
-            const output_properties = new Set();
-            const any_outputs = new Set();
-
-            for (const input of this._nodeModel.activity.inputs) {
-                output_properties.add(input.name);
-            }
-
-            for (const child of this._nodeModel.activity.children) {
-                if (child.nodeModel.activity) {
-                    child.nodeModel.activity.outputs.forEach((child_output) => {
-                        if (output_properties.has(child_output.name)) {
-                            any_outputs.add(child_output);
-                        } else {
-                            output_properties.add(child_output.name);
-                        }
-                    });
-                }
-            }
-
-            if (any_outputs.size > 0) {
-                options.push({
-                    id: 'any',
-                    outputs: Array.from(any_outputs)
-                });
-            }
-        }
-
-        return options;
-    }
 
     _updateIO() {
         this._clearIO();
@@ -845,6 +657,202 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
+    _clearIO() {
+        this._consumesMap.clear();
+        while (this._inputs.firstChild) {
+            this._inputs.removeChild(this._inputs.firstChild);
+        }
+
+        this._producesMap.clear();
+        while (this._outputs.firstChild) {
+            this._outputs.removeChild(this._outputs.firstChild);
+        }
+
+        while (this._bindings.firstChild) {
+            this._bindings.removeChild(this._bindings.firstChild);
+        }
+    }
+
+    _addInput(e) {
+        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
+            const name = window.prompt('Input name');
+            if (name === null)
+                return;
+
+            const type = window.prompt('Input type');
+            if (type === null)
+                return;
+
+            const input = {
+                name: name,
+                type: type
+            };
+
+            this._nodeModel.activity.addInput(input);
+        }
+    }
+
+    _addOutput(e) {
+        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
+            const name = window.prompt('Output name');
+            if (name === null)
+                return;
+
+            const type = window.prompt('Output type');
+            if (type === null)
+                return;
+
+            const output = {
+                name: name,
+                type: type
+            };
+
+            this._nodeModel.activity.addOutput(output);
+        }
+    }
+
+    _addInputElement(id, input) {
+        const input_el = FormUtils.createPropertyElement(id, input);
+
+        this._inputs.appendChild(input_el);
+    }
+
+    _addOutputElement(id, output) {
+        const output_el = FormUtils.createPropertyElement(id, output);
+
+        this._outputs.appendChild(output_el);
+    }
+
+    _createBindingInputs(options) {
+        const select_el = FormUtils.createSelect('binding-inputs', options.map(node => {
+            let label = node.id;
+            if (node.id != 'this') {
+                label = node.nodeModel.activity.name;
+                const order = this._nodeModel.activity.getOrderForId(node.id);
+                if (order != 0) {
+                    label += ` (${order})`;
+                }
+            }
+
+            return [{
+                label: label,
+                options: node.inputs.map((input) => {
+                    return {
+                        text: input.name,
+                        value: `${node.id}:${input.name}`
+                    }
+                })
+            }];
+        }).reduce((c, n) => c.concat(n)));
+
+        select_el.onfocus = function (e) {
+            this._previous_value = this.value;
+        }.bind(select_el);
+
+        return select_el;
+    }
+
+    _createBindingOutputs(options) {
+        const select_el = FormUtils.createSelect('binding-outputs', options.map(node => {
+
+            let label = node.id;
+            if (node.id != 'this' && node.id != 'any') {
+                label = node.nodeModel.activity.name;
+                const order = this._nodeModel.activity.getOrderForId(node.id);
+                if (order != 0) {
+                    label += ` (${order})`;
+                }
+            }
+
+            return [{
+                label: label,
+                options: node.outputs.map((output) => {
+                    return {
+                        text: output.name,
+                        value: `${node.id}:${output.name}`
+                    }
+                })
+            }];
+        }).reduce((c, n) => c.concat(n)));
+
+        select_el.onfocus = function (e) {
+            this._previous_value = this.value;
+        }.bind(select_el);
+
+        return select_el;
+    }
+
+    _findInputOptions() {
+        // We can "input" a value into any of this node's children's inputs.
+        const options = this._nodeModel.activity.getAvailableInputs();
+
+        // We can also "input" a value to this node's outputs.
+        if (this._nodeModel.activity.outputs.length > 0) {
+            options.push({
+                id: 'this',
+                activity: this._nodeModel.activity,
+                inputs: this._nodeModel.activity.outputs
+            });
+        }
+
+        return options;
+    }
+
+    _findOutputOptions() {
+        const options = [];
+
+        // We can "output" a value from this node's inputs.
+        if (this._nodeModel.activity.inputs.length > 0) {
+            options.push({
+                id: 'this',
+                activity: this._nodeModel.activity,
+                outputs: this._nodeModel.activity.inputs
+            });
+        }
+
+        // We can also "output" a value from this node's children's outputs.
+        this._nodeModel.activity.getAvailableOutputs().forEach(node => options.push(node));
+
+        // We can also opt to accept any output with a matching name based on all available outputs.
+        if (this._nodeModel.activity.inputs.length > 0 && this._nodeModel.activity.children.length > 0) {
+            const output_properties = new Set();
+            const any_outputs = new Set();
+
+            for (const input of this._nodeModel.activity.inputs) {
+                output_properties.add(input.name);
+            }
+
+            for (const child of this._nodeModel.activity.children) {
+                if (child.nodeModel.activity) {
+                    child.nodeModel.activity.outputs.forEach((child_output) => {
+                        if (output_properties.has(child_output.name)) {
+                            any_outputs.add(child_output);
+                        } else {
+                            output_properties.add(child_output.name);
+                        }
+                    });
+                }
+            }
+
+            if (any_outputs.size > 0) {
+                options.push({
+                    id: 'any',
+                    outputs: Array.from(any_outputs)
+                });
+            }
+        }
+
+        return options;
+    }
+
+
+
+    /**
+     *  _updateAnnotations - @TODO understand this
+     *  _addAnnotation
+     *  _clearAnnotations
+     */
+
     _updateAnnotations() {
         this._clearAnnotations();
         if (this._nodeModel.children.length > 0) {
@@ -938,47 +946,126 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-    //@TODO Add a button to properties to delete the Jag. --
-    //@TODO Same for 'publish'/'lock'
-    deleteActivity(deadActivity) {
-        this._nodeModel.activity = undefined;
-        this._urnInput.classList.toggle("edited", false);
-        this._clearProperties();
-        this.dispatchEvent(new CustomEvent('event-activity-deleted', {
-            detail: {urn: deadActivity.urn}
-        }));
+    _addAnnotation(id) {
+        const name = window.prompt('Annotation name');
+        if (name === null)
+            return;
+
+        let value = window.prompt('Annotation value');
+        if (value === null)
+            return;
+
+        let parsed = false;
+
+        if (value == "true" || value == "false") {
+            const boolean_type = window.confirm('Treat this value as a boolean?');
+            if (boolean_type) value = (value == "true");
+            parsed = boolean_type;
+        } else if (value.match(/^(\+|\-)?[0-9]+(\.[0-9]+)?$/)) {
+
+            if (value.match(/^(\+|\-)?[0-9]+$/)) {
+                const integer_type = window.confirm('Treat this value as an integer?');
+                if (integer_type) value = parseInt(value);
+                parsed = integer_type;
+            }
+
+            if (!parsed) {
+                const float_type = window.confirm('Treat this value as a floating-point number?');
+                if (float_type) value = parseFloat(value);
+                parsed = float_type;
+            }
+        }
+
+        if (!parsed) {
+            const json_type = window.confirm('Treat this value as an abstract JSON structure?');
+
+            if (json_type) {
+                try {
+                    value = JSON.parse(value);
+                } catch {
+                    window.alert('Failed to parse value: please try again with a valid JSON string.');
+                    return;
+                }
+            }
+        }
+
+        this._nodeModel.activity.addAnnotation(id, name, value);
     }
 
-    async cloneActivity(sourceActivity, newURN) {
-        const description = sourceActivity.toJSON();
-        description.urn = newURN;
-        const newActivity = Activity.fromJSON(description);
-        // Update activity references.
-        this._node.activity = newActivity; //?
-        this._nodeModel.activity = newActivity;
-        this.dispatchEvent(new CustomEvent('event-activity-created', {
-            bubbles: true,
-            composed: true,
-            detail: {activityConstruct: newActivity}
-        }));    // event-activity-created in playground uses components
-        //await StorageService.create(newActivity, 'activity');
-        // Remove unsaved box shadow on URN property input.
-        this._urnInput.classList.toggle("edited", false);
-
-        //  WHEN GOOD -->             this._nodeModel.activity.url = this._urnInput.value;
+    _clearAnnotations() {
+        while (this._annotations.firstChild) {
+            this._annotations.removeChild(this._annotations.firstChild);
+        }
     }
 
+    /**
+     *  _updateProperties
+     *  _enableProperties - Property entries are turned on and flags displayed
+     *  _clearProperties
+     */
+
+
+    _updateProperties() {
+
+        this._$urnInput.value = this._nodeModel.activity.urn
+        this._$nameInput.value = this._nodeModel.activity.name;
+        this._$executionSelect.value = this._nodeModel.activity.execution.name || 'none';
+        this._$operatorSelect.value = this._nodeModel.activity.operator || 'none';
+        this._$descInput.value = this._nodeModel.activity.description;
+        this._$name_ctxInput.value = this._nodeModel.contextualName;
+        this._$desc_ctxInput.value = this._nodeModel.contextualDescription;
+        this._enableProperties(true);
+        this._updateIO();
+        this._updateAnnotations();
+        for (const input of this.querySelectorAll("input")) {
+            input.title = input.value;
+            input.onchange = () => input.title = input.value;
+        }
+    }
+
+    _enableProperties(enabled) {
+        this._$urnInput.disabled = !enabled;
+        this._$nameInput.disabled = !enabled;
+        this._$descInput.disabled = !enabled;
+        this._$name_ctxInput.disabled = !enabled;
+        this._$desc_ctxInput.disabled = !enabled;
+        this._$executionSelect.disabled = !enabled;
+        this._$operatorSelect.disabled = !enabled;
+
+        this._consumesMap.disabled = !enabled;
+        this._producesMap.disabled = !enabled;
+        this._export.disabled = !enabled;
+
+        if (this._nodeModel && (enabled)) {
+            if (this._nodeModel.parent) {
+            this._childOf.innerHTML = `As child of ${this._nodeModel.parent.urn}`;}
+            this.classList.toggle('root-node', false);
+            this._$name_ctxInput.disabled = false;
+            this._$desc_ctxInput.disabled = false;
+        } else {
+            this.classList.toggle('root-node', true);
+            this._$name_ctxInput.disabled = true;
+            this._$desc_ctxInput.disabled = true;
+        }
+
+        if (enabled || (!enabled && !this._nodeModel)) {
+            this.classList.toggle('defined-model', true);   // This block useful?
+            this.classList.toggle('non-leaf-node', true);
+        }
+
+    }
 
     _clearProperties() {
-        this._urnInput.value = '';
-        this._nameInput.value = '';
-        this._descInput.value = '';
-        this._name_ctxInput.value = '';
-        this._desc_ctxInput.value = '';
-        this._executionSelect.value = Activity.EXECUTION.NONE.name;
-        this._operatorSelect.value = Activity.OPERATOR.NONE.name;
+        console.log("clearing properties")
+        this._$urnInput.value = '';
+        this._$nameInput.value = '';
+        this._$descInput.value = '';
+        this._$name_ctxInput.value = '';
+        this._$desc_ctxInput.value = '';
+        this._$executionSelect.value = Activity.EXECUTION.NONE.name;
+        this._$operatorSelect.value = Activity.OPERATOR.NONE.name;
 
-        this._urnInput.classList.toggle("edited", false);
+        this._$urnInput.classList.toggle("edited", false);
 
         this._clearIO();
         this._clearAnnotations();
@@ -988,64 +1075,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         }
     }
 
-    _clearIO() {
-        this._consumesMap.clear();
-        while (this._inputs.firstChild) {
-            this._inputs.removeChild(this._inputs.firstChild);
-        }
 
-        this._producesMap.clear();
-        while (this._outputs.firstChild) {
-            this._outputs.removeChild(this._outputs.firstChild);
-        }
 
-        while (this._bindings.firstChild) {
-            this._bindings.removeChild(this._bindings.firstChild);
-        }
-    }
-
-    _clearAnnotations() {
-        while (this._annotations.firstChild) {
-            this._annotations.removeChild(this._annotations.firstChild);
-        }
-    }
-
-    _enableProperties(enabled) {
-        this._urnInput.disabled = !enabled;
-        this._nameInput.disabled = !enabled;
-        this._descInput.disabled = !enabled;
-        this._name_ctxInput.disabled = !enabled;
-        this._desc_ctxInput.disabled = !enabled;
-        this._executionSelect.disabled = !enabled;
-        this._operatorSelect.disabled = !enabled;
-
-        this._consumesMap.disabled = !enabled;
-        this._producesMap.disabled = !enabled;
-        this._export.disabled = !enabled;
-
-        if (this._nodeModel && (enabled)) {//} || this._nodeModel.activity instanceof UndefinedJAG)) {
-            this._childOf.innerHTML = `As child of ${this._nodeModel.parent}`;
-            this.classList.toggle('root-node', false);
-            this._name_ctxInput.disabled = false;
-            this._desc_ctxInput.disabled = false;
-        } else {
-            this.classList.toggle('root-node', true);
-            this._name_ctxInput.disabled = true;
-            this._desc_ctxInput.disabled = true;
-        }
-
-        if (enabled || (!enabled && !this._nodeModel)) {
-            this.classList.toggle('defined-model', true);   // This block useful?
-            this.classList.toggle('non-leaf-node', true);
-        }
-        // else if (this._nodeModel.activity instanceof UndefinedJAG) {
-        //     this.classList.toggle('defined-model', false);
-        //
-        //     if (this._node.getParent()) {
-        //         this.classList.toggle('non-leaf-node', false);
-        //     }
-        // }
-    }
 });
 
 export default customElements.get('jag-properties');

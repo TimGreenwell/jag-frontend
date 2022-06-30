@@ -49,8 +49,8 @@ export default class SharedObservable extends SharedService {
      * be deserialized here before further propagation.
      */
     static async handleReceiveMessage(message) {
-        console.log("             {} - - - Message received from web worker -- posting to all subscribers");
-        console.log("             {} - - - (" + message.data.id + ") / (" + message.data.topic + ")\n")
+        console.log("{@} Message received from web worker -- posting to all subscribers");
+        console.log("{@} (" + message.data.id + ") / (" + message.data.topic + ")\n")
         let schema = message.data.schema;
         let topic = message.data.topic;
         let description = message.data.description;
@@ -60,9 +60,7 @@ export default class SharedObservable extends SharedService {
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }
-        console.log("              --- Notifying subscribers: " + topic)
         this.notifySubscribers(topic, dataModel, id);
-        console.log("              --- Subscribers notified: " + topic)
         console.log(" ********  END OF GLOBAL HANDLER: (" + topic + ")  **********\n\n")
     }
 
@@ -70,11 +68,9 @@ export default class SharedObservable extends SharedService {
      * Local action to be propagated across SharedWorker for remote listeners.
      */
     static confirmStorageChange({topic, schema, id, description}) {
-        console.log("       {POSTING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+        console.log(" {SHARING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
         this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
     }
-
-
 
     /**
      * Final distribution of processed remote/local event messages
@@ -94,7 +90,7 @@ export default class SharedObservable extends SharedService {
             });
         }
         else
-        {console.log("            {No subscribers to : " + topic)}
+        {console.log("{No subscribers to : " + topic)}
     }
 }
 

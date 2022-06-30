@@ -73,7 +73,7 @@ export default class IndexedDBUtils {
 			});
 
 			request.addEventListener('error', event => {
-				reject(new Error(`Error while retreiving value from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
+				reject(new Error(`Error while retrieving value from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
 			});
 		});
 	}
