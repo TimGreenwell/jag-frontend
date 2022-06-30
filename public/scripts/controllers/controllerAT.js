@@ -13,7 +13,7 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
-import Activity from "../models/activity";
+import Activity from "../models/activity.js";
 //const fs = require('fs')
 
 export default class ControllerAT extends Controller {
@@ -131,11 +131,12 @@ export default class ControllerAT extends Controller {
         console.log(descendantUrns)
         let neededActivities = descendantUrns.map(urn => {
             let activityModel = this.fetchActivity(urn)
-            let activityJson = JSON.stringify(activityModel.toJSON(), null, 2)
+            let activityJson = JSON.stringify(activityModel.toJSON())
             return activityJson
         })
+        console.log(neededActivities)
         const jagJson = JSON.stringify(node.toJSON(), null, 4);
-        let fileData = `{activities : ${neededActivities}, jag : ${jagJson}`
+        let fileData = `{"activities" : [${neededActivities}], "jag" : ${jagJson}}`
 
         const a = document.createElement('a');
         const data = `data:application/json,${encodeURI(fileData)}`;
@@ -155,12 +156,17 @@ export default class ControllerAT extends Controller {
         let activities = jsonDescriptor.activities;
         let jag = jsonDescriptor.jag;
 
-        activities.forEach(activity =>{
+        for (let activity of activities) {
+       //     console.log(activity)
             let activityModel = Activity.fromJSON(activity)
-            console.log(activityModel)
-        })
+     //       console.log(activityModel)
+            let fullActivityModel = new Activity(activityModel)
+     //       console.log(fullActivityModel)
+            await StorageService.create(fullActivityModel,"activity")
+         }
 
         let projectNode = await NodeModel.fromJSON(jag)
+        await StorageService.create(projectNode,"node")
         console.log(projectNode)
 
         console.log("piggies")
