@@ -446,10 +446,8 @@ class Playground extends Popupable {
     }
 
     _redrawNodes(currentNodeModel, x = null, y = null) {
-console.log(this.clientHeight)
         let margin = 25
         if (x && y) {
-            console.log("doing it mysekf")
             currentNodeModel.x = x;
             currentNodeModel.y = y;
         }
@@ -461,20 +459,17 @@ console.log(this.clientHeight)
         // assume all children have same height as the parent.
         const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
         const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
-        console.log("going to nedd a height of : " + preferred_height + "  " + currentNodeModel.leafCount + " * " +  ($newViewNode.clientHeight + margin))
         let y_offset = currentNodeModel.y - (preferred_height / 2);
-        console.log(" starting offset = " + y_offset)
+
 
         currentNodeModel.children.forEach((child) => {
             const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
             y_offset = y_offset + (local_preferred_size)
-             console.log("child y offset = " + y_offset)
        //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
             let $childViewNode = this._redrawNodes(child, x_offset, y_offset)                          // first build child
 
        //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
        //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-            console.log("Leaf count of " + child.urn + " is " + child.leafCount)
         })
 
         return $newViewNode

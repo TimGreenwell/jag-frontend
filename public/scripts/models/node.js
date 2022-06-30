@@ -306,7 +306,6 @@ export default class Node extends EventTarget {
 			this.children.forEach(child => {
 				child.leafCount = child.leafcounter()
 				sum = sum + child.leafCount
-				console.log(sum)
 			    })
 			this.leafCount = sum
 			return sum}
@@ -350,13 +349,37 @@ export default class Node extends EventTarget {
 		}
 	}
 
-	removeChildById(id){
+	removeChildById(id){  // this wont work - not recursing
 		this.children.forEach(child => {
 			if (child.id == id) {
 				this.removeChild(child);
 			}
 		})
 	}
+
+	findChildById(id) {
+		let workStack = []
+		workStack.push(this);
+		while (workStack.length > 0) {
+			let checkNode = workStack.pop();
+			if (checkNode.id == id) {
+				return checkNode
+			}
+			else {
+				checkNode.children.forEach(child => {
+					workStack.push(child)
+				})
+			}
+		}
+
+
+		this.children.forEach(child => {
+			if (child.id == id) {
+				return child;
+			}
+		})
+	}
+
 	getLastChild(){
 		return this._children[this.children.length - 1]
 	}

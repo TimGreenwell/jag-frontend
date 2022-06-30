@@ -13,7 +13,6 @@ import Activity from "../models/activity.js";
 import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
-import UserPrefs from "../utils/user-prefs.js";
 import CellModel from "../models/cell.js";
 
 export default class Controller extends EventTarget {

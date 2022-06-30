@@ -202,14 +202,34 @@ export default class ControllerAT extends Controller {
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
-    gatherUrns(childNodeModel, badStack = []){
-        badStack.push(childNodeModel.urn);
+    gatherDescendentUrns(childNodeModel, workStack = []){
+        workStack.push(childNodeModel.urn);
        childNodeModel.children.forEach(child => {
-           this.gatherUrns(child, badStack)
+           this.gatherDescendentUrns(child, workStack)
        })
-        return badStack;dddddddddddddd
+        return workStack;
        }
 
+    gatherAncestorUrns(projectModelId, parentModelId) {
+        let urnStack = []
+        let projectNode = this.fetchProject(projectModelId)
+        do {
+            let checkNode = projectNode.findChildById(parentModelId)
+            urnStack.push(checkNode.urn)
+            parentModelId = checkNode.parentId;
+        } while (parentModelId != undefined);
+        return urnStack;
+    }
+
+
+       loopDetection(projectModel, parentNodeModel, childNodeModel){
+        let descendentStack = this.gatherDescendentUrns(childNodeModel);
+        let ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id)
+        let intersection =  descendentStack.filter(x => ancestorStack.includes(x));
+        if (intersection.length > 0) {
+            return true}
+        else {return false}
+       }
 
 
     async eventNodesConnectedHandler(event) {            // only needed id's
@@ -220,33 +240,38 @@ export default class ControllerAT extends Controller {
         let childNodeId = event.detail.childNodeId
 
         let projectModel = this.fetchProject(projectNodeId)
-        let parentNodeModel =  this.searchTreeForId(projectModel,parentNodeId)
-        let childNodeModel =  this.fetchProject(childNodeId)
+        let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
+        let childNodeModel = this.fetchProject(childNodeId)
 
 
+        if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
+            alert("That node join results in an infinite loop problem - please consider an alternative design")
+            this._playground._rebuildNodeView(projectModel)
+        } else {
 
-       // let updatedActivity = new Activity(parentNodeModel.activity)  // replaced by following two line.
-       // updatedActivity.addChild(childNodeModel.urn)
-       // event.detail.activity = updatedActivity;
+            // let updatedActivity = new Activity(parentNodeModel.activity)  // replaced by following two line.
+            // updatedActivity.addChild(childNodeModel.urn)
+            // event.detail.activity = updatedActivity;
 
-        let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
-        event.detail.activity = parentNodeModel.activity;
+            let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
+            event.detail.activity = parentNodeModel.activity;
 
-        // Note: Normally, adding a child to an activity invokes a new child creation.  However,
-        // in this case, there is already a child to 'adopt'.
-        // options: clone child, attach it to parent and delete the original (keeps others in sync)
-        // option2: attach child, then delete project number and hope that doesnt affect the kid
-        let losingProjectId = childNodeModel.project;
+            // Note: Normally, adding a child to an activity invokes a new child creation.  However,
+            // in this case, there is already a child to 'adopt'.
+            // options: clone child, attach it to parent and delete the original (keeps others in sync)
+            // option2: attach child, then delete project number and hope that doesnt affect the kid
+            let losingProjectId = childNodeModel.project;
 
-        parentNodeModel.addChild(childNodeModel);
-        childNodeModel.project = parentNodeModel.project;
-        childNodeModel.parent = parentNodeModel;
-        childNodeModel.childId = childId;
+            parentNodeModel.addChild(childNodeModel);
+            childNodeModel.project = parentNodeModel.project;
+            childNodeModel.parent = parentNodeModel;
+            childNodeModel.childId = childId;
 
-        await this.eventActivityUpdatedHandler(event)
+            await this.eventActivityUpdatedHandler(event)
 
-        event.detail.nodeModelId = losingProjectId
-        await this.eventProjectDeletedHandler(event)
+            event.detail.nodeModelId = losingProjectId
+            await this.eventProjectDeletedHandler(event)
+        }
     }
     
     /**   -- Properties --  */
@@ -431,8 +456,6 @@ export default class ControllerAT extends Controller {
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id)
         createdNodeModel.leafCount = createdNodeModel.leafcounter()
-        console.log("MY LEAFER")
-        console.log(createdNodeModel.leafCount )
         this.cacheProject(createdNodeModel)
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
         this._playground.addNodeModel(createdNodeModel)
@@ -446,8 +469,6 @@ export default class ControllerAT extends Controller {
         this.repopulateActivity(updatedNodeModel)
         this.repopulateProject(updatedNodeModel,updatedNodeModel.project)
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter()
-        console.log("MY LEAFER")
-        console.log(updatedNodeModel.leafCount )
         this.cacheProject(updatedNodeModel)
 
         this._playground._rebuildNodeView(updatedNodeModel)
