@@ -335,15 +335,13 @@ customElements.define('jag-properties', class extends HTMLElement {
      _handleExportClick(e) {
          e.stopImmediatePropagation();
          const node = this._nodeModel;
+         this.dispatchEvent(new CustomEvent('event-export-jag', {
+             bubbles: true,
+             composed: true,
+             detail: {node: this._nodeModel}
+         }));
 
 
-
-         const json = JSON.stringify(node.toJSON(), null, 4);
-         const a = document.createElement('a');
-         const data = `data:application/json,${encodeURI(json)}`;
-         a.href = data;
-         a.download = `${node.activity.name}.json`;
-         a.click();
      }
 
 

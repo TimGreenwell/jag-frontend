@@ -13,6 +13,7 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
+import Activity from "../models/activity";
 //const fs = require('fs')
 
 export default class ControllerAT extends Controller {
@@ -94,9 +95,10 @@ export default class ControllerAT extends Controller {
         // this._playground.addEventListener('event-project-removed', this.eventProjectRemovedHandler.bind(this));
         // this._playground.addEventListener('event-node-disconnected', this.eventNodeDisconnectedHandler.bind(this));
 
-        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));console.log("WTF?")
+        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));
         this._properties.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
         this._properties.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
+        this._properties.addEventListener('event-export-jag', this.eventExportJagHandler.bind(this));
         //    this._properties.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));     // @todo - button to add
         //    this._properties.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));       // @todo - button to add
 
@@ -121,27 +123,47 @@ export default class ControllerAT extends Controller {
         this._playground._eventImportJagHandler();
     }
 
+
+    eventExportJagHandler(event){
+        let node = event.detail.node
+        let descendantUrns =  this.gatherDescendentUrns(node);
+        console.log("")
+        console.log(descendantUrns)
+        let neededActivities = descendantUrns.map(urn => {
+            let activityModel = this.fetchActivity(urn)
+            let activityJson = JSON.stringify(activityModel.toJSON(), null, 2)
+            return activityJson
+        })
+        const jagJson = JSON.stringify(node.toJSON(), null, 4);
+        let fileData = `{activities : ${neededActivities}, jag : ${jagJson}`
+
+        const a = document.createElement('a');
+        const data = `data:application/json,${encodeURI(fileData)}`;
+        a.href = data;
+        a.download = `${node.activity.name}.json`;
+        a.click();
+    }
+
+
+
     async eventImportJagHandler(event){
         let json = event.detail.result
-
-
-
         console.log(json)
         let jsonDescriptor = JSON.parse(json)
         console.log(jsonDescriptor)
 
-        let projectNode = await NodeModel.fromJSON(jsonDescriptor)
+        let activities = jsonDescriptor.activities;
+        let jag = jsonDescriptor.jag;
+
+        activities.forEach(activity =>{
+            let activityModel = Activity.fromJSON(activity)
+            console.log(activityModel)
+        })
+
+        let projectNode = await NodeModel.fromJSON(jag)
         console.log(projectNode)
 
-        let descendantUrns =  this.gatherDescendentUrns(projectNode);
-
         console.log("piggies")
-        console.log(descendantUrns)
-
-
-
-
-
     }
 
 
