@@ -266,15 +266,15 @@ export default class Activity extends EventTarget {
     }
 
 
-    removeChild(child) {
+    removeChild(childId) {
         for (let index in this._children) {
-            if (this._children[index].id === child.id) {
+            if (this._children[index].id === childId) {
                 this._children.splice(index, 1);
                 break;
             }
         }
         for (let binding of this._bindings)
-            if (binding.provider.id == child.id || binding.consumer.id == child.id)
+            if (binding.provider.id == childId || binding.consumer.id == childId)
                 this.removeBinding(binding);
     }
 

@@ -217,53 +217,18 @@ export default class ControllerIA extends Controller{
         // thought below is to surgically add it to the node tree - if its in the currentAnalysis
         // until then, just drawing the whole thing.
         if (this._currentAnalysis) {
-            // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
+            // @TODO CHECK IF THIS URN IS RELEVANT TO THE ANALYSIS
             this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
             this._iaTable.displayAnalysis(this._currentAnalysis);
         }
     }
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
-        // 1) update the jag listing
-        // 2) @todo if urn is in current Analysis.nodeModel tree
-        //         then a) redraw or b) surgery
-        let originalActivity = this.fetchActivity(updatedActivityUrn);  // Get original data from cache
-        this.cacheActivity(updatedActivity);                       // Update cache to current
-
-        let kidsToAdd = this.getChildrenToAdd(originalActivity, updatedActivity);
-        let kidsToRemove = this.getChildrenToRemove(originalActivity, updatedActivity);
-
-        if (kidsToAdd.length > 0) {
-            if (this._currentAnalysis) {
-                // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.displayAnalysis(this._currentAnalysis);
-            }
-        }
-
-        if (kidsToRemove.length > 0) {
-            if (this._currentAnalysis) {
-                // @TODO CHECK IF THIS URN IS RELEVENT TO THE ANALYSIS
-                this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-                this._iaTable.displayAnalysis(this._currentAnalysis);
-            }
-        }
-        if ((kidsToRemove.length == 0) && (kidsToAdd.length == 0)) {
-            this._iaTable.displayAnalysis(this._currentAnalysis);
-        }
+        // Be nicer to separate structure change (needing redraw) and property change (probably not needing redraw)
+        // However - can't think of a way to infer what change was made without more effort than a redraw.
+        this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
+        this._iaTable.displayAnalysis(this._currentAnalysis);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     async commandActivityDeletedHandler(deletedActivityUrn) {
         if (this._iaTable.analysisModel) {

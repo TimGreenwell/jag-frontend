@@ -128,6 +128,8 @@ export default class Controller extends EventTarget {
         console.log("Local>> (local activity updated) ")
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
         updatedActivity.modifiedDate = Date.now();
+        console.log("Here...")
+        console.log(updatedActivity)
         await StorageService.update(updatedActivity, 'activity');
         console.log("Local<< (local activity updated) \n")
     }
@@ -187,8 +189,10 @@ export default class Controller extends EventTarget {
      *                Support Methods
      */
 
-   // originalActivity, changedActivity, projectNode
-    updateTreeWithActivityChange(         changedActivity, projectNode) {
+   // changedActivity, projectNode
+    updateTreeWithActivityChange(changedActivity, projectNode) {
+        console.log(changedActivity)
+        console.log(projectNode)
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
@@ -203,8 +207,9 @@ export default class Controller extends EventTarget {
                 })
                 let validNodeChildren = changedActivity.children;
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
+                console.log(kidsToAdd)
                 let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-
+                console.log(kidsToRemove)
                 kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
@@ -219,10 +224,9 @@ export default class Controller extends EventTarget {
                 kidsToRemove.forEach(child => {
                     let childNodeModel = this.searchTreeForChildId(projectNode, child.id)    //currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
-                    // childNodeModel.parent = null;
-                    // childNodeModel.childId = null;
-                    // this.repopulateProject(childNodeModel, childNodeModel.id)
-                    // orphanedRootStack.push(childNodeModel);
+                    orphanedRootStack.push(childNodeModel);
+
+
                 })
 
             }
@@ -230,12 +234,14 @@ export default class Controller extends EventTarget {
                 nodeStack.push(child);
             }
         }
-        for (let rootNode of orphanedRootStack) {
-            if (this.projectMap.has(rootNode.id)) {
-                console.log("Orphans =(should not happen)")
-            } else {
-                console.log("Orphans ")
-            }
+        for (let orphanedRootNode of orphanedRootStack) {
+            // Assigning orphans to a separate tree.
+            // Save the tree to keep it, or don't to have it disappear.
+            console.log("orphan")
+            console.log(orphanedRootNode)
+            orphanedRootNode.parent = orphanedRootNode.id;
+            orphanedRootNode.childId = null;
+            this.repopulateProject(orphanedRootNode, orphanedRootNode.id)
         }
         return projectNode;
         console.log("Local<< (new node affects project) \n")
@@ -299,23 +305,11 @@ export default class Controller extends EventTarget {
     }
 
     getChildrenToAdd(existingKids, validKids) {                               //originalActivity, updatedActivity) {
-        // let validKids = updatedActivity.children.map(entry => {
-        //     return entry
-        // })
-        // let existingKids = originalActivity.children.map(entry => {
-        //     return entry
-        // });
         const returnValue = validKids.filter(validKid => !existingKids.find(existingKid => JSON.stringify(validKid) === JSON.stringify(existingKid)))
         return returnValue
     }
 
     getChildrenToRemove(existingKids, validKids) {                               //originalActivity, updatedActivity) {
-        // let validKids = updatedActivity.children.map(entry => {
-        //     return entry
-        // })
-        // let existingKids = originalActivity.children.map(entry => {
-        //     return entry
-        // });
         const returnValue = existingKids.filter(existingKid => !validKids.find(validKid => JSON.stringify(existingKid) === JSON.stringify(validKid)))
         return returnValue
     }

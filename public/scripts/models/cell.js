@@ -56,6 +56,15 @@ export default class Cell extends EventTarget {
 		this._children = childrenArray
 	}
 
+
+	get childId() {
+		return this._childId;
+	}
+
+	set childId(value) {
+		this._childId = value;
+	}
+
 	get urn() {
 		return this._urn;
 	}

@@ -133,6 +133,7 @@ class Playground extends Popupable {
         const edge = new EdgeElement(this._edgeContainerDiv);
         edge.setLeadActivityNode(origin);
         if (id) edge.setChildId(id);
+        edge.addEventListener('keydown', this.onKeyDown.bind(this));                     //mmmmmmmmmmmmmmmmm
         return edge;
     }
 
@@ -591,7 +592,8 @@ class Playground extends Popupable {
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-            if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
+    //        if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
+            if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeActivityNodeElementSet.delete(node);
@@ -608,9 +610,6 @@ class Playground extends Popupable {
             }
         }
     }
-
-
-
 
     addNodeModel(projectNodeModel){
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
@@ -677,7 +676,8 @@ class Playground extends Popupable {
                         })
                         parentActivity.children = remainingChildren
 
-
+                        console.log(`delete key just removed ${$node.nodeModel.activity} from ${parentActivity}`)
+                        console.log(`Updating ${parentActivity}`)
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {activity: parentActivity}
                         }));

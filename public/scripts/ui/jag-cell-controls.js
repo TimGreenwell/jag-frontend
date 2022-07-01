@@ -43,8 +43,10 @@ class JagCellControls extends HTMLElement {
 
 		this._removeButton.addEventListener('click', () => {
 			let parentCellActivity = this._cell.parent.activity
-			let id = this._cell.childId
-			parentCellActivity.removeChild(id)
+			console.log(parentCellActivity)
+			let childChildId = this._cell.childId
+			parentCellActivity.removeChild(childChildId)
+			console.log(parentCellActivity)
 			this.dispatchEvent(new CustomEvent('event-activity-updated',
 			{ bubbles: true,
 				composed: true,

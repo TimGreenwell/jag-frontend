@@ -86,7 +86,7 @@ export default class ControllerAT extends Controller {
     initializeHandlers() {
         this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
-        this._playground.addEventListener('response-activity-deleted', this.responseActivityDeletedHandler.bind(this));     // is changed activity in active viewing
+        //this._playground.addEventListener('response-activity-deleted', this.responseActivityDeletedHandler.bind(this));     // is changed activity in active viewing
         this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
         this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
         this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
@@ -228,21 +228,6 @@ export default class ControllerAT extends Controller {
 
 
 
-    async responseActivityDeletedHandler(event) {
-        // The Event: Playground just alerted that an activity JAG has been deleted.
-        // This can have a major impact on other JAGs and thus significantly affect the drawn nodes.
-        // Need to update and save the adjusted Projects
-        console.log("Local>> (deleted Activity affects Viewed Project) \n")
-        let projectId = event.detail.projectModelId; // could have used id
-        let projectNode = this.fetchProject(projectId)
-        let deletedActivityUrn = event.detail.activityUrn;
-        if (projectNode.urn == deletedActivityUrn) {
-            await StorageService.delete(projectNode.id, 'node');
-        } else {
-            projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)
-            await StorageService.update(projectNode, 'node');
-        }
-    }
 
     eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
@@ -306,10 +291,10 @@ export default class ControllerAT extends Controller {
     // eventActivityUpdatedHandler --- hosted by common controller.
 
     async eventNodeUpdatedHandler(event) {
+        // If the updated node (in event) is the project root, then StorageService the node.
+        // Otherwise, insert the node in the right place in the project and StorageService the project root.
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        // This might not be necessarily the projectNode that is needed by Storage.
-        // If its not the root, it needs to be inserted at the right place in the Project
         if (updatedNodeModel.id == updatedNodeModel.project) {
             projectNode = updatedNodeModel
         }
@@ -321,10 +306,12 @@ export default class ControllerAT extends Controller {
     }
 
     async eventActivityDeletedHandler(event) {
+        // Scan every activity to see if it contains a child which matches the deleted activity.
+        // If match found, remove that child from the parent and signal update on the parent.
         console.log("Local>> (jag deleted) ")
         const deadActivityUrn = event.detail.activityUrn;
         for (let [activityId, activity] of this._activityMap) {
-            if (activity.urn != deadActivityUrn) {
+      //      if (activity.urn != deadActivityUrn) {
                 let remainingChildren = activity.children.filter(kid => {
                     if (kid.urn != deadActivityUrn) {
                         return kid
@@ -334,7 +321,7 @@ export default class ControllerAT extends Controller {
                     activity.children = remainingChildren;
                     await StorageService.update(activity, 'activity');
                 }
-            }
+          //  }
         }
         await StorageService.delete(deadActivityUrn, 'activity');
         console.log("Local<< (jag deleted) \n")
@@ -447,8 +434,11 @@ export default class ControllerAT extends Controller {
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         console.log("((COMMAND INCOMING)) >> Activity Updated")
         this.cacheActivity(updatedActivity)
+        console.log("IS this activity in any viewed projects")
         for (let viewedProject of this._playground.viewedProjects )  {
+            console.log("checking views " + viewedProject.urn)
             if (viewedProject.isActivityInProject(updatedActivityUrn)) {
+                console.log("Found " + updatedActivityUrn)
                 console.log("Local>> (new Activity affects Viewed Project) \n")
                 let updatedProject = this.updateTreeWithActivityChange(    updatedActivity, viewedProject);
                 await StorageService.update(updatedProject, 'node');
@@ -459,17 +449,49 @@ export default class ControllerAT extends Controller {
     }
 
 
-
-
-
-
-
-    commandActivityDeletedHandler(deletedActivityUrn) {
+    async commandActivityDeletedHandler(deletedActivityUrn) {
+        // If the deleted Activity is the Project's root, then the Project is deleted.
+        // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
         console.log("((COMMAND INCOMING)) >> Activity Deleted")
+        let deletedActivity = this.fetchActivity(deletedActivityUrn)
         this.uncacheActivity(deletedActivityUrn)
-        this._playground.deleteActivity(deletedActivityUrn)
+        for (let viewedProject of this._playground.viewedProjects )  {
+            if (viewedProject.id == deletedActivityUrn) {
+                await StorageService.delete(viewedProject, 'node');
+            }
+            else {
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log('I dont think its possibel to get here')
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+                console.log("(((((((((((((((((())))))))))))))))))))))")
+            }
+        }
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn)
     }
+
+    // async responseActivityDeletedHandler(event) {
+    //     // The Event: Playground just alerted that an activity JAG has been deleted.
+    //     // This can have a major impact on other JAGs and thus significantly affect the drawn nodes.
+    //     // Need to update and save the adjusted Projects
+    //     console.log("Local>> (deleted Activity affects Viewed Project) \n")
+    //     let projectId = event.detail.projectModelId; // could have used id
+    //     let projectNode = this.fetchProject(projectId)
+    //     let deletedActivityUrn = event.detail.activityUrn;
+    //     if (projectNode.urn == deletedActivityUrn) {
+    //         await StorageService.delete(projectNode.id, 'node');
+    //     } else {
+    //         projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)
+    //         await StorageService.update(projectNode, 'node');
+    //     }
+    // }
+    //
+    //
+
 
     commandActivityClonedHandler(clonedActivity, clonedActivityUrn) {
         UserPrefs.setDefaultUrnPrefixFromUrn(clonedActivityUrn)
