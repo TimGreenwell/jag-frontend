@@ -112,8 +112,10 @@ export default class Controller extends EventTarget {
  */
 
 
-    async eventActivityCreatedHandler(event) {
-        console.log("Local>> (local activity created) ")
+async eventActivityCreatedHandler(event) {
+    console.log("Local>> (local activity created) ")
+    let activityConstruct = event.detail.activityConstruct;
+    if (!this.activityMap.has(activityConstruct.urn)) {
         const newActivity = new Activity(event.detail.activityConstruct);
         newActivity.createdDate = Date.now();
         if (InputValidator.isValidUrn(newActivity.urn)) {
@@ -121,8 +123,11 @@ export default class Controller extends EventTarget {
         } else {
             window.alert("Invalid URN");
         }
-        console.log("Local<< (local activity created) \n")
+    } else {
+        window.alert("That URN already exists")
     }
+    console.log("Local<< (local activity created) \n")
+}
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
@@ -317,6 +322,8 @@ export default class Controller extends EventTarget {
 
     searchTreeForId(treeNode,id) {
         let workStack = []
+        console.log("LOGGY")
+        console.log(treeNode)
         workStack.push(treeNode)
         while(workStack.length>0){
             let checkNode = workStack.pop();
@@ -367,6 +374,15 @@ export default class Controller extends EventTarget {
             this.repopulateParent(child, projectId)
         }
     }
+
+
+    relocateProject(currentNode, deltaX, deltaY){
+        currentNode.x = currentNode.x + deltaX
+        currentNode.y = currentNode.y + deltaY
+            for (let child of currentNode.children) {
+                this.relocateProject(child, deltaX, deltaY)
+            }
+        }
 
 
 }

@@ -165,6 +165,13 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._export.innerHTML = 'Export to File';
         export_el.appendChild(this._export);
 
+        // Create projt area
+        const projectButton_el = FormUtils.createEmptyInputContainer('export');
+        this._projectButton = document.createElement('button');
+        this._projectButton.innerHTML = 'Create New JAG';
+        projectButton_el.appendChild(this._projectButton);
+
+
         this._enableProperties(false);
 
         this.appendChild(childOf_el);
@@ -181,6 +188,8 @@ customElements.define('jag-properties', class extends HTMLElement {
         this.appendChild(bindings_el);
         this.appendChild(annotations_el);
         this.appendChild(export_el);
+        this.appendChild(projectButton_el);
+
 
         // this._$urnInput.addEventListener('keyup', e => {
         // 	this._$urnInput.classList.toggle('edited', this._$urnInput.value != this._nodeModel.activity.urn);
@@ -202,6 +211,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._$operatorSelect.addEventListener('change', this._handleOperatorChange.bind(this));
 
         this._export.addEventListener('click', this._handleExportClick.bind(this));
+        this._projectButton.addEventListener('click', this._handleProjectButtonClick.bind(this));
 
     }
 
@@ -339,10 +349,21 @@ customElements.define('jag-properties', class extends HTMLElement {
              bubbles: true,
              composed: true,
              detail: {node: this._nodeModel}
-         }));
+         }))};
+
+         _handleProjectButtonClick(e) {
+             e.stopImmediatePropagation();
+             const node = this._nodeModel;
+             this.dispatchEvent(new CustomEvent('event-promote-project', {
+                 bubbles: true,
+                 composed: true,
+                 detail: {node: this._nodeModel}
+             }));
+
+         }
 
 
-     }
+
 
 
 
@@ -1033,6 +1054,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._consumesMap.disabled = !enabled;
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
+        this._projectButton.disabled = !enabled;
 
         if (this._nodeModel && (enabled)) {
             if (this._nodeModel.parent) {

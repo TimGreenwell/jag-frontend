@@ -226,6 +226,7 @@ export default class ControllerIA extends Controller{
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         // Be nicer to separate structure change (needing redraw) and property change (probably not needing redraw)
         // However - can't think of a way to infer what change was made without more effort than a redraw.
+        this.cacheActivity(updatedActivity)
         this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
         this._iaTable.displayAnalysis(this._currentAnalysis);
     }
