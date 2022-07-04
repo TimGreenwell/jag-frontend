@@ -9,58 +9,49 @@
 
 import { UUIDv4 }  from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
-import UserPrefs from "../utils/user-prefs.js";
-import Activity from "./activity.js"
-import Subscription from "./subscription.js";
 
-
-// node (with view/jag)  = at's jag-node       -- both syn with JAG model
 export default class Node extends EventTarget {
 
 	constructor({ id = UUIDv4(),
-					childId,
 					urn,
-					color,
-					project = id,
-		            parentId,
-					link_status = true,
+					childId,
+					parentId,
+					project = id,                              // @TODO change to projectId
 					collapsed = false,
 					isLocked = false,
-					is_root = false,
-					x, y ,
 					contextualName = '',
 					contextualDescription = '',
+					x, y ,
 		            subscriptions = [],        // still unknown implementation (hopefully observer)
-		            returnValue = "",
+		            returnValue = null,
+		            returnState = null,
+		            testReturnValue = null,
+		            testReturnState = null,
 					children = new Array()} = {}) {
 
 
 		super();
 		this._id = id;                       // An assigned unique ID given at construction
+		this._urn = urn;
 		this._childId = childId;                       // child differentiating id
-		this._activity = undefined;
-		this._project = project;
 		this._parentId = parentId;
-
-        this._urn = urn;
-		this._children = children;            // Links to actual children [objects]
-
-		this._link_status = link_status;     // dont know what this is.
-		this._color = color;                 // Derived color
+		this._project = project;
 		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
-
-		this._x = x;
-		this._y = y;
-
-		this._leafCount = 1;
-		this._treeDepth = 0;
+		this._isLocked = isLocked;
 		this._contextualName = contextualName;
 		this._contextualDescription = contextualDescription;
-		this._isLocked = isLocked;
+		this._x = x;
+		this._y = y;
 		this._subscriptions = subscriptions;    // Array<Subscription>
 		this._returnValue = returnValue;
-
-
+		this._returnState = returnState;
+		this._testReturnValue = testReturnValue;
+		this._testReturnState = testReturnState;
+		this._children = children;            // Links to actual children [objects]
+		// Derived
+		this._activity = undefined;
+		this._leafCount = 1;
+		this._treeDepth = 0;
 	}
 
 	get id() {
@@ -82,7 +73,6 @@ export default class Node extends EventTarget {
 		this._childId = value;
 	}
 
-
 	get parentId() {
 		return this._parentId;
 	}
@@ -97,8 +87,6 @@ export default class Node extends EventTarget {
 	set activity(value) {
 		this._activity = value;
 	}
-	
-	
 
 	get project() {
 		return this._project;
@@ -120,13 +108,6 @@ export default class Node extends EventTarget {
 	set parent(parent) {
 		this._parent = parent;
 	}
-	get linkStatus() {
-		return this._link_status;
-	}
-	set linkStatus(value) {
-		this._link_status = value;
-	}
-
 
 	get returnValue() {
 		return this._returnValue;
@@ -162,12 +143,6 @@ export default class Node extends EventTarget {
 		this._isLocked = value;
 	}
 
-	get color() {
-		return this._color;
-	}
-	set color(value) {
-		this._color = value;
-	}
 	get collapsed() {
 		return this._collapsed;
 	}
@@ -237,14 +212,7 @@ export default class Node extends EventTarget {
 			this.activity.name = name;
 		}
 	}
-	// get urn() {
-	// 	return (this.activity === undefined) ? UserPrefs.getDefaultUrn(this.name) : this.activity.urn;
-	// }
-	// set urn(urn) {
-	// 		if (this.activity !== undefined) {
-	// 		this.activity.urn = urn                    // Remember - can't update if urn is valid. (enforced at activity)
-	// 	}
-	// }
+
 	get description() {
 		return (this.activity === undefined) ? '' : this.activity.description;
 	}
@@ -253,10 +221,6 @@ export default class Node extends EventTarget {
 			this.activity.name = name;
 		}
 	}
-	///////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////// Supporting Functions  ////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Supporting Functions  ////////////////////////////////
@@ -269,8 +233,6 @@ export default class Node extends EventTarget {
 		})
 		return workStack;
 	}
-
-
 
 	activitiesInProject(urn){    // return array of nodes matching urn
 		let matchStack = [];
@@ -309,19 +271,9 @@ export default class Node extends EventTarget {
 		}
 	}
 
-	// parentize(currentNode = this.getAncestor()){
-	// 	if (currentNode.hasChildren()){
-	// 		for (let child of this.children) {
-	// 			child.parent = currentNode;
-	// 			this.parentize(child);
-	// 		}
-	// 	}
-	// }
-
 	hasChildren() {
 		return (this.children.length !== 0);
 	}
-
 
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
@@ -329,12 +281,6 @@ export default class Node extends EventTarget {
 			this._children.push(node);
 			node.parent = this;
 			this.incrementDepth(1);
-			// if (node.childCount>1){
-			// 	this.incrementLeafCount(child.leafCount);
-			// }
-			// else {
-			// 	this.incrementLeafCount(child.leafCount-1);
-			// }
 		} else {
 			alert("Node must first be assigned a valid URN")
 		}
@@ -412,8 +358,6 @@ export default class Node extends EventTarget {
 				})
 			}
 		}
-
-
 		this.children.forEach(child => {
 			if (child.id == id) {
 				return child;
@@ -457,8 +401,6 @@ export default class Node extends EventTarget {
 			urn: this._urn,
 			childId: this._childId,
 			project: this._project,
-			color: this._color,
-			link_status: this._link_status,
 			collapsed: this._collapsed,
 			isLocked: this._isLocked,
 			x: this._x,
@@ -467,6 +409,9 @@ export default class Node extends EventTarget {
 			contextualDescription: this._contextualDescription,
 			subscribes: [],
 			returnValue: this._returnValue,
+			returnState: this._returnState,
+			testReturnValue: this._testReturnValue,
+			testReturnState: this._testReturnState,
 			parentId: this._parentId
 		};
 		let childStack = [];
@@ -487,24 +432,6 @@ export default class Node extends EventTarget {
 		const node = new Node(json);
 		return node;
 	}
-
-
-
-	// static async fromJSON(json) {
-	// 	const activity = await StorageService.get(json.activity,'activity');
-	// 	if (activity instanceof Activity) {
-	// 		json.activity = activity;
-	// 	}
-	// 	else {
-	// 		json.activity = undefined;
-	// 	}
-	// 	//json.activity = (activity != null) ? activity : undefined;
-	//
-	// 	const node = new Node(json);
-	//
-	// 	return node;
-	// }
-
 
 }
 

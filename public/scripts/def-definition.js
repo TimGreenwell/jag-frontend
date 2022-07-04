@@ -21,9 +21,11 @@ class Definition extends HTMLElement {
         this._failTrigger = false;
         this._winTrigger = false;
         this._output = null;
-        this._testBankMap = new Map();
+
 
         this.dataMode = "test";
+        this._testBankMap = new Map();
+        this._testStateMap = new Map();
         this.testData = new Map();
         this._initUI();
     }
@@ -161,26 +163,29 @@ class Definition extends HTMLElement {
         const test_el = FormUtils.createPropertyElement("test-" + node.id, label);
         test_el.className = "test-collection"
         this._valueInput = FormUtils.createTextInput('test-value-' + node.id);
-        this._valueInput.setAttribute("placeholder", "test value");
+        this._valueInput.setAttribute("placeholder", "test return value");
         this._valueInput.setAttribute("node", node.id)
         this._valueInput.className = "test-property";
         this._valueInput.addEventListener('blur', (event) => {
             this._testBankMap.set(node.id, event.target.value);
             this._buildFunction(node)
         });
-        //  this._valueInput.addEventListener('blur', this._updateTestDataMap.bind(this));
+
         let stateDefinition = Definition.STATE;
         for (let state in stateDefinition) {
             stateOptions.push({value: stateDefinition[state].name, text: stateDefinition[state].text})
         }
         this._stateInput = FormUtils.createSelect('test-state-' + node.id, stateOptions, Definition.STATE.ACTIVE.name);
         this._stateInput.className = "test-property";
+        this._stateInput.addEventListener('change', this._updateTestStateMap.bind(this));
         test_el.appendChild(this._valueInput);
         test_el.appendChild(this._stateInput)
         return test_el
     }
 
-
+    _updateTestStateMap(event){
+        this._testStateMap.set(event.target.id, event.target.value)
+    }
 
     _updateTestDataMap(event){
         this._testBankMap.set(event.target.id, event.target.value)
@@ -204,10 +209,10 @@ class Definition extends HTMLElement {
         this.$testerTitle.className = "block-title"
         $testDivTitleLine.appendChild(this.$testerTitle);
         /////////////  SUBSCRIPTIONS - Div Title Line - Add Button
-        let $swapButton  = document.createElement('button');
-        $swapButton.innerText = (this.dataMode == "live") ? "Live" : "Test"
-        $swapButton.setAttribute("id", "subscription-add-button")
-        $testDivTitleLine.appendChild($swapButton)
+        this._$swapButton  = document.createElement('button');
+        this._$swapButton.innerText = (this.dataMode == "live") ? ">Test" : ">Live"
+        this._$swapButton.setAttribute("id", "subscription-add-button")
+        $testDivTitleLine.appendChild(this._$swapButton)
         /////////////  SUBSCRIPTIONS - Entry Field  (buildTestBank)
         this.$testerEntryDiv = document.createElement('div');
         this.$testerEntryDiv.className = 'tester-entry-field';
@@ -262,7 +267,7 @@ class Definition extends HTMLElement {
         this.appendChild($functionDiv);
 
         $subscriptionAddButton.addEventListener('click', this._addSubscription.bind(this));
-        $swapButton.addEventListener('click', this._toggleDataMode.bind(this));
+        this._$swapButton.addEventListener('click', this._toggleDataMode.bind(this));
 
     }
 
@@ -301,10 +306,10 @@ class Definition extends HTMLElement {
 
     _toggleDataMode(event) {
         if (this.dataMode == "test") {
-            $swapButton.innerText = "Live"
+            this._$swapButton.innerText = ">Live"
             this.dataMode == "live"
         } else {
-            $swapButton.innerText = "Test"
+            this._$swapButton.innerText = ">Test"
             this.dataMode == "test"
         }
     }

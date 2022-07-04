@@ -49,9 +49,10 @@ export default class Activity extends EventTarget {
         this._lockedBy = lockedBy;
 
         if (!connector) {
-            connector = {execution: Activity.EXECUTION.NONE.name, operator: Activity.OPERATOR.NONE.name};
+            connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name};
         }
         this._execution = connector.execution;
+        this._returns = connector.returns;
         this._operator = connector.operator;
 
         // Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
@@ -221,6 +222,14 @@ export default class Activity extends EventTarget {
 
     get operator() {
         return this._operator;
+    }
+
+    set returns(type) {
+        this._returns = type;
+    }
+
+    get returns() {
+        return this._returns;
     }
 
     set isLocked(bool) {
@@ -549,6 +558,7 @@ export default class Activity extends EventTarget {
             type: 'node.type.plan',
             connector: {
                 execution: this._execution,
+                returns: this._returns,
                 operator: this._operator
             },
             inputs: [],
@@ -624,32 +634,41 @@ export default class Activity extends EventTarget {
         }
     }
 
-}
 
-Activity.EXECUTION = {
-    NONE: {
-        name: 'node.execution.none',
-        text: "none",
-    },
-    SEQUENTIAL:
-        {
-            name: 'node.execution.sequential',
-            text: "sequential"
-        },
-    PARALLEL: {
-        name: 'node.execution.parallel',
-        text: "parallel"
-    },
-    RETRY: {
-        name: 'node.execution.retry',
-        text: 'sequential w/retry'
-    },
-    LOOP: {
-        name: 'node.execution.loop',
-        text: "sequential loop"
+
+    static getExecutionOptions() {
+        let executionOptions = []
+        let execution = Activity.EXECUTION;
+        for (let step in execution) {
+            executionOptions.push({value: execution[step].name, text: execution[step].text})
+        }
+        return executionOptions;
     }
-}
 
+    static getReturnsOptions(executionName) {
+        let returnsOptions = []
+        let returns = Activity.RETURNS;
+        for (let step in returns) {
+            if (returns[step].condition.includes(executionName)) {
+                returnsOptions.push({value: returns[step].name, text: returns[step].text})
+            }
+        }
+        return returnsOptions;
+    }
+
+
+    static getOperatorOptions(returnName) {
+        let operatorOptions = []
+        let operators = Activity.OPERATOR;
+        for (let step in operators) {
+            if (operators[step].condition.includes(returnName)) {
+                operatorOptions.push({value: operators[step].name, text: operators[step].text})
+            }
+        }
+        return operatorOptions;
+    }
+
+}
 
 Activity.EXECUTION = {
     NONE: {
@@ -687,7 +706,7 @@ Activity.EXECUTION = {
         name: 'node.execution.parallelx',
         text: "parallel subset",
         description: 'Some sub-activities execute simultaneously'
-    },
+    }
 }
 
 
@@ -721,7 +740,7 @@ Activity.RETURNS = {
         text: 'final output',
         description: 'Final result from last child in sequence',
         condition: ['node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap']
-    },
+    }
 }
 
 

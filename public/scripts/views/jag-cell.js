@@ -325,8 +325,6 @@ class JagCell extends AnalysisCell {
         this._updateJAG(jag);
         const valid = true;//this.activity.hasValidURN;
         view.valid = valid;
-        if (valid)
-            this.link_status = false;
         // 2 dispatches here - 1 listener in views/Analysis
         this.dispatchEvent(new CustomEvent('layout'));
     }

@@ -68,30 +68,24 @@ customElements.define('def-menu', class extends HTMLElement {
         $centerLi.appendChild($centerLiDiv);
 
 
-        let executionOptions = []
-        let execution = Activity.EXECUTION;
-        for (let step in execution) {
-            executionOptions.push({value: execution[step].name, text: execution[step].text})
-        }
+        let executionOptions = Activity.getExecutionOptions();
 
         const execution_el = FormUtils.createPropertyElement('operator-property', 'Execution');
-        const executionSelect = FormUtils.createSelect('execution-property', executionOptions);
-        executionSelect.label = "Execution"
-        executionSelect.className = 'executor';
-        execution_el.appendChild(executionSelect);
+        this._executionSelect = FormUtils.createSelect('execution-property', executionOptions);
+        this._executionSelect.label = "Execution"
+        this._executionSelect.className = 'executor';
+        execution_el.appendChild(this._executionSelect);
         $centerLiDiv.appendChild(execution_el);
 
-        let returnsOptions = []
-        let returns = Activity.RETURNS;
-        for (let step in returns) {
-            returnsOptions.push({value: returns[step].name, text: returns[step].text})                             // @TODO Limit list on previously selected value
-        }
+
+        let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value)
 
         const return_el = FormUtils.createPropertyElement('operator-property', 'Return');
-        const returnSelect = FormUtils.createSelect('execution-property', returnsOptions);
-        returnSelect.label = "Return"
-        returnSelect.className = 'return';
-        return_el.appendChild(returnSelect);
+        this._returnSelect = FormUtils.createSelect('execution-property', returnsOptions);
+        this._returnSelect.label = "Return"
+        this._returnSelect.className = 'return';
+        this._returnSelect.disabled = true;
+        return_el.appendChild(this._returnSelect);
         $centerLiDiv.appendChild(return_el);
 
         let operatorOptions = []
@@ -101,10 +95,11 @@ customElements.define('def-menu', class extends HTMLElement {
          }
 
         const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
-        const operatorSelect = FormUtils.createSelect('operator-property', operatorOptions);
-        operatorSelect.label = "Operator"
-        operatorSelect.className = 'operator';
-        operator_el.appendChild(operatorSelect);
+        this._operatorSelect = FormUtils.createSelect('operator-property', operatorOptions);
+        this._operatorSelect.label = "Operator"
+        this._operatorSelect.className = 'operator';
+        this._operatorSelect.disabled = true;
+        operator_el.appendChild(this._operatorSelect);
         $centerLiDiv.appendChild(operator_el);
 
 
@@ -130,7 +125,60 @@ customElements.define('def-menu', class extends HTMLElement {
         this.$centerLiDiv = $centerLiDiv;
         this.$rightLiDiv = $rightLiDiv;
 
+        this._executionSelect.addEventListener('change', this._executionSelectChange.bind(this));
+        this._returnSelect.addEventListener('change', this._returnsSelectChange.bind(this));
+       // this._operatorSelect.addEventListener('change', this._operatorSelectChange.bind(this));
     }
+
+
+    _executionSelectChange(event) {
+        this.dispatchEvent(new CustomEvent('execution-updated', {
+            bubbles: true,
+            composed: true,
+            detail: {execution: event.value}
+        }));
+        if (this._executionSelect.value != 'node.execution.none') {
+            let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value)
+            while (this._returnSelect.options.length > 0) {
+                this._returnSelect.remove(0);
+            }
+            returnsOptions.forEach(option => {
+                console.log("options")
+                console.log(option)
+                let opt = document.createElement("option");
+                opt.value = option.value;
+                opt.text = option.text;
+                this._returnSelect.options.add(opt)
+            })
+            this._returnSelect.disabled = false;
+        }
+    }
+
+    _returnsSelectChange(event) {
+        this.dispatchEvent(new CustomEvent('returns-updated', {
+            bubbles: true,
+            composed: true,
+            detail: {returns: event.value}
+        }));
+
+        let operatorOptions = Activity.getOperatorOptions(this._returnSelect.value)
+        while (this._operatorSelect.options.length > 0) {
+            this._operatorSelect.remove(0);
+        }
+        operatorOptions.forEach(option => {
+            let opt = document.createElement("option");
+            opt.value = option.value;
+            opt.text = option.text;
+            this._operatorSelect.options.add(opt)
+        })
+        this._operatorSelect.disabled = false;
+    }
+
+    _operatorSelectChange(event) {
+        // select template function
+    }
+
+
 });
 
 export default customElements.get('def-menu');
