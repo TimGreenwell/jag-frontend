@@ -76,13 +76,19 @@ class Playground extends Popupable {
     }
 
     get selectedNodes() {
-        let selectedIdArray = [...this._selectedActivityNodeElementSet].map( element => {return element.nodeModel})
+        let selectedIdArray = [...this._selectedActivityNodeElementSet].map(element => {
+            return element.nodeModel
+        })
         return selectedIdArray;
     }
+
     get viewedNodes() {             // Returns the nodeModels inside the active elements
-        let viewedIdArray = [...this._activeActivityNodeElementSet].map( element => {return element.nodeModel})
+        let viewedIdArray = [...this._activeActivityNodeElementSet].map(element => {
+            return element.nodeModel
+        })
         return viewedIdArray;
     }
+
     get viewedProjects() {
         let viewedRootNodes = Array.from(this._viewedProjectsMap.values());
         return viewedRootNodes
@@ -424,25 +430,25 @@ class Playground extends Popupable {
 
 
     _buildNodeViewFromNodeModel(currentNodeModel) {
-           if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
-               currentNodeModel.x = 30 + Math.floor(Math.random() * 20);
-               currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 70);
-           }
-           currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
-           const $newViewNode = this.createActivityNode(currentNodeModel)
-           $newViewNode.setTranslation(currentNodeModel.x , currentNodeModel.y );
+        if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
+            currentNodeModel.x = 30 + Math.floor(Math.random() * 20);
+            currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 70);
+        }
+        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
+        const $newViewNode = this.createActivityNode(currentNodeModel)
+        $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
 
-           currentNodeModel.children.forEach((child) => {
-               let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-               let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
-               edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-               edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-           })
+        currentNodeModel.children.forEach((child) => {
+            let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+            let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
+            edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
+            edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+        })
         return $newViewNode
     }
 
 
-    redrawSelectedNodes(){
+    redrawSelectedNodes() {
         this.selectedNodes.forEach(node => {
             this._redrawNodes(node)
         })
@@ -456,8 +462,8 @@ class Playground extends Popupable {
         }
         currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
         const $newViewNode = this.getNodeViewById(currentNodeModel.id)
-    //    const $newViewNode = this.createActivityNode(currentNodeModel)
-        $newViewNode.setTranslation(currentNodeModel.x , currentNodeModel.y );
+        //    const $newViewNode = this.createActivityNode(currentNodeModel)
+        $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
 
         // assume all children have same height as the parent.
         const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
@@ -468,11 +474,11 @@ class Playground extends Popupable {
         currentNodeModel.children.forEach((child) => {
             const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
             y_offset = y_offset + (local_preferred_size)
-       //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
+            //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
             let $childViewNode = this._redrawNodes(child, x_offset, y_offset)                          // first build child
 
-       //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
-       //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+            //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
+            //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
         })
 
         return $newViewNode
@@ -592,7 +598,7 @@ class Playground extends Popupable {
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-    //        if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
+            //        if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
             if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
                 node.removeAllEdges();
                 node.detachHandlers();
@@ -611,9 +617,10 @@ class Playground extends Popupable {
         }
     }
 
-    addNodeModel(projectNodeModel){
+    addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
-        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);            }
+        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+    }
 
     _rebuildNodeView(projectNodeModel) {
         this.deleteNodeModel(projectNodeModel.id)
@@ -668,7 +675,7 @@ class Playground extends Popupable {
 
                     if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const parentActivity = $node.getParent().nodeModel.activity;
-                        const childActivityChildId =  $node.nodeModel.childId
+                        const childActivityChildId = $node.nodeModel.childId
                         let remainingChildren = parentActivity._children.filter(entry => {
                             if (entry.id != childActivityChildId) {
                                 return entry;
@@ -676,7 +683,11 @@ class Playground extends Popupable {
                         })
                         parentActivity.children = remainingChildren
 
-                        console.log(`delete key just removed ${$node.nodeModel.activity} from ${parentActivity}`)
+                        console.log(`delete
+                        key just removed
+                        ${$node.nodeModel.activity}
+                        from
+                        ${parentActivity}`)
                         console.log(`Updating ${parentActivity}`)
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {activity: parentActivity}
@@ -738,11 +749,6 @@ class Playground extends Popupable {
             highlights: [$initiator]
         });
     }
-
-
-
-
-
 
 
 }
@@ -843,11 +849,11 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this ru
 // why cant this go inside scope.? Does anyone else need it?
 Playground.NOTICE_PASTE_JAG = Popupable._createPopup({
     type: Playground.POPUP_TYPES.NOTICE,
-    name: "Paste in JAG json description",
-    description: "Paste from previously saved JAG",
+    name: "Recreate JAG",
+    description: "Paste previously exported JAG",
     properties: [
         {
-            name: 'description', label: 'Description', type: 'textarea',
+            name: 'description', label: 'JSON', type: 'textarea',
             options: async function () {
                 let paramMap = new Map();
                 paramMap.set('cols', 24);
@@ -860,7 +866,6 @@ Playground.NOTICE_PASTE_JAG = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: json}) {
-console.log(json)
                 this.dispatchEvent(new CustomEvent('event-import-jag', {
                     bubbles: true,
                     composed: true,
@@ -874,11 +879,6 @@ console.log(json)
     // fallback: ?
     // skip: ?
 });
-
-
-
-
-
 
 
 Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;

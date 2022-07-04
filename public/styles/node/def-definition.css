@@ -2,26 +2,103 @@
 def-definition {
     /* Reset layout */
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     height: 100%;          /* was 95 */
-    width: 60%;
-    z-index: 100;                      /* new */
+   /* width: 60%;*/
+    z-index: 0;                      /* new */
     background: var(--main-bg-darker); /* new */
     color: var(--main-fg);             /* new */
     overflow-y: scroll;
-
     position: relative;
     flex-grow: 1;
 }
 
-def-definition  div .definition-block {
+def-definition .definition-block{
     display: flex;
-    width: 95%;
-    height: 35%;   /* was 100% */
-    position: absolute;
+    flex-direction: column;
+    width: auto;
+    height: auto;
+    position: relative;
     outline: 2px solid blue;
+    border:3px solid black;
+    padding: 10px 10px 10px 10px;
 }
 
+def-definition .function {
+    flex-grow: 1;
+}
+
+def-definition .title-line{
+    display: flex;
+    flex-direction: row;
+}
+
+
+def-definition #subscription-add-button {
+
+}
+
+def-definition .block-title {
+    font-size: 16px;
+    text-align: center;
+    width: 95%;
+}
+
+def-definition #subscription-add-button {
+
+}
+
+def-definition .tester-entry-field {
+    display: flex;
+    flex-flow: row wrap;
+    width: 100%;
+    padding: 10px 10px 10px 10px;
+}
+
+
+def-definition .test-collection {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    outline: 1px solid blue;
+    padding: 5px 5px 5px 5px;
+    margin: 10px;
+}
+
+
+def-definition .test-property {
+    width: max-content;
+}
+
+def-definition .title-line {
+    display: flex;
+    flex-direction: row;
+}
+
+def-definition .header-line, .subscription-line {
+    display: flex;
+    flex-direction: row;
+   justify-content: space-between ;
+    /*   justify-content: space-evenly; */
+    /*   justify-content: flex-start;   nothing in between */
+    /*   justify-content: space-around;  first column no line up*/
+}
+
+def-definition .subscription-line {
+    outline: 1px solid blue;
+}
+
+def-definition .sub-property {
+    text-align:center;
+}
+
+
+def-definition  h3 {
+    display: flex;
+    flex-direction: row;
+    text-align:  center;
+    padding: 0.25em;
+}
 
 def-definition li {
     padding: 0.25em;
@@ -33,3 +110,5 @@ def-definition li {
 def-definition li:hover {
     background-color: var(--main-fg-lighter);
 }
+
+

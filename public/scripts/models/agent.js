@@ -15,7 +15,7 @@ export default class AgentModel extends EventTarget {
 		super();
 		this._id = id;
 		this._name = name;
-		this._assessments = assessments;
+		this._assessments = assessments;     // a Map of urn to assessment
 	}
 
 	get id() {

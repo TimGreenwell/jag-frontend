@@ -11,6 +11,7 @@ import { UUIDv4 }  from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 import UserPrefs from "../utils/user-prefs.js";
 import Activity from "./activity.js"
+import Subscription from "./subscription.js";
 
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
@@ -29,8 +30,8 @@ export default class Node extends EventTarget {
 					x, y ,
 					contextualName = '',
 					contextualDescription = '',
-		            subscribes = new Map(),        // still unknown implementation (hopefully observer)
-		            alerts = new Map(),
+		            subscriptions = [],        // still unknown implementation (hopefully observer)
+		            returnValue = "",
 					children = new Array()} = {}) {
 
 
@@ -55,9 +56,9 @@ export default class Node extends EventTarget {
 		this._treeDepth = 0;
 		this._contextualName = contextualName;
 		this._contextualDescription = contextualDescription;
-		this._subscribes = subscribes;
-		this._alerts = alerts;
 		this._isLocked = isLocked;
+		this._subscriptions = subscriptions;    // Array<Subscription>
+		this._returnValue = returnValue;
 
 
 	}
@@ -125,6 +126,33 @@ export default class Node extends EventTarget {
 	set linkStatus(value) {
 		this._link_status = value;
 	}
+
+
+	get returnValue() {
+		return this._returnValue;
+	}
+
+	set returnValue(value) {
+		this._returnValue = value;
+	}
+
+	get subscriptions() {
+		return this._subscriptions;
+	}
+
+	set subscriptions(value) {
+		this._subscriptions = value;
+	}
+
+	removeSubscription(subscriptionName) {
+		for (let index in this._subscriptions) {
+			if (this._subscriptions[index].name === subscriptionName) {
+				this._subscriptions.splice(index, 1);
+				break;
+			}
+		}
+	}
+
 
 	get isLocked() {
 		return this._isLocked;
@@ -438,9 +466,8 @@ export default class Node extends EventTarget {
 			contextualName: this._contextualName,
 			contextualDescription: this._contextualDescription,
 			subscribes: [],
-			alerts: [],
+			returnValue: this._returnValue,
 			parentId: this._parentId
-
 		};
 		let childStack = [];
 		for (let child of this._children) {

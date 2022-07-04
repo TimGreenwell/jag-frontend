@@ -5,22 +5,11 @@ def-events {  /*analysis-library new */
 	flex-direction: column;
 	height: 100%;          /* was 95 */
 	width: 20%;
-    z-index: 100;                      /* new */
+    z-index: 0;                      /* new */
     background: var(--main-bg-darker); /* new */
 	color: var(--main-fg);             /* new */
 }
 
-/* temp until def-events gets own place
-def-events {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	width: 100%;
-	z-index: 100;
-	background: var(--main-bg-darker);
-	color: var(--main-fg);
-}
-*/
 def-events ol {
 	height: 100%;
 	overflow-y: scroll;

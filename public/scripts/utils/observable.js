@@ -74,7 +74,7 @@ export default class SharedObservable extends SharedService {
 
     /**
      * Final distribution of processed remote/local event messages
-     * Callback functions were provided at initial subscription.
+     * Callback functions were provided at initial subscription.js.
      */
     static notifySubscribers(topic, dataModel, id) {
         console.log("\n ********  BEGINNING OF GLOBAL HANDLER: (" + topic + ") : (" + id + ") **********")
