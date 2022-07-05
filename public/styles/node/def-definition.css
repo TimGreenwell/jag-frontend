@@ -91,6 +91,12 @@ def-definition .subscription-line {
 def-definition .sub-property {
     text-align:center;
 }
+def-definition .info-wrap {
+    display: flex;
+    flex-direction: column;
+    color: darkgreen;
+}
+
 
 
 def-definition  h3 {

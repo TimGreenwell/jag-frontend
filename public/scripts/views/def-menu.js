@@ -70,7 +70,8 @@ customElements.define('def-menu', class extends HTMLElement {
 
         let executionOptions = Activity.getExecutionOptions();
 
-        const execution_el = FormUtils.createPropertyElement('operator-property', 'Execution');
+        const execution_el = FormUtils.createPropertyElement('execution-property', 'Execution');
+        execution_el.className = "menu-select"
         this._executionSelect = FormUtils.createSelect('execution-property', executionOptions);
         this._executionSelect.label = "Execution"
         this._executionSelect.className = 'executor';
@@ -80,7 +81,8 @@ customElements.define('def-menu', class extends HTMLElement {
 
         let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value)
 
-        const return_el = FormUtils.createPropertyElement('operator-property', 'Return');
+        const return_el = FormUtils.createPropertyElement('returns-property', 'Return');
+        return_el.className = "menu-select"
         this._returnSelect = FormUtils.createSelect('execution-property', returnsOptions);
         this._returnSelect.label = "Return"
         this._returnSelect.className = 'return';
@@ -95,6 +97,7 @@ customElements.define('def-menu', class extends HTMLElement {
          }
 
         const operator_el = FormUtils.createPropertyElement('operator-property', 'Operator');
+        operator_el.className = "menu-select"
         this._operatorSelect = FormUtils.createSelect('operator-property', operatorOptions);
         this._operatorSelect.label = "Operator"
         this._operatorSelect.className = 'operator';
@@ -127,12 +130,12 @@ customElements.define('def-menu', class extends HTMLElement {
 
         this._executionSelect.addEventListener('change', this._executionSelectChange.bind(this));
         this._returnSelect.addEventListener('change', this._returnsSelectChange.bind(this));
-       // this._operatorSelect.addEventListener('change', this._operatorSelectChange.bind(this));
+        this._operatorSelect.addEventListener('change', this._operatorSelectChange.bind(this));
     }
 
 
     _executionSelectChange(event) {
-        this.dispatchEvent(new CustomEvent('execution-updated', {
+        this.dispatchEvent(new CustomEvent('event-execution-updated', {
             bubbles: true,
             composed: true,
             detail: {execution: event.value}
@@ -155,12 +158,11 @@ customElements.define('def-menu', class extends HTMLElement {
     }
 
     _returnsSelectChange(event) {
-        this.dispatchEvent(new CustomEvent('returns-updated', {
+        this.dispatchEvent(new CustomEvent('event-returns-updated', {
             bubbles: true,
             composed: true,
             detail: {returns: event.value}
         }));
-
         let operatorOptions = Activity.getOperatorOptions(this._returnSelect.value)
         while (this._operatorSelect.options.length > 0) {
             this._operatorSelect.remove(0);
@@ -175,7 +177,12 @@ customElements.define('def-menu', class extends HTMLElement {
     }
 
     _operatorSelectChange(event) {
-        // select template function
+        this._operatorSelect.value;
+        this.dispatchEvent(new CustomEvent('event-operator-updated', {
+            bubbles: true,
+            composed: true,
+            detail: {returns: this._returnSelect.value, operator: this._operatorSelect.value}
+        }));
     }
 
 

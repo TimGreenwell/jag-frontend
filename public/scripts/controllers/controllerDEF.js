@@ -84,8 +84,21 @@ export default class ControllerDEF extends Controller {
     }
 
     initializeHandlers() {
-     //   this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));
+        this._menu.addEventListener('event-execution-updated', this.eventExecutionUpdatedHandler.bind(this));
+        this._menu.addEventListener('event-returns-updated', this.eventReturnsUpdatedHandler.bind(this));
+        this._menu.addEventListener('event-operator-updated', this.eventOperatorUpdatedHandler.bind(this));
+    }
 
+    eventExecutionUpdatedHandler(){
+
+    }
+    eventReturnsUpdatedHandler(){
+
+    }
+    eventOperatorUpdatedHandler(event){
+        let returns = event.detail.returns;
+        let operator = event.detail.operator;
+        this._definition._templateFunction(returns, operator)
     }
 
     /**

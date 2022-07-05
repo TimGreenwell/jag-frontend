@@ -45,7 +45,20 @@ def-menu li div {
 }
 
 def-menu .selector {
+
     width: max-content;
+    outline: 1px solid blue;
+    padding: 5px 5px 5px 5px;
+    margin: 10px;
+}
+
+def-menu .menu-select {
+    display: flex;
+    width: 120px;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px 5px 5px 5px;
+    margin: 10px;
 }
 
 def-menu li:last-child div {

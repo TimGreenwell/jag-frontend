@@ -11,6 +11,7 @@
 import FormUtils from "./utils/forms.js";
 import Activity from "./models/activity.js";
 import Subscription from "./models/subscription.js";
+import {functionFactory} from "./utils/function-factory.js";
 
 class Definition extends HTMLElement {
 
@@ -254,15 +255,15 @@ class Definition extends HTMLElement {
 
         let $textAreaWrap = document.createElement('div');
         $textAreaWrap.className = "textAreaWrap"
-        let $textArea = document.createElement('textarea');
-        $textArea.className = "textArea"
-        $textAreaWrap.appendChild($textArea)
+        this._$textArea = document.createElement('textarea');
+        this._$textArea.className = "textArea"
+        $textAreaWrap.appendChild(this._$textArea)
 
         $functionDiv.appendChild($textAreaWrap)
 
 
         this._$infoWrap = document.createElement('div');
-        this._$infoWrap.className = "infoWrap"
+        this._$infoWrap.className = "info-wrap"
         $functionDiv.appendChild(this._$infoWrap);
         this.appendChild($functionDiv);
 
@@ -271,35 +272,72 @@ class Definition extends HTMLElement {
 
     }
 
+    _templateFunction(returns, operator){
+        let templateFunction = functionFactory(returns, operator)
+        this._$textArea.value = templateFunction;
+    }
+
     _buildFunction(node) {
         this.removeAllChildNodes(this._$infoWrap)
         let availableChildren = this.getAvailableChildrenReturnValues(node)
         let $availableChildrenSpan = document.createElement('span');
-        $availableChildrenSpan.innerText = "${AvailableChildren} = " + availableChildren
+        $availableChildrenSpan.innerText = "${AvailableChildren} = [" + availableChildren + "]              "
         this._$infoWrap.appendChild($availableChildrenSpan)
+
+        let allChildren = this.getAllChildrenReturnValues(node)
+        let $allChildrenSpan = document.createElement('span');
+        $allChildrenSpan.innerText = "${AllChildren} = [" + allChildren + "]"
+        this._$infoWrap.appendChild($allChildrenSpan)
+
+
     }
+
+    getAllChildrenReturnValues(node) {
+        let values = []
+        if (this.dataMode == "live") {
+            values = node.children.map(child => {
+                if (values) {
+                    return values
+                } else {
+                    return null
+                }
+            })
+        } else {
+            values = this.definingNode.children.map(child => {
+                let values = this._testBankMap.get(child.id)
+                if (values) {
+                    return values
+                } else {
+                    return null
+                }
+            })
+        }
+        return values
+    }
+
 
     getAvailableChildrenReturnValues(node){
         let values = []
         if (this.dataMode == "live") {
             values = node.children.map(child => {
-                console.log("live")
-                console.log(child)
                 if ((child.returnValue != 'undefined') || (child.returnValue != 'null')) {
                     return child.returnValue
                 }
             })
         } else {
+            console.log(this.definingNode.children)
+            console.log(this.definingNode.children.map(child => {
+                return this._testBankMap.get(child.id)
+            }))
             values = this.definingNode.children.map(child => {
-                let value = this._testBankMap.get(child.id)
-                console.log(value)
+                return this._testBankMap.get(child.id)
+            }).filter(value => {
                 if ((value != 'undefined') || (value != 'null')) {
                     return value
                 }
             })
-            console.log("..")
-            console.log(values)
         }
+        console.log(values)
         return values
     }
 
