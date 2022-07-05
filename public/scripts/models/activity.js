@@ -24,7 +24,7 @@ export default class Activity extends EventTarget {
                     name,
                     description = '',
                     definition = '',
-                    connector,
+                    connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
                     inputs,
                     outputs,
                     children,
@@ -48,9 +48,7 @@ export default class Activity extends EventTarget {
         this._modifiedDate = modifiedDate;
         this._lockedBy = lockedBy;
 
-        if (!connector) {
-            connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name};
-        }
+        this._connector = connector;
         this._execution = connector.execution;
         this._returns = connector.returns;
         this._operator = connector.operator;

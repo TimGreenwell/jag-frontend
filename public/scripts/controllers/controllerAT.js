@@ -90,12 +90,11 @@ export default class ControllerAT extends Controller {
     initializeHandlers() {
         this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
-        //this._playground.addEventListener('response-activity-deleted', this.responseActivityDeletedHandler.bind(this));     // is changed activity in active viewing
         this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
         this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
         this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
         this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));
-        this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this)); // onEdgeFinalized between nodes (user connects)
+        this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this));                       // onEdgeFinalized between nodes (user connects)
 
         // this._playground.addEventListener('event-project-removed', this.eventProjectRemovedHandler.bind(this));
         // this._playground.addEventListener('event-node-disconnected', this.eventNodeDisconnectedHandler.bind(this));
@@ -278,7 +277,7 @@ export default class ControllerAT extends Controller {
             let losingProjectId = childNodeModel.project;
 
             parentNodeModel.addChild(childNodeModel);
-            childNodeModel.project = parentNodeModel.project;
+            this.repopulateProject(parentNodeModel)
             childNodeModel.parent = parentNodeModel;
             childNodeModel.childId = childId;
 

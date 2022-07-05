@@ -4,7 +4,7 @@ jag-library, analysis-library {  /*analysis-library new */
 	display: flex;
 	flex-direction: column;
 	height: 100%;          /* was 95 */
-	width: 20%;
+	width: 12%;
     z-index: 100;                      /* new */
     background: var(--main-bg-darker); /* new */
 	color: var(--main-fg);             /* new */
@@ -14,14 +14,16 @@ jag-library, analysis-library {  /*analysis-library new */
 node-library {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
+	height: 30%;
 	width: 100%;
 	z-index: 100;                      /* new */
 	background: var(--main-bg-darker); /* new */
 	color: var(--main-fg);             /* new */
 }
 
-
+jag-library .description-entry {
+	font-size: 10px;
+}
 
 jag-library ol, analysis-library ol, node-library ol {
 	height: 100%;
@@ -49,7 +51,7 @@ jag-library p, analysis-library p, node-library p {
 
 jag-library .library-search, analysis-library .library-search, node-library .library-search {
 	height: 30px;
-	font-size: 14px;
+	font-size: 15px;
 	background-image: url('../icons/search_mag_20.png');
 	background-repeat: no-repeat;
 	background-position: left center;

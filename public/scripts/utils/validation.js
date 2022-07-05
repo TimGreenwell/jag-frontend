@@ -100,8 +100,8 @@ export default class JAGATValidation {
         if (connector.operator.length == 0)
             throw new Error(`Connector execution type must be at least 1 character.`);
 
-        if (Object.keys(connector).length !== 2)
-            throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
+         if (Object.keys(connector).length !== 3)               ///  COMMENTED OUT SINCE ADDING 'RETURNS'
+             throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
     }
 
     static validateInputs(inputs) {
@@ -221,8 +221,8 @@ export default class JAGATValidation {
         if (typeof child.id !== "string")
             throw new Error(`Child must have a UUID which is a string.`);
 
-        if (!child.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
-            throw new Error(`Child must have an id which is a v4 UUID conforming string.`);
+        // if (!child.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/))
+        //     throw new Error(`Child must have an id which is a v4 UUID conforming string.`);
 
         let opt_params = 0;
 
@@ -292,8 +292,8 @@ export default class JAGATValidation {
         if (typeof binding.consumer.id !== "string")
             throw new Error(`Binding must have a ID for its consumer which is a string.`);
 
-        if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-            throw new Error(`Binding must have an id for its consumer which is a v4 UUID conforming string, "any" or "this".`);
+        // if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
+        //     throw new Error(`Binding must have an id for its consumer which is a v4 UUID conforming string, "any" or "this".`);
 
         if (binding.consumer.property == undefined)
             throw new Error(`Binding must have a property string for its consumer.`);
@@ -316,8 +316,8 @@ export default class JAGATValidation {
         if (typeof binding.provider.id !== "string")
             throw new Error(`Binding must have a ID for its provider which is a string.`);
 
-        if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-            throw new Error(`Binding must have an id for its provider which is a v4 UUID conforming string, "any" or "this".`);
+        // if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
+        //     throw new Error(`Binding must have an id for its provider which is a v4 UUID conforming string, "any" or "this".`);
 
         if (binding.provider.property == undefined)
             throw new Error(`Binding must have a property string for its provider.`);

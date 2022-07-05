@@ -308,8 +308,8 @@ class Playground extends Popupable {
         for (let node of this._activeActivityNodeElementSet) {
             node.translate(dx, dy, false);
 
-            node.nodeModel.x = node.nodeModel.x + dx;
-            node.nodeModel.y = node.nodeModel.y + dy;
+            node.nodeModel.x = Math.round(node.nodeModel.x + dx);
+            node.nodeModel.y = Math.round(node.nodeModel.y + dy);
         }
 
         this._checkBounds();
@@ -432,7 +432,7 @@ class Playground extends Popupable {
     _buildNodeViewFromNodeModel(currentNodeModel) {
         if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
             currentNodeModel.x = 30 + Math.floor(Math.random() * 20);
-            currentNodeModel.y = (this.clientHeight / 2) + Math.floor(Math.random() * 70);
+            currentNodeModel.y = Math.floor((this.clientHeight / 2) + (Math.random() * 70));
         }
         currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
         const $newViewNode = this.createActivityNode(currentNodeModel)
@@ -466,9 +466,9 @@ class Playground extends Popupable {
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
 
         // assume all children have same height as the parent.
-        const x_offset = currentNodeModel.x + $newViewNode.clientWidth + margin;
+        const x_offset = Math.floor(currentNodeModel.x + $newViewNode.clientWidth + margin);
         const preferred_height = currentNodeModel.leafCount * ($newViewNode.clientHeight + margin);
-        let y_offset = currentNodeModel.y - (preferred_height / 2);
+        let y_offset = Math.floor(currentNodeModel.y - (preferred_height / 2));
 
 
         currentNodeModel.children.forEach((child) => {
@@ -662,6 +662,7 @@ class Playground extends Popupable {
                 // @TODO - migth consider a delted edge to mean disconnect jag
 
                 if ($node.nodeModel.project == $node.nodeModel.id) {
+                    console.log("hi")
                     this.clearPlayground($node.nodeModel.project);
                 } else {
 
@@ -682,13 +683,8 @@ class Playground extends Popupable {
                             }
                         })
                         parentActivity.children = remainingChildren
-
-                        console.log(`delete
-                        key just removed
-                        ${$node.nodeModel.activity}
-                        from
-                        ${parentActivity}`)
-                        console.log(`Updating ${parentActivity}`)
+                        console.log("Parent Activity ===>");
+                        console.log(parentActivity)
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {activity: parentActivity}
                         }));
