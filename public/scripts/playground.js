@@ -437,13 +437,14 @@ class Playground extends Popupable {
         currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
         const $newViewNode = this.createActivityNode(currentNodeModel)
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
-
+        if (currentNodeModel.expanded) {
         currentNodeModel.children.forEach((child) => {
-            let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-            let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
-            edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-            edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-        })
+
+                let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+                let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
+                edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
+                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+             })}
         return $newViewNode
     }
 
@@ -559,8 +560,8 @@ class Playground extends Popupable {
 
     // this is called when a new jag appears from above --- applies?
     //note: creates a view based on Activity xxx now NodeModel
-    createActivityNode(nodeModel, expanded) {
-        const $node = new ActivityNodeElement(nodeModel, expanded);
+    createActivityNode(nodeModel) {
+        const $node = new ActivityNodeElement(nodeModel);
         $node.addEventListener('mousedown', this.handlePlaygroundSelectedNodes.bind(this));
 
         $node.addEventListener('keydown', this.onKeyDown.bind(this));

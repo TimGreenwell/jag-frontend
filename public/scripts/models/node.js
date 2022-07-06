@@ -17,7 +17,7 @@ export default class Node extends EventTarget {
 					childId,
 					parentId,
 					project = id,                              // @TODO change to projectId
-					collapsed = false,
+					expanded = true,
 					isLocked = false,
 					contextualName = '',
 					contextualDescription = '',
@@ -36,7 +36,7 @@ export default class Node extends EventTarget {
 		this._childId = childId;                       // child differentiating id
 		this._parentId = parentId;
 		this._project = project;
-		this._collapsed = collapsed;         // Collapsed (table) or folded in (graph)
+		this._expanded = expanded;         // Expanded (table) or folded in (graph)
 		this._isLocked = isLocked;
 		this._contextualName = contextualName;
 		this._contextualDescription = contextualDescription;
@@ -143,11 +143,11 @@ export default class Node extends EventTarget {
 		this._isLocked = value;
 	}
 
-	get collapsed() {
-		return this._collapsed;
+	get expanded() {
+		return this._expanded;
 	}
-	set collapsed(collapsed) {
-		this._collapsed = collapsed;
+	set expanded(expanded) {
+		this._expanded = expanded;
 	}
 	get x() {
 		return this._x;
@@ -375,8 +375,8 @@ export default class Node extends EventTarget {
 		return this._children.length;
 	}
 
-	toggleCollapse() {
-		this.collapsed = !this.collapsed;
+	toggleExpanded() {
+		this._expanded = !this._expanded;
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
@@ -401,7 +401,7 @@ export default class Node extends EventTarget {
 			urn: this._urn,
 			childId: this._childId,
 			project: this._project,
-			collapsed: this._collapsed,
+			expanded: this._expanded,
 			isLocked: this._isLocked,
 			x: this._x,
 			y: this._y,

@@ -95,6 +95,7 @@ export default class ControllerAT extends Controller {
         this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
         this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));
         this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this));                       // onEdgeFinalized between nodes (user connects)
+        this._playground.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node expanded property changed
 
         // this._playground.addEventListener('event-project-removed', this.eventProjectRemovedHandler.bind(this));
         // this._playground.addEventListener('event-node-disconnected', this.eventNodeDisconnectedHandler.bind(this));
@@ -277,7 +278,7 @@ export default class ControllerAT extends Controller {
             let losingProjectId = childNodeModel.project;
 
             parentNodeModel.addChild(childNodeModel);
-            this.repopulateProject(parentNodeModel)
+            this.repopulateProject(parentNodeModel, projectNodeId)
             childNodeModel.parent = parentNodeModel;
             childNodeModel.childId = childId;
 
@@ -384,7 +385,8 @@ export default class ControllerAT extends Controller {
     async eventProjectCreatedHandler(event) {
         console.log("Local>> (Project created / library selected) ")
         const activitySelected = event.detail.activity;
-        let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected);
+        const expanded = event.detail.expanded;
+        let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, expanded);
         await StorageService.create(newProjectRootNode, "node");
         console.log("Local<< (Project created / library selected) \n")
     }
@@ -395,7 +397,7 @@ export default class ControllerAT extends Controller {
         console.log("Local>> (project line item selected) ")
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.expanded;
-
+        projectSelected.expanded = expandRequested;
         this._playground._rebuildNodeView(projectSelected)
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         //    let newProjectRootNode = this.buildNodeTreeFromActivity(projectSelected);

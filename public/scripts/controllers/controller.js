@@ -281,7 +281,8 @@ async eventActivityCreatedHandler(event) {
         return returnNode;
     }
 
-    buildNodeTreeFromActivity(rootActivity) {
+    buildNodeTreeFromActivity(rootActivity, expanded) {
+
         const nodeStack = [];
         const resultStack = [];
       //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
@@ -289,6 +290,7 @@ async eventActivityCreatedHandler(event) {
         rootNodeModel.activity = rootActivity;
         rootNodeModel.parentUrn = null;
         rootNodeModel.project = rootNodeModel.id;
+        rootNodeModel.expanded = expanded;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length > 0) {
             let currentNode = nodeStack.pop();

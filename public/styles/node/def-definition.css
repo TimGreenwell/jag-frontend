@@ -79,9 +79,6 @@ def-definition .header-line, .subscription-line {
     display: flex;
     flex-direction: row;
    justify-content: space-between ;
-    /*   justify-content: space-evenly; */
-    /*   justify-content: flex-start;   nothing in between */
-    /*   justify-content: space-around;  first column no line up*/
 }
 
 def-definition .subscription-line {
@@ -96,8 +93,6 @@ def-definition .info-wrap {
     flex-direction: column;
     color: darkgreen;
 }
-
-
 
 def-definition  h3 {
     display: flex;

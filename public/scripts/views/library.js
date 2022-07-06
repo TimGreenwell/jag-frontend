@@ -127,18 +127,18 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				// Send the newActivity and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
-					newActivity.collapsed = !event.shiftKey
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
-							activity: newActivity
+							activity: newActivity,
+							expanded: event.shiftKey
 						}
 					}))});
 
 				$topHalfWrapper.addEventListener('click', (event) => {
-					newActivity.collapsed = !event.shiftKey
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
-							activity: newActivity
+							activity: newActivity,
+							expanded: event.shiftKey
 						}
 					}))
 				});
