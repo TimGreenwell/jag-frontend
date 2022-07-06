@@ -1076,7 +1076,6 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
 
     _clearProperties() {
-        console.log("clearing properties")
         this._$urnInput.value = '';
         this._$nameInput.value = '';
         this._$descInput.value = '';

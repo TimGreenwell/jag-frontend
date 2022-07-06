@@ -9,11 +9,11 @@
 
 export default class Subscription extends EventTarget {
 
-	constructor({ name , lastReportTime = null, lastReportedCode = null } = {}) {
+	constructor({ name , lastReportTime = null, lastReportedData = null } = {}) {
 		super();
 		this._name = name;
 		this._lastReportTime = lastReportTime;
-		this._lastReportedCode = lastReportedCode;
+		this._lastReportedData = lastReportedData;
 	}
 
 
@@ -33,12 +33,12 @@ export default class Subscription extends EventTarget {
 		this._lastReportTime = value;
 	}
 
-	get lastReportedCode() {
-		return this._lastReportedCode;
+	get lastReportedData() {
+		return this._lastReportedData;
 	}
 
-	set lastReportedCode(value) {
-		this._lastReportedCode = value;
+	set lastReportedData(value) {
+		this._lastReportedData = value;
 	}
 
 	static fromJSON(json) {
@@ -49,7 +49,7 @@ export default class Subscription extends EventTarget {
 		let json = {
 			name: this._name,
 			lastReportTime: this._lastReportTime,
-			lastReportedCode: this._lastReportedCode
+			lastReportedData: this._lastReportedData
 		};
 		return json;
 	}

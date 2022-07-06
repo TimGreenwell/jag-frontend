@@ -382,7 +382,6 @@ class Playground extends Popupable {
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
-        console.log("Clicked the background")
         this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
 
 
@@ -663,7 +662,6 @@ class Playground extends Popupable {
                 // @TODO - migth consider a delted edge to mean disconnect jag
 
                 if ($node.nodeModel.project == $node.nodeModel.id) {
-                    console.log("hi")
                     this.clearPlayground($node.nodeModel.project);
                 } else {
 
@@ -684,8 +682,6 @@ class Playground extends Popupable {
                             }
                         })
                         parentActivity.children = remainingChildren
-                        console.log("Parent Activity ===>");
-                        console.log(parentActivity)
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {activity: parentActivity}
                         }));

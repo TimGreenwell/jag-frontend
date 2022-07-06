@@ -6,130 +6,20 @@
  * @version 0.16
  */
 
-import StorageService from "../services/storage-service.js";
-
 customElements.define('analysis-library', class extends HTMLElement {
 
-	constructor(controller) {
+	constructor() {
 		super();
-		this._controller = controller
-		this._items = [];
-		this._defined = new Set();
-
+		this._libraryList = [];
 		this._initUI();
-		this._initListeners();
-		//StorageService.subscribe("jag-storage-updated", this.updateListItem.bind(this));  not needed until URN renames allowed
-		StorageService.subscribe("analysis-storage-updated", this.updateListItem.bind(this));
-		StorageService.subscribe("analysis-storage-created", this.addListItem.bind(this));
-
 		this.clearItems();
 	}
 
 	clearItems() {
-		for (let item of this._items) {
+		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
-		this._items = [];
-		this._defined.clear();
-	}
-
-	// updateItem(updatedActivity) {
-	// 	for (let idx in this._libraryList) {
-	// 		if (this._libraryList[idx].model.urn == updatedActivity.urn) {
-	// 			this._libraryList[idx].model = updatedActivity;
-	// 			this._libraryList[idx].element.id=updatedActivity.urn;
-	// 			this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedActivity.name;
-	// 			this._libraryList[idx].element.querySelectorAll("p").item(0).innerHTML = updatedActivity.description;
-	// 			let search_params =[];
-	// 			search_params.push(updatedActivity.urn.toLowerCase());
-	// 			search_params.push(updatedActivity.name.toLowerCase());
-	// 			search_params.push(updatedActivity.description.toLowerCase());
-	// 			this._libraryList[idx].search_content = search_params.join(" ");
-	// 			this.refreshItem(updatedActivity);
-	// 		}
-	// 	}
-	// }
-
-	updateListItem(updatedAnalysisModel, idx = -1) {
-		console.log("Analysis Library (updateListItem) received NOTIFICATION for analysis-storage-updated")
-
-		for (let idx in this._items) {
-			if (this._items[idx].model.id == updatedAnalysisModel.id) {
-
-				const rootUrn = this._items[idx].element.querySelectorAll("pre").item(0).innerText;
-				const name = updatedAnalysisModel.name;
-				const description = updatedAnalysisModel.description;
-
-				this._items[idx].element.querySelectorAll("h3").item(0).innerText = name;
-				this._items[idx].element.querySelectorAll("p").item(0).innerText = description;
-
-				const search_params =[];
-				search_params.push(name.toLowerCase());
-				search_params.push(rootUrn.toLowerCase());
-				search_params.push(description.toLowerCase());
-				this._items[idx].search_content = search_params.join(" ");
-			}
-		}
-	}
-
-	addListItem(model, idx = -1) {
-		console.log("Analysis Library (addListItem) received NOTIFICATION for analysis-storage-created")
-		const id = model.urn || '';
-		const root = model.rootUrn;
-		const name = model.name;
-		const description = model.description || '';
-
-		const li = document.createElement('li');
-		li.id = id;
-		const h3 = document.createElement('h3');
-		h3.innerHTML = name;  // analysis name
-		const pre = document.createElement('pre');
-		pre.innerHTML = root; // root url
-		const p = document.createElement('p');
-		p.innerHTML = description;  // analysis description
-
-		li.appendChild(h3);
-		li.appendChild(pre);
-		li.appendChild(p);
-
-		const search_params = [];
-		search_params.push(name.toLowerCase());
-		search_params.push(root.toLowerCase());
-		search_params.push(description.toLowerCase());
-
-		this._items.push({
-			element: li,
-			search_content: search_params.join(" "),
-			model: model
-		});
-
-		model.addEventListener('update', (e) => {
-			const {property, extra} = e.detail;
-
-			if (property == 'name') {
-				h3.innerHTML = extra.name;
-			} else if (property == 'description') {
-				p.innerHTML = extra.description;
-			}
-		});
-
-		li.addEventListener('click', (event) => {
-			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
-				detail: {
-					model: model
-				}
-			}));
-		});
-
-		this._$list.appendChild(li);
-
-		this._defined.add(model.id);
-
-		model.addEventListener('copy', this._createItem.bind(this));
-	}
-
-	addListItems(analysisModelArray) {
-		analysisModelArray.forEach(analysisModel => this.addListItem(analysisModel));
+		this._libraryList = [];
 	}
 
 	_initUI() {
@@ -144,17 +34,140 @@ customElements.define('analysis-library', class extends HTMLElement {
 		this.appendChild($list);
 
 		this._$list = $list;
-		this._$search = $search;
+
+		$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
 	}
 
-	_initListeners() {
-		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+	//////////////////////////////////////////////////////////////////////////////////
+	//////////  Supporting controllerAT //////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+
+
+	createListItem(model, idx = -1) {
+		console.log("Analysis Library (addListItem) received NOTIFICATION for analysis-storage-created")
+		const id = model.urn || '';
+		const root = model.rootUrn;
+		const name = model.name;
+		const description = model.description || '';
+
+		const li = document.createElement('li');
+		li.className = "list-item"
+		li.id = id;
+
+		let deleteIconClickedHandler = function (event) {
+			event.stopPropagation();
+			this.dispatchEvent(new CustomEvent('event-analysis-deleted', {
+				detail: {analysisId: model.id}
+			}))
+		}
+
+		let lockIconClickedHandler = function (event) {
+			event.stopPropagation();
+			this.dispatchEvent(new CustomEvent('event-analysis-locked', {
+				detail: {analysisId: model.id}
+			}))
+		}
+
+
+		const $topHalfWrapper = document.createElement('div');
+		$topHalfWrapper.className = "top-half item-line"
+		const $nameEntry = document.createElement('span')
+		$nameEntry.classList.add('name-entry')
+		$nameEntry.innerText = name;
+
+		const toggleLock = document.createElement('div');
+		toggleLock.classList.add('library-button', 'lock-button');
+		toggleLock.addEventListener('click', lockIconClickedHandler.bind(this))
+
+		$topHalfWrapper.appendChild(toggleLock);
+		$topHalfWrapper.appendChild($nameEntry);
+
+		const $bottomHalfWrapper = document.createElement('div');
+		$bottomHalfWrapper.className = "bottom-half item-line"
+		const $descriptionEntry = document.createElement('span')
+		$descriptionEntry.classList.add('description-entry')
+		$descriptionEntry.innerText = root;
+
+		const deleteJag = document.createElement('div');
+		if (!model.isLocked) {
+			deleteJag.classList.add('library-button', 'delete-button');
+			deleteJag.addEventListener('click',  deleteIconClickedHandler.bind(this))
+		}
+
+		$bottomHalfWrapper.appendChild(deleteJag);
+		$bottomHalfWrapper.appendChild($descriptionEntry);
+		const p = document.createElement('p');
+		p.innerHTML = description;  // analysis description
+
+		li.appendChild($topHalfWrapper);
+		li.appendChild($bottomHalfWrapper);
+		li.appendChild(p)
+
+    	const search_params = [];
+		search_params.push(name.toLowerCase());
+		search_params.push(root.toLowerCase());
+		search_params.push(description.toLowerCase());
+
+		$bottomHalfWrapper.addEventListener('click', (event) => {
+			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
+				detail: {
+					model: model
+				}
+			}));
+		});
+
+		$topHalfWrapper.addEventListener('click', (event) => {
+			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
+				detail: {
+					model: model
+				}
+			}));
+		});
+
+		let newItem = {
+			element: li,
+			search_content: search_params.join(" "),
+			model: model
+		};
+
+		return newItem;
+
+	//?	model.addEventListener('copy', this._createItem.bind(this));
 	}
+
+	addListItem(analysisModel) {
+		// handleNodeStorageCreated (@controllerAT)
+		let listItemElement = this.createListItem(analysisModel)
+		this._libraryList.push(listItemElement);
+		this._$list.appendChild(listItemElement.element);
+	}
+
+	addListItems(analysisModelArray) {
+		analysisModelArray.forEach(analysisModel => {
+			this.addListItem(analysisModel)
+		});
+	}
+
+
+	removeLibraryListItem(deletedAnalysisId) {
+		// handleJagStorageDeleted (@controllerAT)
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
+		this._libraryList = this._libraryList.filter(entry => {
+			return entry.analysis.id != deletedAnalysisId
+		})
+		for (let item of this._libraryList) {
+			this._$list.appendChild(item.element);
+		}
+	}
+
+
 
 	_filterFromSearchInput(e) {
 		const search_text = e.srcElement.value.toLowerCase();
 
-		this._items.forEach((item) => {
+		this._libraryList.forEach((item) => {
 			if (item.element) {
 				item.element.style.display = 'block';
 				if(!item.search_content.includes(search_text))
@@ -163,24 +176,42 @@ customElements.define('analysis-library', class extends HTMLElement {
 		});
 	}
 
-	async _getChildModels(model, map) {
-		if(!model.children)
-			return map;
-
-		for (let child_details of model.children) {
-			const child = await this._getDefinitionForURN(child_details.urn);
-			map.set(child_details.urn, child);
-			map = await this._getChildModels(child, map);
-		}
-
-		return map;
-	}
-
-	async _createItem(e) {
-		this.addListItem(e.detail.model);
-	}
-
 });
 
 export default customElements.get('analysis-library');
+
+
+
+
+// async _getChildModels(model, map) {
+// 	if(!model.children)
+// 		return map;
+// 	for (let child_details of model.children) {
+// 		const child = await this._getDefinitionForURN(child_details.urn);
+// 		map.set(child_details.urn, child);
+// 		map = await this._getChildModels(child, map);
+// 	}
+// 	return map;
+// }
+/////////////////////////////////////////////////
+// updateListItem(updatedAnalysisModel, idx = -1) {
+// 	console.log("Analysis Library (updateListItem) received NOTIFICATION for analysis-storage-updated")
+//
+// 	for (let idx in this._libraryList) {
+// 		if (this._libraryList[idx].model.id == updatedAnalysisModel.id) {
+//
+// 			const rootUrn = this._libraryList[idx].element.querySelectorAll("pre").item(0).innerText;
+// 			const name = updatedAnalysisModel.name;
+// 			const description = updatedAnalysisModel.description;
+// 			this._libraryList[idx].element.querySelectorAll("h3").item(0).innerText = name;
+// 			this._libraryList[idx].element.querySelectorAll("p").item(0).innerText = description;
+// 			const search_params =[];
+// 			search_params.push(name.toLowerCase());
+// 			search_params.push(rootUrn.toLowerCase());
+// 			search_params.push(description.toLowerCase());
+// 			this._libraryList[idx].search_content = search_params.join(" ");
+// 		}
+// 	}
+// }
+
 

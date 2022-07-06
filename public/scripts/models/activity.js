@@ -21,28 +21,28 @@ export default class Activity extends EventTarget {
 
     constructor({
                     urn,
-                    name,
                     description = '',
-                    definition = '',
-                    connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
+                    name,
+                    children,
                     inputs,
                     outputs,
-                    children,
                     bindings,
+                    connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
+
                     author,
+                    lockedBy,
                     createdDate,
                     modifiedDate,
-                    lockedBy,
                     isLocked,
-
                     collapsed = false,
+                    // definition = '',
                 }) {
         super();
 
         this._urn = urn;
         this._name = name;
         this._description = description;
-        this._definition = definition;
+     //   this._definition = definition;
         this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
@@ -73,7 +73,7 @@ export default class Activity extends EventTarget {
 
         this._isLocked = isLocked;
         this._collapsed = collapsed;
-        this._definition = definition;
+   //     this._definition = definition;
     }
 
 
@@ -103,13 +103,13 @@ export default class Activity extends EventTarget {
         return this._description;
     }
 
-    get definition() {
-        return this._definition;
-    }
-
-    set definition(value) {
-        this._definition = value;
-    }
+    // get definition() {
+    //     return this._definition;
+    // }
+    //
+    // set definition(value) {
+    //     this._definition = value;
+    // }
 
     get author() {
         return this._author;

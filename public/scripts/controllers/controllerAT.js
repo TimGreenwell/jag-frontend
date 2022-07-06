@@ -133,14 +133,11 @@ export default class ControllerAT extends Controller {
     eventExportJagHandler(event) {
         let node = event.detail.node
         let descendantUrns = this.gatherDescendentUrns(node);
-        console.log("")
-        console.log(descendantUrns)
         let neededActivities = descendantUrns.map(urn => {
             let activityModel = this.fetchActivity(urn)
-            let activityJson = JSON.stringify(activityModel.toJSON())
+            let activityJson = JSON.stringify(activityModel.toJSON(), null, 4);
             return activityJson
         })
-        console.log(neededActivities)
         const jagJson = JSON.stringify(node.toJSON(), null, 4);
         let fileData = `{"activities" : [${neededActivities}], "jag" : ${jagJson}}`
 
@@ -162,9 +159,7 @@ export default class ControllerAT extends Controller {
 
     async eventImportJagHandler(event) {
         let json = event.detail.result
-        console.log(json)
         let jsonDescriptor = JSON.parse(json)
-        console.log(jsonDescriptor)
 
         let activities = jsonDescriptor.activities;
         let jag = jsonDescriptor.jag;
@@ -180,9 +175,6 @@ export default class ControllerAT extends Controller {
 
         let projectNode = await NodeModel.fromJSON(jag)
         await StorageService.create(projectNode, "node")
-        console.log(projectNode)
-
-        console.log("piggies")
     }
 
 
@@ -289,10 +281,7 @@ export default class ControllerAT extends Controller {
     }
 
     eventPlaygroundClickedHandler() {
-        console.log("handler THIS")
         this._properties.handleSelectionUnselected()
-
-
     }
 
 

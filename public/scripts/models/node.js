@@ -251,8 +251,6 @@ export default class Node extends EventTarget {
 	}
 
 	isActivityInProject(urn) {
-		console.log("Number of times activity found in project")
-		console.log(this.activitiesInProject(urn).length)
 		return (this.activitiesInProject(urn).length > 0)
 	}
 

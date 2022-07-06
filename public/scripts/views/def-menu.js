@@ -146,8 +146,6 @@ customElements.define('def-menu', class extends HTMLElement {
                 this._returnSelect.remove(0);
             }
             returnsOptions.forEach(option => {
-                console.log("options")
-                console.log(option)
                 let opt = document.createElement("option");
                 opt.value = option.value;
                 opt.text = option.text;
