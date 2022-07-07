@@ -241,24 +241,7 @@ export default class ControllerDEF extends Controller {
         return null
     }
 
-    async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
-        console.log("Local>> (local nodes disjoined) ")
-        let changingActivity = event.detail.activityUrn
-        let leavingJagChild = event.detail.activityChild
 
-        let projectRoot = this.fetchProject(leavingNodeModel.project)
-        this.repopulateParent(projectRoot)
-        let losingParents = leavingNodeModel.parent;
-        let losingParentsJag = this.fetchActivity(losingParents.urn)
-        let remainingChildren = losingParentsJag.children.filter(entry => {
-            if (entry.id != leavingNodeModel.childId) {
-                return entry;
-            }
-        })
-        losingParentsJag.children = remainingChildren
-        await StorageService.update(losingParentsJag, 'activity');
-        console.log("Local<< (local nodes disjoined) \n")
-    }
 
 
 

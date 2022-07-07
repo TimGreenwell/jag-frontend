@@ -11,7 +11,7 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8888;
 const root = process.argv[2] || '.';
 
 const app = express();

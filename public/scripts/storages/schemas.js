@@ -131,7 +131,6 @@ export default class Schemas {
 	}
 
 	static async deserialize(schema,description) {
-		console.log(description)
 		const newObj =  await Schemas.get(schema).deserialize(description)
 		return newObj;
 	}

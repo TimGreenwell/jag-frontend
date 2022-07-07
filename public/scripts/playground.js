@@ -175,14 +175,14 @@ class Playground extends Popupable {
             // childNodeModel.childId = this._created_edge._childId
             // parentNodeModel.addChild(childNodeModel);
 
-            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
+            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(projectId,newAncestor)  +  reparentize
             //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
 
             this.dispatchEvent(new CustomEvent('event-nodes-connected', {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    projectNodeId: parentNodeModel.project,
+                    projectNodeId: parentNodeModel.projectId,
                     parentNodeId: parentNodeModel.id,
                     childNodeId: childNodeModel.id
                 }
@@ -498,7 +498,7 @@ class Playground extends Popupable {
     clearPlayground(projectId = undefined) {
         for (let jagNode of this._activeActivityNodeElementSet) {
 
-            if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
+            if ((projectId == undefined) || (jagNode.nodeModel.projectId = projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
                 this._activeActivityNodeElementSet.delete(jagNode);
@@ -598,8 +598,8 @@ class Playground extends Popupable {
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-            //        if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
-            if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
+            //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
+            if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeActivityNodeElementSet.delete(node);
@@ -618,7 +618,7 @@ class Playground extends Popupable {
     }
 
     addNodeModel(projectNodeModel) {
-        this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
+        this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
         let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
     }
 
@@ -661,8 +661,8 @@ class Playground extends Popupable {
                 // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
                 // @TODO - migth consider a delted edge to mean disconnect jag
 
-                if ($node.nodeModel.project == $node.nodeModel.id) {
-                    this.clearPlayground($node.nodeModel.project);
+                if ($node.nodeModel.projectId == $node.nodeModel.id) {
+                    this.clearPlayground($node.nodeModel.projectId);
                 } else {
 
                     //

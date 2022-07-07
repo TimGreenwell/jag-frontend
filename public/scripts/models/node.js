@@ -16,7 +16,7 @@ export default class Node extends EventTarget {
 					urn,
 					childId,
 					parentId,
-					project = id,                              // @TODO change to projectId
+					projectId = id,
 					expanded = true,
 					isLocked = false,
 					contextualName = '',
@@ -35,7 +35,7 @@ export default class Node extends EventTarget {
 		this._urn = urn;
 		this._childId = childId;                       // child differentiating id
 		this._parentId = parentId;
-		this._project = project;
+		this._projectId = projectId;
 		this._expanded = expanded;         // Expanded (table) or folded in (graph)
 		this._isLocked = isLocked;
 		this._contextualName = contextualName;
@@ -88,12 +88,12 @@ export default class Node extends EventTarget {
 		this._activity = value;
 	}
 
-	get project() {
-		return this._project;
+	get projectId() {
+		return this._projectId;
 	}
 
-	set project(value) {
-		this._project = value;
+	set projectId(value) {
+		this._projectId = value;
 	}
 
 	get children() {
@@ -380,7 +380,7 @@ export default class Node extends EventTarget {
 	}
 
 	isRoot() {
-		return this._id == this._project;
+		return this._id == this._projectId;
 	}         // is determined by lack of parent.
 
     getAncestor() {
@@ -398,7 +398,7 @@ export default class Node extends EventTarget {
 			id: this._id,
 			urn: this._urn,
 			childId: this._childId,
-			project: this._project,
+			projectId: this._projectId,
 			expanded: this._expanded,
 			isLocked: this._isLocked,
 			x: this._x,

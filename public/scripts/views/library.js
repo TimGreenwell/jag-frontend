@@ -46,6 +46,21 @@ customElements.define('jag-library', class extends HTMLElement {
 	//////////  Supporting controllerAT //////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 
+	updateItem(updatedActivity) {
+		let listItemElement = this.createListItem(updatedActivity)
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
+		for (let idx in this._libraryList) {
+			if (this._libraryList[idx].activity.urn == updatedActivity.urn) {
+				this._libraryList[idx] = listItemElement;
+			}
+		}
+		for (let item of this._libraryList) {
+			this._$list.appendChild(item.element);
+		}
+	}
+
 
 	createListItem(newActivity) {
 		// handleJagStorageCreated (@controllerAT)
@@ -116,7 +131,6 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
 							activity: newActivity,
-							expanded: event.shiftKey
 						}
 					}))});
 
@@ -124,7 +138,6 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
 							activity: newActivity,
-							expanded: event.shiftKey
 						}
 					}))
 				});
@@ -255,17 +268,3 @@ export default customElements.get('jag-library');
 // }
 ///////////////////////////////////////////
 //
-// updateItem(updatedActivity) {
-// 	let listItemElement = this.createListItem(updatedActivity)
-// 	for (let item of this._libraryList) {
-// 		this._$list.removeChild(item.element);
-// 	}
-// 	for (let idx in this._libraryList) {
-// 		if (this._libraryList[idx].activity.urn == updatedActivity.urn) {
-// 			this._libraryList[idx] = listItemElement;
-// 		}
-// 	}
-// 	for (let item of this._libraryList) {
-// 		this._$list.appendChild(item.element);
-// 	}
-// }

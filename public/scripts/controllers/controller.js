@@ -1,7 +1,8 @@
 /**
  *
- * JAG - Authoring Tool
+ * Common Controller Object
  *
+ * These methods are shared by two or more other controllers.
  *
  * @author IHMC
  * @version 0.02
@@ -75,7 +76,7 @@ export default class Controller extends EventTarget {
         this._analysisMap = newAnalysisMap;
     }
 
-    uncacheAnalysis(analysisId) {
+    decacheAnalysis(analysisId) {
         this._analysisMap.delete(analysisId)
     }
 
@@ -216,7 +217,7 @@ async eventActivityCreatedHandler(event) {
                     childNodeModel.activity = childActivity
                     childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
                     childNodeModel.parent = currentNode
-                    this.repopulateProject(childNodeModel, projectNode.project)
+                    this.repopulateProject(childNodeModel, projectNode.projectId)
                     currentNode.addChild(childNodeModel);
                 })
 
@@ -224,10 +225,7 @@ async eventActivityCreatedHandler(event) {
                     let childNodeModel = this.searchTreeForChildId(projectNode, child.id)    //currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
                     orphanedRootStack.push(childNodeModel);
-
-
                 })
-
             }
             for (const child of currentNode.children) {
                 nodeStack.push(child);
@@ -242,7 +240,6 @@ async eventActivityCreatedHandler(event) {
         }
         return projectNode;
         console.log("Local<< (new node affects project) \n")
-
     }
 
     buildCellTreeFromActivityUrn(newRootActivityUrn) {
@@ -273,16 +270,17 @@ async eventActivityCreatedHandler(event) {
         return returnNode;
     }
 
-    buildNodeTreeFromActivity(rootActivity, expanded) {
-
+    buildNodeTreeFromActivity(rootActivity, expanded = true) {
         const nodeStack = [];
         const resultStack = [];
-      //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
         const rootNodeModel = new NodeModel({urn: rootActivity.urn});
         rootNodeModel.activity = rootActivity;
         rootNodeModel.parentUrn = null;
-        rootNodeModel.project = rootNodeModel.id;
+        rootNodeModel.projectId = rootNodeModel.id;
+        console.log("ok")
+        console.log(expanded)
         rootNodeModel.expanded = expanded;
+        console.log(expanded)
         nodeStack.push(rootNodeModel);
         while (nodeStack.length > 0) {
             let currentNode = nodeStack.pop();
@@ -293,7 +291,7 @@ async eventActivityCreatedHandler(event) {
                 childNodeModel.activity = childActivity
                 childNodeModel.childId = child.id;
                 childNodeModel.parentId = currentNode.id;
-                childNodeModel.project = currentNode.project
+                childNodeModel.projectId = currentNode.projectId
                 currentNode.addChild(childNodeModel, true);
                 nodeStack.push(childNodeModel);
             }
@@ -313,7 +311,6 @@ async eventActivityCreatedHandler(event) {
         return returnValue
     }
 
-
     searchTreeForId(treeNode,id) {
         let workStack = []
         workStack.push(treeNode)
@@ -324,7 +321,6 @@ async eventActivityCreatedHandler(event) {
         }
         return null
     }
-
 
     searchTreeForChildId(treeNode,childId) {
         let workStack = []
@@ -343,7 +339,6 @@ async eventActivityCreatedHandler(event) {
         }
     }
 
-
     repopulateActivity(currentNode) {
         currentNode.activity = this.fetchActivity(currentNode.urn)
         for (let child of currentNode.children) {
@@ -360,9 +355,9 @@ async eventActivityCreatedHandler(event) {
     }
 
     repopulateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         for (let child of currentNode.children) {
-            child.project = projectId;
+            child.projectId = projectId;
             this.repopulateParent(child, projectId)
         }
     }
@@ -376,5 +371,24 @@ async eventActivityCreatedHandler(event) {
             }
         }
 
+
+    // This was in controllerAT and controllerDEF - still used
+    async localJagDisconnectedHandler(event) {
+        console.log("Local>> (local nodes disjoined) ")
+        let changingActivity = event.detail.activityUrn
+        let leavingJagChild = event.detail.activityChild
+        let projectRoot = this.fetchProject(leavingNodeModel.projectId)
+        this.repopulateParent(projectRoot)
+        let losingParents = leavingNodeModel.parent;
+        let losingParentsJag = this.fetchActivity(losingParents.urn)
+        let remainingChildren = losingParentsJag.children.filter(entry => {
+            if (entry.id != leavingNodeModel.childId) {
+                return entry;
+            }
+        })
+        losingParentsJag.children = remainingChildren
+        await StorageService.update(losingParentsJag, 'activity');
+        console.log("Local<< (local nodes disjoined) \n")
+    }
 
 }

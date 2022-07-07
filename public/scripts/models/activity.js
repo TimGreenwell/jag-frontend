@@ -20,34 +20,33 @@ import Validation from "../utils/validation.js";
 export default class Activity extends EventTarget {
 
     constructor({
-                    urn,
+                    urn,                    // identifier
                     description = '',
                     name,
-                    children,
+                    children,               // array of childrens urn and id*
                     inputs,
                     outputs,
                     bindings,
-                    connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
-
+                    connector =
+                        {execution: Activity.EXECUTION.NONE.name,
+                        returns: Activity.RETURNS.ALL.name,
+                        operator: Activity.OPERATOR.NONE.name},
                     author,
                     lockedBy,
                     createdDate,
                     modifiedDate,
                     isLocked,
-                    collapsed = false,
-                    // definition = '',
+                    collapsed = false
                 }) {
         super();
 
         this._urn = urn;
         this._name = name;
         this._description = description;
-     //   this._definition = definition;
         this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._lockedBy = lockedBy;
-
         this._connector = connector;
         this._execution = connector.execution;
         this._returns = connector.returns;
@@ -73,7 +72,6 @@ export default class Activity extends EventTarget {
 
         this._isLocked = isLocked;
         this._collapsed = collapsed;
-   //     this._definition = definition;
     }
 
 
@@ -102,14 +100,6 @@ export default class Activity extends EventTarget {
     get description() {
         return this._description;
     }
-
-    // get definition() {
-    //     return this._definition;
-    // }
-    //
-    // set definition(value) {
-    //     this._definition = value;
-    // }
 
     get author() {
         return this._author;
@@ -186,9 +176,40 @@ export default class Activity extends EventTarget {
         return [...this._children];
     }
 
-    // id: id = UUIDv4(),
-    // urn: child.urn,
-    // activity: child
+    addChild(urn, id = undefined) {
+        /**
+         * Adds the given Activity as a child to this Activity.
+         * If an ID already exists, the child already exists, and this was likely called
+         * during creation of a graphical edge for the child of an existing Activity; the call
+         * will be ignored and the given ID will be returned.
+         * Dispatches an update if ID is undefined.
+         *
+         * @param {Activity} child Model to add.
+         * @param {String} id ID for child, if it exists.
+         * @returns {String} UUIDv4 string of the child.
+         */
+        this._children.push({
+            urn: urn,
+            id: id = UUIDv4()
+        });
+
+        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
+            this._operator = Activity.OPERATOR.AND.name;
+        }
+        return id;
+    }
+
+    removeChild(childId) {
+        for (let index in this._children) {
+            if (this._children[index].id === childId) {
+                this._children.splice(index, 1);
+                break;
+            }
+        }
+        for (let binding of this._bindings)
+            if (binding.provider.id == childId || binding.consumer.id == childId)
+                this.removeBinding(binding);
+    }
 
     hasChildren() {
         return (this._children.length > 0)
@@ -238,85 +259,12 @@ export default class Activity extends EventTarget {
         return this._isLocked;
     }
 
-
     get collapsed() {
         return this._collapsed;
     }
 
     set collapsed(value) {
         this._collapsed = value;
-    }
-
-    addChild(urn, id = undefined) {  // Add UUIDv4 default here
-        /**
-         * Adds the given Activity as a child to this Activity.
-         * If an ID already exists, the child already exists, and this was likely called
-         * during creation of a graphical edge for the child of an existing Activity; the call
-         * will be ignored and the given ID will be returned.
-         * Dispatches an update if ID is undefined.
-         *
-         * @param {Activity} child Model to add.
-         * @param {String} id ID for child, if it exists.
-         * @returns {String} UUIDv4 string of the child.
-         */
-        if (id === undefined) {   // <-- prob obs now
-            this._children.push({
-                urn: urn,
-                id: id = UUIDv4()
-                //    activity: child   // dont think this is really there.  would be too much to serialize
-            });
-        }
-        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
-            this._operator = Activity.OPERATOR.AND.name;
-        }
-        return id;
-    }
-
-
-    removeChild(childId) {
-        for (let index in this._children) {
-            if (this._children[index].id === childId) {
-                this._children.splice(index, 1);
-                break;
-            }
-        }
-        for (let binding of this._bindings)
-            if (binding.provider.id == childId || binding.consumer.id == childId)
-                this.removeBinding(binding);
-    }
-
-    /**
-     * Sets the name of the child with the given ID to the given name.
-     *
-     * @param {String} id ID of the child whose name will be set.
-     * @param {String} name Name to set to.
-     */
-    setChildNameXXX(id, name) {
-        for (const child of this._children) {
-            if (child.id == id) {
-                if (child.name != name) {
-                    child.name = name;
-                }
-                break;
-            }
-        }
-    }
-
-    /**
-     * Sets the description of the child with the given ID to the given description.
-     *
-     * @param {String} id ID of the child whose description will be set.
-     * @param {String} description Description to set to.
-     */
-    setChildDescriptionXXX(id, description) {
-        for (const child of this._children) {
-            if (child.id == id) {
-                if (child.description != description) {
-                    child.description = description;
-                }
-                break;
-            }
-        }
     }
 
 

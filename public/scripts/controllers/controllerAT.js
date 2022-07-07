@@ -252,6 +252,7 @@ export default class ControllerAT extends Controller {
         let parentNodeId = event.detail.parentNodeId
         let childNodeId = event.detail.childNodeId
 
+
         let projectModel = this.fetchProject(projectNodeId)
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
         let childNodeModel = this.fetchProject(childNodeId)
@@ -267,7 +268,7 @@ export default class ControllerAT extends Controller {
             // in this case, there is already a child to 'adopt'.
             // options: clone child, attach it to parent and delete the original (keeps others in sync)
             // option2: attach child, then delete project number and hope that doesnt affect the kid
-            let losingProjectId = childNodeModel.project;
+            let losingProjectId = childNodeModel.projectId;
 
             parentNodeModel.addChild(childNodeModel);
             this.repopulateProject(parentNodeModel, projectNodeId)
@@ -295,10 +296,10 @@ export default class ControllerAT extends Controller {
         // Otherwise, insert the node in the right place in the project and StorageService the project root.
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        if (updatedNodeModel.id == updatedNodeModel.project) {
+        if (updatedNodeModel.id == updatedNodeModel.projectId) {
             projectNode = updatedNodeModel
         } else {
-            projectNode = this.fetchProject(updatedNodeModel.project)
+            projectNode = this.fetchProject(updatedNodeModel.projectId)
             projectNode.replaceChild(updatedNodeModel)
         }
         await StorageService.update(projectNode, 'node');
@@ -307,7 +308,7 @@ export default class ControllerAT extends Controller {
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
         // If match found, remove that child from the parent and signal update on the parent.
-        console.log("Local>> (jag deleted) ")
+        console.log("Local>> (activity deleted) ")
         const deadActivityUrn = event.detail.activityUrn;
         for (let [activityId, activity] of this._activityMap) {
             //      if (activity.urn != deadActivityUrn) {
@@ -327,11 +328,11 @@ export default class ControllerAT extends Controller {
     }
 
     async eventActivityLockedHandler(event) {
-        console.log("Local>> (jag locked) ")
+        console.log("Local>> (activity locked) ")
         const lockedActivity = event.detail.activity;
         lockedActivity.isLocked = !lockedActivity.isLocked;
         await StorageService.update(lockedActivity, 'activity');
-        console.log("Local<< (jag locked) \n")
+        console.log("Local<< (activity locked) \n")
     }
 
     /**   -- Menu --  */
@@ -357,7 +358,7 @@ export default class ControllerAT extends Controller {
         let selectedNodes = this._playground.selectedNodes
 
         selectedNodes.forEach(selectedNode => {
-            let projectId = selectedNode.project;
+            let projectId = selectedNode.projectId;
             let nodeId = selectedNode.id;
             openInNewTab("./node.html?project=" + projectId + "&node=" + nodeId)
         })
@@ -376,6 +377,8 @@ export default class ControllerAT extends Controller {
         const activitySelected = event.detail.activity;
         const expanded = event.detail.expanded;
         let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, expanded);
+  console.log("check it out")
+         console.log(newProjectRootNode)
         await StorageService.create(newProjectRootNode, "node");
         console.log("Local<< (Project created / library selected) \n")
     }
@@ -415,14 +418,14 @@ export default class ControllerAT extends Controller {
      * the appropriate changes are made to the views.  Its entirely possible (and common) that the events were
      * initiated locally but that is transparent to the logic.  The origin of commands is irrelevant to the logic.
      *
-     * commandActivityCreatedHandler
-     * commandActivityUpdatedHandler
-     * commandActivityDeletedHandler
-     * commandActivityClonedHandler
-     * commandActivityReplacedHandler
-     * commandNodeCreatedHandler
-     * commandNodeUpdatedHandler
-     * commandNodeDeletedHandler
+     * commandActivityCreatedHandler  - response to an 'Activity Created' message
+     * commandActivityUpdatedHandler  - 'Activity Updated'
+     * commandActivityDeletedHandler  - 'Activity Deleted'
+     * commandActivityClonedHandler   - 'Activity Cloned'  (~Activity Updated)
+     * commandActivityReplacedHandler - 'Activity Replaced'
+     * commandNodeCreatedHandler      - 'Node Created'
+     * commandNodeUpdatedHandler      - 'Node Updated'
+     * commandNodeDeletedHandler      - 'Node Deleted'
      *
      */
 
@@ -445,7 +448,6 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.updateItem(updatedActivity);
     }
 
-
     async commandActivityDeletedHandler(deletedActivityUrn) {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
@@ -459,41 +461,18 @@ export default class ControllerAT extends Controller {
                 console.log(viewedProject.id)
                 console.log(deletedActivityUrn)
                 console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
                 console.log('I dont think its possibel to get here')
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
                 console.log("(((((((((((((((((())))))))))))))))))))))")
             }
         }
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn)
     }
 
-    // async responseActivityDeletedHandler(event) {
-    //     // The Event: Playground just alerted that an activity JAG has been deleted.
-    //     // This can have a major impact on other JAGs and thus significantly affect the drawn nodes.
-    //     // Need to update and save the adjusted Projects
-    //     console.log("Local>> (deleted Activity affects Viewed Project) \n")
-    //     let projectId = event.detail.projectModelId; // could have used id
-    //     let projectNode = this.fetchProject(projectId)
-    //     let deletedActivityUrn = event.detail.activityUrn;
-    //     if (projectNode.urn == deletedActivityUrn) {
-    //         await StorageService.delete(projectNode.id, 'node');
-    //     } else {
-    //         projectNode = this.updateTreeWithActivityChange(      deletedActivityUrn, projectNode)
-    //         await StorageService.update(projectNode, 'node');
-    //     }
-    // }
-    //
-    //
-
-
     commandActivityClonedHandler(clonedActivity, clonedActivityUrn) {
+        this.cacheActivity(clonedActivity)
         UserPrefs.setDefaultUrnPrefixFromUrn(clonedActivityUrn)
-        this._playground._addActivityNodeTree(clonedActivity, clonedActivityUrn)
+        this._activityLibrary.addListItem(clonedActivity);
+        this.cacheActivity(clonedActivity)
     }
 
     commandActivityReplacedHandler(newActivity, replacedActivityUrn) {
@@ -519,7 +498,7 @@ export default class ControllerAT extends Controller {
 
         this.repopulateParent(updatedNodeModel)
         this.repopulateActivity(updatedNodeModel)
-        this.repopulateProject(updatedNodeModel, updatedNodeModel.project)
+        this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId)
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter()
         this.cacheProject(updatedNodeModel)
 
@@ -543,10 +522,8 @@ export default class ControllerAT extends Controller {
      *
      */
 
-
-
     updateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         currentNode.children.forEach(child => this.updateProject(child))
     }
 
@@ -582,24 +559,9 @@ export default class ControllerAT extends Controller {
         }
     }
 
-    async localJagDisconnectedHandler(event) {              //localActivityNodeCleared?
-        console.log("Local>> (local nodes disjoined) ")
-        let changingActivity = event.detail.activityUrn
-        let leavingJagChild = event.detail.activityChild
 
-        let projectRoot = this.fetchProject(leavingNodeModel.project)
-        this.repopulateParent(projectRoot)
-        let losingParents = leavingNodeModel.parent;
-        let losingParentsJag = this.fetchActivity(losingParents.urn)
-        let remainingChildren = losingParentsJag.children.filter(entry => {
-            if (entry.id != leavingNodeModel.childId) {
-                return entry;
-            }
-        })
-        losingParentsJag.children = remainingChildren
-        await StorageService.update(losingParentsJag, 'activity');
-        console.log("Local<< (local nodes disjoined) \n")
-    }
+
+
 
 
 }

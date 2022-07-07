@@ -150,8 +150,6 @@ customElements.define('node-library', class extends HTMLElement {
 		this._$list.appendChild(listItemElement.element);
 		}
 
-
-
 	addListItems(nodeModelArray) {
 		// initializePanels (@controllerAT)
 		nodeModelArray.forEach(nodeModel => {
