@@ -96,17 +96,19 @@ export default class Node extends EventTarget {
 		this._projectId = value;
 	}
 
-	get children() {
-		return this._children;
-	}
-	set children(value) {
-		this._children = value;
-	}
 	get parent() {
 		return this._parent;
 	}
 	set parent(parent) {
 		this._parent = parent;
+	}
+
+
+	get children() {
+		return this._children;
+	}
+	set children(value) {
+		this._children = value;
 	}
 
 	get returnValue() {
@@ -398,19 +400,19 @@ export default class Node extends EventTarget {
 			id: this._id,
 			urn: this._urn,
 			childId: this._childId,
+			parentId: this._parentId,
 			projectId: this._projectId,
 			expanded: this._expanded,
 			isLocked: this._isLocked,
-			x: this._x,
-			y: this._y,
 			contextualName: this._contextualName,
 			contextualDescription: this._contextualDescription,
-			subscribes: [],
+			x: this._x,
+			y: this._y,
+			subscriptions: [],
 			returnValue: this._returnValue,
 			returnState: this._returnState,
 			testReturnValue: this._testReturnValue,
 			testReturnState: this._testReturnState,
-			parentId: this._parentId
 		};
 		let childStack = [];
 		for (let child of this._children) {

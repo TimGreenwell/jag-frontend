@@ -35,7 +35,7 @@ export default class Activity extends EventTarget {
                     lockedBy,
                     createdDate,
                     modifiedDate,
-                    isLocked,
+                    isLocked = false,
                     collapsed = false
                 }) {
         super();
