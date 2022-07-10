@@ -222,7 +222,7 @@ async eventActivityCreatedHandler(event) {
                     childNodeModel.activity = childActivity
                     childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
                     childNodeModel.parent = currentNode
-                    this.repopulateProject(childNodeModel, projectNode.project)
+                    this.repopulateProject(childNodeModel, projectNode.projectId)
                     currentNode.addChild(childNodeModel);
                 })
 
@@ -289,7 +289,7 @@ async eventActivityCreatedHandler(event) {
         const rootNodeModel = new NodeModel({urn: rootActivity.urn});
         rootNodeModel.activity = rootActivity;
         rootNodeModel.parentUrn = null;
-        rootNodeModel.project = rootNodeModel.id;
+        rootNodeModel.projectId = rootNodeModel.id;
         rootNodeModel.expanded = expanded;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length > 0) {
@@ -301,7 +301,7 @@ async eventActivityCreatedHandler(event) {
                 childNodeModel.activity = childActivity
                 childNodeModel.childId = child.id;
                 childNodeModel.parentId = currentNode.id;
-                childNodeModel.project = currentNode.project
+                childNodeModel.projectId = currentNode.projectId
                 currentNode.addChild(childNodeModel, true);
                 nodeStack.push(childNodeModel);
             }
@@ -370,9 +370,9 @@ async eventActivityCreatedHandler(event) {
     }
 
     repopulateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         for (let child of currentNode.children) {
-            child.project = projectId;
+            child.projectId = projectId;
             this.repopulateParent(child, projectId)
         }
     }

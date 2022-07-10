@@ -30,11 +30,10 @@ export default class Activity extends EventTarget {
                     children,
                     bindings,
                     author,
+                    lockedBy,
                     createdDate,
                     modifiedDate,
-                    lockedBy,
                     isLocked,
-
                     collapsed = false,
                 }) {
         super();
@@ -75,7 +74,6 @@ export default class Activity extends EventTarget {
         this._collapsed = collapsed;
         this._definition = definition;
     }
-
 
     get urn() {
         return this._urn;
@@ -553,7 +551,6 @@ export default class Activity extends EventTarget {
             urn: this._urn,
             name: this._name,
             description: this._description,
-            type: 'node.type.plan',
             connector: {
                 execution: this._execution,
                 returns: this._returns,

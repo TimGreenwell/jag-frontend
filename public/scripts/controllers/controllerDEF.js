@@ -212,7 +212,7 @@ export default class ControllerDEF extends Controller {
 
 
     updateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         currentNode.children.forEach(child => this.updateProject(child))
     }
 
@@ -246,7 +246,7 @@ export default class ControllerDEF extends Controller {
         let changingActivity = event.detail.activityUrn
         let leavingJagChild = event.detail.activityChild
 
-        let projectRoot = this.fetchProject(leavingNodeModel.project)
+        let projectRoot = this.fetchProject(leavingNodeModel.projectId)
         this.repopulateParent(projectRoot)
         let losingParents = leavingNodeModel.parent;
         let losingParentsJag = this.fetchActivity(losingParents.urn)

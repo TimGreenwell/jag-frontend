@@ -275,7 +275,7 @@ export default class ControllerAT extends Controller {
             // in this case, there is already a child to 'adopt'.
             // options: clone child, attach it to parent and delete the original (keeps others in sync)
             // option2: attach child, then delete project number and hope that doesnt affect the kid
-            let losingProjectId = childNodeModel.project;
+            let losingProjectId = childNodeModel.projectId;
 
             parentNodeModel.addChild(childNodeModel);
             this.repopulateProject(parentNodeModel, projectNodeId)
@@ -306,10 +306,10 @@ export default class ControllerAT extends Controller {
         // Otherwise, insert the node in the right place in the project and StorageService the project root.
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        if (updatedNodeModel.id == updatedNodeModel.project) {
+        if (updatedNodeModel.id == updatedNodeModel.projectId) {
             projectNode = updatedNodeModel
         } else {
-            projectNode = this.fetchProject(updatedNodeModel.project)
+            projectNode = this.fetchProject(updatedNodeModel.projectId)
             projectNode.replaceChild(updatedNodeModel)
         }
         await StorageService.update(projectNode, 'node');
@@ -368,7 +368,7 @@ export default class ControllerAT extends Controller {
         let selectedNodes = this._playground.selectedNodes
 
         selectedNodes.forEach(selectedNode => {
-            let projectId = selectedNode.project;
+            let projectId = selectedNode.projectId;
             let nodeId = selectedNode.id;
             openInNewTab("./node.html?project=" + projectId + "&node=" + nodeId)
         })
@@ -530,7 +530,7 @@ export default class ControllerAT extends Controller {
 
         this.repopulateParent(updatedNodeModel)
         this.repopulateActivity(updatedNodeModel)
-        this.repopulateProject(updatedNodeModel, updatedNodeModel.project)
+        this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId)
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter()
         this.cacheProject(updatedNodeModel)
 
@@ -557,7 +557,7 @@ export default class ControllerAT extends Controller {
 
 
     updateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         currentNode.children.forEach(child => this.updateProject(child))
     }
 
@@ -598,7 +598,7 @@ export default class ControllerAT extends Controller {
         let changingActivity = event.detail.activityUrn
         let leavingJagChild = event.detail.activityChild
 
-        let projectRoot = this.fetchProject(leavingNodeModel.project)
+        let projectRoot = this.fetchProject(leavingNodeModel.projectId)
         this.repopulateParent(projectRoot)
         let losingParents = leavingNodeModel.parent;
         let losingParentsJag = this.fetchActivity(losingParents.urn)
