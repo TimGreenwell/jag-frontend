@@ -1,7 +1,7 @@
 {
   "activities": [
     {
-      "urn": "tasks:hk:kill-target",
+      "urn": "tasks:hk:hunter-seeker",
       "name": "Kill Target",
       "description": "Find, track and eliminate target.",
       "type": "node.type.plan",

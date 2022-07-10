@@ -14,7 +14,6 @@ customElements.define('node-library', class extends HTMLElement {
 		super();
 		this._libraryList = [];                         // <li> elements holding nodeModel's head Node name & description + (search context) + nodeModel
 		this._initUI();
-		this._initListeners();
 		this.clearLibraryList();
 	};
 
@@ -31,12 +30,10 @@ customElements.define('node-library', class extends HTMLElement {
 		this.appendChild($list);
 
 		this._$list = $list;
-		this._$search = $search;
+
+		$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
 	}
 
-	_initListeners() {
-		this._$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
-	}
 
 	clearLibraryList() {
 		for (let item of this._libraryList) {
@@ -54,41 +51,41 @@ customElements.define('node-library', class extends HTMLElement {
 			const urn = newNodeModel.urn;
 			const name = newNodeModel.activity.name || '';
 			const description = newNodeModel.activity.description || '';
+
 			const li = document.createElement('li');
+			li.className = "list-item"
 
 			let deleteIconClickedHandler = function (event) {
 				event.stopPropagation();
 				this.dispatchEvent(new CustomEvent('event-project-deleted', {
-					detail: {
-						nodeModelId: newNodeModel.id
-					}
+					detail: {nodeModelId: newNodeModel.id}
 				}))
 			}
 
 			let lockIconClickedHandler = function (event) {
 				event.stopPropagation();
 				this.dispatchEvent(new CustomEvent('event-project-locked', {
-					detail: {
-						nodeModel: newNodeModel
-					}
+					detail: {nodeModel: newNodeModel}
 				}))
 			}
 
 
 			//const $header = document.createElement('header');
-			const $topHalfWrapper = document.createElement('h3');
+			const $topHalfWrapper = document.createElement('div');
+			$topHalfWrapper.className = "top-half item-line"
 			const $nameEntry = document.createElement('span')
 			$nameEntry.classList.add('name-entry')
 			$nameEntry.innerText = newNodeModel.name;
 
 			const toggleLock = document.createElement('div');
-			toggleLock.classList.add('node-button', 'lock-button');
+			toggleLock.classList.add('library-button', 'lock-button');
 			toggleLock.addEventListener('click', lockIconClickedHandler.bind(this))
 
 			$topHalfWrapper.appendChild(toggleLock);
 			$topHalfWrapper.appendChild($nameEntry);
 
-			const $bottomHalfWrapper = document.createElement('h3');
+			const $bottomHalfWrapper = document.createElement('div');
+			$bottomHalfWrapper.className = "bottom-half item-line"
 			const $descriptionEntry = document.createElement('span')
 			$descriptionEntry.classList.add('description-entry')
 			$descriptionEntry.innerText = newNodeModel.description;
@@ -96,7 +93,7 @@ customElements.define('node-library', class extends HTMLElement {
 
 			const deleteNode = document.createElement('div');
 			if (!newNodeModel.isLocked) {
-				deleteNode.classList.add('node-button', 'delete-button');
+				deleteNode.classList.add('library-button', 'delete-button');
 				deleteNode.addEventListener('click', deleteIconClickedHandler.bind(this))
 			}
 
@@ -110,11 +107,6 @@ customElements.define('node-library', class extends HTMLElement {
 			search_params.push(urn.toLowerCase());
 			search_params.push(name.toLowerCase());
 			search_params.push(description.toLowerCase());
-
-
-			newNodeModel.addEventListener('refresh', () => {
-				this.refreshItem(newNodeModel);
-			});
 
 			// Send the newNodeModel and all its children through the dispatch
 			$bottomHalfWrapper.addEventListener('click', (event) => {
@@ -158,28 +150,12 @@ customElements.define('node-library', class extends HTMLElement {
 		this._$list.appendChild(listItemElement.element);
 		}
 
-
-
 	addListItems(nodeModelArray) {
 		// initializePanels (@controllerAT)
 		nodeModelArray.forEach(nodeModel => {
 			this.addListItem(nodeModel)
 		});
 	}
-
-	updateStructureChange(projectNodes) {
-		for (let item of this._libraryList) {
-			this._$list.removeChild(item.element);
-		}
-
-projectNodes.forEach(project => this.createListItem(project))
-
-		for (let item of this._libraryList) {
-			this._$list.appendChild(item.element);
-		}
-
-	}
-
 
 	updateItem(updatedNodeModel) {
 		let listItemElement = this.createListItem(updatedNodeModel)
@@ -215,22 +191,21 @@ projectNodes.forEach(project => this.createListItem(project))
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}
-
-	}
-
-	//??
-	// handleJagStorageReplaced (@controllerAT)
-	replaceItem(newActivity, replacedUrn) {
-		this.removeLibraryListItem(replacedUrn);
-		this.addItem(newActivity);
 	}
 
 
+	updateStructureChange(projectNodes) {
+		for (let item of this._libraryList) {
+			this._$list.removeChild(item.element);
+		}
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//////////  Supporting ///////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////
+		projectNodes.forEach(project => this.createListItem(project))
 
+		for (let item of this._libraryList) {
+			this._$list.appendChild(item.element);
+		}
+
+	}
 
 	_filterFromSearchInput(e) {
 		const search_text = e.srcElement.value.toLowerCase();
@@ -253,20 +228,6 @@ projectNodes.forEach(project => this.createListItem(project))
 		message.data.forEach((resource) => {
 			this.addItem(resource);
 		});
-	}
-
-
-	// @TODO  understand this guy
-	async refreshItem(newNodeModel, refreshedSet = new Set()) {
-		this._getChildModels(newNodeModel, new Map()).then(function (all_nodeModels) {
-			this.dispatchEvent(new CustomEvent('refresh', {
-				detail: {
-					nodeModel: newNodeModel,
-					nodeModel_set: all_nodeModels,
-					refreshed: refreshedSet
-				}
-			}))
-		}.bind(this));
 	}
 
 });

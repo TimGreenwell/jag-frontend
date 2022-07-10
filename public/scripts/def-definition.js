@@ -325,10 +325,6 @@ class Definition extends HTMLElement {
                 }
             })
         } else {
-            console.log(this.definingNode.children)
-            console.log(this.definingNode.children.map(child => {
-                return this._testBankMap.get(child.id)
-            }))
             values = this.definingNode.children.map(child => {
                 return this._testBankMap.get(child.id)
             }).filter(value => {
@@ -337,7 +333,6 @@ class Definition extends HTMLElement {
                 }
             })
         }
-        console.log(values)
         return values
     }
 

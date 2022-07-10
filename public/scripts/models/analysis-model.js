@@ -19,6 +19,7 @@ export default class AnalysisModel extends EventTarget {
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
 		            rootUrn,
 					team,
+		            isLocked
 				} = {}) {
 		super();
 		this._id = id;
@@ -26,10 +27,9 @@ export default class AnalysisModel extends EventTarget {
 		this._description = description;
 		this._rootUrn = rootUrn;
 		this._team = team;
-
+		this._isLocked = isLocked;
 		this._rootCellModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
 		                                  //  or when click in analysis library
-
 	};
 
 
@@ -74,6 +74,14 @@ export default class AnalysisModel extends EventTarget {
 	}
 
 
+	get isLocked() {
+		return this._isLocked;
+	}
+
+	set isLocked(value) {
+		this._isLocked = value;
+	}
+
 	findNode(id){
 		const searchStack = []
 		searchStack.push(this._rootCellModel)
@@ -106,7 +114,8 @@ export default class AnalysisModel extends EventTarget {
 			name: this._name,
 			description: this._description,
 			rootUrn: this._rootUrn,
-			team: this._team.id
+			team: this._team.id,
+			isLocked: this._isLocked
 		};
 		return json;
 	}

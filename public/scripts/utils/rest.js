@@ -45,7 +45,7 @@ export default class RESTUtils {
 	static async all(url) {
 		// TODO: safely join URL paths (perhaps Node package?)
 		const details = {};
-		let reply =  await RESTUtils.request(url, details, 'Error listing JAGs');
+		let reply =  await RESTUtils.request(url, details, 'Error listing');
 		return reply;
 	}
 
@@ -67,6 +67,8 @@ export default class RESTUtils {
 	}
 
 	static async create(url, description) {
+		console.log("final")
+		console.log(description)
 	//	const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		const options = {
 			'method': 'POST',
@@ -77,7 +79,8 @@ export default class RESTUtils {
 				'mode': 'cors'
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error creating JAG');
+		console.log(options)
+		return await RESTUtils.request(url, options, 'Error creating');
 	}
 
 	static async update(url, description) {
@@ -90,7 +93,7 @@ export default class RESTUtils {
 				'mode': 'cors'
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error updating JAG');
+		return await RESTUtils.request(url, options, 'Error updating');
 	}
 
 	static async delete(url) {
@@ -102,7 +105,7 @@ export default class RESTUtils {
 				'x-xsrf-token': csrfToken
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error deleting JAG');
+		return await RESTUtils.request(url, options, 'Error deleting');
 	}
 
 
@@ -116,7 +119,7 @@ export default class RESTUtils {
 			//	'x-xsrf-token': csrfToken
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error clearing JAG');
+		return await RESTUtils.request(url, options, 'Error clearing');
 	}
 
 	static  getCookie(name) {

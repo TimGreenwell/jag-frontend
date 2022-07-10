@@ -157,6 +157,8 @@ export default class StorageService extends SharedObservable{
         console.log("{<>} StorageService - CREATE   (" + schema + ") " + createdId);
         // @TODO if sync - update all storages (not implemented - need additional storages for testing)
         const jsonObj = createdModel.toJSON();
+        console.log("--->")
+        console.log(jsonObj)
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
         this.confirmStorageChange({topic:`command-${schema}-created`,schema: schema, id: createdId, description: jsonObj });
     }

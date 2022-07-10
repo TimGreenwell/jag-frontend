@@ -5,27 +5,22 @@
  * @copyright Copyright © 2019 IHMC, all rights reserved.
  * @version 0.57
  *
- * Concepts and vocabulary clarification:
- *   JAG Record: the bare JSON used for storage and transmission
- *   JAG Entity: Defined by models/jag, {id,name,desc,childrenID, inputs, outputs, bindings, annotations, ...}
- *               and events on data changes and functions to construct JAG Models  [type JAG]
- *   JAG Model: set[JAG Entity] - JAG parent entity with descendent entities
- *   JAG (AT) Node: Defined by views/jag - JAG Entity +  AT graphics + events on graphics
  *
  */
 
 import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
-import Library from './views/library.js';                     // AT - Left view of available JAG Entities
-import ProjectLibrary from './views/node-library.js';
+import Library from './views/library.js';                     // AT - Left view of available Activities
+import ProjectLibrary from './views/node-library.js';         // AT - Left view(2) of current JAGs
 import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
 import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
 import IDE from './ide.js';                                   // ?? - seems unused currently
+
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
-import RESTStorage from './storages/rest.js';
-import ControllerAT from "./controllers/controllerAT.js";
-import UserPrefs from "./utils/user-prefs.js";
+import RESTStorage from './storages/rest.js';                 // Available storage option (tested with Postgres)
+import ControllerAT from "./controllers/controllerAT.js";     // Controller - injection point
+
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -40,9 +35,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 	StorageService.addStorageInstance('local-rest-service', rest_storage);
 
 	// storage choices
-	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
+	//StorageService.setPreferredStorage('idb-service');          // which storage used for reads
+	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
 	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
-	StorageService.senderId = 'jag-at';
+	StorageService.senderId = 'jag-at';                         // Cross-tab identifier
 
 	let controller = new ControllerAT();
 

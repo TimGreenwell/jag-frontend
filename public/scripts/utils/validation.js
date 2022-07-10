@@ -100,8 +100,8 @@ export default class JAGATValidation {
         if (connector.operator.length == 0)
             throw new Error(`Connector execution type must be at least 1 character.`);
 
-         if (Object.keys(connector).length !== 3)               ///  COMMENTED OUT SINCE ADDING 'RETURNS'
-             throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
+         // if (Object.keys(connector).length !== 3)               ///  COMMENTED OUT SINCE ADDING 'RETURNS'
+         //     throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
     }
 
     static validateInputs(inputs) {

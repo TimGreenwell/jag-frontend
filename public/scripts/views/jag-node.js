@@ -24,7 +24,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		super();
 		this._translation = {x: 0, y:0};        // set_translation below == doesnt that make this useless.
 		this._outs = new Set();
-		this._in = undefined;
+		this._in = null;
 		this._boundUpdateHandler = this._updateHandler.bind(this);
 		this._boundDrag = this._drag.bind(this);
 		this._boundMouseUp = this._mouseUp.bind(this);
@@ -54,8 +54,9 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._applyOperator();
 		this._applyExecution();
 
-
 	}
+
+
 
 	set nodeModel(nodeModel) {           // another complex set                                                         yuk
 		this._nodeModel = nodeModel;
@@ -75,7 +76,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			child.visible = expanded && this.visible;
 		}
 
-		if (this._nodeModel.hasChildren()) {
+		if (this._nodeModel.expanded) {
 			this._$expand.innerHTML = "<";
 		} else {
 			this._$expand.innerHTML = ">";
@@ -87,6 +88,10 @@ customElements.define('jag-node', class extends HTMLElement {
 			this._$expand.style.visibility = "hidden";
 		}
 	}
+
+
+
+
 	get expanded() {
 		return this._nodeModel.expanded;
 	}
