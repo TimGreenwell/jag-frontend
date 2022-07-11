@@ -25,17 +25,17 @@ export default class Activity extends EventTarget {
                     description = '',
                     definition = '',
                     connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
-                    inputs,
-                    outputs,
-                    children,
-                    bindings,
+                    inputs = [],
+                    outputs = [],
+                    children = [],
+                    bindings = [],
                     author,
                     createdDate,
                     modifiedDate,
                     lockedBy,
-                    isLocked,
+                    isLocked = Boolean(false),
 
-                    collapsed = false,
+                    collapsed = Boolean(false),
                 }) {
         super();
 
@@ -610,23 +610,30 @@ export default class Activity extends EventTarget {
     }
 
     static fromJSON(json) {
+        console.log(json)
         if (Array.isArray(json)) {
+            console.log("USING fromJSON #1::::::::::::::::::::::::::")
             let jagList = json.map(function (element) {
                 try {
                     ValidationUtility.validateJAG(element);
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
-                return new Activity(element);
+                let returnValue = Activity(element);
+                console.log(returnValue)
+                return returnValue;
             })
             return jagList;
         } else {
+            console.log("USING fromJSON #2::::::::::::::::::::::::::")
             try {
                 ValidationUtility.validateJAG(json);
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
-            return new Activity(json);
+            let returnValue = new Activity(json);
+            console.log(returnValue)
+            return returnValue;
             // @TODO: explode the json definition to use the constructor below
             //return new Activity(urn, name, connector, inputs, outputs, children, bindings);
         }

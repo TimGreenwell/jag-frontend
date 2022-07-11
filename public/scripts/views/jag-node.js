@@ -37,7 +37,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.setTranslation(100, 100);       //  Looks like this sets the  translation values and sets the view style
 		this._initHandlers();
 		this._nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing  - cost 1/2 day
-	//	this.expanded = expanded;
+	//	this.isExpanded = isExpanded;
 		this.becomeVisible();
 /////////////////////////////////////////////////////////
 		if (this._nodeModel) {
@@ -67,16 +67,20 @@ customElements.define('jag-node', class extends HTMLElement {
 
 
 
-	set expanded(expanded) {               // complex...leave it
-		this._nodeModel.expanded = expanded;
+	set isExpanded(isExpanded) {               // complex...leave it
+		console.log(":")
+		console.log("CHANGING IT TO ")
+		console.log(isExpanded)
+		console.log(":")
+		this._nodeModel.isExpanded = isExpanded;
 
 		for (const edge of this._outs) {
 			const child = edge.getSubActivityNode();
-			edge.visible = expanded && this.visible;
-			child.visible = expanded && this.visible;
+			edge.visible = isExpanded && this.visible;
+			child.visible = isExpanded && this.visible;
 		}
 
-		if (this._nodeModel.expanded) {
+		if (this._nodeModel.isExpanded) {
 			this._$expand.innerHTML = "<";
 		} else {
 			this._$expand.innerHTML = ">";
@@ -92,8 +96,8 @@ customElements.define('jag-node', class extends HTMLElement {
 
 
 
-	get expanded() {
-		return this._nodeModel.expanded;
+	get isExpanded() {
+		return this._nodeModel.isExpanded;
 	}
 
 	//complex set visible
@@ -117,7 +121,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			child.becomeVisible();
 		}
 		this.style.visibility = "visible";
-		this.expanded = this.expanded;
+		this.isExpanded = this.isExpanded;
 		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: this._visible }));
 	}
 	becomeInvisible(){
@@ -190,7 +194,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	completeOutEdge(edge, id = undefined) {
 		this._outs.add(edge);
-		this.expanded = this.expanded;
+		this.isExpanded = this.isExpanded;
 
 	//	return this._nodeModel.activity.addChild(edge.getSubActivityNode().nodeModel.urn, id);              ////// sorry
 
@@ -403,8 +407,8 @@ customElements.define('jag-node', class extends HTMLElement {
 		});
 
 		this._$expand.addEventListener('click', () => {
-		//	this._nodeModel.expanded = !this._nodeModel.expanded;
-			this.expanded = !this.expanded;
+		//	this._nodeModel.isExpanded = !this._nodeModel.isExpanded;
+			this.isExpanded = !this.isExpanded;
 			let updateNode = (this._nodeModel.isRoot()) ?  this._nodeModel : this._nodeModel.parent
 			this.dispatchEvent(new CustomEvent('event-node-updated', {
 				bubbles: true,
@@ -468,10 +472,10 @@ customElements.define('jag-node', class extends HTMLElement {
 	translate(dx, dy, recursive = undefined) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 
-		if(this._outs != undefined && (recursive || (recursive == undefined && !this._nodeModel.expanded))) {
+		if(this._outs != undefined && (recursive || (recursive == undefined && !this._nodeModel.isExpanded))) {
 			this._outs.forEach((edge) => {
-			//	edge._node_end.translate(dx, dy, recursive || !this._nodeModel.expanded);
-				edge._subActivityNode.translate(dx, dy, recursive || !this._nodeModel.expanded);
+			//	edge._node_end.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
+				edge._subActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
 			});
 		}
 	}

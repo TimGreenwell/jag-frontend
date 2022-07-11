@@ -16,6 +16,7 @@ import AutoComplete from '../ui/auto-complete.js';
 import JagCellControls from '../ui/jag-cell-controls.js';
 import AnalysisCell from './analysis-cell.js';
 import JAG from "../models/activity.js";
+import Node from "../models/node.js";
 import Validator from "../utils/validation.js";
 
 // A Cell based off (model/Node)
@@ -148,10 +149,10 @@ class JagCell extends AnalysisCell {
                 this._htmlElements.nameEntry.blur();
 
                 if (e.shiftKey)
-                    this.nodeModel.addChild(new NodeModel());   // shift to controller (ControllerIA.addNewNode(cellModel))
+                    this.nodeModel.addChild(new Node());   // shift to controller (ControllerIA.addNewNode(cellModel))
                 if (e.ctrlKey) {
                     if (this.nodeModel.parent !== undefined)
-                        this.nodeModel.parent.addChild(new NodeModel());  // shift to controller (ControllerIA.addNewNode(cellModel.parent))
+                        this.nodeModel.parent.addChild(new Node());  // shift to controller (ControllerIA.addNewNode(cellModel.parent))
                     else
                         console.log('Can\'t add siblings to root');
                 }

@@ -131,6 +131,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
 							activity: newActivity,
+							isExpanded: false
 						}
 					}))});
 
@@ -138,6 +139,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					this.dispatchEvent(new CustomEvent('event-project-created', {
 						detail: {
 							activity: newActivity,
+							isExpanded: false
 						}
 					}))
 				});

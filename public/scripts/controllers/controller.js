@@ -218,11 +218,12 @@ async eventActivityCreatedHandler(event) {
                 kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
-                    const childNodeModel = new NodeModel({urn: childActivity.urn, is_root: false});
+                    const childNodeModel = new NodeModel();
+                    childNodeModel.urn = childActivity.urn
                     childNodeModel.activity = childActivity
                     childNodeModel.childId = child.id;  // Give the child the 'childId' that was listed in the Parent's Jag children.  (separated them from other children of same urn)
                     childNodeModel.parent = currentNode
-                    this.repopulateProject(childNodeModel, projectNode.project)
+                    this.repopulateProject(childNodeModel, projectNode.projectId)
                     currentNode.addChild(childNodeModel);
                 })
 
@@ -281,27 +282,31 @@ async eventActivityCreatedHandler(event) {
         return returnNode;
     }
 
-    buildNodeTreeFromActivity(rootActivity, expanded) {
+    buildNodeTreeFromActivity(rootActivity, isExpanded) {
 
         const nodeStack = [];
         const resultStack = [];
       //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
-        const rootNodeModel = new NodeModel({urn: rootActivity.urn});
+        const rootNodeModel = new NodeModel();
+        rootNodeModel.urn = rootActivity.urn;
         rootNodeModel.activity = rootActivity;
         rootNodeModel.parentUrn = null;
-        rootNodeModel.project = rootNodeModel.id;
-        rootNodeModel.expanded = expanded;
+        rootNodeModel.projectId = rootNodeModel.id;
+        rootNodeModel.isExpanded = isExpanded;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length > 0) {
             let currentNode = nodeStack.pop();
             for (const child of currentNode.activity.children) {
                 let childActivity = this.fetchActivity(child.urn);
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
-                const childNodeModel = new NodeModel({urn: child.urn, childId: child.id});
+                const childNodeModel = new NodeModel();
+
+            childNodeModel.urn = child.urn;
+            childNodeModel.childId = child.id
                 childNodeModel.activity = childActivity
                 childNodeModel.childId = child.id;
                 childNodeModel.parentId = currentNode.id;
-                childNodeModel.project = currentNode.project
+                childNodeModel.projectId = currentNode.projectId
                 currentNode.addChild(childNodeModel, true);
                 nodeStack.push(childNodeModel);
             }
@@ -324,8 +329,6 @@ async eventActivityCreatedHandler(event) {
 
     searchTreeForId(treeNode,id) {
         let workStack = []
-        console.log("LOGGY")
-        console.log(treeNode)
         workStack.push(treeNode)
         while(workStack.length>0){
             let checkNode = workStack.pop();
@@ -370,9 +373,9 @@ async eventActivityCreatedHandler(event) {
     }
 
     repopulateProject(currentNode, projectId) {
-        currentNode.project = projectId
+        currentNode.projectId = projectId
         for (let child of currentNode.children) {
-            child.project = projectId;
+            child.projectId = projectId;
             this.repopulateParent(child, projectId)
         }
     }

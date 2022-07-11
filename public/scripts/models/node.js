@@ -16,12 +16,12 @@ export default class Node extends EventTarget {
 					urn,
 					childId,
 					parentId,
-					project = id,                              // @TODO change to projectId
-					expanded = true,
-					isLocked = false,
+					projectId = id,
+					isExpanded = Boolean(false),
+					isLocked = Boolean(false),
 					contextualName = '',
 					contextualDescription = '',
-					x, y ,
+					x = 100, y = 100 ,
 		            subscriptions = [],        // still unknown implementation (hopefully observer)
 		            returnValue = null,
 		            returnState = null,
@@ -35,8 +35,8 @@ export default class Node extends EventTarget {
 		this._urn = urn;
 		this._childId = childId;                       // child differentiating id
 		this._parentId = parentId;
-		this._project = project;
-		this._expanded = expanded;         // Expanded (table) or folded in (graph)
+		this._projectId = projectId;
+		this._isExpanded = isExpanded;         // Expanded (table) or folded in (graph)
 		this._isLocked = isLocked;
 		this._contextualName = contextualName;
 		this._contextualDescription = contextualDescription;
@@ -52,6 +52,8 @@ export default class Node extends EventTarget {
 		this._activity = undefined;
 		this._leafCount = 1;
 		this._treeDepth = 0;
+		console.log("JUST SET A NEW NOOOODDDDEEEEE")
+		console.log(this.isExpanded)
 	}
 
 	get id() {
@@ -88,12 +90,12 @@ export default class Node extends EventTarget {
 		this._activity = value;
 	}
 
-	get project() {
-		return this._project;
+	get projectId() {
+		return this._projectId;
 	}
 
-	set project(value) {
-		this._project = value;
+	set projectId(value) {
+		this._projectId = value;
 	}
 
 	get children() {
@@ -109,13 +111,6 @@ export default class Node extends EventTarget {
 		this._parent = parent;
 	}
 
-	get returnValue() {
-		return this._returnValue;
-	}
-
-	set returnValue(value) {
-		this._returnValue = value;
-	}
 
 	get subscriptions() {
 		return this._subscriptions;
@@ -143,12 +138,15 @@ export default class Node extends EventTarget {
 		this._isLocked = value;
 	}
 
-	get expanded() {
-		return this._expanded;
+
+	get isExpanded() {
+		return this._isExpanded;
 	}
-	set expanded(expanded) {
-		this._expanded = expanded;
+
+	set isExpanded(value) {
+		this._isExpanded = value;
 	}
+
 	get x() {
 		return this._x;
 	}
@@ -198,6 +196,39 @@ export default class Node extends EventTarget {
 
 	set contextualDescription(value) {
 		this._contextualDescription = value;
+	}
+
+	get returnValue() {
+		return this._returnValue;
+	}
+
+	set returnValue(value) {
+		this._returnValue = value;
+	}
+
+
+	get returnState() {
+		return this._returnState;
+	}
+
+	set returnState(value) {
+		this._returnState = value;
+	}
+
+	get testReturnValue() {
+		return this._testReturnValue;
+	}
+
+	set testReturnValue(value) {
+		this._testReturnValue = value;
+	}
+
+	get testReturnState() {
+		return this._testReturnState;
+	}
+
+	set testReturnState(value) {
+		this._testReturnState = value;
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -376,13 +407,18 @@ export default class Node extends EventTarget {
 	}
 
 	toggleExpanded() {
-		this._expanded = !this._expanded;
+		this._isExpanded = !this._isExpanded;
+		console.log("---------------------------------------------------------------")
+		console.log("---------------------------------------------------------------")
+		console.log("---------------------------------------------------------------")
+		console.log("---------------------------------------------------------------")
+		console.log("---------------------------------------------------------------")
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}
 
 	isRoot() {
-		return this._id == this._project;
+		return this._id == this._projectId;
 	}         // is determined by lack of parent.
 
     getAncestor() {
@@ -400,25 +436,28 @@ export default class Node extends EventTarget {
 			id: this._id,
 			urn: this._urn,
 			childId: this._childId,
-			project: this._project,
-			expanded: this._expanded,
+			parentId: this._parentId,
+			projectId: this._projectId,
 			isLocked: this._isLocked,
+			isExpanded: this._isExpanded,
 			x: this._x,
 			y: this._y,
 			contextualName: this._contextualName,
 			contextualDescription: this._contextualDescription,
-			subscribes: [],
+			subscriptions: [],
 			returnValue: this._returnValue,
 			returnState: this._returnState,
 			testReturnValue: this._testReturnValue,
 			testReturnState: this._testReturnState,
-			parentId: this._parentId
+
 		};
 		let childStack = [];
 		for (let child of this._children) {
 			childStack.push(child.toJSON())
 		}
 		json.children = childStack
+		console.log("ooooooo>")
+		console.log(json)
 		return json;
 	}
 

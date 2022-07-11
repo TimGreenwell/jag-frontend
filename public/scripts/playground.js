@@ -182,7 +182,7 @@ class Playground extends Popupable {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    projectNodeId: parentNodeModel.project,
+                    projectNodeId: parentNodeModel.projectId,
                     parentNodeId: parentNodeModel.id,
                     childNodeId: childNodeModel.id
                 }
@@ -437,7 +437,7 @@ class Playground extends Popupable {
         currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
         const $newViewNode = this.createActivityNode(currentNodeModel)
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
-        if (currentNodeModel.expanded) {
+        if (currentNodeModel.isExpanded) {
         currentNodeModel.children.forEach((child) => {
 
                 let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
@@ -499,7 +499,7 @@ class Playground extends Popupable {
     clearPlayground(projectId = undefined) {
         for (let jagNode of this._activeActivityNodeElementSet) {
 
-            if ((projectId == undefined) || (jagNode.nodeModel.project = projectId)) {
+            if ((projectId == undefined) || (jagNode.nodeModel.projectId = projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
                 this._activeActivityNodeElementSet.delete(jagNode);
@@ -599,8 +599,8 @@ class Playground extends Popupable {
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-            //        if (node.nodeModel.project == deadId) {         // is this node in the tree of the currentNodeModel?
-            if (!this._viewedProjectsMap.has(node.nodeModel.project)) {
+            //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
+            if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
                 node.removeAllEdges();
                 node.detachHandlers();
                 this._activeActivityNodeElementSet.delete(node);
@@ -619,7 +619,7 @@ class Playground extends Popupable {
     }
 
     addNodeModel(projectNodeModel) {
-        this._viewedProjectsMap.set(projectNodeModel.project, projectNodeModel);
+        this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
         let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
     }
 
@@ -662,9 +662,9 @@ class Playground extends Popupable {
                 // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
                 // @TODO - migth consider a delted edge to mean disconnect jag
 
-                if ($node.nodeModel.project == $node.nodeModel.id) {
+                if ($node.nodeModel.projectId == $node.nodeModel.id) {
                     console.log("hi")
-                    this.clearPlayground($node.nodeModel.project);
+                    this.clearPlayground($node.nodeModel.projectId);
                 } else {
 
                     //
@@ -694,27 +694,28 @@ class Playground extends Popupable {
                 }
 
             }
-        } else if (e.key == 'ArrowLeft') {
+        } else if (event.key == 'ArrowLeft') {
             if (this._canMoveView.left) {
                 this._dragView(1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
-        } else if (e.key == 'ArrowRight') {
+        } else if (event.key == 'ArrowRight') {
             if (this._canMoveView.right) {
                 this._dragView(-1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
-        } else if (e.key == 'ArrowUp') {
+        } else if (event.key == 'ArrowUp') {
             if (this._canMoveView.up) {
                 this._dragView(0, 1 * Playground.DEFAULT_ARROW_MULTIPLIER);
             }
-        } else if (e.key == 'ArrowDown') {
+        } else if (event.key == 'ArrowDown') {
             if (this._canMoveView.down) {
                 this._dragView(0, -1 * Playground.DEFAULT_ARROW_MULTIPLIER);
             }
-        } else if (e.key == 'PageUp') {
+        } else if (event.key == 'PageUp') {
             this._zoomView(this._zoomFactor / Playground.DEFAULT_ZOOM_MULTIPLIER);
-        } else if (e.key == 'PageDown') {
+        } else if (event.key == 'PageDown') {
             this._zoomView(this._zoomFactor * Playground.DEFAULT_ZOOM_MULTIPLIER);
         }
+        else {console.log("Not handling key " + event.key)}
     }
 
     _getNodePreferredHeight(jagNode, jagNodeMap) {
@@ -730,7 +731,7 @@ class Playground extends Popupable {
     // handleLibraryListItemSelected({
     //                                   activity: selectedActivity,
     //                                   activity_set: selectedActivityDescendants = new Map(),
-    //                                   expanded: isExpanded = false
+    //                                   isExpanded: isExpanded = false
     //                               }) {
     //     this._addActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded);
     // }

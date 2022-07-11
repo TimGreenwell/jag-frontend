@@ -362,7 +362,8 @@ export default class ControllerIA extends Controller{
         for (let child of this.jag.children) {
             //const jag = await JAGService.instance('idb-service').get(child.urn);
             const jag = await StorageService.get(child.urn, 'activity');
-            const model = new Node({jag: jag});
+            const model = new Node();
+            model.urn = jag.urn
             //await NodeService.instance('idb-service').create(model);
             await StorageService.create(model, 'node');
             this.addChild(model, true);
