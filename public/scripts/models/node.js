@@ -52,8 +52,6 @@ export default class Node extends EventTarget {
 		this._activity = undefined;
 		this._leafCount = 1;
 		this._treeDepth = 0;
-		console.log("JUST SET A NEW NOOOODDDDEEEEE")
-		console.log(this.isExpanded)
 	}
 
 	get id() {
@@ -282,8 +280,6 @@ export default class Node extends EventTarget {
 	}
 
 	isActivityInProject(urn) {
-		console.log("Number of times activity found in project")
-		console.log(this.activitiesInProject(urn).length)
 		return (this.activitiesInProject(urn).length > 0)
 	}
 
@@ -456,8 +452,6 @@ export default class Node extends EventTarget {
 			childStack.push(child.toJSON())
 		}
 		json.children = childStack
-		console.log("ooooooo>")
-		console.log(json)
 		return json;
 	}
 
