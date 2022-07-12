@@ -610,29 +610,25 @@ export default class Activity extends EventTarget {
     }
 
     static fromJSON(json) {
-        console.log(json)
         if (Array.isArray(json)) {
-            console.log("USING fromJSON #1::::::::::::::::::::::::::")
-            let jagList = json.map(function (element) {
+             let jagList = json.map(function (element) {
                 try {
                     ValidationUtility.validateJAG(element);
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
                 let returnValue = Activity(element);
-                console.log(returnValue)
                 return returnValue;
             })
             return jagList;
         } else {
-            console.log("USING fromJSON #2::::::::::::::::::::::::::")
+
             try {
                 ValidationUtility.validateJAG(json);
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
             let returnValue = new Activity(json);
-            console.log(returnValue)
             return returnValue;
             // @TODO: explode the json definition to use the constructor below
             //return new Activity(urn, name, connector, inputs, outputs, children, bindings);
@@ -716,6 +712,12 @@ Activity.EXECUTION = {
 
 
 Activity.RETURNS = {
+    ACTIVE: {
+        name: 'node.returns.active',
+        text: 'active mode',
+        description: 'All children in an ACTIVE mode',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+    },
     AVAILABLE: {
         name: 'node.returns.available',
         text: 'all available',
@@ -754,97 +756,97 @@ Activity.OPERATOR = {
         name: 'node.operator.none',                  // does not return a value    (maybe just a state?) (maybe nada)
         text: 'none',
         symbol: '',
-        condition: ['node.returns.available', 'node.returns.all', 'node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all', 'node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     AND: {
         name: 'node.operator.and',                    // AND(boolean,boolean,...)
         text: 'and',
         symbol: 'and',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     OR: {
         name: 'node.operator.or',                      // OR(boolean,boolean,...)        @TODO  XOR?!    NAND NOR
         text: 'or',
         symbol: 'or',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     FIRST: {
         name: 'node.operator.first',
         text: 'first reporting',
         symbol: '1st',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     LAST: {
         name: 'node.operator.last',
         text: 'last reporting',
         symbol: 'nth',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     MAX: {
         name: 'node.operator.max',
         text: 'largest',
         symbol: 'max',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     MIN: {
         name: 'node.operator.min',
         text: 'smallest',
         symbol: 'min',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     SUM: {
         name: 'node.operator.sum',
         text: 'sum',
         symbol: 'sum',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     AVG: {
         name: 'node.operator.avg',
         text: 'average',
         symbol: 'avg',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     UNION: {
         name: 'node.operator.union',
         text: 'union',
         symbol: 'U',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     INT: {
         name: 'node.operator.intersection',
         text: 'intersection',
         symbol: '\uD83D\uDE00',
-        condition: ['node.returns.available', 'node.returns.all']
+        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
     },
     CONVERT: {
         name: 'node.operator.convert',
         text: 'convert',
         symbol: '><',
-        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     INVERSE: {
         name: 'node.operator.inverse',
         text: 'inverse',
         symbol: '1/x',
-        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     NEGATE: {
         name: 'node.operator.negate',
         text: 'negate',
         symbol: '-x',
-        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     ABS: {
         name: 'node.operator.absolute',
         text: 'absolute',
         symbol: '|x|',
-        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
     },
     NOT: {
         name: 'node.operator.not',
         text: 'not',
         symbol: '!',
-        condition: ['node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
     }
 
 }

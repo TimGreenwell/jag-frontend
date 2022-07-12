@@ -257,7 +257,6 @@ export default class ControllerDEF extends Controller {
         })
         losingParentsJag.children = remainingChildren
         await StorageService.update(losingParentsJag, 'activity');
-        console.log("Local<< (local nodes disjoined) \n")
     }
 
 

@@ -2,7 +2,7 @@
   "activities": [
     {
       "urn": "tasks:hk:hunter-seeker",
-      "name": "Kill Target",
+      "name": "Hunter Seeker",
       "description": "Find, track and eliminate target.",
       "type": "node.type.plan",
       "connector": {
@@ -1327,7 +1327,7 @@
   ],
   "jag": {
     "id": "6e3ed24e7a83",
-    "urn": "tasks:hk:kill-target",
+    "urn": "tasks:hk:hunter-seeker",
     "projectId": "6e3ed24e7a83",
     "collapsed": false,
     "isLocked": false,

@@ -49,8 +49,8 @@ customElements.define('node-library', class extends HTMLElement {
 	createListItem(newNodeModel) {
 		if (newNodeModel instanceof NodeModel) {
 			const urn = newNodeModel.urn;
-			const name = newNodeModel.activity.name || '';
-			const description = newNodeModel.activity.description || '';
+			const name = newNodeModel.contextualName || '';
+			const description = newNodeModel.contextualDescription || '';
 
 			const li = document.createElement('li');
 			li.className = "list-item"
@@ -75,7 +75,7 @@ customElements.define('node-library', class extends HTMLElement {
 			$topHalfWrapper.className = "top-half item-line"
 			const $nameEntry = document.createElement('span')
 			$nameEntry.classList.add('name-entry')
-			$nameEntry.innerText = newNodeModel.name;
+			$nameEntry.innerText = newNodeModel.contextualName;
 
 			const toggleLock = document.createElement('div');
 			toggleLock.classList.add('library-button', 'lock-button');
@@ -88,7 +88,7 @@ customElements.define('node-library', class extends HTMLElement {
 			$bottomHalfWrapper.className = "bottom-half item-line"
 			const $descriptionEntry = document.createElement('span')
 			$descriptionEntry.classList.add('description-entry')
-			$descriptionEntry.innerText = newNodeModel.description;
+			$descriptionEntry.innerText = newNodeModel.contextualDescription;
 
 
 			const deleteNode = document.createElement('div');

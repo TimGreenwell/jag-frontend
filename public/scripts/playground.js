@@ -663,8 +663,7 @@ class Playground extends Popupable {
                 // @TODO - migth consider a delted edge to mean disconnect jag
 
                 if ($node.nodeModel.projectId == $node.nodeModel.id) {
-                    console.log("hi")
-                    this.clearPlayground($node.nodeModel.projectId);
+                                this.clearPlayground($node.nodeModel.projectId);
                 } else {
 
                     //
@@ -684,8 +683,6 @@ class Playground extends Popupable {
                             }
                         })
                         parentActivity.children = remainingChildren
-                        console.log("Parent Activity ===>");
-                        console.log(parentActivity)
                         this.dispatchEvent(new CustomEvent('event-activity-updated', {
                             detail: {activity: parentActivity}
                         }));
@@ -738,7 +735,6 @@ class Playground extends Popupable {
 
 
     _eventImportJagHandler(e) {
-        console.log(e)
         const $initiator = document.getElementById('menu-new');
         this.popup({
             content: Playground.NOTICE_PASTE_JAG,
@@ -801,7 +797,6 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: activityConstruct}) {
-                console.log(activityConstruct)
                 this.dispatchEvent(new CustomEvent('event-activity-created', {
                     bubbles: true,
                     composed: true,

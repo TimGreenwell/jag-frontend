@@ -133,14 +133,11 @@ export default class ControllerAT extends Controller {
     eventExportJagHandler(event) {
         let node = event.detail.node
         let descendantUrns = this.gatherDescendentUrns(node);
-        console.log("")
-        console.log(descendantUrns)
         let neededActivities = descendantUrns.map(urn => {
             let activityModel = this.fetchActivity(urn)
             let activityJson = JSON.stringify(activityModel.toJSON())
             return activityJson
         })
-        console.log(neededActivities)
         const jagJson = JSON.stringify(node.toJSON(), null, 4);
         let fileData = `{"activities" : [${neededActivities}], "jag" : ${jagJson}}`
 
@@ -162,27 +159,19 @@ export default class ControllerAT extends Controller {
 
     async eventImportJagHandler(event) {
         let json = event.detail.result
-        console.log(json)
         let jsonDescriptor = JSON.parse(json)
-        console.log(jsonDescriptor)
 
         let activities = jsonDescriptor.activities;
         let jag = jsonDescriptor.jag;
 
         for (let activity of activities) {
-            //     console.log(activity)
             let activityModel = Activity.fromJSON(activity)
-            //       console.log(activityModel)
             let fullActivityModel = new Activity(activityModel)
-            //       console.log(fullActivityModel)
             await StorageService.create(fullActivityModel, "activity")
         }
 
         let projectNode = await NodeModel.fromJSON(jag)
         await StorageService.create(projectNode, "node")
-        console.log(projectNode)
-
-        console.log("piggies")
     }
 
 
@@ -259,7 +248,6 @@ export default class ControllerAT extends Controller {
         let projectNodeId = event.detail.projectNodeId
         let parentNodeId = event.detail.parentNodeId
         let childNodeId = event.detail.childNodeId
-console.log(projectNodeId)
         let projectModel = this.fetchProject(projectNodeId)
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
         let childNodeModel = this.fetchProject(childNodeId)
@@ -333,7 +321,6 @@ console.log(projectNodeId)
             //  }
         }
         await StorageService.delete(deadActivityUrn, 'activity');
-        console.log("Local<< (jag deleted) \n")
     }
 
     async eventActivityLockedHandler(event) {
@@ -341,7 +328,6 @@ console.log(projectNodeId)
         const lockedActivity = event.detail.activity;
         lockedActivity.isLocked = !lockedActivity.isLocked;
         await StorageService.update(lockedActivity, 'activity');
-        console.log("Local<< (jag locked) \n")
     }
 
     /**   -- Menu --  */
@@ -387,7 +373,6 @@ console.log(projectNodeId)
         const isExpanded = event.detail.isExpanded;
         let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
         await StorageService.create(newProjectRootNode, "node");
-        console.log("Local<< (Project created / library selected) \n")
     }
 
     /**   -- Project Library --  */
@@ -401,14 +386,13 @@ console.log(projectNodeId)
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         //    let newProjectRootNode = this.buildNodeTreeFromActivity(projectSelected);
         //    await StorageService.create(newProjectRootNode, "node");
-        console.log("Local<< (project line item selected) \n")
     }
 
     async eventProjectDeletedHandler(event) {
         console.log("Local>> (node deleted) ")
         const deadNodeModelId = event.detail.nodeModelId;
         await StorageService.delete(deadNodeModelId, 'node');
-        console.log("Local<< (node deleted) \n")
+
     }
 
     async eventProjectLockedHandler(event) {
@@ -416,7 +400,6 @@ console.log(projectNodeId)
         const lockedNodeModel = event.detail.nodeModel;
         lockedNodeModel.isLocked = !lockedNodeModel.isLocked;
         await StorageService.update(lockedNodeModel, 'node');
-        console.log("Local<< (node locked) \n")
     }
 
     /**
@@ -469,13 +452,7 @@ console.log(projectNodeId)
                 console.log(viewedProject.id)
                 console.log(deletedActivityUrn)
                 console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
                 console.log('I dont think its possibel to get here')
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log("(((((((((((((((((())))))))))))))))))))))")
                 console.log("(((((((((((((((((())))))))))))))))))))))")
             }
         }
@@ -608,7 +585,6 @@ console.log(projectNodeId)
         })
         losingParentsJag.children = remainingChildren
         await StorageService.update(losingParentsJag, 'activity');
-        console.log("Local<< (local nodes disjoined) \n")
     }
 
 

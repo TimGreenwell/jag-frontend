@@ -17,11 +17,11 @@ export default class Node extends EventTarget {
 					childId,
 					parentId,
 					projectId = id,
-					isExpanded = Boolean(false),
+					isExpanded = Boolean(true),
 					isLocked = Boolean(false),
 					contextualName = '',
 					contextualDescription = '',
-					x = 100, y = 100 ,
+					x , y  ,
 		            subscriptions = [],        // still unknown implementation (hopefully observer)
 		            returnValue = null,
 		            returnState = null,
@@ -195,6 +195,9 @@ export default class Node extends EventTarget {
 	set contextualDescription(value) {
 		this._contextualDescription = value;
 	}
+
+
+
 
 	get returnValue() {
 		return this._returnValue;
@@ -404,11 +407,8 @@ export default class Node extends EventTarget {
 
 	toggleExpanded() {
 		this._isExpanded = !this._isExpanded;
-		console.log("---------------------------------------------------------------")
-		console.log("---------------------------------------------------------------")
-		console.log("---------------------------------------------------------------")
-		console.log("---------------------------------------------------------------")
-		console.log("---------------------------------------------------------------")
+		console.log("---------------- Not Possible -------------------------------")
+
 		// 2 dispatches here - 1 listener in views/Analysis
 		this.dispatchEvent(new CustomEvent('layout'));
 	}

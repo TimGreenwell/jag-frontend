@@ -10,6 +10,7 @@ import ControllerDEF from "./controllers/controllerDEF.js";
 import StorageService from './services/storage-service.js';         // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';            // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
+import UserPrefs from "./utils/user-prefs.js";
 
 //import { URL } from 'node:url';
 
@@ -33,8 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     StorageService.addStorageInstance('local-rest-service', rest_storage);
 
     // storage choices
-    //StorageService.setPreferredStorage('idb-service');          // which storage used for reads
-    StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
+    StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = 'jag-def';
 

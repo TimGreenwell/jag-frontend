@@ -126,17 +126,13 @@ async eventActivityCreatedHandler(event) {
     } else {
         window.alert("That URN already exists")
     }
-    console.log("Local<< (local activity created) \n")
 }
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
         updatedActivity.modifiedDate = Date.now();
-        console.log("Here...")
-        console.log(updatedActivity)
         await StorageService.update(updatedActivity, 'activity');
-        console.log("Local<< (local activity updated) \n")
     }
 
     async eventUrnChangedHandler(event) {
@@ -185,7 +181,6 @@ async eventActivityCreatedHandler(event) {
                 }
             }
         }
-        console.log("Local<< (url renamed) \n")
     }
 
 
@@ -196,8 +191,6 @@ async eventActivityCreatedHandler(event) {
 
    // changedActivity, projectNode
     updateTreeWithActivityChange(changedActivity, projectNode) {
-        console.log(changedActivity)
-        console.log(projectNode)
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
@@ -212,10 +205,8 @@ async eventActivityCreatedHandler(event) {
                 })
                 let validNodeChildren = changedActivity.children;
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
-                console.log(kidsToAdd)
-                let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-                console.log(kidsToRemove)
-                kidsToAdd.forEach(child => {
+                   let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
+                  kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
                     const childNodeModel = new NodeModel();
@@ -243,14 +234,11 @@ async eventActivityCreatedHandler(event) {
         for (let orphanedRootNode of orphanedRootStack) {
             // Assigning orphans to a separate tree.
             // Save the tree to keep it, or don't to have it disappear.
-            console.log("orphan")
-            console.log(orphanedRootNode)
             orphanedRootNode.parent = orphanedRootNode.id;
             orphanedRootNode.childId = null;
             this.repopulateProject(orphanedRootNode, orphanedRootNode.id)
         }
         return projectNode;
-        console.log("Local<< (new node affects project) \n")
 
     }
 

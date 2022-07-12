@@ -67,8 +67,6 @@ export default class RESTUtils {
 	}
 
 	static async create(url, description) {
-		console.log("final")
-		console.log(description)
 	//	const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		const options = {
 			'method': 'POST',
@@ -79,7 +77,6 @@ export default class RESTUtils {
 				'mode': 'cors'
 			}
 		};
-		console.log(options)
 		return await RESTUtils.request(url, options, 'Error creating');
 	}
 

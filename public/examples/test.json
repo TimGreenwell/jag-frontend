@@ -1,9 +1,31 @@
 {
   "activities": [
     {
-      "urn": "tasks:hk:hunter-seeker",
-      "name": "Kill Target",
-      "description": "Find, track and eliminate target.",
+      "urn": "us:tim:123",
+      "name": "123",
+      "description": "",
+      "type": "node.type.plan",
+      "connector": {
+        "execution": "node.execution.parallel",
+        "returns": "node.returns.all",
+        "operator": "node.operator.and"
+      },
+      "inputs": [],
+      "outputs": [],
+      "children": [
+        {
+          "urn": "us:tim:456",
+          "id": "77d25367"
+        }
+      ],
+      "bindings": [],
+      "isLocked": false,
+      "collapsed": false
+    },
+    {
+      "urn": "us:tim:456",
+      "name": "456",
+      "description": "",
       "type": "node.type.plan",
       "connector": {
         "execution": "node.execution.none",
@@ -14,40 +36,42 @@
       "outputs": [],
       "children": [
         {
-          "urn": "tasks:hk:prepare-mission",
-          "id": "a54d77cf8ec4"
+          "urn": "us:tim:789",
+          "id": "aec206b1"
         }
       ],
       "bindings": [],
-      "collapsed": true
+      "isLocked": false,
+      "collapsed": false
     },
     {
-      "urn": "tasks:hk:prepare-mission",
-      "name": "Prepare Mission",
-      "description": "Prepare plans based on target and environment.",
+      "urn": "us:tim:789",
+      "name": "789",
+      "description": "",
       "type": "node.type.plan",
       "connector": {
         "execution": "node.execution.none",
         "returns": "node.returns.all",
-        "operator": "node.operator.and"
+        "operator": "node.operator.none"
       },
       "inputs": [],
       "outputs": [],
       "children": [],
       "bindings": [],
-      "collapsed": true
+      "isLocked": false,
+      "collapsed": false
     }
   ],
   "jag": {
-    "id": "6e3ed24e7a83",
-    "urn": "tasks:hk:kill-target",
-    "projectId": "6e3ed24e7a83",
-    "collapsed": false,
+    "id": "d01613a6",
+    "urn": "us:tim:123",
+    "projectId": "d01613a6",
     "isLocked": false,
-    "x": 82,
-    "y": 230,
-    "contextualName": "Kill Target",
-    "contextualDescription": "First Draft",
+    "isExpanded": true,
+    "x": 268.2533936651582,
+    "y": 110,
+    "contextualName": "",
+    "contextualDescription": "",
     "subscriptions": [],
     "returnValue": null,
     "returnState": null,
@@ -55,14 +79,15 @@
     "testReturnState": null,
     "children": [
       {
-        "id": "78d4bb3a18f2",
-        "urn": "tasks:hk:prepare-mission",
-        "childId": "a54d77cf8ec4",
-        "projectId": "6e3ed24e7a83",
-        "isExpanded": true,
+        "id": "51d4ee8b",
+        "urn": "us:tim:456",
+        "childId": "77d25367",
+        "parentId": "d01613a6",
+        "projectId": "d01613a6",
         "isLocked": false,
-        "x": 228.240438021062,
-        "y": -83,
+        "isExpanded": true,
+        "x": 367.5837104072398,
+        "y": 260,
         "contextualName": "",
         "contextualDescription": "",
         "subscriptions": [],
@@ -70,8 +95,28 @@
         "returnState": null,
         "testReturnValue": null,
         "testReturnState": null,
-        "parentId": "6e3ed24e7a83",
-        "children": []
-      }]
+        "children": [
+          {
+            "id": "35e3e0b5",
+            "urn": "us:tim:789",
+            "childId": "aec206b1",
+            "parentId": "51d4ee8b",
+            "projectId": "d01613a6",
+            "isLocked": false,
+            "isExpanded": false,
+            "x": 552.0542986425334,
+            "y": 310,
+            "contextualName": "",
+            "contextualDescription": "",
+            "subscriptions": [],
+            "returnValue": null,
+            "returnState": null,
+            "testReturnValue": null,
+            "testReturnState": null,
+            "children": []
+          }
+        ]
+      }
+    ]
   }
 }

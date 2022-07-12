@@ -154,7 +154,7 @@ class JagCell extends AnalysisCell {
                     if (this.nodeModel.parent !== undefined)
                         this.nodeModel.parent.addChild(new Node());  // shift to controller (ControllerIA.addNewNode(cellModel.parent))
                     else
-                        console.log('Can\'t add siblings to root');
+                        console.log('Can not add siblings to root');
                 }
                 break;
             case 'Escape':

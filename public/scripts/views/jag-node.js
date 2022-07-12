@@ -68,10 +68,6 @@ customElements.define('jag-node', class extends HTMLElement {
 
 
 	set isExpanded(isExpanded) {               // complex...leave it
-		console.log(":")
-		console.log("CHANGING IT TO ")
-		console.log(isExpanded)
-		console.log(":")
 		this._nodeModel.isExpanded = isExpanded;
 
 		for (const edge of this._outs) {
@@ -253,18 +249,10 @@ customElements.define('jag-node', class extends HTMLElement {
 	// 	return all_children;
 	// }
 
-	setContextualName(name) {
-		if (this._in) {
-			this._in.setChildName(name);
-		}
-		this._applyName(name);
-	}
+
 
 	getContextualName() {
-		if (this._in) {
-			return this._in.getChildName() || this._nodeModel.activity.name;
-		}
-		return this._nodeModel.activity.name;
+		return this._nodeModel.contextualName;
 	}
 
 
@@ -451,7 +439,7 @@ customElements.define('jag-node', class extends HTMLElement {
 			const meta_map = new Map();
 
 			e.detail.extra.children.forEach((child) => {
-				meta_map.set(child.id, { name: child.name, description: child.description });
+				meta_map.set(child.id, { name: child.contextualName, description: child.contextualDescription });
 			});
 
 			this._outs.forEach((child_edge) => {
@@ -507,7 +495,7 @@ customElements.define('jag-node', class extends HTMLElement {
 	}
 
 	_applyName(override = undefined) {
-		this._$header_name.innerHTML = override || this.getContextualName();
+		this._$header_name.innerHTML = this.getContextualName();
 		this._snap();
 	}
 
