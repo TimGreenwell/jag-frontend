@@ -1,1341 +1,1435 @@
-{
-  "activities": [
-    {
-      "urn": "tasks:hk:hunter-seeker",
-      "name": "Hunter Seeker",
-      "description": "Find, track and eliminate target.",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:prepare-mission",
-          "id": "a54d77cf8ec4"
-        },
-        {
-          "urn": "tasks:hk:acquire-target",
-          "id": "b5e158abb041"
-        },
-        {
-          "urn": "tasks:hk:hunt-target",
-          "id": "77345d616a14"
-        },
-        {
-          "urn": "tasks:hk:kill-target",
-          "id": "3e45f3d5009b"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
+{"activities" : [{
+  "urn": "tasks:hk:hunter-seeker",
+  "name": "Hunter Seeker",
+  "description": "Find, track and eliminate target.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
     {
       "urn": "tasks:hk:prepare-mission",
-      "name": "Prepare Mission",
-      "description": "Prepare plans based on target and environment.",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:choose-plan",
-          "id": "c63fb4d76c5f"
-        },
-        {
-          "urn": "tasks:hk:flight-checks",
-          "id": "58909691875a"
-        },
-        {
-          "urn": "tasks:hk:config-target",
-          "id": "7ea01e304957"
-        },
-        {
-          "urn": "tasks:hk:develop-plans",
-          "id": "8ebf2e2d0f0c"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:choose-plan",
-      "name": "Choose plan",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:flight-checks",
-      "name": "flight-checks",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:config-target",
-      "name": "Config Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:config-targetobject",
-          "id": "0d7e18e1c091"
-        },
-        {
-          "urn": "tasks:hk:config-targetarea",
-          "id": "05b8fc5668ca"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:config-targetobject",
-      "name": "Config Target object",
-      "description": "attribute, behavior and common locales",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:config-targetarea",
-      "name": "Config Target area",
-      "description": "Maps, weather, etc",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:develop-plans",
-      "name": "Develop Plans",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:analyze-maps",
-          "id": "d63bb8acfc1c"
-        },
-        {
-          "urn": "tasks:hk:analyze-foe",
-          "id": "f3ead963f85b"
-        },
-        {
-          "urn": "tasks:hk:plan-abort",
-          "id": "2bbe9d9c0bf8"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:analyze-maps",
-      "name": "Analyze Maps",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:plan-searchpattern",
-          "id": "947e5a551c74"
-        },
-        {
-          "urn": "tasks:hk:plan-trackstrategy",
-          "id": "2470be3f7d23"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:plan-searchpattern",
-      "name": "Plan search Pattern",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:plan-trackstrategy",
-      "name": "Plan Track Strategy",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:analyze-foe",
-      "name": "Analyze Foe",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:plan-attackstrategy",
-          "id": "c52332675da3"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:plan-attackstrategy",
-      "name": "Plan Attack Strategy",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:plan-abort",
-      "name": "Plan Abort",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "a54d77cf8ec4"
     },
     {
       "urn": "tasks:hk:acquire-target",
-      "name": "Acquire target",
-      "description": "Fly to and search area for suspect",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:goto-searchstartpoint",
-          "id": "59f7d8137999"
-        },
-        {
-          "urn": "tasks:hk:search-targetarea",
-          "id": "abfbaf4eb929"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:goto-searchstartpoint",
-      "name": "Goto Search Start Point",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:goto-xy",
-          "id": "5fd03b3f60c7"
-        },
-        {
-          "urn": "tasks:hk:report-conditions",
-          "id": "70b270851408"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:goto-xy",
-      "name": "Goto XY",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:report-conditions",
-      "name": "Report Conditions",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:search-targetarea",
-      "name": "Search Target Area",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:fly-waypoints",
-          "id": "d02f716050fd"
-        },
-        {
-          "urn": "tasks:hk:scan-fortarget",
-          "id": "bd71df0542e4"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:fly-waypoints",
-      "name": "Fly Waypoints",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:scan-fortarget",
-      "name": "Scan for Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:id-targettype",
-          "id": "3197675085c2"
-        },
-        {
-          "urn": "tasks:hk:id-target",
-          "id": "70d6cb641d64"
-        },
-        {
-          "urn": "tasks:hk:assume-leadrole",
-          "id": "c06b80e4c85a"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:id-targettype",
-      "name": "ID Target Type",
-      "description": "%success for correct type (human).",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:id-target",
-      "name": "ID Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:store-video",
-          "id": "1284bba48a8c"
-        },
-        {
-          "urn": "tasks:hk:extract-features",
-          "id": "49f86d75f20f"
-        },
-        {
-          "urn": "tasks:hk:match",
-          "id": "18e892842094"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:store-video",
-      "name": "Store Video",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:extract-features",
-      "name": "Extract Features",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:match",
-      "name": "Match",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:report",
-          "id": "cb31a44862a2"
-        },
-        {
-          "urn": "tasks:hk:await-verify",
-          "id": "206b527b5e64"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:report",
-      "name": "Report",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:await-verify",
-      "name": "Await Verify",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:assume-leadrole",
-      "name": "Assume Lead Role",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:assign-supportroles",
-          "id": "21cdb7730c81"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:assign-supportroles",
-      "name": "Assign Support Roles",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "b5e158abb041"
     },
     {
       "urn": "tasks:hk:hunt-target",
-      "name": "Hunt Target",
-      "description": "Track, maintain control and corner.",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:control-target",
-          "id": "a33af48fcdf8"
-        },
-        {
-          "urn": "tasks:hk:reacquire-target",
-          "id": "52b5548bc7ff"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:control-target",
-      "name": "Control Target",
-      "description": "Maintain contact on target in lead or support roles.",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:lead-targetcontroll",
-          "id": "43c18c1d4eaa"
-        },
-        {
-          "urn": "tasks:hk:support-targetcontrol",
-          "id": "67593ce051f1"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:lead-targetcontroll",
-      "name": "Lead Target Control",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:chase",
-          "id": "9de98eb7e0a6"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:chase",
-      "name": "Chase",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:support-targetcontrol",
-      "name": "Support Target Control",
-      "description": "[]",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:supprt-chase",
-          "id": "5bc9b08fe93e"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:supprt-chase",
-      "name": "Supprt Chase",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:reacquire-target",
-      "name": "Reacquire Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:define-searcharea",
-          "id": "82722c73a6d5"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:define-searcharea",
-      "name": "Define Search Area",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:search-targetarea",
-          "id": "cd8835650697"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:search-targetarea",
-      "name": "Search Target Area",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:fly-waypoints",
-          "id": "d02f716050fd"
-        },
-        {
-          "urn": "tasks:hk:scan-fortarget",
-          "id": "bd71df0542e4"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:fly-waypoints",
-      "name": "Fly Waypoints",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:scan-fortarget",
-      "name": "Scan for Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:id-targettype",
-          "id": "3197675085c2"
-        },
-        {
-          "urn": "tasks:hk:id-target",
-          "id": "70d6cb641d64"
-        },
-        {
-          "urn": "tasks:hk:assume-leadrole",
-          "id": "c06b80e4c85a"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:id-targettype",
-      "name": "ID Target Type",
-      "description": "%success for correct type (human).",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:id-target",
-      "name": "ID Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:store-video",
-          "id": "1284bba48a8c"
-        },
-        {
-          "urn": "tasks:hk:extract-features",
-          "id": "49f86d75f20f"
-        },
-        {
-          "urn": "tasks:hk:match",
-          "id": "18e892842094"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:store-video",
-      "name": "Store Video",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:extract-features",
-      "name": "Extract Features",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:match",
-      "name": "Match",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:report",
-          "id": "cb31a44862a2"
-        },
-        {
-          "urn": "tasks:hk:await-verify",
-          "id": "206b527b5e64"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:report",
-      "name": "Report",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:await-verify",
-      "name": "Await Verify",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:assume-leadrole",
-      "name": "Assume Lead Role",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:assign-supportroles",
-          "id": "21cdb7730c81"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:assign-supportroles",
-      "name": "Assign Support Roles",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "77345d616a14"
     },
     {
       "urn": "tasks:hk:kill-target",
-      "name": "Kill Target",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:align",
-          "id": "f0869f56e02a"
-        },
-        {
-          "urn": "tasks:hk:verify",
-          "id": "0ce2a8e369be"
-        },
-        {
-          "urn": "tasks:hk:engage",
-          "id": "00966f9cc913"
-        },
-        {
-          "urn": "tasks:hk:fire",
-          "id": "3ab8023c7faf"
-        },
-        {
-          "urn": "tasks:hk:report",
-          "id": "070d39d6536f"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
+      "id": "3e45f3d5009b"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:prepare-mission",
+  "name": "Prepare Mission",
+  "description": "Prepare plans based on target and environment.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:choose-plan",
+      "id": "c63fb4d76c5f"
     },
     {
-      "urn": "tasks:hk:align",
-      "name": "Align",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:determine-angle",
-          "id": "9299677d5bb9"
-        },
-        {
-          "urn": "tasks:hk:determine-altitude",
-          "id": "b5b936451ff1"
-        },
-        {
-          "urn": "tasks:hk:goto-relativexy",
-          "id": "92002dfce424"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:flight-checks",
+      "id": "58909691875a"
     },
     {
-      "urn": "tasks:hk:determine-angle",
-      "name": "Determine Angle",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:config-target",
+      "id": "7ea01e304957"
     },
     {
-      "urn": "tasks:hk:determine-altitude",
-      "name": "Determine Altitude",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:develop-plans",
+      "id": "8ebf2e2d0f0c"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:choose-plan",
+  "name": "Choose plan",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:flight-checks",
+  "name": "flight-checks",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:config-target",
+  "name": "Config Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:config-targetobject",
+      "id": "0d7e18e1c091"
     },
     {
-      "urn": "tasks:hk:goto-relativexy",
-      "name": "Goto Relative XY",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:config-targetarea",
+      "id": "05b8fc5668ca"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:config-targetobject",
+  "name": "Config Target object",
+  "description": "attribute, behavior and common locales",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:config-targetarea",
+  "name": "Config Target area",
+  "description": "Maps, weather, etc",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:develop-plans",
+  "name": "Develop Plans",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:analyze-maps",
+      "id": "d63bb8acfc1c"
     },
     {
-      "urn": "tasks:hk:verify",
-      "name": "Verify",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:report",
-          "id": "6d012d9bfc47"
-        },
-        {
-          "urn": "tasks:hk:await-verify",
-          "id": "1075741a7782"
-        },
-        {
-          "urn": "tasks:hk:analyze-successprobability",
-          "id": "9804dfe75549"
-        },
-        {
-          "urn": "tasks:hk:analyze-collateraldamage",
-          "id": "f3dd21199b69"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:analyze-foe",
+      "id": "f3ead963f85b"
     },
+    {
+      "urn": "tasks:hk:plan-abort",
+      "id": "2bbe9d9c0bf8"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:analyze-maps",
+  "name": "Analyze Maps",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:plan-searchpattern",
+      "id": "947e5a551c74"
+    },
+    {
+      "urn": "tasks:hk:plan-trackstrategy",
+      "id": "2470be3f7d23"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-searchpattern",
+  "name": "Plan search Pattern",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-trackstrategy",
+  "name": "Plan Track Strategy",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:analyze-foe",
+  "name": "Analyze Foe",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:plan-attackstrategy",
+      "id": "c52332675da3"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-attackstrategy",
+  "name": "Plan Attack Strategy",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-abort",
+  "name": "Plan Abort",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:acquire-target",
+  "name": "Acquire target",
+  "description": "Fly to and search area for suspect",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:goto-searchstartpoint",
+      "id": "59f7d8137999"
+    },
+    {
+      "urn": "tasks:hk:search-targetarea",
+      "id": "abfbaf4eb929"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:goto-searchstartpoint",
+  "name": "Goto Search Start Point",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:goto-xy",
+      "id": "5fd03b3f60c7"
+    },
+    {
+      "urn": "tasks:hk:report-conditions",
+      "id": "70b270851408"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:goto-xy",
+  "name": "Goto XY",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:report-conditions",
+  "name": "Report Conditions",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:search-targetarea",
+  "name": "Search Target Area",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:fly-waypoints",
+      "id": "d02f716050fd"
+    },
+    {
+      "urn": "tasks:hk:scan-fortarget",
+      "id": "bd71df0542e4"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:fly-waypoints",
+  "name": "Fly Waypoints",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:scan-fortarget",
+  "name": "Scan for Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:id-targettype",
+      "id": "3197675085c2"
+    },
+    {
+      "urn": "tasks:hk:id-target",
+      "id": "70d6cb641d64"
+    },
+    {
+      "urn": "tasks:hk:assume-leadrole",
+      "id": "c06b80e4c85a"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:id-targettype",
+  "name": "ID Target Type",
+  "description": "%success for correct type (human).",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:id-target",
+  "name": "ID Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:store-video",
+      "id": "1284bba48a8c"
+    },
+    {
+      "urn": "tasks:hk:extract-features",
+      "id": "49f86d75f20f"
+    },
+    {
+      "urn": "tasks:hk:match",
+      "id": "18e892842094"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:store-video",
+  "name": "Store Video",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:extract-features",
+  "name": "Extract Features",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:match",
+  "name": "Match",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
     {
       "urn": "tasks:hk:report",
-      "name": "Report",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "cb31a44862a2"
     },
     {
       "urn": "tasks:hk:await-verify",
-      "name": "Await Verify",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "206b527b5e64"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:report",
+  "name": "Report",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:await-verify",
+  "name": "Await Verify",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:assume-leadrole",
+  "name": "Assume Lead Role",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:assign-supportroles",
+      "id": "21cdb7730c81"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:assign-supportroles",
+  "name": "Assign Support Roles",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:hunt-target",
+  "name": "Hunt Target",
+  "description": "Track, maintain control and corner.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:control-target",
+      "id": "a33af48fcdf8"
     },
     {
-      "urn": "tasks:hk:analyze-successprobability",
-      "name": "Analyze Success Probability",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:reacquire-target",
+      "id": "52b5548bc7ff"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:control-target",
+  "name": "Control Target",
+  "description": "Maintain contact on target in lead or support roles.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:lead-targetcontroll",
+      "id": "43c18c1d4eaa"
     },
     {
-      "urn": "tasks:hk:analyze-collateraldamage",
-      "name": "Analyze Collateral Damage",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "urn": "tasks:hk:support-targetcontrol",
+      "id": "67593ce051f1"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:lead-targetcontroll",
+  "name": "Lead Target Control",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:chase",
+      "id": "9de98eb7e0a6"
+    },
+    {
+      "urn": "tasks:hk:surveil",
+      "id": "08467d08"
+    },
+    {
+      "urn": "tasks:hk:contain",
+      "id": "a5d6c2a0"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:chase",
+  "name": "Chase",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:surveil",
+  "name": "Surveil",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:contain",
+  "name": "Contain",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:support-targetcontrol",
+  "name": "Support Target Control",
+  "description": "[]",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:supprt-chase",
+      "id": "5bc9b08fe93e"
+    },
+    {
+      "urn": "tasks:hk:support-surveil",
+      "id": "8b828b56"
+    },
+    {
+      "urn": "tasks:hk:support-contain",
+      "id": "69d3e143"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:supprt-chase",
+  "name": "Supprt Chase",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:support-surveil",
+  "name": "Support Surveil",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:support-contain",
+  "name": "Support Contain",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:reacquire-target",
+  "name": "Reacquire Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:define-searcharea",
+      "id": "82722c73a6d5"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:define-searcharea",
+  "name": "Define Search Area",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:search-targetarea",
+      "id": "cd8835650697"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:search-targetarea",
+  "name": "Search Target Area",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:fly-waypoints",
+      "id": "d02f716050fd"
+    },
+    {
+      "urn": "tasks:hk:scan-fortarget",
+      "id": "bd71df0542e4"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:fly-waypoints",
+  "name": "Fly Waypoints",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:scan-fortarget",
+  "name": "Scan for Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:id-targettype",
+      "id": "3197675085c2"
+    },
+    {
+      "urn": "tasks:hk:id-target",
+      "id": "70d6cb641d64"
+    },
+    {
+      "urn": "tasks:hk:assume-leadrole",
+      "id": "c06b80e4c85a"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:id-targettype",
+  "name": "ID Target Type",
+  "description": "%success for correct type (human).",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:id-target",
+  "name": "ID Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:store-video",
+      "id": "1284bba48a8c"
+    },
+    {
+      "urn": "tasks:hk:extract-features",
+      "id": "49f86d75f20f"
+    },
+    {
+      "urn": "tasks:hk:match",
+      "id": "18e892842094"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:store-video",
+  "name": "Store Video",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:extract-features",
+  "name": "Extract Features",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:match",
+  "name": "Match",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:report",
+      "id": "cb31a44862a2"
+    },
+    {
+      "urn": "tasks:hk:await-verify",
+      "id": "206b527b5e64"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:report",
+  "name": "Report",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:await-verify",
+  "name": "Await Verify",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:assume-leadrole",
+  "name": "Assume Lead Role",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:assign-supportroles",
+      "id": "21cdb7730c81"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:assign-supportroles",
+  "name": "Assign Support Roles",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:kill-target",
+  "name": "Kill Target",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:align",
+      "id": "f0869f56e02a"
+    },
+    {
+      "urn": "tasks:hk:verify",
+      "id": "0ce2a8e369be"
     },
     {
       "urn": "tasks:hk:engage",
-      "name": "Engage",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.and"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [
-        {
-          "urn": "tasks:hk:arm",
-          "id": "0b1632386219"
-        },
-        {
-          "urn": "tasks:hk:aim",
-          "id": "59353fa02e37"
-        }
-      ],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:arm",
-      "name": "Arm",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
-    },
-    {
-      "urn": "tasks:hk:aim",
-      "name": "Aim",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "00966f9cc913"
     },
     {
       "urn": "tasks:hk:fire",
-      "name": "Fire",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "3ab8023c7faf"
     },
     {
       "urn": "tasks:hk:report",
-      "name": "Report",
-      "description": "",
-      "type": "node.type.plan",
-      "connector": {
-        "execution": "node.execution.none",
-        "returns": "node.returns.all",
-        "operator": "node.operator.none"
-      },
-      "inputs": [],
-      "outputs": [],
-      "children": [],
-      "bindings": [],
-      "collapsed": true
+      "id": "070d39d6536f"
     }
   ],
-  "jags": [
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:align",
+  "name": "Align",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
     {
-      "id": "6e3ed24e7a83",
-      "urn": "tasks:hk:hunter-seeker",
+      "urn": "tasks:hk:determine-angle",
+      "id": "9299677d5bb9"
+    },
+    {
+      "urn": "tasks:hk:determine-altitude",
+      "id": "b5b936451ff1"
+    },
+    {
+      "urn": "tasks:hk:goto-relativexy",
+      "id": "92002dfce424"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-angle",
+  "name": "Determine Angle",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-altitude",
+  "name": "Determine Altitude",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:goto-relativexy",
+  "name": "Goto Relative XY",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:verify",
+  "name": "Verify",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:report",
+      "id": "6d012d9bfc47"
+    },
+    {
+      "urn": "tasks:hk:await-verify",
+      "id": "1075741a7782"
+    },
+    {
+      "urn": "tasks:hk:analyze-successprobability",
+      "id": "9804dfe75549"
+    },
+    {
+      "urn": "tasks:hk:analyze-collateraldamage",
+      "id": "f3dd21199b69"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:report",
+  "name": "Report",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:await-verify",
+  "name": "Await Verify",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:analyze-successprobability",
+  "name": "Analyze Success Probability",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:analyze-collateraldamage",
+  "name": "Analyze Collateral Damage",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:engage",
+  "name": "Engage",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:arm",
+      "id": "0b1632386219"
+    },
+    {
+      "urn": "tasks:hk:aim",
+      "id": "59353fa02e37"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:arm",
+  "name": "Arm",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:aim",
+  "name": "Aim",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:fire",
+  "name": "Fire",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:report",
+  "name": "Report",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+}], "jags" : [{
+  "id": "6e3ed24e7a83",
+  "urn": "tasks:hk:hunter-seeker",
+  "projectId": "6e3ed24e7a83",
+  "isLocked": false,
+  "isExpanded": true,
+  "x": 51,
+  "y": 160,
+  "contextualName": "Kill Target",
+  "contextualDescription": "First Draft",
+  "subscriptions": [],
+  "returnValue": null,
+  "returnState": null,
+  "testReturnValue": null,
+  "testReturnState": null,
+  "children": [
+    {
+      "id": "78d4bb3a18f2",
+      "urn": "tasks:hk:prepare-mission",
+      "childId": "a54d77cf8ec4",
+      "parentId": "6e3ed24e7a83",
       "projectId": "6e3ed24e7a83",
-      "collapsed": false,
       "isLocked": false,
-      "x": 82,
-      "y": 230,
-      "contextualName": "Kill Target",
-      "contextualDescription": "First Draft",
+      "isExpanded": true,
+      "x": 197,
+      "y": -156,
+      "contextualName": "",
+      "contextualDescription": "",
       "subscriptions": [],
       "returnValue": null,
       "returnState": null,
@@ -1343,14 +1437,15 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "78d4bb3a18f2",
-          "urn": "tasks:hk:prepare-mission",
-          "childId": "a54d77cf8ec4",
+          "id": "a12cc1205925",
+          "urn": "tasks:hk:choose-plan",
+          "childId": "c63fb4d76c5f",
+          "parentId": "78d4bb3a18f2",
           "projectId": "6e3ed24e7a83",
-          "isExpanded": true,
           "isLocked": false,
-          "x": 228.240438021062,
-          "y": -83,
+          "isExpanded": true,
+          "x": 496,
+          "y": -166,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -1358,17 +1453,55 @@
           "returnState": null,
           "testReturnValue": null,
           "testReturnState": null,
-          "parentId": "6e3ed24e7a83",
+          "children": []
+        },
+        {
+          "id": "6c6528365305",
+          "urn": "tasks:hk:flight-checks",
+          "childId": "58909691875a",
+          "parentId": "78d4bb3a18f2",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 498,
+          "y": -116,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "3ceb2af9bdc9",
+          "urn": "tasks:hk:config-target",
+          "childId": "7ea01e304957",
+          "parentId": "78d4bb3a18f2",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 505,
+          "y": -286,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
           "children": [
             {
-              "id": "a12cc1205925",
-              "urn": "tasks:hk:choose-plan",
-              "childId": "c63fb4d76c5f",
+              "id": "87b62f97473c",
+              "urn": "tasks:hk:config-targetobject",
+              "childId": "0d7e18e1c091",
+              "parentId": "3ceb2af9bdc9",
               "projectId": "6e3ed24e7a83",
-              "isExpanded": true,
               "isLocked": false,
-              "x": 527,
-              "y": -93,
+              "isExpanded": true,
+              "x": 725,
+              "y": -333,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1376,233 +1509,39 @@
               "returnState": null,
               "testReturnValue": null,
               "testReturnState": null,
-              "parentId": "78d4bb3a18f2",
               "children": []
             },
             {
-              "id": "6c6528365305",
-              "urn": "tasks:hk:flight-checks",
-              "childId": "58909691875a",
+              "id": "a869051aa7dc",
+              "urn": "tasks:hk:config-targetarea",
+              "childId": "05b8fc5668ca",
+              "parentId": "3ceb2af9bdc9",
               "projectId": "6e3ed24e7a83",
-              "isExpanded": true,
               "isLocked": false,
-              "x": 529,
-              "y": -43,
-              "contextualName": "",
+              "isExpanded": true,
+              "x": 708,
+              "y": -291,
+              "contextualName": "Config Target area",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
               "returnState": null,
               "testReturnValue": null,
               "testReturnState": null,
-              "parentId": "78d4bb3a18f2",
               "children": []
-            },
-            {
-              "id": "3ceb2af9bdc9",
-              "urn": "tasks:hk:config-target",
-              "childId": "7ea01e304957",
-              "projectId": "6e3ed24e7a83",
-              "isExpanded": true,
-              "isLocked": false,
-              "x": 536,
-              "y": -213,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "78d4bb3a18f2",
-              "children": [
-                {
-                  "id": "87b62f97473c",
-                  "urn": "tasks:hk:config-targetobject",
-                  "childId": "0d7e18e1c091",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 756,
-                  "y": -260,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "3ceb2af9bdc9",
-                  "children": []
-                },
-                {
-                  "id": "a869051aa7dc",
-                  "urn": "tasks:hk:config-targetarea",
-                  "childId": "05b8fc5668ca",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 739,
-                  "y": -218,
-                  "contextualName": "Config Target area",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "3ceb2af9bdc9",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "id": "48f69f315adc",
-              "urn": "tasks:hk:develop-plans",
-              "childId": "8ebf2e2d0f0c",
-              "projectId": "6e3ed24e7a83",
-              "isExpanded": true,
-              "isLocked": false,
-              "x": 539,
-              "y": -123,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "78d4bb3a18f2",
-              "children": [
-                {
-                  "id": "4c17ce13ca48",
-                  "urn": "tasks:hk:analyze-maps",
-                  "childId": "d63bb8acfc1c",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 688,
-                  "y": -153,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "48f69f315adc",
-                  "children": [
-                    {
-                      "id": "e12495da11c4",
-                      "urn": "tasks:hk:plan-searchpattern",
-                      "childId": "947e5a551c74",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 916,
-                      "y": -174,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "4c17ce13ca48",
-                      "children": []
-                    },
-                    {
-                      "id": "a0e3cd78f8b6",
-                      "urn": "tasks:hk:plan-trackstrategy",
-                      "childId": "2470be3f7d23",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 916,
-                      "y": -144,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "4c17ce13ca48",
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "id": "921f0e9cf1bf",
-                  "urn": "tasks:hk:analyze-foe",
-                  "childId": "f3ead963f85b",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 686,
-                  "y": -113,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "48f69f315adc",
-                  "children": [
-                    {
-                      "id": "d43393b40108",
-                      "urn": "tasks:hk:plan-attackstrategy",
-                      "childId": "c52332675da3",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 914,
-                      "y": -104,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "921f0e9cf1bf",
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "id": "16fc7e8b020e",
-                  "urn": "tasks:hk:plan-abort",
-                  "childId": "2bbe9d9c0bf8",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 685,
-                  "y": -68,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "48f69f315adc",
-                  "children": []
-                }
-              ]
             }
           ]
         },
         {
-          "id": "6777d3ee7a37",
-          "urn": "tasks:hk:acquire-target",
-          "childId": "b5e158abb041",
+          "id": "48f69f315adc",
+          "urn": "tasks:hk:develop-plans",
+          "childId": "8ebf2e2d0f0c",
+          "parentId": "78d4bb3a18f2",
           "projectId": "6e3ed24e7a83",
+          "isLocked": false,
           "isExpanded": true,
-          "isLocked": false,
-          "x": 224,
-          "y": 96,
+          "x": 508,
+          "y": -196,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -1610,17 +1549,17 @@
           "returnState": null,
           "testReturnValue": null,
           "testReturnState": null,
-          "parentId": "6e3ed24e7a83",
           "children": [
             {
-              "id": "8a59d4976b23",
-              "urn": "tasks:hk:goto-searchstartpoint",
-              "childId": "59f7d8137999",
+              "id": "4c17ce13ca48",
+              "urn": "tasks:hk:analyze-maps",
+              "childId": "d63bb8acfc1c",
+              "parentId": "48f69f315adc",
               "projectId": "6e3ed24e7a83",
+              "isLocked": false,
               "isExpanded": true,
-              "isLocked": false,
-              "x": 608,
-              "y": -7,
+              "x": 657,
+              "y": -226,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1628,17 +1567,17 @@
               "returnState": null,
               "testReturnValue": null,
               "testReturnState": null,
-              "parentId": "6777d3ee7a37",
               "children": [
                 {
-                  "id": "0d98dd6eb323",
-                  "urn": "tasks:hk:goto-xy",
-                  "childId": "5fd03b3f60c7",
+                  "id": "e12495da11c4",
+                  "urn": "tasks:hk:plan-searchpattern",
+                  "childId": "947e5a551c74",
+                  "parentId": "4c17ce13ca48",
                   "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
                   "isLocked": false,
-                  "x": 842,
-                  "y": -41,
+                  "isExpanded": true,
+                  "x": 885,
+                  "y": -247,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1646,18 +1585,18 @@
                   "returnState": null,
                   "testReturnValue": null,
                   "testReturnState": null,
-                  "parentId": "8a59d4976b23",
                   "children": []
                 },
                 {
-                  "id": "e4374426bbc4",
-                  "urn": "tasks:hk:report-conditions",
-                  "childId": "70b270851408",
+                  "id": "a0e3cd78f8b6",
+                  "urn": "tasks:hk:plan-trackstrategy",
+                  "childId": "2470be3f7d23",
+                  "parentId": "4c17ce13ca48",
                   "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
                   "isLocked": false,
-                  "x": 838,
-                  "y": 9,
+                  "isExpanded": true,
+                  "x": 885,
+                  "y": -217,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1665,20 +1604,20 @@
                   "returnState": null,
                   "testReturnValue": null,
                   "testReturnState": null,
-                  "parentId": "8a59d4976b23",
                   "children": []
                 }
               ]
             },
             {
-              "id": "03ba5e9ce705",
-              "urn": "tasks:hk:search-targetarea",
-              "childId": "abfbaf4eb929",
+              "id": "921f0e9cf1bf",
+              "urn": "tasks:hk:analyze-foe",
+              "childId": "f3ead963f85b",
+              "parentId": "48f69f315adc",
               "projectId": "6e3ed24e7a83",
+              "isLocked": false,
               "isExpanded": true,
-              "isLocked": false,
-              "x": 664,
-              "y": 83,
+              "x": 655,
+              "y": -186,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1686,17 +1625,17 @@
               "returnState": null,
               "testReturnValue": null,
               "testReturnState": null,
-              "parentId": "6777d3ee7a37",
               "children": [
                 {
-                  "id": "6aa3388ed9d3",
-                  "urn": "tasks:hk:fly-waypoints",
-                  "childId": "d02f716050fd",
+                  "id": "d43393b40108",
+                  "urn": "tasks:hk:plan-attackstrategy",
+                  "childId": "c52332675da3",
+                  "parentId": "921f0e9cf1bf",
                   "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
                   "isLocked": false,
-                  "x": 836,
-                  "y": 57,
+                  "isExpanded": true,
+                  "x": 883,
+                  "y": -177,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1704,234 +1643,20 @@
                   "returnState": null,
                   "testReturnValue": null,
                   "testReturnState": null,
-                  "parentId": "03ba5e9ce705",
                   "children": []
-                },
-                {
-                  "id": "468c911f9989",
-                  "urn": "tasks:hk:scan-fortarget",
-                  "childId": "bd71df0542e4",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 834,
-                  "y": 88,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "03ba5e9ce705",
-                  "children": [
-                    {
-                      "id": "5fd8ae3b7685",
-                      "urn": "tasks:hk:id-targettype",
-                      "childId": "3197675085c2",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 1033.673903476603,
-                      "y": 19,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "468c911f9989",
-                      "children": []
-                    },
-                    {
-                      "id": "da89942f6413",
-                      "urn": "tasks:hk:id-target",
-                      "childId": "70d6cb641d64",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 1031,
-                      "y": 76,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "468c911f9989",
-                      "children": [
-                        {
-                          "id": "22fe930c042d",
-                          "urn": "tasks:hk:store-video",
-                          "childId": "1284bba48a8c",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 1183,
-                          "y": 16,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "da89942f6413",
-                          "children": []
-                        },
-                        {
-                          "id": "89e76d0e82b6",
-                          "urn": "tasks:hk:extract-features",
-                          "childId": "49f86d75f20f",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 1183.868644621618,
-                          "y": 56,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "da89942f6413",
-                          "children": []
-                        },
-                        {
-                          "id": "6aae2c18349c",
-                          "urn": "tasks:hk:match",
-                          "childId": "18e892842094",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 1180,
-                          "y": 96,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "da89942f6413",
-                          "children": [
-                            {
-                              "id": "a1d97240d218",
-                              "urn": "tasks:hk:report",
-                              "childId": "cb31a44862a2",
-                              "projectId": "6e3ed24e7a83",
-                              "isExpanded": true,
-                              "isLocked": false,
-                              "x": 1350,
-                              "y": 56,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "parentId": "6aae2c18349c",
-                              "children": []
-                            },
-                            {
-                              "id": "03494366350d",
-                              "urn": "tasks:hk:await-verify",
-                              "childId": "206b527b5e64",
-                              "projectId": "6e3ed24e7a83",
-                              "isExpanded": true,
-                              "isLocked": false,
-                              "x": 1355.527648947556,
-                              "y": 106,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "parentId": "6aae2c18349c",
-                              "children": []
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "b43ad17ce109",
-                      "urn": "tasks:hk:assume-leadrole",
-                      "childId": "c06b80e4c85a",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 1010,
-                      "y": 162,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "468c911f9989",
-                      "children": [
-                        {
-                          "id": "fa8e504f056d",
-                          "urn": "tasks:hk:assign-supportroles",
-                          "childId": "21cdb7730c81",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 1224,
-                          "y": 166,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "b43ad17ce109",
-                          "children": []
-                        }
-                      ]
-                    }
-                  ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "id": "04e427092b39",
-          "urn": "tasks:hk:hunt-target",
-          "childId": "77345d616a14",
-          "projectId": "6e3ed24e7a83",
-          "isExpanded": true,
-          "isLocked": false,
-          "x": 210,
-          "y": 370,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "parentId": "6e3ed24e7a83",
-          "children": [
+            },
             {
-              "id": "2684c12ddb34",
-              "urn": "tasks:hk:control-target",
-              "childId": "a33af48fcdf8",
+              "id": "16fc7e8b020e",
+              "urn": "tasks:hk:plan-abort",
+              "childId": "2bbe9d9c0bf8",
+              "parentId": "48f69f315adc",
               "projectId": "6e3ed24e7a83",
+              "isLocked": false,
               "isExpanded": true,
-              "isLocked": false,
-              "x": 372,
-              "y": 280,
+              "x": 654,
+              "y": -141,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1939,653 +1664,1078 @@
               "returnState": null,
               "testReturnValue": null,
               "testReturnState": null,
-              "parentId": "04e427092b39",
-              "children": [
-                {
-                  "id": "c89da2b49a7d",
-                  "urn": "tasks:hk:lead-targetcontroll",
-                  "childId": "43c18c1d4eaa",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 568,
-                  "y": 194,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "2684c12ddb34",
-                  "children": [
-                    {
-                      "id": "fa9e7aa2e7ca",
-                      "urn": "tasks:hk:chase",
-                      "childId": "9de98eb7e0a6",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 736,
-                      "y": 144,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "c89da2b49a7d",
-                      "children": []
-                    }
-                  ]
-                },
-                {
-                  "id": "ee6286fdab17",
-                  "urn": "tasks:hk:support-targetcontrol",
-                  "childId": "67593ce051f1",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 559,
-                  "y": 340,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "2684c12ddb34",
-                  "children": [
-                    {
-                      "id": "7b770f2f5b61",
-                      "urn": "tasks:hk:supprt-chase",
-                      "childId": "5bc9b08fe93e",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 735,
-                      "y": 309,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "ee6286fdab17",
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "id": "2a11936aba1d",
-              "urn": "tasks:hk:reacquire-target",
-              "childId": "52b5548bc7ff",
-              "projectId": "6e3ed24e7a83",
-              "isExpanded": true,
-              "isLocked": false,
-              "x": 359,
-              "y": 490,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "04e427092b39",
-              "children": [
-                {
-                  "id": "7353bbf671b6",
-                  "urn": "tasks:hk:define-searcharea",
-                  "childId": "82722c73a6d5",
-                  "projectId": "6e3ed24e7a83",
-                  "isExpanded": true,
-                  "isLocked": false,
-                  "x": 544,
-                  "y": 496,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "2a11936aba1d",
-                  "children": [
-                    {
-                      "id": "b064ac6d8878",
-                      "urn": "tasks:hk:search-targetarea",
-                      "childId": "cd8835650697",
-                      "projectId": "6e3ed24e7a83",
-                      "isExpanded": true,
-                      "isLocked": false,
-                      "x": 734.297650130549,
-                      "y": 494,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "parentId": "7353bbf671b6",
-                      "children": [
-                        {
-                          "id": "98e1cd3e6b67",
-                          "urn": "tasks:hk:fly-waypoints",
-                          "childId": "d02f716050fd",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 891,
-                          "y": 426,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "b064ac6d8878",
-                          "children": []
-                        },
-                        {
-                          "id": "0fa47a105021",
-                          "urn": "tasks:hk:scan-fortarget",
-                          "childId": "bd71df0542e4",
-                          "projectId": "6e3ed24e7a83",
-                          "isExpanded": true,
-                          "isLocked": false,
-                          "x": 886,
-                          "y": 556,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "parentId": "b064ac6d8878",
-                          "children": [
-                            {
-                              "id": "40b949606074",
-                              "urn": "tasks:hk:id-targettype",
-                              "childId": "3197675085c2",
-                              "projectId": "6e3ed24e7a83",
-                              "isExpanded": true,
-                              "isLocked": false,
-                              "x": 1051,
-                              "y": 406,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "parentId": "0fa47a105021",
-                              "children": []
-                            },
-                            {
-                              "id": "789d095755ed",
-                              "urn": "tasks:hk:id-target",
-                              "childId": "70d6cb641d64",
-                              "projectId": "6e3ed24e7a83",
-                              "isExpanded": true,
-                              "isLocked": false,
-                              "x": 1051,
-                              "y": 606,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "parentId": "0fa47a105021",
-                              "children": [
-                                {
-                                  "id": "5997042784ad",
-                                  "urn": "tasks:hk:store-video",
-                                  "childId": "1284bba48a8c",
-                                  "projectId": "6e3ed24e7a83",
-                                  "isExpanded": true,
-                                  "isLocked": false,
-                                  "x": 1241,
-                                  "y": 546,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "parentId": "789d095755ed",
-                                  "children": []
-                                },
-                                {
-                                  "id": "ae4ab3115106",
-                                  "urn": "tasks:hk:extract-features",
-                                  "childId": "49f86d75f20f",
-                                  "projectId": "6e3ed24e7a83",
-                                  "isExpanded": true,
-                                  "isLocked": false,
-                                  "x": 1245,
-                                  "y": 606,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "parentId": "789d095755ed",
-                                  "children": []
-                                },
-                                {
-                                  "id": "d8ddbe485113",
-                                  "urn": "tasks:hk:match",
-                                  "childId": "18e892842094",
-                                  "projectId": "6e3ed24e7a83",
-                                  "isExpanded": true,
-                                  "isLocked": false,
-                                  "x": 1212,
-                                  "y": 676,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "parentId": "789d095755ed",
-                                  "children": [
-                                    {
-                                      "id": "fde4a8a88e9c",
-                                      "urn": "tasks:hk:report",
-                                      "childId": "cb31a44862a2",
-                                      "projectId": "6e3ed24e7a83",
-                                      "expanded": true,
-                                      "isLocked": false,
-                                      "x": 1318,
-                                      "y": 656,
-                                      "contextualName": "",
-                                      "contextualDescription": "",
-                                      "subscriptions": [],
-                                      "returnValue": null,
-                                      "returnState": null,
-                                      "testReturnValue": null,
-                                      "testReturnState": null,
-                                      "parentId": "d8ddbe485113",
-                                      "children": []
-                                    },
-                                    {
-                                      "id": "e88e57f4fd70",
-                                      "urn": "tasks:hk:await-verify",
-                                      "childId": "206b527b5e64",
-                                      "projectId": "6e3ed24e7a83",
-                                      "expanded": true,
-                                      "isLocked": false,
-                                      "x": 1326,
-                                      "y": 706,
-                                      "contextualName": "",
-                                      "contextualDescription": "",
-                                      "subscriptions": [],
-                                      "returnValue": null,
-                                      "returnState": null,
-                                      "testReturnValue": null,
-                                      "testReturnState": null,
-                                      "parentId": "d8ddbe485113",
-                                      "children": []
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "id": "a544bc7fa1d0",
-                              "urn": "tasks:hk:assume-leadrole",
-                              "childId": "c06b80e4c85a",
-                              "projectId": "6e3ed24e7a83",
-                              "expanded": true,
-                              "isLocked": false,
-                              "x": 1067.116341704921,
-                              "y": 776,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "parentId": "0fa47a105021",
-                              "children": [
-                                {
-                                  "id": "e277bd1771fa",
-                                  "urn": "tasks:hk:assign-supportroles",
-                                  "childId": "21cdb7730c81",
-                                  "projectId": "6e3ed24e7a83",
-                                  "expanded": true,
-                                  "isLocked": false,
-                                  "x": 1261,
-                                  "y": 776,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "parentId": "a544bc7fa1d0",
-                                  "children": []
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "11716e89fd1b",
-          "urn": "tasks:hk:kill-target",
-          "childId": "3e45f3d5009b",
-          "projectId": "6e3ed24e7a83",
-          "expanded": true,
-          "isLocked": false,
-          "x": 206,
-          "y": 764,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "parentId": "6e3ed24e7a83",
-          "children": [
-            {
-              "id": "3751317daf2a",
-              "urn": "tasks:hk:align",
-              "childId": "f0869f56e02a",
-              "projectId": "6e3ed24e7a83",
-              "expanded": true,
-              "isLocked": false,
-              "x": 306,
-              "y": 622,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "11716e89fd1b",
-              "children": [
-                {
-                  "id": "77806f831a17",
-                  "urn": "tasks:hk:determine-angle",
-                  "childId": "9299677d5bb9",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 495,
-                  "y": 594,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "3751317daf2a",
-                  "children": []
-                },
-                {
-                  "id": "e69d56c2dc48",
-                  "urn": "tasks:hk:determine-altitude",
-                  "childId": "b5b936451ff1",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 473,
-                  "y": 654,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "3751317daf2a",
-                  "children": []
-                },
-                {
-                  "id": "9339a3f70337",
-                  "urn": "tasks:hk:goto-relativexy",
-                  "childId": "92002dfce424",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 477,
-                  "y": 704,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "3751317daf2a",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "id": "29375de409cf",
-              "urn": "tasks:hk:verify",
-              "childId": "0ce2a8e369be",
-              "projectId": "6e3ed24e7a83",
-              "expanded": true,
-              "isLocked": false,
-              "x": 321,
-              "y": 754,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "11716e89fd1b",
-              "children": [
-                {
-                  "id": "208ed4bc1317",
-                  "urn": "tasks:hk:report",
-                  "childId": "6d012d9bfc47",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 508,
-                  "y": 834,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "29375de409cf",
-                  "children": []
-                },
-                {
-                  "id": "d2c793cc5630",
-                  "urn": "tasks:hk:await-verify",
-                  "childId": "1075741a7782",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 493,
-                  "y": 864,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "29375de409cf",
-                  "children": []
-                },
-                {
-                  "id": "2ac5e79cd710",
-                  "urn": "tasks:hk:analyze-successprobability",
-                  "childId": "9804dfe75549",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 549,
-                  "y": 754,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "29375de409cf",
-                  "children": []
-                },
-                {
-                  "id": "9e5971bc054c",
-                  "urn": "tasks:hk:analyze-collateraldamage",
-                  "childId": "f3dd21199b69",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 544,
-                  "y": 794,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "29375de409cf",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "id": "605dc6b5fd66",
-              "urn": "tasks:hk:engage",
-              "childId": "00966f9cc913",
-              "projectId": "6e3ed24e7a83",
-              "expanded": true,
-              "isLocked": false,
-              "x": 312,
-              "y": 864,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "11716e89fd1b",
-              "children": [
-                {
-                  "id": "7061d3f0bd80",
-                  "urn": "tasks:hk:arm",
-                  "childId": "0b1632386219",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 442,
-                  "y": 934,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "605dc6b5fd66",
-                  "children": []
-                },
-                {
-                  "id": "ad1dbdcb2438",
-                  "urn": "tasks:hk:aim",
-                  "childId": "59353fa02e37",
-                  "projectId": "6e3ed24e7a83",
-                  "expanded": true,
-                  "isLocked": false,
-                  "x": 445,
-                  "y": 964,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "parentId": "605dc6b5fd66",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "id": "2a6fa72d9712",
-              "urn": "tasks:hk:fire",
-              "childId": "3ab8023c7faf",
-              "projectId": "6e3ed24e7a83",
-              "expanded": true,
-              "isLocked": false,
-              "x": 306,
-              "y": 986,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "11716e89fd1b",
-              "children": []
-            },
-            {
-              "id": "e6b6161b7c49",
-              "urn": "tasks:hk:report",
-              "childId": "070d39d6536f",
-              "projectId": "6e3ed24e7a83",
-              "expanded": true,
-              "isLocked": false,
-              "x": 306,
-              "y": 1038,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "parentId": "11716e89fd1b",
               "children": []
             }
           ]
         }
       ]
+    },
+    {
+      "id": "6777d3ee7a37",
+      "urn": "tasks:hk:acquire-target",
+      "childId": "b5e158abb041",
+      "parentId": "6e3ed24e7a83",
+      "projectId": "6e3ed24e7a83",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 193,
+      "y": 23,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "8a59d4976b23",
+          "urn": "tasks:hk:goto-searchstartpoint",
+          "childId": "59f7d8137999",
+          "parentId": "6777d3ee7a37",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 577,
+          "y": -80,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "0d98dd6eb323",
+              "urn": "tasks:hk:goto-xy",
+              "childId": "5fd03b3f60c7",
+              "parentId": "8a59d4976b23",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 811,
+              "y": -114,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "e4374426bbc4",
+              "urn": "tasks:hk:report-conditions",
+              "childId": "70b270851408",
+              "parentId": "8a59d4976b23",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 807,
+              "y": -64,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "03ba5e9ce705",
+          "urn": "tasks:hk:search-targetarea",
+          "childId": "abfbaf4eb929",
+          "parentId": "6777d3ee7a37",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 633,
+          "y": 10,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "6aa3388ed9d3",
+              "urn": "tasks:hk:fly-waypoints",
+              "childId": "d02f716050fd",
+              "parentId": "03ba5e9ce705",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 805,
+              "y": -16,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "468c911f9989",
+              "urn": "tasks:hk:scan-fortarget",
+              "childId": "bd71df0542e4",
+              "parentId": "03ba5e9ce705",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 803,
+              "y": 15,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "5fd8ae3b7685",
+                  "urn": "tasks:hk:id-targettype",
+                  "childId": "3197675085c2",
+                  "parentId": "468c911f9989",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 1003,
+                  "y": -54,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "da89942f6413",
+                  "urn": "tasks:hk:id-target",
+                  "childId": "70d6cb641d64",
+                  "parentId": "468c911f9989",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 1000,
+                  "y": 3,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": [
+                    {
+                      "id": "22fe930c042d",
+                      "urn": "tasks:hk:store-video",
+                      "childId": "1284bba48a8c",
+                      "parentId": "da89942f6413",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1152,
+                      "y": -57,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    },
+                    {
+                      "id": "89e76d0e82b6",
+                      "urn": "tasks:hk:extract-features",
+                      "childId": "49f86d75f20f",
+                      "parentId": "da89942f6413",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1153,
+                      "y": -17,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    },
+                    {
+                      "id": "6aae2c18349c",
+                      "urn": "tasks:hk:match",
+                      "childId": "18e892842094",
+                      "parentId": "da89942f6413",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1149,
+                      "y": 23,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": [
+                        {
+                          "id": "a1d97240d218",
+                          "urn": "tasks:hk:report",
+                          "childId": "cb31a44862a2",
+                          "parentId": "6aae2c18349c",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1319,
+                          "y": -17,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": []
+                        },
+                        {
+                          "id": "03494366350d",
+                          "urn": "tasks:hk:await-verify",
+                          "childId": "206b527b5e64",
+                          "parentId": "6aae2c18349c",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1325,
+                          "y": 33,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "b43ad17ce109",
+                  "urn": "tasks:hk:assume-leadrole",
+                  "childId": "c06b80e4c85a",
+                  "parentId": "468c911f9989",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 979,
+                  "y": 89,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": [
+                    {
+                      "id": "fa8e504f056d",
+                      "urn": "tasks:hk:assign-supportroles",
+                      "childId": "21cdb7730c81",
+                      "parentId": "b43ad17ce109",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1193,
+                      "y": 93,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04e427092b39",
+      "urn": "tasks:hk:hunt-target",
+      "childId": "77345d616a14",
+      "parentId": "6e3ed24e7a83",
+      "projectId": "6e3ed24e7a83",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 179,
+      "y": 297,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "2684c12ddb34",
+          "urn": "tasks:hk:control-target",
+          "childId": "a33af48fcdf8",
+          "parentId": "04e427092b39",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 341,
+          "y": 207,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "c89da2b49a7d",
+              "urn": "tasks:hk:lead-targetcontroll",
+              "childId": "43c18c1d4eaa",
+              "parentId": "2684c12ddb34",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 537,
+              "y": 121,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "fa9e7aa2e7ca",
+                  "urn": "tasks:hk:chase",
+                  "childId": "9de98eb7e0a6",
+                  "parentId": "c89da2b49a7d",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 705,
+                  "y": 71,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "44e3ae1f",
+                  "urn": "tasks:hk:surveil",
+                  "childId": "08467d08",
+                  "parentId": "c89da2b49a7d",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": false,
+                  "x": 700,
+                  "y": 111,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "58b8c91d",
+                  "urn": "tasks:hk:contain",
+                  "childId": "a5d6c2a0",
+                  "parentId": "c89da2b49a7d",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": false,
+                  "x": 695,
+                  "y": 151,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ee6286fdab17",
+              "urn": "tasks:hk:support-targetcontrol",
+              "childId": "67593ce051f1",
+              "parentId": "2684c12ddb34",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 528,
+              "y": 267,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "7b770f2f5b61",
+                  "urn": "tasks:hk:supprt-chase",
+                  "childId": "5bc9b08fe93e",
+                  "parentId": "ee6286fdab17",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 704,
+                  "y": 236,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "fdf0d602",
+                  "urn": "tasks:hk:support-surveil",
+                  "childId": "8b828b56",
+                  "parentId": "ee6286fdab17",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": false,
+                  "x": 704,
+                  "y": 271,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "5ba02848",
+                  "urn": "tasks:hk:support-contain",
+                  "childId": "69d3e143",
+                  "parentId": "ee6286fdab17",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": false,
+                  "x": 706,
+                  "y": 301,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2a11936aba1d",
+          "urn": "tasks:hk:reacquire-target",
+          "childId": "52b5548bc7ff",
+          "parentId": "04e427092b39",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 328,
+          "y": 417,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "7353bbf671b6",
+              "urn": "tasks:hk:define-searcharea",
+              "childId": "82722c73a6d5",
+              "parentId": "2a11936aba1d",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 513,
+              "y": 423,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "b064ac6d8878",
+                  "urn": "tasks:hk:search-targetarea",
+                  "childId": "cd8835650697",
+                  "parentId": "7353bbf671b6",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 703,
+                  "y": 421,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": [
+                    {
+                      "id": "98e1cd3e6b67",
+                      "urn": "tasks:hk:fly-waypoints",
+                      "childId": "d02f716050fd",
+                      "parentId": "b064ac6d8878",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 860,
+                      "y": 353,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    },
+                    {
+                      "id": "0fa47a105021",
+                      "urn": "tasks:hk:scan-fortarget",
+                      "childId": "bd71df0542e4",
+                      "parentId": "b064ac6d8878",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 855,
+                      "y": 483,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": [
+                        {
+                          "id": "40b949606074",
+                          "urn": "tasks:hk:id-targettype",
+                          "childId": "3197675085c2",
+                          "parentId": "0fa47a105021",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1020,
+                          "y": 333,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": []
+                        },
+                        {
+                          "id": "789d095755ed",
+                          "urn": "tasks:hk:id-target",
+                          "childId": "70d6cb641d64",
+                          "parentId": "0fa47a105021",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1020,
+                          "y": 533,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": [
+                            {
+                              "id": "5997042784ad",
+                              "urn": "tasks:hk:store-video",
+                              "childId": "1284bba48a8c",
+                              "parentId": "789d095755ed",
+                              "projectId": "6e3ed24e7a83",
+                              "isLocked": false,
+                              "isExpanded": true,
+                              "x": 1210,
+                              "y": 473,
+                              "contextualName": "",
+                              "contextualDescription": "",
+                              "subscriptions": [],
+                              "returnValue": null,
+                              "returnState": null,
+                              "testReturnValue": null,
+                              "testReturnState": null,
+                              "children": []
+                            },
+                            {
+                              "id": "ae4ab3115106",
+                              "urn": "tasks:hk:extract-features",
+                              "childId": "49f86d75f20f",
+                              "parentId": "789d095755ed",
+                              "projectId": "6e3ed24e7a83",
+                              "isLocked": false,
+                              "isExpanded": true,
+                              "x": 1214,
+                              "y": 533,
+                              "contextualName": "",
+                              "contextualDescription": "",
+                              "subscriptions": [],
+                              "returnValue": null,
+                              "returnState": null,
+                              "testReturnValue": null,
+                              "testReturnState": null,
+                              "children": []
+                            },
+                            {
+                              "id": "d8ddbe485113",
+                              "urn": "tasks:hk:match",
+                              "childId": "18e892842094",
+                              "parentId": "789d095755ed",
+                              "projectId": "6e3ed24e7a83",
+                              "isLocked": false,
+                              "isExpanded": true,
+                              "x": 1181,
+                              "y": 603,
+                              "contextualName": "",
+                              "contextualDescription": "",
+                              "subscriptions": [],
+                              "returnValue": null,
+                              "returnState": null,
+                              "testReturnValue": null,
+                              "testReturnState": null,
+                              "children": [
+                                {
+                                  "id": "fde4a8a88e9c",
+                                  "urn": "tasks:hk:report",
+                                  "childId": "cb31a44862a2",
+                                  "parentId": "d8ddbe485113",
+                                  "projectId": "6e3ed24e7a83",
+                                  "isLocked": false,
+                                  "isExpanded": true,
+                                  "x": 1287,
+                                  "y": 583,
+                                  "contextualName": "",
+                                  "contextualDescription": "",
+                                  "subscriptions": [],
+                                  "returnValue": null,
+                                  "returnState": null,
+                                  "testReturnValue": null,
+                                  "testReturnState": null,
+                                  "children": []
+                                },
+                                {
+                                  "id": "e88e57f4fd70",
+                                  "urn": "tasks:hk:await-verify",
+                                  "childId": "206b527b5e64",
+                                  "parentId": "d8ddbe485113",
+                                  "projectId": "6e3ed24e7a83",
+                                  "isLocked": false,
+                                  "isExpanded": true,
+                                  "x": 1295,
+                                  "y": 633,
+                                  "contextualName": "",
+                                  "contextualDescription": "",
+                                  "subscriptions": [],
+                                  "returnValue": null,
+                                  "returnState": null,
+                                  "testReturnValue": null,
+                                  "testReturnState": null,
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "a544bc7fa1d0",
+                          "urn": "tasks:hk:assume-leadrole",
+                          "childId": "c06b80e4c85a",
+                          "parentId": "0fa47a105021",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1036,
+                          "y": 703,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": [
+                            {
+                              "id": "e277bd1771fa",
+                              "urn": "tasks:hk:assign-supportroles",
+                              "childId": "21cdb7730c81",
+                              "parentId": "a544bc7fa1d0",
+                              "projectId": "6e3ed24e7a83",
+                              "isLocked": false,
+                              "isExpanded": true,
+                              "x": 1230,
+                              "y": 703,
+                              "contextualName": "",
+                              "contextualDescription": "",
+                              "subscriptions": [],
+                              "returnValue": null,
+                              "returnState": null,
+                              "testReturnValue": null,
+                              "testReturnState": null,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11716e89fd1b",
+      "urn": "tasks:hk:kill-target",
+      "childId": "3e45f3d5009b",
+      "parentId": "6e3ed24e7a83",
+      "projectId": "6e3ed24e7a83",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 175,
+      "y": 691,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "3751317daf2a",
+          "urn": "tasks:hk:align",
+          "childId": "f0869f56e02a",
+          "parentId": "11716e89fd1b",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 275,
+          "y": 549,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "77806f831a17",
+              "urn": "tasks:hk:determine-angle",
+              "childId": "9299677d5bb9",
+              "parentId": "3751317daf2a",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 464,
+              "y": 521,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "e69d56c2dc48",
+              "urn": "tasks:hk:determine-altitude",
+              "childId": "b5b936451ff1",
+              "parentId": "3751317daf2a",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 442,
+              "y": 581,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "9339a3f70337",
+              "urn": "tasks:hk:goto-relativexy",
+              "childId": "92002dfce424",
+              "parentId": "3751317daf2a",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 446,
+              "y": 631,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "29375de409cf",
+          "urn": "tasks:hk:verify",
+          "childId": "0ce2a8e369be",
+          "parentId": "11716e89fd1b",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 290,
+          "y": 681,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "208ed4bc1317",
+              "urn": "tasks:hk:report",
+              "childId": "6d012d9bfc47",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 477,
+              "y": 761,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "d2c793cc5630",
+              "urn": "tasks:hk:await-verify",
+              "childId": "1075741a7782",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 462,
+              "y": 791,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "2ac5e79cd710",
+              "urn": "tasks:hk:analyze-successprobability",
+              "childId": "9804dfe75549",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 518,
+              "y": 681,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "9e5971bc054c",
+              "urn": "tasks:hk:analyze-collateraldamage",
+              "childId": "f3dd21199b69",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 513,
+              "y": 721,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "605dc6b5fd66",
+          "urn": "tasks:hk:engage",
+          "childId": "00966f9cc913",
+          "parentId": "11716e89fd1b",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 281,
+          "y": 791,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "7061d3f0bd80",
+              "urn": "tasks:hk:arm",
+              "childId": "0b1632386219",
+              "parentId": "605dc6b5fd66",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 411,
+              "y": 861,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "ad1dbdcb2438",
+              "urn": "tasks:hk:aim",
+              "childId": "59353fa02e37",
+              "parentId": "605dc6b5fd66",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 414,
+              "y": 891,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "2a6fa72d9712",
+          "urn": "tasks:hk:fire",
+          "childId": "3ab8023c7faf",
+          "parentId": "11716e89fd1b",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 275,
+          "y": 913,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "e6b6161b7c49",
+          "urn": "tasks:hk:report",
+          "childId": "070d39d6536f",
+          "parentId": "11716e89fd1b",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 275,
+          "y": 965,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        }
+      ]
     }
   ]
-}
+}]}

@@ -1,6 +1,6 @@
 ************************************************************************************************************************
 ************************************************************************************************************************
-From Playground:
+From AtPlayground:
 This used to be used when 'nodes' were more 'activity-like' and construction was done with a root and an array of children.
 There are pieces worth reviewing but deletion is imminent unless we go back to the old way.
  See (_buildNodeViewFromNodeModel) for its later version

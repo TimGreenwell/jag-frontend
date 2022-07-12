@@ -1,5 +1,5 @@
 /**
- * @file Playground - Visual area for authoring JAGs.  Controls the general playground environment
+ * @file AtPlayground - Visual area for authoring JAGs.  Controls the general playground environment
  * including panning, zooming, adding and removing edges/nodes.
  *
  * @author mvignati
@@ -12,7 +12,7 @@ import EdgeElement from './views/edge.js';
 import Popupable from './utils/popupable.js';
 import UserPrefs from "./utils/user-prefs.js";
 
-class Playground extends Popupable {
+class AtPlayground extends Popupable {
 
     constructor() {
         super();
@@ -213,7 +213,7 @@ class Playground extends Popupable {
 
     /**
      *
-     * Playground Pan and Zoom
+     * AtPlayground Pan and Zoom
      *
      * _createCardinal
      * _checkBounds
@@ -235,7 +235,7 @@ class Playground extends Popupable {
 
         cardinal.addEventListener('mouseenter', () => {
             const hoverInterval = setInterval(function () {
-                this._dragView(dx * Playground.DEFAULT_CARDINAL_MULTIPLIER, dy * Playground.DEFAULT_CARDINAL_MULTIPLIER);
+                this._dragView(dx * AtPlayground.DEFAULT_CARDINAL_MULTIPLIER, dy * AtPlayground.DEFAULT_CARDINAL_MULTIPLIER);
             }.bind(this), 10);
 
             cardinal.addEventListener('mouseleave', () => {
@@ -488,7 +488,7 @@ class Playground extends Popupable {
     _handleNewActivityActivityPopup(e) {
         const $initiator = document.getElementById('menu-new');
         this.popup({
-            content: Playground.NOTICE_CREATE_JAG,
+            content: AtPlayground.NOTICE_CREATE_JAG,
             trackEl: this,
             inputs: {},//event: e},
             highlights: [$initiator]
@@ -498,8 +498,7 @@ class Playground extends Popupable {
 
     clearPlayground(projectId = undefined) {
         for (let jagNode of this._activeActivityNodeElementSet) {
-
-            if ((projectId == undefined) || (jagNode.nodeModel.projectId = projectId)) {
+            if ((projectId == undefined) || (jagNode.nodeModel.projectId == projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
                 this._activeActivityNodeElementSet.delete(jagNode);
@@ -594,8 +593,8 @@ class Playground extends Popupable {
 
     deleteNodeModel(deadId) {
         // The deadId is a node marked for deletion.  Death can either be
-        // annihilation or absorbtion into another project.  Playground nodes
-        // with an ancester matching deadId are removed.
+        // annihilation or absorption into another project.  AtPlayground nodes
+        // with an ancestor matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
@@ -636,9 +635,9 @@ class Playground extends Popupable {
      * Support Functions
      *
      * _traverseActivityNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addActivityNodeTree
-     * deselectAll             : Required by : playgroundClicked
-     * onKeyDown               : Required by : createActivityNode
-     * _getNodePreferredHeight : Required by : _traverseActivityNodeTree
+     * deselectAll                  : Required by : playgroundClicked
+     * onKeyDown                    : Required by : createActivityNode
+     * _getNodePreferredHeight      : Required by : _traverseActivityNodeTree
      *
      */
 
@@ -660,7 +659,7 @@ class Playground extends Popupable {
                 // if the selected node is a root - then clear the project from the tree
                 // if the selected node is a non-root node - then disconnect the jag from its parent
                 // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
-                // @TODO - migth consider a delted edge to mean disconnect jag
+                // @TODO - might consider a deleted edge to mean disconnect jag
 
                 if ($node.nodeModel.projectId == $node.nodeModel.id) {
                                 this.clearPlayground($node.nodeModel.projectId);
@@ -668,7 +667,7 @@ class Playground extends Popupable {
 
                     //
                     // this.popup({
-                    //     content: Playground.NOTICE_REMOVE_CHILD,
+                    //     content: AtPlayground.NOTICE_REMOVE_CHILD,
                     //     trackEl: this,
                     //     inputs: {},//event: e},
                     //     highlights: []
@@ -693,24 +692,24 @@ class Playground extends Popupable {
             }
         } else if (event.key == 'ArrowLeft') {
             if (this._canMoveView.left) {
-                this._dragView(1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
+                this._dragView(1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
         } else if (event.key == 'ArrowRight') {
             if (this._canMoveView.right) {
-                this._dragView(-1 * Playground.DEFAULT_ARROW_MULTIPLIER, 0);
+                this._dragView(-1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
         } else if (event.key == 'ArrowUp') {
             if (this._canMoveView.up) {
-                this._dragView(0, 1 * Playground.DEFAULT_ARROW_MULTIPLIER);
+                this._dragView(0, 1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
             }
         } else if (event.key == 'ArrowDown') {
             if (this._canMoveView.down) {
-                this._dragView(0, -1 * Playground.DEFAULT_ARROW_MULTIPLIER);
+                this._dragView(0, -1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
             }
         } else if (event.key == 'PageUp') {
-            this._zoomView(this._zoomFactor / Playground.DEFAULT_ZOOM_MULTIPLIER);
+            this._zoomView(this._zoomFactor / AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
         } else if (event.key == 'PageDown') {
-            this._zoomView(this._zoomFactor * Playground.DEFAULT_ZOOM_MULTIPLIER);
+            this._zoomView(this._zoomFactor * AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
         }
         else {console.log("Not handling key " + event.key)}
     }
@@ -737,7 +736,7 @@ class Playground extends Popupable {
     _eventImportJagHandler(e) {
         const $initiator = document.getElementById('menu-new');
         this.popup({
-            content: Playground.NOTICE_PASTE_JAG,
+            content: AtPlayground.NOTICE_PASTE_JAG,
             trackEl: this,
             inputs: {},//event: e},
             highlights: [$initiator]
@@ -754,15 +753,15 @@ class Playground extends Popupable {
 //	  <div class="popup-box" style="visablity
 
 
-Playground.POPUP_TYPES = {
+AtPlayground.POPUP_TYPES = {
     WARNING: 'popup-warning',
     NOTICE: 'popup-notice',
     INFO: 'popup-info'
 };
 
 // why cant this go inside scope.? Does anyone else need it?
-Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
-    type: Playground.POPUP_TYPES.NOTICE,
+AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
+    type: AtPlayground.POPUP_TYPES.NOTICE,
     name: "Add New JAG Activity",
     description: "Be precise.  You can always edit this later.",
     properties: [
@@ -811,8 +810,8 @@ Playground.NOTICE_CREATE_JAG = Popupable._createPopup({
     // skip: ?
 });
 
-Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
-    type: Playground.POPUP_TYPES.NOTICE,
+AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
+    type: AtPlayground.POPUP_TYPES.NOTICE,
     name: "Disconnect Child",
     description: "Disconnect this child JAG from parent JAG?",
     actions: [
@@ -840,8 +839,8 @@ Playground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this ru
 });
 
 // why cant this go inside scope.? Does anyone else need it?
-Playground.NOTICE_PASTE_JAG = Popupable._createPopup({
-    type: Playground.POPUP_TYPES.NOTICE,
+AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
+    type: AtPlayground.POPUP_TYPES.NOTICE,
     name: "Recreate JAG",
     description: "Paste previously exported JAG",
     properties: [
@@ -874,13 +873,13 @@ Playground.NOTICE_PASTE_JAG = Popupable._createPopup({
 });
 
 
-Playground.DEFAULT_CARDINAL_MULTIPLIER = 10;
+AtPlayground.DEFAULT_CARDINAL_MULTIPLIER = 10;
 
-Playground.DEFAULT_ARROW_MULTIPLIER = 10;
+AtPlayground.DEFAULT_ARROW_MULTIPLIER = 10;
 
-Playground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
+AtPlayground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 
-customElements.define('jag-playground', Playground);
+customElements.define('jag-playground', AtPlayground);
 
 export default customElements.get('jag-playground');
 

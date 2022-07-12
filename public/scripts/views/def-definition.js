@@ -8,10 +8,10 @@
  */
 
 
-import FormUtils from "./utils/forms.js";
-import Activity from "./models/activity.js";
-import Subscription from "./models/subscription.js";
-import {functionFactory} from "./utils/function-factory.js";
+import FormUtils from "../utils/forms.js";
+import Activity from "../models/activity.js";
+import Subscription from "../models/subscription.js";
+import {functionFactory} from "../utils/function-factory.js";
 
 class Definition extends HTMLElement {
 

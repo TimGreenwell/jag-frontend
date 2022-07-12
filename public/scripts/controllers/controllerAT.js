@@ -280,10 +280,14 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         let newProject = event.detail.node;
-        this.relocateProject(newProject, 0, 200)
-        this.repopulateProject(newProject, newProject.id)
-        this.repopulateParent(newProject)
-        await StorageService.create(newProject, "node")
+
+        let newNode = new NodeModel(newProject)
+
+
+        this.relocateProject(newNode, 0, 200)
+        this.repopulateProject(newNode, newProject.id)
+        this.repopulateParent(newNode)
+        await StorageService.create(newNode, "node")
     }
 
     /**   -- Menu --  */
@@ -464,8 +468,7 @@ export default class ControllerAT extends Controller {
         createdNodeModel.leafCount = createdNodeModel.leafcounter()
         this.cacheProject(createdNodeModel)
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
-        this._playground.addNodeModel(createdNodeModel)
-        //   this._playground.createActivityNode(createdNodeModel, true);                        // default expand tree = true
+     //   this._playground.addNodeModel(createdNodeModel)
     }
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {

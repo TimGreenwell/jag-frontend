@@ -2,17 +2,13 @@
  *
  */
 
-import Definition from './def-definition.js';                       // AT - Center graphic view of JAG Nodes
-import Events from './views/def-events.js';
+import Definition from './views/def-definition.js';                       // AT - Center graphic view of JAG Nodes
 import Menu from './views/def-menu.js';                             // AT - Top view of user actions (plus title/logo)
-import Subactivity from './views/def-subactivity.js';               // AT - Right view of JAG Node data entry fields
 import ControllerDEF from "./controllers/controllerDEF.js";
 import StorageService from './services/storage-service.js';         // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';            // Available storage option (IndexedDB)
 import RESTStorage from './storages/rest.js';
 import UserPrefs from "./utils/user-prefs.js";
-
-//import { URL } from 'node:url';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -42,19 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector('body');
-    const events = new Events();
-    const subactivity = new Subactivity();
     const menu = new Menu();
     const definition = new Definition();
 
 
     body.appendChild(menu)
-   // body.appendChild(events);
     body.appendChild(definition);
-    //body.appendChild(subactivity);
     controller.menu = menu;
-    controller.events = events;
-    controller.subactivity = subactivity;
     controller.definition = definition;
     await controller.initialize();
 
