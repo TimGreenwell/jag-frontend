@@ -9,7 +9,6 @@
 
 'use strict';
 
-import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import Controller from "./controller.js";
 
@@ -20,8 +19,6 @@ export default class ControllerDEF extends Controller {
         this._currentProjectId = startProjectId;
         this._currentNodeId = startNodeId;
         this._menu = null;
-        this._events = null;
-        this._subactivity = null;
         this._definition = null;
 
         // this._project = this.fetchProject(startProjectId)
@@ -31,19 +28,13 @@ export default class ControllerDEF extends Controller {
         StorageService.subscribe("command-node-deleted", this.commandNodeDeletedHandler.bind(this)); // }
     }
 
+    // Panel Setters
     set menu(value) {
         this._menu = value;
-    }
-    set subactivity(value) {
-        this._subactivity = value;
-    }
-    set events(value) {
-        this._events = value;
     }
     set definition(value) {
         this._definition = value;
     }
-
 
     async initialize() {
         await this.initializeCache();
@@ -52,12 +43,10 @@ export default class ControllerDEF extends Controller {
     }
 
     async initializeCache() {         //@TODO --- it might not be worth caching this -- might should just hit DB..
-
         let allActivities = await StorageService.all('activity')
         allActivities.forEach(activity => {
             this.cacheActivity(activity)
         });
-
 
         let allProjects = await StorageService.all('node')
         allProjects.forEach(project => {
@@ -75,9 +64,7 @@ export default class ControllerDEF extends Controller {
     }
 
     initializePanels() {
-
       let project = this.fetchProject(this._currentProjectId);
-
       let node = this.searchTreeForId(project,this._currentNodeId)
       this._definition.definingNode = node
       this._definition.buildTestBank()
@@ -87,18 +74,6 @@ export default class ControllerDEF extends Controller {
         this._menu.addEventListener('event-execution-updated', this.eventExecutionUpdatedHandler.bind(this));
         this._menu.addEventListener('event-returns-updated', this.eventReturnsUpdatedHandler.bind(this));
         this._menu.addEventListener('event-operator-updated', this.eventOperatorUpdatedHandler.bind(this));
-    }
-
-    eventExecutionUpdatedHandler(){
-
-    }
-    eventReturnsUpdatedHandler(){
-
-    }
-    eventOperatorUpdatedHandler(event){
-        let returns = event.detail.returns;
-        let operator = event.detail.operator;
-        this._definition._templateFunction(returns, operator)
     }
 
     /**
@@ -114,43 +89,29 @@ export default class ControllerDEF extends Controller {
      *  stored and distributed.
      *
      * (C) indicates common methods between controllers (share code)
-     *    -- playground --
-     * eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
-     * eventActivityUpdatedHandler       (C)  - structure change
-     * responseActivityUpdatedHandler         - does command to change particular Activity change our Playground view
-     * responseActivityDeletedHandler         - does command to delete particular Activity change our Playground view
-     * eventNodesSelectedHandler              - user selects Node in graph
-     * eventNodeRepositionedHandler           - user repositioned Node
-     * eventNodesConnectedHandler             - user connects two Nodes with an edge
-     * eventProjectRemovedHandler  *          - user selected Root and hit 'delete'
-     * eventNodeDisconnectedHandler  *        - user selected Node and hit 'delete'
-     * 
-     *    -- properties --
-     * eventUrnChangedHandler            (C)  - URN field is changed
-     * eventActivityUpdatedHandler       (C)  - user updates an Activity related field
-     * eventNodeUpdatedHandler                - user updates a Node related field
-     * eventActivityDeletedHandler  *         - user permanently deletes Activity
-     * eventActivityLockedHandler   *         - user locks Activity against delete/updates
-     * 
+     *    -- dashboard --
+     *
      *       -- menu --
-     * eventAddActivityHandler                - user triggers Activity data entry
-     * eventClearPlaygroundHandler            - user Clears Playground
-     * 
-     *  -- activity library --
-     * eventProjectCreatedHandler           - user selects Activity for playground (creates Graph)
-     * eventActivityDeletedHandler            - user permanently deletes Activity
-     * eventActivityLockedHandler             - user locks Activity against delete/updates
-     * 
-     *   -- project library --
-     * eventProjectSelectedHandler           - user selects Graph for playground (recovers Graph)
-     * eventProjectDeletedHandler            - user permanently deletes Graph
-     * eventProjectLockedHandler             - user locks Graph against delete/updates
+     * eventExecutionUpdatedHandler                - user selects Execution from dropdown
+     * eventReturnsUpdatedHandler                  - user selects Returns from dropdown
+     * eventOperatorUpdatedHandler                 - user selects Operator from dropdown
      *
      */
 
-    /**   -- Playground --  */
-    
+    /**   -- Dashboard --  */
 
+    /**   -- Menu --  */
+    eventExecutionUpdatedHandler(){
+
+    }
+    eventReturnsUpdatedHandler(){
+
+    }
+    eventOperatorUpdatedHandler(event){
+        let returns = event.detail.returns;
+        let operator = event.detail.operator;
+        this._definition._templateFunction(returns, operator)
+    }
 
     //
     // async responseActivityUpdatedHandler(event) {
@@ -171,17 +132,10 @@ export default class ControllerDEF extends Controller {
      * the appropriate changes are made to the views.  Its entirely possible (and common) that the events were
      * initiated locally but that is transparent to the logic.  The origin of commands is irrelevant to the logic.
      *
-     * commandActivityCreatedHandler
-     * commandActivityUpdatedHandler
-     * commandActivityDeletedHandler
-     * commandActivityClonedHandler
-     * commandActivityReplacedHandler
-     * commandNodeCreatedHandler
      * commandNodeUpdatedHandler
      * commandNodeDeletedHandler
      *
      */
-
 
     commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
         console.log("((COMMAND INCOMING) >>  Node Updated")
@@ -198,25 +152,14 @@ export default class ControllerDEF extends Controller {
     commandNodeDeletedHandler(deletedNodeId) {
         console.log("((COMMAND INCOMING) >>  Node Deleted")
         this.uncacheProject(deletedNodeId)
-
     }
 
     /**
      *                                  Support Functions
-     * buildNodeTreeFromActivity   Build node tree given root activity
      *
-     *
+     * searchTreeForId
      *
      */
-
-
-
-    updateProject(currentNode, projectId) {
-        currentNode.projectId = projectId
-        currentNode.children.forEach(child => this.updateProject(child))
-    }
-
-
 
     searchTreeForId(treeNode,id) {
         let workStack = []
@@ -229,36 +172,36 @@ export default class ControllerDEF extends Controller {
         return null
     }
 
-
-    searchTreeForChildId(treeNode,childId) {
-        let workStack = []
-        workStack.push(treeNode)
-        while(workStack.length>0){
-            let checkNode = workStack.pop();
-            if (checkNode.childId == childId) {return checkNode}
-            checkNode.children.forEach(child => workStack.push(child))
-        }
-        return null
-    }
-
-    async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
-        console.log("Local>> (local nodes disjoined) ")
-        let changingActivity = event.detail.activityUrn
-        let leavingJagChild = event.detail.activityChild
-
-        let projectRoot = this.fetchProject(leavingNodeModel.projectId)
-        this.repopulateParent(projectRoot)
-        let losingParents = leavingNodeModel.parent;
-        let losingParentsJag = this.fetchActivity(losingParents.urn)
-        let remainingChildren = losingParentsJag.children.filter(entry => {
-            if (entry.id != leavingNodeModel.childId) {
-                return entry;
-            }
-        })
-        losingParentsJag.children = remainingChildren
-        await StorageService.update(losingParentsJag, 'activity');
-    }
+    // marked for death
+    // searchTreeForChildId(treeNode,childId) {
+    //     let workStack = []
+    //     workStack.push(treeNode)
+    //     while(workStack.length>0){
+    //         let checkNode = workStack.pop();
+    //         if (checkNode.childId == childId) {return checkNode}
+    //         checkNode.children.forEach(child => workStack.push(child))
+    //     }
+    //     return null
+    // }
 
 
+    // marked for death
+    // async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
+    //     console.log("Local>> (local nodes disjoined) ")
+    //     let changingActivity = event.detail.activityUrn
+    //     let leavingJagChild = event.detail.activityChild
+    //
+    //     let projectRoot = this.fetchProject(leavingNodeModel.projectId)
+    //     this.repopulateParent(projectRoot)
+    //     let losingParents = leavingNodeModel.parent;
+    //     let losingParentsJag = this.fetchActivity(losingParents.urn)
+    //     let remainingChildren = losingParentsJag.children.filter(entry => {
+    //         if (entry.id != leavingNodeModel.childId) {
+    //             return entry;
+    //         }
+    //     })
+    //     losingParentsJag.children = remainingChildren
+    //     await StorageService.update(losingParentsJag, 'activity');
+    // }
 
 }

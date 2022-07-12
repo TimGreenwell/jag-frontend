@@ -7,7 +7,6 @@
 
 'use strict';
 
-import InputValidator from "../utils/validation.js";
 import StorageService from "../services/storage-service.js";
 import JAGATValidation from "../utils/validation.js";
 import CellModel from "../models/cell.js";
@@ -38,6 +37,7 @@ export default class ControllerIA extends Controller{
         StorageService.subscribe("command-analysis-created", this.commandAnalysisCreatedHandler.bind(this));
     }
 
+    // Panel Setters
     set analysisLibrary(value) {
         this._analysisLibrary = value;
     }
@@ -49,11 +49,8 @@ export default class ControllerIA extends Controller{
     }
 
 
-
-
-
     async initialize() {
-        UserPrefs.setDefaultUrnPrefix("us:tim:")
+    //    UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -91,7 +88,6 @@ export default class ControllerIA extends Controller{
         this._iaTable.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));
         // this._iaTable.addEventListener('event-activity-deleted', this.eventJagDeletedHandler.bind(this));
         this._analysisLibrary.addEventListener('event-analysis-selected', this.eventAnalysisSelected.bind(this));
-
         //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
     }
 
@@ -185,9 +181,6 @@ export default class ControllerIA extends Controller{
         // earlier version of this just call a 'layout'event - whats that?
         this._iaTable.analysisView.layout();
     }
-
-
-
 
     async eventAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
@@ -300,10 +293,6 @@ export default class ControllerIA extends Controller{
     }
 
 // blending these two together --- update the projectModel to the existing activityModels.
-
-
-
-
 
            // possible common area contender
 

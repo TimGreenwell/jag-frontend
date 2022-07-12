@@ -20,7 +20,7 @@ export default class UserPrefs {
 
 
 
-	static defaultUrnPrefix = "";
+	static defaultUrnPrefix = "us:ihmc:";
 
 	static getDefaultUrn(name) {
 		return this.defaultUrnPrefix + name;
