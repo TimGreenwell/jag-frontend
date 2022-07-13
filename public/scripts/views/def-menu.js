@@ -52,7 +52,7 @@ customElements.define('def-menu', class extends HTMLElement {
         $leftLi.appendChild($leftLiDiv);
 
         const $title = document.createElement("span");                           // (Title) - Span containing text
-        $title.id = "def-menu-title";
+        $title.id = "menu-title";
         $title.classList.add("menu-item");
         $title.innerText = "Node Definition";
         $leftLiDiv.appendChild($title);

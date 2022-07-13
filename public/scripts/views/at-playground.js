@@ -804,6 +804,8 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             }
         },
         {text: "Cancel", color: "white", bgColor: "black"}
+
+
     ]
     // display: ?
     // fallback: ?
@@ -835,6 +837,7 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
             }
         },
         {text: "No", color: "white", bgColor: "black"}
+
     ]
 });
 
@@ -865,7 +868,36 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
                 }));
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"}
+        {text: "Cancel", color: "white", bgColor: "black"},
+        {
+            text: "Or select a file...", color: "white", bgColor: "black",
+            action: async function ({inputs: {}, outputs: {}}) {
+                let getFiles = () =>
+                    new Promise(resolve => {
+                        let input = document.createElement('input');
+                        input.type = 'file';
+                        input.onchange = () => resolve([...input.files]);
+                        input.click();
+                    })
+
+                let selectedFiles = await getFiles();
+
+                console.log(selectedFiles)
+                let reader = new FileReader();
+                reader.addEventListener('load', function (event) {
+                    console.log("File read...... and passed to event")
+                    this.dispatchEvent(new CustomEvent('event-import-jag', {
+                        bubbles: true,
+                        composed: true,
+                        detail: {result: event.target.result}
+                    }));
+                    console.log(event.target.result)
+                }.bind(this));
+                for (const file of selectedFiles) {
+                    reader.readAsText(file);
+                }
+            }
+        }
     ]
     // display: ?
     // fallback: ?
