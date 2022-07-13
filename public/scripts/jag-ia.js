@@ -8,7 +8,8 @@
 'use strict';
 
 import IndexedDBStorage from './storages/indexed-db.js';
-import IATable from './ui/ia-table.js';
+import IATable from './views/ia-table.js';
+import IAMenu from './views/ia-menu.js';
 import AnalysisLibrary from './views/analysis-library.js';
 import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/team.js';
@@ -41,13 +42,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
+	const menu = new IAMenu();
 	const iaTable = new IATable();
 	const analysisLibrary = new AnalysisLibrary();
 	const editor = new TeamEditor();
+	body.appendChild(menu);
 	body.appendChild(analysisLibrary);
 	body.appendChild(iaTable);
 	body.appendChild(editor);
 	controller.analysisLibrary = analysisLibrary;
+	controller.iaMenu = menu;
 	controller.iaTable = iaTable;
 	controller.editor = editor;
 	await controller.initialize();

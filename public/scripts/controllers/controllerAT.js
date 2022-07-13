@@ -224,6 +224,7 @@ export default class ControllerAT extends Controller {
     }
 
     async eventImportJagHandler(event) {
+        console.log("Importing as JSON - ")
         let json = event.detail.result
         let jsonDescriptor = JSON.parse(json)
         let activities = jsonDescriptor.activities;
@@ -293,7 +294,7 @@ export default class ControllerAT extends Controller {
     /**   -- Menu --  */
 
     eventAddActivityHandler() {
-        this._playground._handleNewActivityActivityPopup();         //@todo consider moving popupable to menu as well
+        this._playground._handleNewActivityActivityPopup();         //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventClearPlaygroundHandler() {

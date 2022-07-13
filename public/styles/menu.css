@@ -1,5 +1,5 @@
 /* Menu bar */
-jag-menu, def-menu {
+jag-menu, def-menu, ia-menu {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -7,39 +7,39 @@ jag-menu, def-menu {
     box-shadow: inset 0 0 3px darkgray;
 }
 
-jag-menu ul, def-menu ul {
+jag-menu ul, def-menu ul, ia-menu ul {
     list-style: none;
     width: 100%;
 }
 
-jag-menu li, def-menu li {
+jag-menu li, def-menu li, ia-menu li {
     height: 100%;
     float: left;
 }
 
-jag-menu li:first-child, def-menu li:first-child {
+jag-menu li:first-child, def-menu li:first-child, ia-menu li:first-child {
     border-right: 1px solid darkgray;
     min-width: 12%;
 }
 
-jag-menu li:last-child, def-menu li:last-child {
+jag-menu li:last-child, def-menu li:last-child, ia-menu li:last-child {
     float: right;
     border-left: 1px solid darkgray;
     min-width: 12%;
 }
 
-jag-menu li div, def-menu li div {
+jag-menu li div, def-menu li div, ia-menu li div {
     display: table;
     height: 100%;
     float: left;
 }
 
 
-jag-menu li:last-child div, def-menu li:last-child div {
+jag-menu li:last-child div, def-menu li:last-child div, ia-menu li:last-child div {
     float: left;
 }
 
-jag-menu .menu-item , def-menu .menu-item {
+jag-menu .menu-item , def-menu .menu-item, ia-menu .menu-item {
     display: table-cell;
     vertical-align: middle;
     padding-left: 10px;
@@ -47,17 +47,17 @@ jag-menu .menu-item , def-menu .menu-item {
     cursor: pointer;
 }
 
-jag-menu .menu-item:hover, def-menu .menu-item:hover {
+jag-menu .menu-item:hover, def-menu .menu-item:hover, ia-menu .menu-item:hover {
     background: var(--main-fg-lighter);
 }
 
-jag-menu .menu-item img, def-menu .menu-item img {
+jag-menu .menu-item img, def-menu .menu-item img, ia-menu .menu-item:hover {
     height: 80%;
     vertical-align: middle;
 }
 
 
-jag-menu .selector, def-menu .selector {
+jag-menu .selector, def-menu .selector, ia-menu .selector {
 
     width: max-content;
     outline: 1px solid blue;
@@ -65,7 +65,7 @@ jag-menu .selector, def-menu .selector {
     margin: 10px;
 }
 
-jag-menu .menu-select, def-menu .menu-select {
+jag-menu .menu-select, def-menu .menu-select, ia-menu .menu-select {
     display: flex;
     width: 120px;
     flex-direction: column;
@@ -74,11 +74,12 @@ jag-menu .menu-select, def-menu .menu-select {
     margin: 10px;
 }
 
-jag-menu #jag-menu,def-menu-title, def-menu #jag-menu,def-menu-title {
+jag-menu #menu-title, def-menu #menu-title, ia-menu #menu-title {
     font-size: 16px;
+    text-align: center;
 }
 
-jag-menu #jag-menu,def-menu-title:hover, def-menu #jag-menu,def-menu-title:hover {
+jag-menu #menu-title:hover, def-menu #menu-title:hover, ia-menu #menu-title:hover {
     background: none;
     cursor: default;
 }

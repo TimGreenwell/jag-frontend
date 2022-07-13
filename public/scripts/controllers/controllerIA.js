@@ -23,6 +23,7 @@ export default class ControllerIA extends Controller{
         super();
         this._analysisLibrary = null;           // HTMLElement
         this._editor = null;                    // HTML Element
+        this._iaMenu = null;
         this._iaTable = null;                   // HTMLElement extending Popupable
 
         this._activityMap = new Map();          // All JAGs - should be in sync with storage
@@ -46,6 +47,9 @@ export default class ControllerIA extends Controller{
     }
     set iaTable(value) {
         this._iaTable = value;
+    }
+    set iaMenu(value) {
+        this._iaMenu = value;
     }
 
 
@@ -89,7 +93,29 @@ export default class ControllerIA extends Controller{
         // this._iaTable.addEventListener('event-activity-deleted', this.eventJagDeletedHandler.bind(this));
         this._analysisLibrary.addEventListener('event-analysis-selected', this.eventAnalysisSelected.bind(this));
         //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
+
+        this._iaMenu.addEventListener('event-create-assessment', this.eventCreateAssessment.bind(this));
+        this._iaMenu.addEventListener('event-import-assessment', this.eventImportAssessment.bind(this));     // bring up?
+        this._iaMenu.addEventListener('event-export-assessment', this.eventExportAssessment.bind(this));   // bring up??
+        // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
+        // $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
+        // $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
+
     }
+
+    eventCreateAssessment(){
+        this._iaTable._handleNewAnalysisPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+    }
+
+    eventImportAssessment(){
+        this._iaTable._handleImportAnalysis()
+    }
+
+    eventExportAssessment(){
+        this._iaTable._handleExportAnalysisPopup()
+    }
+
+
 
     //////////////////////////////////////////////////////////////////////////////////
     //////////  controllerIA - UPWARD Control  ///////////////////////////////////////
