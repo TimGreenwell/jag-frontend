@@ -9,9 +9,9 @@
 
 import IndexedDBStorage from './storages/indexed-db.js';
 import IATable from './ui/ia-table.js';
-import AnalysisLibrary from './views/analysis-library.js';
+import AnalysisLibrary from './views/ia-analysis-library.js';
 import RESTStorage from './storages/rest.js';
-import TeamEditor from './views/team.js';
+import TeamEditor from './views/ia-support/team.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";

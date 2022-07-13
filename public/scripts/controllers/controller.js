@@ -1,7 +1,8 @@
 /**
  *
- * JAG - Authoring Tool
- *
+ * JAG - Common Controller
+ * The common controller contains the code that would normally be present in two or more of the other controllers.
+ * This generally includes event-initiated handlers and a few support methods.
  *
  * @author IHMC
  * @version 0.02
@@ -19,29 +20,24 @@ export default class Controller extends EventTarget {
 
     constructor() {
         super();
-        this._activityMap = new Map();         // All Activitys - should be in sync with storage
-        this._projectMap = new Map();        // All nodes - should be in sync with storage
-        this._analysisMap = new Map();
-        this._currentAnalysis = undefined;       // type: AnalysisModel
-
+        this._activityMap = new Map();       // Activity cache
+        this._projectMap = new Map();        // Node cache
+        this._analysisMap = new Map();       // Analysis cache
+        this._currentAnalysis = undefined;   // type: AnalysisModel
     }
 
     get activityMap() {
         return this._activityMap;
     }
-
     set activityMap(newActivityMap) {
         this._activityMap = newActivityMap;
     }
-
     uncacheActivity(activityId) {
         this._activityMap.delete(activityId)
     }
-
     cacheActivity(activity) {
         this._activityMap.set(activity.urn, activity)
     }
-
     fetchActivity(activityId) {
         return this._activityMap.get(activityId)
     }
@@ -49,19 +45,15 @@ export default class Controller extends EventTarget {
     get projectMap() {
         return this._projectMap;
     }
-
     set projectMap(newProjectMap) {
         this._projectMap = newProjectMap;
     }
-
     uncacheProject(projectId) {
         this._projectMap.delete(projectId)
     }
-
     cacheProject(project) {
         this._projectMap.set(project.id, project)
     }
-
     fetchProject(projectId) {
         return this._projectMap.get(projectId)
     }
@@ -70,19 +62,15 @@ export default class Controller extends EventTarget {
     get analysisMap() {
         return this._analysisMap;
     }
-
     set analysisMap(newAnalysisMap) {
         this._analysisMap = newAnalysisMap;
     }
-
     uncacheAnalysis(analysisId) {
         this._analysisMap.delete(analysisId)
     }
-
     cacheAnalysis(analysis) {
         this._analysisMap.set(analysis.id, analysis)
     }
-
     fetchAnalysis(analysisId) {
         return this._analysisMap(analysisId)
     }
@@ -90,7 +78,6 @@ export default class Controller extends EventTarget {
     get currentAnalysis() {
         return this._currentAnalysis;
     }
-
     set currentAnalysis(value) {
         this._currentAnalysis = value;
     }
@@ -112,7 +99,7 @@ export default class Controller extends EventTarget {
  */
 
 
-async eventActivityCreatedHandler(event) {
+    async eventActivityCreatedHandler(event) {
     console.log("Local>> (local activity created) ")
     let activityConstruct = event.detail.activityConstruct;
     if (!this.activityMap.has(activityConstruct.urn)) {
@@ -187,9 +174,23 @@ async eventActivityCreatedHandler(event) {
     /**
      *
      *                Support Methods
+     *
+     *      updateTreeWithActivityChange - update properties and look for updates/deletes to incorporate
+     *      buildCellTreeFromActivityUrn - build activity tree from root node
+     *      buildNodeTreeFromActivity    - build node tree from Activity Model & initial Expanded option.
+     *      getChildrenToAdd             - compares activity children to node children to determine adds needed
+     *      getChildrenToRemove          - compares activity children to node children to determine deletes needed
+     *      searchTreeForId              - return node by id
+     *      searchTreeForChildId         - return node by childID
+     *
+     *      removeAllChildNodes          - generic tree - remove children from parent (1 level deep)
+     *      repopulateActivity           - attach Activity Object (@todo maybe better to just use repeated cache/storage access)
+     *      repopulateParent             - re-parent nodes after structure change
+     *      relocateProject              - re-assign projectId after structure change
+     *
      */
 
-   // changedActivity, projectNode
+
     updateTreeWithActivityChange(changedActivity, projectNode) {
         const nodeStack = [];
         const orphanedRootStack = [];
@@ -314,7 +315,6 @@ async eventActivityCreatedHandler(event) {
         return returnValue
     }
 
-
     searchTreeForId(treeNode,id) {
         let workStack = []
         workStack.push(treeNode)
@@ -325,7 +325,6 @@ async eventActivityCreatedHandler(event) {
         }
         return null
     }
-
 
     searchTreeForChildId(treeNode,childId) {
         let workStack = []
@@ -343,7 +342,6 @@ async eventActivityCreatedHandler(event) {
             parent.removeChild(parent.firstChild);
         }
     }
-
 
     repopulateActivity(currentNode) {
         currentNode.activity = this.fetchActivity(currentNode.urn)
@@ -368,7 +366,6 @@ async eventActivityCreatedHandler(event) {
         }
     }
 
-
     relocateProject(currentNode, deltaX, deltaY){
         currentNode.x = currentNode.x + deltaX
         currentNode.y = currentNode.y + deltaY
@@ -376,6 +373,5 @@ async eventActivityCreatedHandler(event) {
                 this.relocateProject(child, deltaX, deltaY)
             }
         }
-
 
 }

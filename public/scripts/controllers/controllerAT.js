@@ -494,18 +494,13 @@ export default class ControllerAT extends Controller {
 
     /**
      *                                  Support Functions
+     *
      * buildNodeTreeFromActivity   (c)   Build node tree given root activity
-     * gatherDescendentUrns
-     * gatherAncestorUrns
-     * loopDetection
+     * gatherDescendentUrns              Build set of all child urns
+     * gatherAncestorUrns                Build set of direct ancestor urns
+     * loopDetection                     -> No URN exists as noth descendant and ancestor (feedback detection)
      *
      */
-
-    //  marked for death
-    // updateProject(currentNode, projectId) {
-    //     currentNode.projectId = projectId
-    //     currentNode.children.forEach(child => this.updateProject(child))
-    // }
 
     gatherDescendentUrns(childNodeModel, workStack = []) {   // need this in nodes
         workStack.push(childNodeModel.urn);
@@ -532,24 +527,5 @@ export default class ControllerAT extends Controller {
         let intersection = descendentStack.filter(x => ancestorStack.includes(x));
         return (intersection.length > 0);
     }
-
-    // marked for death
-    // async localJagDisconnectedHandler(event) {              //localActivityNodeCleared?
-    //     console.log("Local>> (local nodes disjoined) ")
-    //     let changingActivity = event.detail.activityUrn
-    //     let leavingJagChild = event.detail.activityChild
-    //
-    //     let projectRoot = this.fetchProject(leavingNodeModel.projectId)
-    //     this.repopulateParent(projectRoot)
-    //     let losingParents = leavingNodeModel.parent;
-    //     let losingParentsJag = this.fetchActivity(losingParents.urn)
-    //     let remainingChildren = losingParentsJag.children.filter(entry => {
-    //         if (entry.id != leavingNodeModel.childId) {
-    //             return entry;
-    //         }
-    //     })
-    //     losingParentsJag.children = remainingChildren
-    //     await StorageService.update(losingParentsJag, 'activity');
-    // }
 
 }

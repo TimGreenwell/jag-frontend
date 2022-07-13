@@ -7,10 +7,10 @@
  * @version 0.80
  */
 
-import ActivityNodeElement from './views/jag-node.js';
-import EdgeElement from './views/edge.js';
-import Popupable from './utils/popupable.js';
-import UserPrefs from "./utils/user-prefs.js";
+import ActivityNodeElement from './at-support/jag-node.js';
+import EdgeElement from './at-support/edge.js';
+import Popupable from '../utils/popupable.js';
+import UserPrefs from "../utils/user-prefs.js";
 
 class AtPlayground extends Popupable {
 

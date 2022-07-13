@@ -2,7 +2,7 @@
 // What is this.parentNode.    Used but not defined.
 
 
-import Activity from "../models/activity.js";
+import Activity from "../../models/activity.js";
 
 /**
  * @file Graphical node representation of a JAG.
@@ -16,7 +16,7 @@ import Activity from "../models/activity.js";
 //  This is the playground Jag Node -
 
 const SNAP_SIZE = 10.0;
-import JAG from '../models/activity.js';
+import JAG from '../../models/activity.js';
 
 customElements.define('jag-node', class extends HTMLElement {
 

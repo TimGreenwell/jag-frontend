@@ -6,8 +6,8 @@
  * @version 0.45
  */
 
-import AgentModel from '../models/agent.js';
-import FormUtils from '../utils/forms.js';
+import AgentModel from '../../models/agent.js';
+import FormUtils from '../../utils/forms.js';
 
 customElements.define('team-editor', class extends HTMLElement {
 

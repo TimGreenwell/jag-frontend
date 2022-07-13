@@ -10,9 +10,9 @@
 import AgentModel from '../models/agent.js';
 import DOMUtils from '../utils/dom.js';
 import ContextMenu from '../ui/context-menu.js';
-import ColumnHeader from './column-header-cell.js';
-import AssessmentView from './assessment-cell.js';
-import JagCell from './jag-cell.js';
+import ColumnHeader from './ia-support/column-header-cell.js';
+import AssessmentView from './ia-support/assessment-cell.js';
+import JagCell from './ia-support/jag-cell.js';
 
 class AnalysisView extends HTMLElement {
 

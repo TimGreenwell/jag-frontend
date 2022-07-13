@@ -8,11 +8,11 @@
  *
  */
 
-import Playground from './at-playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
-import Library from './views/library.js';                     // AT - Left view of available Activities
-import ProjectLibrary from './views/node-library.js';         // AT - Left view(2) of current JAGs
-import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
-import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
+import Playground from './views/at-playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
+import Library from './views/at-activity-library.js';                     // AT - Left view of available Activities
+import ProjectLibrary from './views/at-node-library.js';         // AT - Left view(2) of current JAGs
+import Menu from './views/at-menu.js';                           // AT - Top view of user actions (plus title/logo)
+import Properties from './views/at-properties.js';               // AT - Right view of JAG Node data entry fields
 import IDE from './ide.js';                                   // ?? - seems unused currently
 
 import GraphService from './services/graph-service.js';       // ?? - seems unused currently

@@ -6,7 +6,7 @@
  * @version 0.87
  */
 
-import Activity from '../models/activity.js';
+import Activity from '../../models/activity.js';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
