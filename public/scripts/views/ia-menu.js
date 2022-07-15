@@ -83,12 +83,12 @@ customElements.define('jag-menu', class extends HTMLElement {
         $rightLi.appendChild($rightLiDiv);
 
         const $logoImage = document.createElement("img");
-        $logoImage.classList.add("menu-item");
         $logoImage.id = "menu-logo";
         $logoImage.setAttribute('src', "icons/ihmc_logo.png");
         $rightLiDiv.appendChild($logoImage);
 
         this.appendChild($ul);
+
 
         this.$leftLiDiv = $leftLiDiv;
         this.$centerLiDiv = $centerLiDiv;

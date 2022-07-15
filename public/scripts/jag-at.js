@@ -48,16 +48,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
+	const mainPanels = document.createElement("div")
+	mainPanels.setAttribute("id","main-panels")
+	const libraryPanel = document.createElement("div")
+	libraryPanel.setAttribute("id","library-panel")
+	const propertyPanel = document.createElement("div")
+	propertyPanel.setAttribute("id","property-panel")
+
 	const library = new Library();
 	const projectLibrary = new ProjectLibrary();
 	const menu = new Menu();
 	const playground = new Playground();
 	const properties = new Properties();
 	body.appendChild(menu)
-	body.appendChild(library);
-	library.appendChild(projectLibrary);
-	body.appendChild(playground);
-	body.appendChild(properties);
+	body.appendChild(mainPanels)
+	mainPanels.appendChild(libraryPanel);
+	mainPanels.appendChild(playground);
+	mainPanels.appendChild(propertyPanel);
+	libraryPanel.appendChild(projectLibrary)
+	libraryPanel.appendChild(library);
+	propertyPanel.appendChild(properties)
+
 	controller.menu = menu;
 	controller.activityLibrary = library;
 	controller.projectLibrary = projectLibrary;

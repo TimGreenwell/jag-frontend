@@ -24,6 +24,7 @@ customElements.define('node-library', class extends HTMLElement {
 		const $list = document.createElement('ol');
 
 		$search.classList.add('library-search');
+		$search.placeholder = "JAGs"
 		$list.classList.add('library-list');
 
 		this.appendChild($search);

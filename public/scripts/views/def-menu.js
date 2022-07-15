@@ -74,7 +74,7 @@ customElements.define('def-menu', class extends HTMLElement {
         execution_el.className = "menu-select"
         this._executionSelect = FormUtils.createSelect('execution-property', executionOptions);
         this._executionSelect.label = "Execution"
-        this._executionSelect.className = 'executor';
+        // this._executionSelect.className = 'menu-select';
         execution_el.appendChild(this._executionSelect);
         $centerLiDiv.appendChild(execution_el);
 
@@ -85,7 +85,7 @@ customElements.define('def-menu', class extends HTMLElement {
         return_el.className = "menu-select"
         this._returnSelect = FormUtils.createSelect('execution-property', returnsOptions);
         this._returnSelect.label = "Return"
-        this._returnSelect.className = 'return';
+        // this._returnSelect.className = 'menu-select';
         this._returnSelect.disabled = true;
         return_el.appendChild(this._returnSelect);
         $centerLiDiv.appendChild(return_el);
@@ -100,7 +100,7 @@ customElements.define('def-menu', class extends HTMLElement {
         operator_el.className = "menu-select"
         this._operatorSelect = FormUtils.createSelect('operator-property', operatorOptions);
         this._operatorSelect.label = "Operator"
-        this._operatorSelect.className = 'operator';
+        // this._operatorSelect.className = 'menu-select';
         this._operatorSelect.disabled = true;
         operator_el.appendChild(this._operatorSelect);
         $centerLiDiv.appendChild(operator_el);
@@ -117,7 +117,6 @@ customElements.define('def-menu', class extends HTMLElement {
         $rightLi.appendChild($rightLiDiv);
 
         const $logoImage = document.createElement("img");
-        $logoImage.classList.add("menu-item");
         $logoImage.id = "menu-logo";
         $logoImage.setAttribute('src', "icons/ihmc_logo.png");
         $rightLiDiv.appendChild($logoImage);

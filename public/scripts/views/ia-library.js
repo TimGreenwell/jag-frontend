@@ -28,6 +28,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 		const $list = document.createElement('ol');
 
 		$search.classList.add('library-search');
+		$search.placeholder = "Analyses"
 		$list.classList.add('library-list');
 
 		this.appendChild($search);

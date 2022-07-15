@@ -38,12 +38,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector('body');
+    const mainPanels = document.createElement("div")
+    mainPanels.setAttribute("id","main-panels")
+    const libraryPanel = document.createElement("div")
+    libraryPanel.setAttribute("id","library-panel")
+    const propertyPanel = document.createElement("div")
+    propertyPanel.setAttribute("id","property-panel")
     const menu = new Menu();
     const definition = new Definition();
 
 
     body.appendChild(menu)
-    body.appendChild(definition);
+    mainPanels.appendChild(definition);
+    body.appendChild(mainPanels)
     controller.menu = menu;
     controller.definition = definition;
     await controller.initialize();

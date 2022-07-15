@@ -7,18 +7,16 @@
 
 'use strict';
 
-
 import IATable from './views/ia-table.js';
 import IAMenu from './views/ia-menu.js';
-import AnalysisLibrary from './views/ia-analysis-library.js';
-import TeamEditor from './views/ia-support/team.js';
+import AnalysisLibrary from './views/ia-library.js';
+import TeamEditor from './views/ia-properties.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import RESTStorage from './storages/rest.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";
 import UserPrefs from "./utils/user-prefs.js";
-
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -35,31 +33,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     // storage choices
 
 	StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());          // which storage used for reads
-	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+	StorageService.setStoragesSynced(false);                                           // write to all storages or just preferred
 	SharedService.senderId = 'jag-ia';
-
 
 	let controller = new ControllerIA();
 
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
-	const iaTable = new IATable();
+	const mainPanels = document.createElement("div")
+	mainPanels.setAttribute("id","main-panels")
+	const libraryPanel = document.createElement("div")
+	libraryPanel.setAttribute("id","library-panel")
+	const propertyPanel = document.createElement("div")
+	propertyPanel.setAttribute("id","property-panel")
 	const iaMenu = new IAMenu();
 	const analysisLibrary = new AnalysisLibrary();
+	const iaTable = new IATable();
 	const editor = new TeamEditor();
-	body.appendChild(analysisLibrary);
-	body.appendChild(iaTable);
-	body.appendChild(editor);
 	body.appendChild(iaMenu);
+	mainPanels.appendChild(libraryPanel);
+	libraryPanel.appendChild(analysisLibrary)
+	mainPanels.appendChild(iaTable);
+	mainPanels.appendChild(propertyPanel);
+	propertyPanel.appendChild(editor)
+	body.appendChild(mainPanels)
+
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
 	controller.iaMenu = iaMenu;
 	controller.editor = editor;
 	await controller.initialize();
-
-
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'item-selected' -
 
 	//////////////////////////////////////////////////////////////////////
 	// Event: 'create-analysis' -

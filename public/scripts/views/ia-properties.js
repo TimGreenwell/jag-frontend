@@ -6,10 +6,10 @@
  * @version 0.45
  */
 
-import AgentModel from '../../models/agent.js';
-import FormUtils from '../../utils/forms.js';
+import AgentModel from '../models/agent.js';
+import FormUtils from '../utils/forms.js';
 
-customElements.define('team-editor', class extends HTMLElement {
+customElements.define('ia-properties', class extends HTMLElement {
 
 	constructor(controller) {
 		super();
@@ -188,4 +188,4 @@ customElements.define('team-editor', class extends HTMLElement {
 	}
 });
 
-export default customElements.get('team-editor');
+export default customElements.get('ia-properties');

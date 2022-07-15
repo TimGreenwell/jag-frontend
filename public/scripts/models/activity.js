@@ -712,6 +712,12 @@ Activity.EXECUTION = {
 
 
 Activity.RETURNS = {
+    NONE: {
+        name: 'node.returns.none',
+        text: 'none',
+        description: 'No data is returned',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+    },
     ACTIVE: {
         name: 'node.returns.active',
         text: 'active mode',

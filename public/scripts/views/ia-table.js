@@ -13,7 +13,7 @@ import ActivityModel from '../models/activity.js';
 import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
-import AnalysisView from './analysis.js';
+import AnalysisView from './ia-analysis.js';
 
 
 // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
@@ -67,6 +67,8 @@ class IATable extends Popupable {
 
         this._analysisModel = analysisModel;
         // Create and append a new Analysis View to this structure
+        console.log("Generating new analysis view with...")
+        console.log(JSON.stringify(this._analysisModel))
         let analysisView = new AnalysisView(this._analysisModel);
         this.appendChild(analysisView);
         this._domElements.analysis = analysisView;
@@ -87,7 +89,7 @@ class IATable extends Popupable {
 
     _initUI() {
         const $header = document.createElement('header');
-        const $new_analysis = document.createElement('button');
+        // const $new_analysis = document.createElement('button');
 
         const $analysis_name_wrapper = document.createElement('div');
         const $analysis_name_label = document.createElement('label');
@@ -97,12 +99,12 @@ class IATable extends Popupable {
         const $analysis_description_label = document.createElement('label');
         const $analysis_description = document.createElement('input');
 
-        const $export_analysis = document.createElement('button');
-        const $import_analysis = document.createElement('button');
+        // const $export_analysis = document.createElement('button');
+        // const $import_analysis = document.createElement('button');
         const $analysis_file = document.createElement('input');
 
-        $new_analysis.innerText = 'Create AnalysisModel';
-        $new_analysis.setAttribute('id', 'new-analysis');
+        // $new_analysis.innerText = 'Create AnalysisModel';
+        // $new_analysis.setAttribute('id', 'new-analysis');
         $analysis_name_label.setAttribute('for', 'analysis-name');
         $analysis_name_label.innerText = 'Name';
         $analysis_name.setAttribute('name', 'analysis-name');
@@ -113,14 +115,14 @@ class IATable extends Popupable {
         $analysis_description.setAttribute('name', 'analysis-description');
         $analysis_description.setAttribute('id', 'analysis-description');
         $analysis_description.setAttribute('disabled', '');
-        $export_analysis.innerText = 'Export';
-        $export_analysis.setAttribute('id', 'export-analysis');
-        $import_analysis.innerText = 'Import';
-        $import_analysis.setAttribute('id', 'import-analysis');
+        // $export_analysis.innerText = 'Export';
+        // $export_analysis.setAttribute('id', 'export-analysis');
+        // $import_analysis.innerText = 'Import';
+        // $import_analysis.setAttribute('id', 'import-analysis');
         $analysis_file.setAttribute('id', 'analysis-file');
         $analysis_file.setAttribute('type', 'file');
 
-        $header.appendChild($new_analysis);
+        // $header.appendChild($new_analysis);
         $header.appendChild($analysis_name_label);
 
         $analysis_name_wrapper.appendChild($analysis_name_label);
@@ -131,24 +133,24 @@ class IATable extends Popupable {
         $analysis_description_wrapper.appendChild($analysis_description);
         $header.appendChild($analysis_description_wrapper);
 
-        $header.appendChild($export_analysis);
-        $header.appendChild($import_analysis);
+        // $header.appendChild($export_analysis);
+        // $header.appendChild($import_analysis);
         $header.appendChild($analysis_file);
 
-        $new_analysis.addEventListener('click', this._handleNewAnalysisPopup.bind(this));
+        // $new_analysis.addEventListener('click', this._handleNewAnalysisPopup.bind(this));
         $analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
         $analysis_description.addEventListener('blur', this._handleAnalysisDescriptionChange.bind(this));
-        $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
-        $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
+        // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
+        // $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
         $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
         this.appendChild($header);
 
-        this._domElements.create = $new_analysis;
+        // this._domElements.create = $new_analysis;
         this._domElements.name = $analysis_name;
         this._domElements.description = $analysis_description;
-        this._domElements.export = $export_analysis;
-        this._domElements.import = $import_analysis;
+        // this._domElements.export = $export_analysis;
+        // this._domElements.import = $import_analysis;
         this._domElements.file = $analysis_file;
     }
 

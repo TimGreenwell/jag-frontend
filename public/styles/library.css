@@ -1,28 +1,33 @@
 /* Library panels */
 
-jag-library, analysis-library {  /*analysis-library new */
+jag-library, node-library, analysis-library {
 	display: flex;
 	flex-direction: column;
-	height: 100%;          /* was 95 */
-	width: 12%;
-    z-index: 100;                      /* new */
-    background: var(--main-bg-darker); /* new */
+	width: 100%;
+	z-index: 100;                      /* new */
+	background: var(--main-bg-lighter);
 	color: var(--main-fg);             /* new */
+	box-shadow: inset 0 0 3px darkgray;
+	border: 1px solid darkgray;
+}
+
+jag-library, analysis-library {  /*analysis-library new */
+	height: 100%;          /* was 95 */
 }
 
 node-library {
-	display: flex;
-	flex-direction: column;
-	height: 30%;
-	width: 100%;
-	z-index: 100;                      /* new */
-	background: var(--main-bg-darker); /* new */
-	color: var(--main-fg);             /* new */
+	height: fit-content;
+	max-height: 50%;
 }
 
-jag-library .name-entry, analysis-library .name-entry, node-library .name-entry {
+analysis-library .name-entry, node-library .name-entry {
 	font-size: 20px;
 }
+
+jag-library .name-entry {
+	font-size: 15px;
+}
+
 
 jag-library .description-entry, analysis-library .description-entry, node-library .description-entry {
 	font-size: 10px;
@@ -41,7 +46,7 @@ jag-library .list-item, analysis-library .list-item, node-library .list-item {
 }
 
 jag-library .list-item:hover, analysis-library .list-item:hover, node-library .list-item:hover {
-	background-color: var(--main-fg-lighter);
+	background-color: var(--main-bg-active);
 }
 
 jag-library .top-half, analysis-library .top-half, node-library .top-half  {
@@ -64,6 +69,12 @@ jag-library .library-search, analysis-library .library-search, node-library .lib
 	background-color: #fff;
 	border: 1px solid darkgray;
 	box-shadow: none;
+}
+input::placeholder {
+	font-weight: bold;
+	opacity: .5;
+	color: black;
+	text-align: center;
 }
 
 jag-library  .library-button, analysis-library .library-button, node-library .library-button {

@@ -30,6 +30,7 @@ customElements.define('jag-library', class extends HTMLElement {
 		const $list = document.createElement('ol');
 
 		$search.classList.add('library-search');
+		$search.placeholder = "Activities"
 		$list.classList.add('library-list');
 
 		this.appendChild($search);
