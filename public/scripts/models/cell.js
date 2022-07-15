@@ -9,8 +9,7 @@
 
 import { UUIDv4 }  from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
-import UserPrefs from "../utils/user-prefs.js";
-import Activity from "./activity.js"
+
 
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
@@ -28,7 +27,7 @@ export default class Cell extends EventTarget {
 		this._id = id;               // An assigned unique ID given at construction
 		this._urn = urn;
 		this._jag = jag;             // convenience
-		this._childId = childId;               // child seperator (ex.  2nd child with urn 'goto')
+		this._childId = childId;               // child seperator (ex.  2nd child with urn 'goto')  //@todo  isnt this in the jag? is not used on the cell level
 		this._parentUrn = parentUrn;
 		this._rootUrn = rootUrn;     // convenience
 		this._children = children;
@@ -55,7 +54,6 @@ export default class Cell extends EventTarget {
 	set children(childrenArray){
 		this._children = childrenArray
 	}
-
 
 	get childId() {
 		return this._childId;
@@ -114,7 +112,7 @@ export default class Cell extends EventTarget {
 		this._collapsed = value;
 	}
 
-///////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Supporting Functions  ////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -205,6 +203,7 @@ export default class Cell extends EventTarget {
 			}
 		})
 	}
+
 	getLastChild(){
 		return this._children[this.children.length - 1]
 	}
@@ -223,7 +222,7 @@ export default class Cell extends EventTarget {
 
 	isRoot() {
 		return this._rootUrn === this._urn;
-	}         // is determined by lack of parent.
+	}
 
     getAncestor() {
 		let topAncestor = this;

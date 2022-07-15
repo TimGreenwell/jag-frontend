@@ -7,11 +7,13 @@
 
 'use strict';
 
-import IndexedDBStorage from './storages/indexed-db.js';
-import IATable from './ui/ia-table.js';
+
+import IATable from './views/ia-table.js';
+import IAMenu from './views/ia-menu.js';
 import AnalysisLibrary from './views/ia-analysis-library.js';
-import RESTStorage from './storages/rest.js';
 import TeamEditor from './views/ia-support/team.js';
+import IndexedDBStorage from './storages/indexed-db.js';
+import RESTStorage from './storages/rest.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";
@@ -42,13 +44,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Load DOM outer skeleton for Authoring Tool
 	const body = document.querySelector('body');
 	const iaTable = new IATable();
+	const iaMenu = new IAMenu();
 	const analysisLibrary = new AnalysisLibrary();
 	const editor = new TeamEditor();
 	body.appendChild(analysisLibrary);
 	body.appendChild(iaTable);
 	body.appendChild(editor);
+	body.appendChild(iaMenu);
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
+	controller.iaMenu = iaMenu;
 	controller.editor = editor;
 	await controller.initialize();
 

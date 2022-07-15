@@ -26,8 +26,10 @@ export default class ControllerIA extends Controller{
         this._iaMenu = null;
         this._iaTable = null;                   // HTMLElement extending Popupable
 
-        this._activityMap = new Map();          // All JAGs - should be in sync with storage
-        this._analysisMap = new Map();     // All analyses - should be in sync with storage
+   //     this._activityMap = new Map();          // All JAGs - should be in sync with storage
+   //     this._analysisMap = new Map();     // All analyses - should be in sync with storage
+        this._agentMap = new Map();     // All analyses - should be in sync with storage
+        this._teamMap = new Map();     // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;      // type: AnalysisModel
 
         StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));
@@ -35,8 +37,44 @@ export default class ControllerIA extends Controller{
         StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));
         //StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));
         //StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this));
+
+        StorageService.subscribe("command-agent-created", this.commandAgentCreatedHandler.bind(this));
+        StorageService.subscribe("command-team-created", this.commandTeamCreatedHandler.bind(this));
         StorageService.subscribe("command-analysis-created", this.commandAnalysisCreatedHandler.bind(this));
     }
+
+    get agentMap() {
+        return this._agentMap;
+    }
+    set agentMap(newAgentMap) {
+        this._agentMap = newAgentMap;
+    }
+    uncacheAgent(agentId) {
+        this._agentMap.delete(agentId)
+    }
+    cacheAgent(agent) {
+        this._agentMap.set(agent.id, agent)
+    }
+    fetchAgent(agentId) {
+        return this._agentMap.get(agentId)
+    }
+
+    get teamMap() {
+        return this._teamMap;
+    }
+    set teamMap(newTeamMap) {
+        this._teamMap = newTeamMap;
+    }
+    uncacheTeam(teamId) {
+        this._teamMap.delete(teamId)
+    }
+    cacheTeam(team) {
+        this._teamMap.set(team.id, team)
+    }
+    fetchTeam(teamId) {
+        return this._teamMap.get(teamId)
+    }
+
 
     // Panel Setters
     set analysisLibrary(value) {
@@ -72,8 +110,18 @@ export default class ControllerIA extends Controller{
             this.repopulateParent(node)
         });
 
+        let allAgents = await StorageService.all('agent')
+        allAgents.forEach(agent => this.cacheAgent(agent))
+
+        let allTeams = await StorageService.all('team')
+        allTeams.forEach(team => this.cacheTeam(team))
+
+
         let allAnalyses = await StorageService.all('analysis')
         allAnalyses.forEach(analysis => this.cacheAnalysis(analysis))
+
+
+
     }
 
     initializePanels() {
@@ -259,12 +307,37 @@ export default class ControllerIA extends Controller{
         }
     }
 
-    async commandAnalysisCreatedHandler(createdAnalysisModel, createdAnalysisId) {
-        this.cacheAnalysis(createdAnalysisModel);
-        if (this._iaTable.analysisModel) {
-            createdAnalysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
-            this._iaTable.displayAnalysis(createdAnalysisModel);
+    async commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
+        this.cacheAgent(createdAgentModel);
+    }
+
+    async commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
+        console.log("Here is a TEAMMMMMMMMMMMMMM")
+        console.log(createdTeamModel)
+        let agents = [];
+        for (let agentId of createdTeamModel.agentIds) {
+            agents.push(this.fetchAgent(agentId))
         }
+        createdTeamModel.agents = agents;
+        this.cacheTeam(createdTeamModel);
+        if ((this._currentAnalysis) && this._currentAnalysis.analysisModel.team.id == createdTeamId) {
+            this._currentAnalysis.analysisModel.team = createdTeamModel;
+        }
+    }
+
+
+    async commandAnalysisCreatedHandler(createdAnalysisModel, createdAnalysisId) {
+        console.log("missing a team?")
+        console.log(createdAnalysisModel)
+
+        createdAnalysisModel.team = this.fetchTeam(createdAnalysisModel.teamId)
+        createdAnalysisModel.jag = this.fetchActivity(createdAnalysisModel.urn)
+        this.cacheAnalysis(createdAnalysisModel);
+        // if (this._iaTable.analysisModel) {
+        this._currentAnalysis = createdAnalysisModel;
+        createdAnalysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
+        this._iaTable.displayAnalysis(createdAnalysisModel);
+        //  }
         this._analysisLibrary.addListItem(createdAnalysisModel)
     }
 
@@ -299,17 +372,47 @@ export default class ControllerIA extends Controller{
         }
     }
 
+    async createAgent(name = 'unnamed') {
+        let newAgent = new AgentModel({name: name})
+        await StorageService.create(newAgent, 'agent');
+        return newAgent;
+    }
+
+    async createTeam(name = 'unnamed' , agentIds = [], performers = []){
+        console.log("creating team")
+        console.log(agentIds)
+        let newTeam = new TeamModel({name: name, agentIds: agentIds})
+        await StorageService.create( newTeam, 'team');
+        return newTeam;
+    }
+
+    async createAnalysis({name ,description, rootUrn, teamId} = {}) {     // @todo I like the named parameter pattern - might look at standardizing on it.
+        let newAnalysis = new AnalysisModel({name: name, rootUrn: rootUrn, teamId: teamId})
+        await StorageService.create( newAnalysis, 'analysis');
+        return newAnalysis;
+    }
+
     async createStandardAnalysis(analysisName, rootUrn, source) {
-        let rootActivity = await StorageService.get(rootUrn, 'activity');
-        const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
-        // currently buildAnalysis builds and stores the mapset.
-        newAnalysisModel.team = new TeamModel();
-        newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
-        newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
-        await Promise.all(newAnalysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
-        await StorageService.create(newAnalysisModel.team, 'team');
-        await StorageService.create(newAnalysisModel, 'analysis');
-        return newAnalysisModel.id;
+        console.log("CREATING THE STANDARD ANALYSIS")
+        let agent1 = await this.createAgent('Agent 1');
+        let agent2 = await this.createAgent('Agent 2');
+        console.log(agent1.id)
+        console.log(agent2.id)
+        console.log("...")
+        let newTeam = await this.createTeam("Team Blue", [agent1.id, agent2.id]);
+        let newAnalysisId = await this.createAnalysis({name: analysisName, rootUrn: rootUrn, teamId: newTeam.id})// @todo I like the named parameter pattern - might look at standardizing on it.
+        return newAnalysisId;
+
+        // let rootActivity = await StorageService.get(rootUrn, 'activity');
+        // const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
+        // // currently buildAnalysis builds and stores the mapset.
+        // newAnalysisModel.team = new TeamModel();
+        // newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
+        // newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
+        // await Promise.all(newAnalysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
+        // await StorageService.create(newAnalysisModel.team, 'team');
+        // await StorageService.create(newAnalysisModel, 'analysis');
+        // return newAnalysisModel.id;
     }
 
     async displayAnalysis(id) {
@@ -389,7 +492,7 @@ export default class ControllerIA extends Controller{
         child.parent = this;
         this._children.push(child);
 
-        // Only Dispatcher & Only Listener in views/Analysis
+        // Only Dispatcher & Only Listener in views/Analysis      // cant we just call 'attach' in analysis view?
         this.dispatchEvent(new CustomEvent('attach', {
             detail: {
                 target: child,

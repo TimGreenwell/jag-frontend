@@ -247,7 +247,7 @@ export default class Controller extends EventTarget {
         const nodeStack = [];
         const resultStack = [];
         const rootActivity = this.fetchActivity(newRootActivityUrn);
-        const rootCellModel = new CellModel({urn: rootActivity.urn, is_root: true});
+        const rootCellModel = new CellModel({urn: rootActivity.urn, jag: rootActivity, is_root: true});
         rootCellModel.activity = rootActivity
         rootCellModel.parentUrn = null;
         rootCellModel.rootUrn = newRootActivityUrn;
@@ -257,7 +257,7 @@ export default class Controller extends EventTarget {
             for (const child of currentNode.activity.children) {
                 let childActivity = this.fetchActivity(child.urn);
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
-                const childCellModel = new CellModel({urn: childActivity.urn, is_root: false});
+                const childCellModel = new CellModel({urn: childActivity.urn, jag: childActivity, is_root: false});
                 childCellModel.activity = childActivity
                 childCellModel.childId = child.id;
                 childCellModel.parentUrn = currentNode.urn

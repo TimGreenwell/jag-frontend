@@ -8,7 +8,6 @@
 'use strict';
 
 import { UUIDv4 } from '../utils/uuid.js';
-import StorageService from '../services/storage-service.js';
 
 export default class AnalysisModel extends EventTarget {
 
@@ -18,7 +17,7 @@ export default class AnalysisModel extends EventTarget {
 					name = AnalysisModel.DEFAULT_NAME,
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
 		            rootUrn,
-					team,
+					teamId,
 		            isLocked
 				} = {}) {
 		super();
@@ -26,9 +25,12 @@ export default class AnalysisModel extends EventTarget {
 		this._name = name;
 		this._description = description;
 		this._rootUrn = rootUrn;
-		this._team = team;
+		this._teamId = teamId;
 		this._isLocked = isLocked;
-		this._rootCellModel = undefined;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
+
+		this._team = undefined;
+		this._rootCellModel = undefined;
+		this._teamId = teamId;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
 		                                  //  or when click in analysis library
 	};
 
@@ -60,26 +62,33 @@ export default class AnalysisModel extends EventTarget {
 	set rootUrn(value) {
 		this._rootUrn = value;
 	}
+	get teamId() {
+		return this._teamId;
+	}
+	set teamId(value) {
+		this._teamId = value;
+	}
+	get isLocked() {
+		return this._isLocked;
+	}
+	set isLocked(value) {
+		this._isLocked = value;
+	}
+
+
 	get team() {
 		return this._team;
 	}
-	set team(newTeam){
-		this._team = newTeam;
+
+	set team(value) {
+		this._team = value;
 	}
+
 	get rootCellModel() {
 		return this._rootCellModel;
 	}
 	set rootCellModel(value) {
 		this._rootCellModel = value;
-	}
-
-
-	get isLocked() {
-		return this._isLocked;
-	}
-
-	set isLocked(value) {
-		this._isLocked = value;
 	}
 
 	findNode(id){
@@ -96,25 +105,20 @@ export default class AnalysisModel extends EventTarget {
 
 
 	static async fromJSON(json) {
-		const team_id = json.team;
-		let teamNode = await StorageService.get(team_id, 'team');
-		// if (teamNode == undefined) {
-		// 	teamNode = new TeamModel();
-		// 	await StorageService.create(teamNode, 'team');
-		// }
-		json.team = teamNode;
+		// const team_id = json.team;
+		// let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
+		// json.team = teamNode;                                                          // Exists only to store its data (team is in team)
 		const newAnalysis = new AnalysisModel(json);
 		return newAnalysis;
 	}
 
 	toJSON() {
-
 		const json = {
 			id: this._id,
 			name: this._name,
 			description: this._description,
 			rootUrn: this._rootUrn,
-			team: this._team.id,
+			teamId: this._teamId,
 			isLocked: this._isLocked
 		};
 		return json;

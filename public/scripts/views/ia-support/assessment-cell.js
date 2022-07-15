@@ -10,7 +10,7 @@
 import { UUIDv4 }  from '../../utils/uuid.js';
 
 import AgentModel from '../../models/agent.js';
-import ContextMenu from '../../ui/context-menu.js';
+import ContextMenu from './context-menu.js';
 import AnalysisCell from './analysis-cell.js';
 
 class AssessmentView extends AnalysisCell {

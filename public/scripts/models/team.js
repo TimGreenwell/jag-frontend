@@ -7,41 +7,18 @@
 
 'use strict';
 
-import StorageService from '../services/storage-service.js';
-//import AgentService from '../services/agent.js';
-//import TeamService from '../services/team.js';
 import { UUIDv4 }  from '../utils/uuid.js'
-import AgentModel from './agent.js';
 
 export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agents = [], performers = new Set() } = {}) {
+	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performers = new Set() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
-		this._agents = agents;
+		this._agentIds = agentIds;
 		this._performers = performers;
-	}
-
-	static async fromJSON(json) {
-		const agents = [];
-		for (const agent_id of json.agents) {
-			//let agent = await AgentService.instance('idb-service').get(agent_id);
-			let agent = await StorageService.get(agent_id,'agent');
-
-			if (agent == undefined) {
-				agent = new AgentModel();
-				//await AgentService.instance('idb-service').create(agent);
-				await StorageService.create(agent,'agent');
-			}
-
-			agents.push(agent);
-		}
-		json.agents = agents;
-
-		json.performers = new Set(json.performers);
-        let returnValue = new TeamModel(json);
-		return returnValue;
+		// enhanced
+		this._agents = [];
 	}
 
 	get id() {
@@ -57,8 +34,21 @@ export default class TeamModel extends EventTarget {
 		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "name", "extra": { "name": this._name }}}));
 	}
 
+	get agentIds() {
+		return this._agentIds;
+	}
+
+	set agentIds(value) {
+		this._agentIds = value;
+	}
+
 	get agents() {
 		return this._agents;
+	}
+
+
+	set agents(value) {
+		this._agents = value;
 	}
 
 	addAgent(agent) {
@@ -100,10 +90,29 @@ export default class TeamModel extends EventTarget {
 		const json = {
 			id: this._id,
 			name: this._name,
-			agents: this._agents.map(agent => agent.id),
+			agentIds: this._agentIds,
 			performers: Array.from(this._performers)
 		};
 		return json;
+	}
+
+	static async fromJSON(json) {
+		// const agents = [];
+		// for (const agent_id of json.agents) {
+		// 	let agent = await StorageService.get(agent_id,'agent');
+		//
+		// 	// if (agent == undefined) {
+		// 	// 	agent = new AgentModel();
+		// 	// 	await StorageService.create(agent,'agent');
+		// 	//}
+		//
+		// 	agents.push(agent);
+		// }
+		// json.agents = agents;
+
+		json.performers = new Set(json.performers);
+		let returnValue = new TeamModel(json);
+		return returnValue;
 	}
 
 }

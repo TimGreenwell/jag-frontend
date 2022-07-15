@@ -12,17 +12,11 @@
  * @TODO Should we incorporate a yml/xml config file?  Probably no benefit.
  */
 
-
-
-
-
 import AnalysisModel from '../models/analysis-model.js';
 import Activity from "../models/activity.js";
 import Agent from  '../models/agent.js';
 import Team from  '../models/team.js';
 import NodeModel from  '../models/node.js';
-
-
 
 export default class Schemas {
 

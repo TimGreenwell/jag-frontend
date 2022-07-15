@@ -28,8 +28,8 @@ class IATable extends Popupable {
         super();
         this.setPopupBounds(this);
         this._analysisModel = null;                    // the Analysis Model holding the data
-        this._availableActivityUrns = [];
-        this._domElements = {               // _domElements : name, selector, analysis, (description), (create), (import), (export), (file)
+        this._availableActivityUrns = [];              // for building a select list
+        this._domElements = {                          // _domElements : name, selector, analysis, (description), (create), (import), (export), (file)
             name: undefined,
             selector: undefined,
             analysis: undefined,
@@ -395,9 +395,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
             options: async function () {
                 const options = [];
 
-                //const jags = await JAGService.instance('idb-service').all();
-                const jags = await StorageService.all('activity');
-                //		const jags = jsonList.map(ActivityModel.fromJSON);
+                const jags = await StorageService.all('activity');     // @todo check if StorageService is really necessary
 
                 for (const jag of jags) {
                     options.push({

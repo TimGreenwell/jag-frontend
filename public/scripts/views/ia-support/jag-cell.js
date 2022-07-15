@@ -13,7 +13,7 @@
 
 import StorageService from '../../services/storage-service.js';
 import AutoComplete from '../../ui/auto-complete.js';
-import JagCellControls from '../../ui/jag-cell-controls.js';
+import JagCellControls from './jag-cell-controls.js';
 import AnalysisCell from './analysis-cell.js';
 import JAG from "../../models/activity.js";
 import Node from "../../models/node.js";

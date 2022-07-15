@@ -6,8 +6,6 @@
  * @version 0.07
  */
 
-import JAG from '../models/activity.js';
-
 export default class JAGATValidation {
     static validateJAG(jagDescriptor) {
 
