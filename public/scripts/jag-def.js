@@ -40,10 +40,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const body = document.querySelector('body');
     const mainPanels = document.createElement("div")
     mainPanels.setAttribute("id","main-panels")
-    const libraryPanel = document.createElement("div")
-    libraryPanel.setAttribute("id","library-panel")
-    const propertyPanel = document.createElement("div")
-    propertyPanel.setAttribute("id","property-panel")
+    const leftPanel = document.createElement("div")
+    leftPanel.setAttribute("id","left-panel")
+    const rightPanel = document.createElement("div")
+    rightPanel.setAttribute("id","right-panel")
     const menu = new Menu();
     const definition = new Definition();
 

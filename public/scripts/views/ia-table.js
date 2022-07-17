@@ -14,6 +14,7 @@ import TeamModel from '../models/team.js';
 import StorageService from '../services/storage-service.js';
 import Popupable from '../utils/popupable.js';
 import AnalysisView from './ia-analysis.js';
+import UserPrefs from "../utils/user-prefs.js";
 
 
 // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
@@ -159,13 +160,26 @@ class IATable extends Popupable {
     }
 
     _handleNewAnalysisPopup() {
+        const $initiator = document.getElementById('assessment-new');
         this.popup({
             content: IATable.NOTICE_CREATE_ANALYSIS,
-            trackEl: this._domElements.create,                                        //this._domElements.create,
+            trackEl: this,                                        //this._domElements.create,
             inputs: {table: this},
-            highlights: [this._domElements.create]                                     // [this._domElements.create]
+            highlights: [$initiator]                                     // [this._domElements.create]
         });
     }
+
+    _handleNewAgentPopup() {
+        const $initiator = document.getElementById('agent-new');
+        this.popup({
+            content: IATable.NOTICE_CREATE_AGENT,
+            trackEl: this,                                        //this._domElements.create,
+            inputs: {table: this},
+            highlights: [$initiator]                                     // [this._domElements.create]
+        });
+    }
+
+
 
     _handleExportAnalysisPopup() {
         this.popup({
@@ -476,6 +490,62 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
         {text: "Cancel", color: "white", bgColor: "black"}
     ]
 });
+
+// why cant this go inside scope.? Does anyone else need it?
+IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
+    type: IATable.POPUP_TYPES.NOTICE,
+    name: "Add New Agent",
+    description: "Be precise.  You can always edit this later.",
+    properties: [
+        {
+            name: 'name', label: 'Name', type: 'text', options: function () {
+                let eventMap = new Map();
+                eventMap.set('input', () => {
+                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('name').value;
+                    const convName = newName.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
+                    document.getElementById('urn').value = convName;
+                });
+                return eventMap;
+            }
+        },
+        {
+            name: 'urn', label: 'URN', type: 'text', options: function () {
+                let eventMap = new Map();
+                return eventMap;
+            }
+        },
+        {
+            name: 'description', label: 'Description', type: 'textarea',
+            options: async function () {
+                let paramMap = new Map();
+                paramMap.set('cols', 24);
+                paramMap.set('rows', 4);
+                return paramMap;
+            }
+        },
+    ],
+    actions: [
+        {
+            text: "Create", color: "black", bgColor: "red",
+            action: async function ({inputs: {}, outputs: activityConstruct}) {
+                this.dispatchEvent(new CustomEvent('event-agent-created', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {agentConstruct: agentConstruct}
+                }));
+            }
+        },
+        {text: "Cancel", color: "white", bgColor: "black"}
+
+
+    ]
+    // display: ?
+    // fallback: ?
+    // skip: ?
+});
+
+
+
 
 //IATable.defaultUrn = "us:ihmc:";
 IATable.FALLBACK_ANALYSIS_NAME = 'AnalysisModel w/o name';

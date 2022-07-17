@@ -9,14 +9,16 @@
 
 import IATable from './views/ia-table.js';
 import IAMenu from './views/ia-menu.js';
-import AnalysisLibrary from './views/ia-library.js';
+import IAAnalysisLibrary from './views/ia-analysis-library.js';
 import TeamEditor from './views/ia-properties.js';
+import IAAgentLibrary from './views/ia-agent-library.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import RESTStorage from './storages/rest.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";
 import UserPrefs from "./utils/user-prefs.js";
+
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -42,26 +44,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const body = document.querySelector('body');
 	const mainPanels = document.createElement("div")
 	mainPanels.setAttribute("id","main-panels")
-	const libraryPanel = document.createElement("div")
-	libraryPanel.setAttribute("id","library-panel")
-	const propertyPanel = document.createElement("div")
-	propertyPanel.setAttribute("id","property-panel")
+	const leftPanel = document.createElement("div")
+	leftPanel.setAttribute("id","left-panel")
+	const rightPanel = document.createElement("div")
+	rightPanel.setAttribute("id","right-panel")
 	const iaMenu = new IAMenu();
-	const analysisLibrary = new AnalysisLibrary();
+	const analysisLibrary = new IAAnalysisLibrary();
+	const agentLibrary = new IAAgentLibrary();
 	const iaTable = new IATable();
 	const editor = new TeamEditor();
 	body.appendChild(iaMenu);
-	mainPanels.appendChild(libraryPanel);
-	libraryPanel.appendChild(analysisLibrary)
+	mainPanels.appendChild(leftPanel);
+	leftPanel.appendChild(analysisLibrary)
 	mainPanels.appendChild(iaTable);
-	mainPanels.appendChild(propertyPanel);
-	propertyPanel.appendChild(editor)
+	mainPanels.appendChild(rightPanel);
+	rightPanel.appendChild(editor)
+	rightPanel.appendChild(agentLibrary)
 	body.appendChild(mainPanels)
 
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
 	controller.iaMenu = iaMenu;
 	controller.editor = editor;
+	controller.agentLibrary = agentLibrary;
 	await controller.initialize();
 
 	//////////////////////////////////////////////////////////////////////

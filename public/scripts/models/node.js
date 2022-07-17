@@ -176,7 +176,7 @@ export default class Node extends EventTarget {
 	}
 
 	get contextualName() {
-		if (this._contextualName == '' ){
+		if ((this._contextualName == '' ) || (this._contextualName == undefined )){
 			return this._activity.name;
 		} else {
 		return this._contextualName;}
@@ -186,8 +186,8 @@ export default class Node extends EventTarget {
 	}
 
 	get contextualDescription() {
-		if (this._contextualDescription == '' ){
-			return this.activity.contextualDescription;
+		if ((this._contextualDescription == '' ) || (this._contextualName == undefined )){
+			return this.activity.description;
 		} else {
 			return this._contextualDescription;}
 		}

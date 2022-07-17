@@ -88,18 +88,18 @@ export default class ControllerAT extends Controller {
     initializeHandlers() {
         this._playground.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
+        this._playground.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node isExpanded property changed
         this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
         this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
         this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
         this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));       // user selects node
         this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this));                       // popup to import JAG JSON
-        this._playground.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node isExpanded property changed
 
-        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
         this._properties.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
         this._properties.addEventListener('event-node-updated', this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
         this._properties.addEventListener('event-export-jag', this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file
         this._properties.addEventListener('event-promote-project', this.eventPromoteProjectHandler.bind(this));             // button to promote node to Jag (root)
+        this._properties.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
 
         this._menu.addEventListener('event-add-activity', this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener('event-clear-playground', this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
@@ -193,6 +193,7 @@ export default class ControllerAT extends Controller {
         let childNodeId = event.detail.childNodeId
         let projectModel = this.fetchProject(projectNodeId)
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
+        parentNodeModel.isExpanded = true;
         let childNodeModel = this.fetchProject(childNodeId)
 
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {

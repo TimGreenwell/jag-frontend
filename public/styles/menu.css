@@ -44,7 +44,7 @@ jag-menu li:last-child div, def-menu li:last-child div, ia-menu li:last-child di
 
 jag-menu .menu-item , def-menu .menu-item, ia-menu .menu-item {
     display: table-cell;
-    vertical-align: top;
+    vertical-align: middle;
     padding-left: 10px;
     padding-right: 10px;
     padding-top: 5px;

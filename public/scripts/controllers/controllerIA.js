@@ -22,6 +22,7 @@ export default class ControllerIA extends Controller{
     constructor() {
         super();
         this._analysisLibrary = null;           // HTMLElement
+        this._agentLibrary = null;
         this._editor = null;                    // HTML Element
         this._iaMenu = null;
         this._iaTable = null;                   // HTMLElement extending Popupable
@@ -89,7 +90,9 @@ export default class ControllerIA extends Controller{
     set iaMenu(value) {
         this._iaMenu = value;
     }
-
+    set agentLibrary(value) {
+        this._agentLibrary = value;
+    }
 
     async initialize() {
     //    UserPrefs.setDefaultUrnPrefix("us:tim:")
@@ -126,6 +129,7 @@ export default class ControllerIA extends Controller{
 
     initializePanels() {
         this._analysisLibrary.addListItems([...this._analysisMap.values()])
+        this._agentLibrary.addListItems([...this._agentMap.values()])
     }
 
     initializeHandlers() {
@@ -142,7 +146,9 @@ export default class ControllerIA extends Controller{
         this._analysisLibrary.addEventListener('event-analysis-selected', this.eventAnalysisSelected.bind(this));
         //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
 
-        this._iaMenu.addEventListener('event-create-assessment', this.eventCreateAssessment.bind(this));
+        this._iaMenu.addEventListener('event-create-assessment',this.eventCreateAssessment.bind(this));
+        this._iaMenu.addEventListener('event-create-agent',this.eventCreateAgent.bind(this));
+            //this.eventCreateAssessment);
         this._iaMenu.addEventListener('event-import-assessment', this.eventImportAssessment.bind(this));     // bring up?
         this._iaMenu.addEventListener('event-export-assessment', this.eventExportAssessment.bind(this));   // bring up??
         // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
@@ -152,7 +158,13 @@ export default class ControllerIA extends Controller{
     }
 
     eventCreateAssessment(){
+        console.log("hey")
         this._iaTable._handleNewAnalysisPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+    }
+
+    eventCreateAgent(){
+        console.log("hey2")
+        this._iaTable._handleNewAgentPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventImportAssessment(){

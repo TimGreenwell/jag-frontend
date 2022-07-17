@@ -47,11 +47,22 @@ customElements.define('jag-menu', class extends HTMLElement {
         $new.classList.add("menu-item");
         $new.innerText = "  create\nassessment";
         $centerLiDiv.appendChild($new);
-
         $new.addEventListener('click', function (e) {
             this.dispatchEvent(new CustomEvent('event-create-assessment', {}
             ));
         }.bind(this));
+
+        const $agent = document.createElement("span");
+        $agent.id = "agent-new";
+        $agent.classList.add("menu-item");
+        $agent.innerText = "  create\nagent";
+        $centerLiDiv.appendChild($agent);
+        $agent.addEventListener('click', function (e) {
+            this.dispatchEvent(new CustomEvent('event-create-agent', {}
+            ));
+        }.bind(this));
+
+
 
         const $import = document.createElement("span");
         $import.id = "import";

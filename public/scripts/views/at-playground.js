@@ -619,7 +619,8 @@ class AtPlayground extends Popupable {
 
     addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
-        let $roodNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+        let $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+        return $rootNode
     }
 
     _rebuildNodeView(projectNodeModel) {

@@ -49,7 +49,7 @@ body #main-panels {
 	height: 100%;
 }
 
-body #library-panel {
+body #left-panel {
 	display: flex;
 	flex-flow: column nowrap;
 	width: 160px;
@@ -58,7 +58,7 @@ body #library-panel {
 	border: 1px solid darkgray;
 }
 
-body #property-panel {
+body #right-panel {
 	display: flex;
 	flex-flow: column nowrap;
 	min-width: 160px;
