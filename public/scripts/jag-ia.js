@@ -10,7 +10,7 @@
 import IATable from './views/ia-table.js';
 import IAMenu from './views/ia-menu.js';
 import IAAnalysisLibrary from './views/ia-analysis-library.js';
-import TeamEditor from './views/ia-properties.js';
+import IAProperties from './views/ia-properties.js';
 import IAAgentLibrary from './views/ia-agent-library.js';
 import IndexedDBStorage from './storages/indexed-db.js';
 import RESTStorage from './storages/rest.js';
@@ -52,20 +52,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const analysisLibrary = new IAAnalysisLibrary();
 	const agentLibrary = new IAAgentLibrary();
 	const iaTable = new IATable();
-	const editor = new TeamEditor();
+	const iaProperties = new IAProperties();
 	body.appendChild(iaMenu);
 	mainPanels.appendChild(leftPanel);
 	leftPanel.appendChild(analysisLibrary)
 	mainPanels.appendChild(iaTable);
 	mainPanels.appendChild(rightPanel);
-	rightPanel.appendChild(editor)
+	rightPanel.appendChild(iaProperties)
 	rightPanel.appendChild(agentLibrary)
 	body.appendChild(mainPanels)
 
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
 	controller.iaMenu = iaMenu;
-	controller.editor = editor;
+	controller.iaProperties = iaProperties;
 	controller.agentLibrary = agentLibrary;
 	await controller.initialize();
 

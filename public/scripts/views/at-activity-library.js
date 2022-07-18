@@ -129,7 +129,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				// Send the newActivity and all its children through the dispatch
 				$bottomHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('event-project-created', {
+					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
 							activity: newActivity,
 							isExpanded: false
@@ -137,7 +137,7 @@ customElements.define('jag-library', class extends HTMLElement {
 					}))});
 
 				$topHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('event-project-created', {
+					this.dispatchEvent(new CustomEvent('event-activity-selected', {
 						detail: {
 							activity: newActivity,
 							isExpanded: false

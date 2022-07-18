@@ -1,6 +1,6 @@
 /* Library panels */
 
-jag-library, node-library, analysis-library {
+jag-library, node-library, analysis-library, agent-library {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -15,7 +15,7 @@ jag-library, analysis-library {  /*analysis-library new */
 	height: 100%;          /* was 95 */
 }
 
-node-library {
+node-library, agent-library {
 	height: fit-content;
 	max-height: 50%;
 }
@@ -24,42 +24,42 @@ analysis-library .name-entry, node-library .name-entry {
 	font-size: 20px;
 }
 
-jag-library .name-entry {
+jag-library .name-entry, jag-library .name-entry {
 	font-size: 15px;
 }
 
 
-jag-library .description-entry, analysis-library .description-entry, node-library .description-entry {
+jag-library .description-entry, analysis-library .description-entry, node-library .description-entry, agent-library .description-entry {
 	font-size: 10px;
 }
 
-jag-library .library-list, analysis-library .library-list, node-library .library-list {
+jag-library .library-list, analysis-library .library-list, node-library .library-list, agent-library .library-list {
 	height: 100%;
 	overflow-y: scroll;
 }
 
-jag-library .list-item, analysis-library .list-item, node-library .list-item {
+jag-library .list-item, analysis-library .list-item, node-library .list-item, agent-library .list-item {
 	padding: 0.25em;
 	border-bottom: 1px solid white;
 	cursor: pointer;
 	transition: background-color 350ms var(--transition-function);
 }
 
-jag-library .list-item:hover, analysis-library .list-item:hover, node-library .list-item:hover {
+jag-library .list-item:hover, analysis-library .list-item:hover, node-library .list-item:hover, agent-library .list-item:hover {
 	background-color: var(--main-bg-active);
 }
 
-jag-library .top-half, analysis-library .top-half, node-library .top-half  {
+jag-library .top-half, analysis-library .top-half, node-library .top-half, agent-library .top-half {
 	font-size: 19px;
 }
 
-jag-library .item-line, analysis-library .item-line, node-library .item-line {
+jag-library .item-line, analysis-library .item-line, node-library .item-line, agent-library .item-line  {
 	display: flex;
 	flex-flow: row;
 	padding: 0.25em;
 }
 
-jag-library .library-search, analysis-library .library-search, node-library .library-search {
+jag-library .library-search, analysis-library .library-search, node-library .library-search, agent-library .library-search {
 	height: 30px;
 	font-size: 15px;
 	background-image: url('../icons/search_mag_20.png');
@@ -77,7 +77,7 @@ input::placeholder {
 	text-align: center;
 }
 
-jag-library  .library-button, analysis-library .library-button, node-library .library-button {
+jag-library  .library-button, analysis-library .library-button, node-library .library-button, agent-library .library-button {
 	display: flex;
 	flex-direction: row;
 	opacity: 0.07;
@@ -90,18 +90,18 @@ jag-library  .library-button, analysis-library .library-button, node-library .li
 	flex-shrink: 0;
 }
 
-jag-library .library-button:hover, analysis-library .library-button:hover, node-library .library-button:hover {
+jag-library .library-button:hover, analysis-library .library-button:hover, node-library .library-button:hover, agent-library .library-button:hover {
 	opacity: 0.75;
 }
 
-jag-library .locked, analysis-library .locked, node-library .locked {
+jag-library .locked, analysis-library .locked, node-library .locked, agent-library .locked {
 	opacity: 0.75;
 }
 
-jag-library .lock-button, analysis-library .lock-button, node-library .lock-button {
+jag-library .lock-button, analysis-library .lock-button, node-library .lock-button, agent-library .lock-button {
 	background-image: url('/icons/lock-20.png');
 }
 
-jag-library .delete-button, analysis-library .delete-button, node-library .delete-button {
+jag-library .delete-button, analysis-library .delete-button, node-library .delete-button, agent-library .delete-button {
 	background-image: url('/icons/ic_delete_black_18dp_1x.png');
 }

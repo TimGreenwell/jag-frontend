@@ -53,11 +53,13 @@ export default class TeamModel extends EventTarget {
 
 	addAgent(agent) {
 		this._agents.push(agent);
+		this._agentIds.push(agent.id)
 		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
 	}
 
 	removeAgent(agent) {
 		this._agents.splice(this._agents.indexOf(agent), 1);
+		this._agentIds.splice(this._agentIds.indexOf(agent.id), 1);
 		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
 	}
 

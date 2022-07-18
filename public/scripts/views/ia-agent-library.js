@@ -6,7 +6,9 @@
  * @version 0.43
  */
 
-import Agent from '../models/agent.js';
+//import Agent from '../models/agent.js';
+
+import AgentModel from "../models/agent.js";
 
 customElements.define('agent-library', class extends HTMLElement {
 
@@ -64,12 +66,13 @@ customElements.define('agent-library', class extends HTMLElement {
 
 
 	createListItem(newAgent) {
+		console.log(newAgent)
 		// handleAgentStorageCreated (@controllerAT)
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;
 		})
 		if (!existingUrns.includes(newAgent.urn)) {
-			if (newAgent instanceof Agent) {
+			if (newAgent instanceof AgentModel) {
 				const urn = newAgent.urn;
 				const name = newAgent.name || '';
 				const description = newAgent.description || '';
@@ -106,9 +109,9 @@ customElements.define('agent-library', class extends HTMLElement {
 
 				const $bottomHalfWrapper = document.createElement('div');
 				$bottomHalfWrapper.className = "bottom-half item-line"
-				const $descriptionEntry = document.createElement('span')
-				$descriptionEntry.classList.add('description-entry')
-				$descriptionEntry.innerText = newAgent.description;
+				const $urnEntry = document.createElement('span')
+				$urnEntry.classList.add('urn-entry')
+				$urnEntry.innerText = newAgent.urn;
 
 				const deleteAgent = document.createElement('div');
 				if (!newAgent.isLocked) {
@@ -116,8 +119,8 @@ customElements.define('agent-library', class extends HTMLElement {
 					deleteAgent.addEventListener('click',  deleteIconClickedHandler.bind(this))
 				}
 
-				$bottomHalfWrapper.appendChild(deleteJag);
-				$bottomHalfWrapper.appendChild($descriptionEntry);
+				$bottomHalfWrapper.appendChild(deleteAgent);
+				$bottomHalfWrapper.appendChild($urnEntry);
 
 				li.appendChild($topHalfWrapper);
 				li.appendChild($bottomHalfWrapper);
@@ -178,13 +181,13 @@ customElements.define('agent-library', class extends HTMLElement {
 	// @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
 	replaceItem(newAgent, replacedUrn) {
-		// handleJagStorageReplaced (@controllerAT)
+		// handleAgentStorageReplaced (@controllerAT)
 		this.removeLibraryListItem(replacedUrn);
 		this.appendChild(newAgent);
 	}
 
 	removeLibraryListItem(deletedUrn) {
-		// handleJagStorageDeleted (@controllerAT)
+		// handleAgentStorageDeleted (@controllerAT)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
@@ -209,7 +212,7 @@ customElements.define('agent-library', class extends HTMLElement {
 
 });
 
-export default customElements.get('jag-library');
+export default customElements.get('agent-library');
 
 // <agent-library> (this)
 //   <input class='library-search'></input>

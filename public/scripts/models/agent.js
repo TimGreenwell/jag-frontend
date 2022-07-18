@@ -11,10 +11,20 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class AgentModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = AgentModel.DEFAULT_NAME, assessments = new Map() } = {}) {
+	constructor({ id = UUIDv4(),
+					name = AgentModel.DEFAULT_NAME,
+					urn,
+					dateCreated,
+					description,
+		            isLocked,
+					assessments = new Map() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
+		this._urn = urn;
+		this._dateCreated = dateCreated;
+		this._description = description;
+		this._isLocked = isLocked;
 		this._assessments = assessments;     // a Map of urn to assessment
 	}
 
@@ -28,6 +38,35 @@ export default class AgentModel extends EventTarget {
 	set name(name) {
 		this._name = name;
 		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
+	}
+
+
+	get urn() {
+		return this._urn;
+	}
+	set urn(value) {
+		this._urn = value;
+	}
+
+	get dateCreated() {
+		return this._dateCreated;
+	}
+	set dateCreated(value) {
+		this._dateCreated = value;
+	}
+
+	get description() {
+		return this._description;
+	}
+	set description(value) {
+		this._description = value;
+	}
+
+	get isLocked() {
+		return this._isLocked;
+	}
+	set isLocked(value) {
+		this._isLocked = value;
 	}
 
 	setAssessment(urn, assessment) {
@@ -69,6 +108,10 @@ export default class AgentModel extends EventTarget {
 		let json = {
 			id: this._id,
 			name: this._name,
+			urn: this._urn,
+			description: this._description,
+			isLocked: this._isLocked,
+			dateCreated: this._dateCreated,
 			assessments: {}
 		};
 

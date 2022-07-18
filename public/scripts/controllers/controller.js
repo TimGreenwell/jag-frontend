@@ -29,15 +29,19 @@ export default class Controller extends EventTarget {
     get activityMap() {
         return this._activityMap;
     }
+
     set activityMap(newActivityMap) {
         this._activityMap = newActivityMap;
     }
+
     uncacheActivity(activityId) {
         this._activityMap.delete(activityId)
     }
+
     cacheActivity(activity) {
         this._activityMap.set(activity.urn, activity)
     }
+
     fetchActivity(activityId) {
         return this._activityMap.get(activityId)
     }
@@ -45,15 +49,19 @@ export default class Controller extends EventTarget {
     get projectMap() {
         return this._projectMap;
     }
+
     set projectMap(newProjectMap) {
         this._projectMap = newProjectMap;
     }
+
     uncacheProject(projectId) {
         this._projectMap.delete(projectId)
     }
+
     cacheProject(project) {
         this._projectMap.set(project.id, project)
     }
+
     fetchProject(projectId) {
         return this._projectMap.get(projectId)
     }
@@ -62,15 +70,19 @@ export default class Controller extends EventTarget {
     get analysisMap() {
         return this._analysisMap;
     }
+
     set analysisMap(newAnalysisMap) {
         this._analysisMap = newAnalysisMap;
     }
+
     uncacheAnalysis(analysisId) {
         this._analysisMap.delete(analysisId)
     }
+
     cacheAnalysis(analysis) {
         this._analysisMap.set(analysis.id, analysis)
     }
+
     fetchAnalysis(analysisId) {
         return this._analysisMap(analysisId)
     }
@@ -78,42 +90,43 @@ export default class Controller extends EventTarget {
     get currentAnalysis() {
         return this._currentAnalysis;
     }
+
     set currentAnalysis(value) {
         this._currentAnalysis = value;
     }
 
 
-/**
- *                                   Upward Event Handlers
- * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
- * the resulting data for storage and distribution.
- *
- *  'initial event' = some user interaction or detected remote change that requires initiates another local action
- *  Data processing in this phase is minimal - it is primarily concerned with translating the initial
- *  event into a standard command that is understood across the application.
- *
- *  These Handlers were identical across multiple tabs
- *   eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
- *   eventActivityUpdatedHandler       (C)  - structure change
- *   eventUrnChangedHandler            (C)  - URN field is changed
- */
+    /**
+     *                                   Upward Event Handlers
+     * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
+     * the resulting data for storage and distribution.
+     *
+     *  'initial event' = some user interaction or detected remote change that requires initiates another local action
+     *  Data processing in this phase is minimal - it is primarily concerned with translating the initial
+     *  event into a standard command that is understood across the application.
+     *
+     *  These Handlers were identical across multiple tabs
+     *   eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
+     *   eventActivityUpdatedHandler       (C)  - structure change
+     *   eventUrnChangedHandler            (C)  - URN field is changed
+     */
 
 
     async eventActivityCreatedHandler(event) {
-    console.log("Local>> (local activity created) ")
-    let activityConstruct = event.detail.activityConstruct;
-    if (!this.activityMap.has(activityConstruct.urn)) {
-        const newActivity = new Activity(event.detail.activityConstruct);
-        newActivity.createdDate = Date.now();
-        if (InputValidator.isValidUrn(newActivity.urn)) {
-            await StorageService.create(newActivity, 'activity');
+        console.log("Local>> (local activity created) ")
+        let activityConstruct = event.detail.activityConstruct;
+        if (!this.activityMap.has(activityConstruct.urn)) {
+            const newActivity = new Activity(event.detail.activityConstruct);
+            newActivity.createdDate = Date.now();
+            if (InputValidator.isValidUrn(newActivity.urn)) {
+                await StorageService.create(newActivity, 'activity');
+            } else {
+                window.alert("Invalid URN");
+            }
         } else {
-            window.alert("Invalid URN");
+            window.alert("That URN already exists")
         }
-    } else {
-        window.alert("That URN already exists")
     }
-}
 
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         console.log("Local>> (local activity updated) ")
@@ -202,12 +215,12 @@ export default class Controller extends EventTarget {
                     console.log("Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull")
                 }
                 let existingNodeChildren = currentNode.children.map(child => {
-                  return {urn: child.urn, id: child.childId}
+                    return {urn: child.urn, id: child.childId}
                 })
                 let validNodeChildren = changedActivity.children;
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
-                   let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-                  kidsToAdd.forEach(child => {
+                let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
+                kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
                     const childNodeModel = new NodeModel();
@@ -275,7 +288,7 @@ export default class Controller extends EventTarget {
 
         const nodeStack = [];
         const resultStack = [];
-      //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
+        //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
         const rootNodeModel = new NodeModel();
         rootNodeModel.urn = rootActivity.urn;
         rootNodeModel.activity = rootActivity;
@@ -290,8 +303,8 @@ export default class Controller extends EventTarget {
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
                 const childNodeModel = new NodeModel();
 
-            childNodeModel.urn = child.urn;
-            childNodeModel.childId = child.id
+                childNodeModel.urn = child.urn;
+                childNodeModel.childId = child.id
                 childNodeModel.activity = childActivity
                 childNodeModel.childId = child.id;
                 childNodeModel.parentId = currentNode.id;
@@ -315,23 +328,27 @@ export default class Controller extends EventTarget {
         return returnValue
     }
 
-    searchTreeForId(treeNode,id) {
+    searchTreeForId(treeNode, id) {
         let workStack = []
         workStack.push(treeNode)
-        while(workStack.length>0){
+        while (workStack.length > 0) {
             let checkNode = workStack.pop();
-            if (checkNode.id == id) {return checkNode}
+            if (checkNode.id == id) {
+                return checkNode
+            }
             checkNode.children.forEach(child => workStack.push(child))
         }
         return null
     }
 
-    searchTreeForChildId(treeNode,childId) {
+    searchTreeForChildId(treeNode, childId) {
         let workStack = []
         workStack.push(treeNode)
-        while(workStack.length>0){
+        while (workStack.length > 0) {
             let checkNode = workStack.pop();
-            if (checkNode.childId == childId) {return checkNode}
+            if (checkNode.childId == childId) {
+                return checkNode
+            }
             checkNode.children.forEach(child => workStack.push(child))
         }
         return null
@@ -366,12 +383,12 @@ export default class Controller extends EventTarget {
         }
     }
 
-    relocateProject(currentNode, deltaX, deltaY){
+    relocateProject(currentNode, deltaX, deltaY) {
         currentNode.x = currentNode.x + deltaX
         currentNode.y = currentNode.y + deltaY
-            for (let child of currentNode.children) {
-                this.relocateProject(child, deltaX, deltaY)
-            }
+        for (let child of currentNode.children) {
+            this.relocateProject(child, deltaX, deltaY)
         }
+    }
 
 }

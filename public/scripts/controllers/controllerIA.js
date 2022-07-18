@@ -16,6 +16,7 @@ import TeamModel from "../models/team.js";
 import AgentModel from "../models/agent.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
+import InputValidator from "../utils/validation.js";
 
 export default class ControllerIA extends Controller{
 
@@ -23,7 +24,7 @@ export default class ControllerIA extends Controller{
         super();
         this._analysisLibrary = null;           // HTMLElement
         this._agentLibrary = null;
-        this._editor = null;                    // HTML Element
+        this._iaProperties = null;                    // HTML Element
         this._iaMenu = null;
         this._iaTable = null;                   // HTMLElement extending Popupable
 
@@ -40,6 +41,8 @@ export default class ControllerIA extends Controller{
         //StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this));
 
         StorageService.subscribe("command-agent-created", this.commandAgentCreatedHandler.bind(this));
+        StorageService.subscribe("command-agent-updated", this.commandAgentUpdatedHandler.bind(this));
+        StorageService.subscribe("command-agent-deleted", this.commandAgentDeletedHandler.bind(this));
         StorageService.subscribe("command-team-created", this.commandTeamCreatedHandler.bind(this));
         StorageService.subscribe("command-analysis-created", this.commandAnalysisCreatedHandler.bind(this));
     }
@@ -81,9 +84,11 @@ export default class ControllerIA extends Controller{
     set analysisLibrary(value) {
         this._analysisLibrary = value;
     }
-    set editor(value) {
-        this._editor = value;
+
+    set iaProperties(value) {
+        this._iaProperties = value;
     }
+
     set iaTable(value) {
         this._iaTable = value;
     }
@@ -117,7 +122,12 @@ export default class ControllerIA extends Controller{
         allAgents.forEach(agent => this.cacheAgent(agent))
 
         let allTeams = await StorageService.all('team')
-        allTeams.forEach(team => this.cacheTeam(team))
+        allTeams.forEach(team => {
+            team.agentIds.forEach(agent => {
+                team.agents.push(this.fetchAgent(agent))
+            })
+            this.cacheTeam(team)
+        })
 
 
         let allAnalyses = await StorageService.all('analysis')
@@ -133,6 +143,7 @@ export default class ControllerIA extends Controller{
     }
 
     initializeHandlers() {
+        this._iaTable.addEventListener('event-agent-created', this.eventAgentCreatedHandler.bind(this));  // popup create
         this._iaTable.addEventListener('event-analysis-created', this.eventAnalysisCreatedHandler.bind(this));  // popup create
         this._iaTable.addEventListener('event-analysis-updated', this.eventAnalysisUpdatedHandler.bind(this));  // jag structure updates
         //this._iaTable.addEventListener('event-analysis-deleted', this.eventAnalysisDeletedHandler.bind(this));  // jag structure updates
@@ -155,6 +166,68 @@ export default class ControllerIA extends Controller{
         // $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
         // $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
+        this._agentLibrary.addEventListener('event-agent-selected', this.eventAgentSelectedHandler.bind(this));       // Project chosen for playground
+        this._agentLibrary.addEventListener('event-agent-locked', this.eventAgentLockedHandler.bind(this));
+        this._agentLibrary.addEventListener('event-agent-deleted', this.eventAgentDeletedHandler.bind(this));
+
+        this._iaProperties.addEventListener('event-agent-removed', this.eventAgentRemovedHandler.bind(this));
+    }
+
+
+    async eventAgentRemovedHandler(event) {
+        console.log("Local>> (agent removed from team) ")
+        let agentId = event.detail.removedAgent;
+        let agent = this.fetchAgent(agentId)
+        this._currentAnalysis.team.removeAgent(agent)
+        this._iaTable.displayAnalysis(this._currentAnalysis);
+        this._iaProperties._updateProperties();
+
+    }
+
+    async eventAgentSelectedHandler(event) {
+        console.log("Local>> (project line item selected) ")
+        const agentSelected = event.detail.agent;
+        this._currentAnalysis.team.addAgent(agentSelected)
+        this._iaTable.displayAnalysis(this._currentAnalysis)
+        this._iaProperties._updateProperties();
+    }
+
+    async commandAgentUpdatedHandler(updatedAgent, updatedAgentUrn) {
+        this.cacheAgent(updatedAgent)
+        this._agentLibrary.updateItem(updatedAgent);
+    }
+
+    async commandAgentDeletedHandler(deletedAgentUrn) {
+        // @TODO If the Agent is the last member of a team - do we delete the team?  Voting yes.
+        console.log("((COMMAND INCOMING)) >> Agent Deleted")
+        let deletedAgent = this.fetchAgent(deletedAgentUrn)
+    // Remove Agent from teams
+        for (let [teamId, team] of this._teamMap) {
+            if (team.agentIds.contains(deletedAgentUrn)){
+                team.agentIds.removeChild(deletedAgentUrn);
+                if (team.agentIds > 0) {
+                    await StorageService.update(team, 'team');
+                }
+                else {
+                    await StorageService.delete(team.id, 'team');
+                }
+            }
+        }
+        this.uncacheAgent(deletedAgentUrn)
+        this._agentLibrary.removeLibraryListItem(deletedAgentUrn)
+    }
+
+    async eventAgentDeletedHandler(event) {
+        console.log("Local>> (agent deleted) ")
+        const deadAgentUrn = event.detail.agentUrn;
+        await StorageService.delete(deadAgentUrn, 'agent');
+    }
+
+    async eventAgentLockedHandler(event) {
+        console.log("Local>> (agent locked) ")
+        const lockedAgent = event.detail.agent;
+        lockedAgent.isLocked = !lockedAgent.isLocked;
+        await StorageService.update(lockedAgent, 'agent');
     }
 
     eventCreateAssessment(){
@@ -207,6 +280,23 @@ export default class ControllerIA extends Controller{
      *
      */
 
+
+    async eventAgentCreatedHandler(event) {
+        console.log("Local>> (local agent created) ")
+        let agentConstruct = event.detail.agentConstruct;
+        if (!this.agentMap.has(agentConstruct.urn)) {
+            const newAgent = new AgentModel(event.detail.agentConstruct);
+            newAgent.dateCreated = Date.now();
+            if (InputValidator.isValidUrn(newAgent.urn)) {
+                await StorageService.create(newAgent, 'agent');
+            } else {
+                window.alert("Invalid URN");
+            }
+        } else {
+            window.alert("That URN already exists")
+        }
+    }
+
     async eventAnalysisCreatedHandler(event) {
         let id = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
     }
@@ -216,7 +306,7 @@ export default class ControllerIA extends Controller{
         await StorageService.update(event.detail.analysis, 'analysis');
     }
 
-    async eventNodeAddChildHandler(event) {
+    async eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
         // This will not be permanent until a valid URN is set.  Not-persistant.
         //@todo push this back down into iaTable (from there - to there)
         let parentCell = event.detail.cell;
@@ -271,8 +361,8 @@ export default class ControllerIA extends Controller{
     async eventAnalysisSelected(event) {
         this._currentAnalysis = event.detail.model;
         this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-        this._iaTable.displayAnalysis(this._currentAnalysis);
-        this._editor.team = event.detail.model.team;
+        await this.displayAnalysis(this._currentAnalysis);
+        this._iaProperties.team = event.detail.model.team;
     }
 
     /**
@@ -298,7 +388,7 @@ export default class ControllerIA extends Controller{
         if (this._currentAnalysis) {
             // @TODO CHECK IF THIS URN IS RELEVANT TO THE ANALYSIS
             this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-            this._iaTable.displayAnalysis(this._currentAnalysis);
+            await this.displayAnalysis(this._currentAnalysis);
         }
     }
 
@@ -307,7 +397,7 @@ export default class ControllerIA extends Controller{
         // However - can't think of a way to infer what change was made without more effort than a redraw.
         this.cacheActivity(updatedActivity)
         this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
-        this._iaTable.displayAnalysis(this._currentAnalysis);
+        await this.displayAnalysis(this._currentAnalysis);
     }
 
     async commandActivityDeletedHandler(deletedActivityUrn) {
@@ -321,11 +411,13 @@ export default class ControllerIA extends Controller{
 
     async commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
         this.cacheAgent(createdAgentModel);
+        this._agentLibrary.addListItem(createdAgentModel)
     }
 
     async commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
         console.log("Here is a TEAMMMMMMMMMMMMMM")
         console.log(createdTeamModel)
+        //pad agents array from agentIds
         let agents = [];
         for (let agentId of createdTeamModel.agentIds) {
             agents.push(this.fetchAgent(agentId))
@@ -384,8 +476,8 @@ export default class ControllerIA extends Controller{
         }
     }
 
-    async createAgent(name = 'unnamed') {
-        let newAgent = new AgentModel({name: name})
+    async createAgent({name, urn} = {}) {
+        let newAgent = new AgentModel({name: name, urn: urn})
         await StorageService.create(newAgent, 'agent');
         return newAgent;
     }
@@ -406,8 +498,8 @@ export default class ControllerIA extends Controller{
 
     async createStandardAnalysis(analysisName, rootUrn, source) {
         console.log("CREATING THE STANDARD ANALYSIS")
-        let agent1 = await this.createAgent('Agent 1');
-        let agent2 = await this.createAgent('Agent 2');
+        let agent1 = await this.createAgent({name: 'Agent 1', urn: 'org.example.agent1'});
+        let agent2 = await this.createAgent({name: 'Agent 2', urn: 'org.example.agent2'});
         console.log(agent1.id)
         console.log(agent2.id)
         console.log("...")
@@ -427,9 +519,13 @@ export default class ControllerIA extends Controller{
         // return newAnalysisModel.id;
     }
 
-    async displayAnalysis(id) {
-        let analysisModel = await StorageService.get(id, 'analysis');
+    async displayAnalysis(analysisModel) {
+
+      //  let analysisModel = await StorageService.get(id, 'analysis');
         analysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(analysisModel.rootUrn);
+        // maybe necessary?
+        analysisModel.jag = this.fetchActivity(analysisModel.urn)
+        analysisModel.team = this.fetchTeam(analysisModel.teamId);
         this._iaTable.displayAnalysis(analysisModel);
     }
 

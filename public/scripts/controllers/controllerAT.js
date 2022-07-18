@@ -107,7 +107,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener('event-redraw-nodes', this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener('event-popup-importer', this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
 
-        this._activityLibrary.addEventListener('event-project-created', this.eventProjectCreatedHandler.bind(this));        // Clicking Activity instantiates Node in playground
+        this._activityLibrary.addEventListener('event-activity-selected', this.eventActivitySelectedHandler.bind(this));        // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
         this._activityLibrary.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));        // 'Lock' Activity (restrict deletes and renames)
 
@@ -155,7 +155,7 @@ export default class ControllerAT extends Controller {
      * eventPopupImporterHandler              - menu item: call 'Import Jag' popup
      *
      *  -- activity library --
-     * eventProjectCreatedHandler           - user selects Activity for playground (creates Graph)
+     * eventActivitySelectedHandler           - user selects Activity for playground (creates Graph)
      * eventActivityDeletedHandler            - user permanently deletes Activity
      * eventActivityLockedHandler             - user locks Activity against delete/updates
      *
@@ -332,12 +332,15 @@ export default class ControllerAT extends Controller {
 
     /**   -- Activity Library --  */
 
-    async eventProjectCreatedHandler(event) {
-        console.log("Local>> (Project created / library selected) ")
+
+
+    async eventActivitySelectedHandler(event) {
+        console.log("Local>> (Activity selected / Activity list item selected) ")
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
         let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
         await StorageService.create(newProjectRootNode, "node");
+        this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
     }
 
     async eventActivityDeletedHandler(event) {

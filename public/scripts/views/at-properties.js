@@ -81,7 +81,7 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._$descInput.setAttribute('id', 'desc-property');
         this._$descInput.setAttribute('width', '100%');
         this._$descInput.setAttribute('rows', '3');
-        this._$descInput.setAttribute("placeholder", "Enter your description of node here...");
+        this._$descInput.setAttribute("placeholder", "...");
         this._$descInput.setAttribute("tabIndex", "2");
         this._$descInput.className = "direct-property";
         desc_el.appendChild(this._$descInput);

@@ -527,7 +527,9 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
     actions: [
         {
             text: "Create", color: "black", bgColor: "red",
-            action: async function ({inputs: {}, outputs: activityConstruct}) {
+            action: async function ({inputs: {}, outputs: agentConstruct}) {
+                console.log("___________--")
+                console.log(agentConstruct)
                 this.dispatchEvent(new CustomEvent('event-agent-created', {
                     bubbles: true,
                     composed: true,

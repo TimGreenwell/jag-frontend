@@ -104,9 +104,18 @@ customElements.define('ia-properties', class extends HTMLElement {
 		this._team_agents.setAttribute('size', '4');
 		teamAgents_el.appendChild(this._team_agents);
 
-		this._create_agent = document.createElement('button');
-		this._create_agent.innerText = 'Create Agent';
-		teamAgents_el.appendChild(this._create_agent);
+		this._remove_agent = document.createElement('button');
+		this._remove_agent.innerText = 'Remove Agent';
+		this._remove_agent.addEventListener('click', e => {
+			this.dispatchEvent(new CustomEvent('event-agent-removed', {
+				bubbles: true,
+				composed: true,
+				detail: {removedAgent: this._team_agents.value}
+			}));
+			this._remove_agent.disabled = true;
+		});
+		this._remove_agent.disabled = true;
+		teamAgents_el.appendChild(this._remove_agent);
 
 		const agentName_el = FormUtils.createPropertyElement('agent-name', 'Agent Name');
 		this._agent_name = FormUtils.createTextInput('agent-name');
@@ -139,6 +148,7 @@ customElements.define('ia-properties', class extends HTMLElement {
 		});
 
 		this._team_agents.addEventListener('change', e => {
+			this._remove_agent.disabled = false;
 			for (const agent of this._team.agents) {
 				if (agent.id == e.target.value) {
 					this.agent = agent;
@@ -147,9 +157,6 @@ customElements.define('ia-properties', class extends HTMLElement {
 			}
 		});
 
-		this._create_agent.addEventListener('click', e => {
-			this._team.addAgent(new AgentModel());
-		});
 
 		this._agent_name.addEventListener('blur', e => {
 			this._agent.name = e.target.value;
@@ -179,7 +186,7 @@ customElements.define('ia-properties', class extends HTMLElement {
 
 	_enableTeamProperties(enabled) {
 		this._team_name.disabled = !enabled;
-		this._create_agent.disabled = !enabled;
+	//	this._remove_agent.disabled = !enabled;
 	}
 
 	_enableAgentProperties(enabled) {
