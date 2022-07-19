@@ -68,8 +68,6 @@ class IATable extends Popupable {
 
         this._analysisModel = analysisModel;
         // Create and append a new Analysis View to this structure
-        console.log("Generating new analysis view with...")
-        console.log(JSON.stringify(this._analysisModel))
         let analysisView = new AnalysisView(this._analysisModel);
         this.appendChild(analysisView);
         this._domElements.analysis = analysisView;
@@ -528,8 +526,6 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
         {
             text: "Create", color: "black", bgColor: "red",
             action: async function ({inputs: {}, outputs: agentConstruct}) {
-                console.log("___________--")
-                console.log(agentConstruct)
                 this.dispatchEvent(new CustomEvent('event-agent-created', {
                     bubbles: true,
                     composed: true,

@@ -334,14 +334,7 @@ export default class ControllerAT extends Controller {
 
 
 
-    async eventActivitySelectedHandler(event) {
-        console.log("Local>> (Activity selected / Activity list item selected) ")
-        const activitySelected = event.detail.activity;
-        const isExpanded = event.detail.isExpanded;
-        let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
-        await StorageService.create(newProjectRootNode, "node");
-        this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
-    }
+
 
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
@@ -370,6 +363,18 @@ export default class ControllerAT extends Controller {
         lockedActivity.isLocked = !lockedActivity.isLocked;
         await StorageService.update(lockedActivity, 'activity');
     }
+
+
+    async eventActivitySelectedHandler(event) {
+        console.log("Local>> (Activity selected / Activity list item selected) ")
+        const activitySelected = event.detail.activity;
+        const isExpanded = event.detail.isExpanded;
+        let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
+        await StorageService.create(newProjectRootNode, "node");
+       // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
+        this._playground._rebuildNodeView(newProjectRootNode)
+    }
+
 
     /**   -- Project Library --  */
 

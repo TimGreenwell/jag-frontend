@@ -231,12 +231,10 @@ export default class ControllerIA extends Controller{
     }
 
     eventCreateAssessment(){
-        console.log("hey")
         this._iaTable._handleNewAnalysisPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventCreateAgent(){
-        console.log("hey2")
         this._iaTable._handleNewAgentPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
@@ -298,7 +296,11 @@ export default class ControllerIA extends Controller{
     }
 
     async eventAnalysisCreatedHandler(event) {
-        let id = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
+        let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
+        console.log("--> standard Analysis")
+        console.log(standardAnalysis)
+        this._iaProperties.team = standardAnalysis.team;
+        //zzzz
     }
 
     async eventAnalysisUpdatedHandler(event) {
@@ -415,8 +417,6 @@ export default class ControllerIA extends Controller{
     }
 
     async commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
-        console.log("Here is a TEAMMMMMMMMMMMMMM")
-        console.log(createdTeamModel)
         //pad agents array from agentIds
         let agents = [];
         for (let agentId of createdTeamModel.agentIds) {
@@ -431,9 +431,6 @@ export default class ControllerIA extends Controller{
 
 
     async commandAnalysisCreatedHandler(createdAnalysisModel, createdAnalysisId) {
-        console.log("missing a team?")
-        console.log(createdAnalysisModel)
-
         createdAnalysisModel.team = this.fetchTeam(createdAnalysisModel.teamId)
         createdAnalysisModel.jag = this.fetchActivity(createdAnalysisModel.urn)
         this.cacheAnalysis(createdAnalysisModel);
@@ -443,6 +440,7 @@ export default class ControllerIA extends Controller{
         this._iaTable.displayAnalysis(createdAnalysisModel);
         //  }
         this._analysisLibrary.addListItem(createdAnalysisModel)
+        this._iaProperties.team = createdAnalysisModel.team
     }
 
 
@@ -483,8 +481,6 @@ export default class ControllerIA extends Controller{
     }
 
     async createTeam(name = 'unnamed' , agentIds = [], performers = []){
-        console.log("creating team")
-        console.log(agentIds)
         let newTeam = new TeamModel({name: name, agentIds: agentIds})
         await StorageService.create( newTeam, 'team');
         return newTeam;
@@ -500,23 +496,9 @@ export default class ControllerIA extends Controller{
         console.log("CREATING THE STANDARD ANALYSIS")
         let agent1 = await this.createAgent({name: 'Agent 1', urn: 'org.example.agent1'});
         let agent2 = await this.createAgent({name: 'Agent 2', urn: 'org.example.agent2'});
-        console.log(agent1.id)
-        console.log(agent2.id)
-        console.log("...")
         let newTeam = await this.createTeam("Team Blue", [agent1.id, agent2.id]);
-        let newAnalysisId = await this.createAnalysis({name: analysisName, rootUrn: rootUrn, teamId: newTeam.id})// @todo I like the named parameter pattern - might look at standardizing on it.
-        return newAnalysisId;
-
-        // let rootActivity = await StorageService.get(rootUrn, 'activity');
-        // const newAnalysisModel = new AnalysisModel({name: analysisName, rootUrn: rootUrn});///////////////////////////////////////////////////////new
-        // // currently buildAnalysis builds and stores the mapset.
-        // newAnalysisModel.team = new TeamModel();
-        // newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 1'}));
-        // newAnalysisModel.team.addAgent(new AgentModel({name: 'Agent 2'}));
-        // await Promise.all(newAnalysisModel.team.agents.map(async agent => await StorageService.create(agent, 'agent')));
-        // await StorageService.create(newAnalysisModel.team, 'team');
-        // await StorageService.create(newAnalysisModel, 'analysis');
-        // return newAnalysisModel.id;
+        let newAnalysis = await this.createAnalysis({name: analysisName, rootUrn: rootUrn, teamId: newTeam.id})// @todo I like the named parameter pattern - might look at standardizing on it.
+        return newAnalysis;
     }
 
     async displayAnalysis(analysisModel) {

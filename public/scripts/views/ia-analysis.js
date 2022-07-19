@@ -121,9 +121,7 @@ class AnalysisView extends HTMLElement {
         }
 
         let offset = 0;
-        console.log(this._analysisModel)
         const team = this._analysisModel.team
-        console.log(team)
         const agent_count = team.agentIds.length;
         const abs_offset = level_count + offset;
 

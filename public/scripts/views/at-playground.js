@@ -883,7 +883,6 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
 
                 let selectedFiles = await getFiles();
 
-                console.log(selectedFiles)
                 let reader = new FileReader();
                 reader.addEventListener('load', function (event) {
                     console.log("File read...... and passed to event")
@@ -892,7 +891,6 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
                         composed: true,
                         detail: {result: event.target.result}
                     }));
-                    console.log(event.target.result)
                 }.bind(this));
                 for (const file of selectedFiles) {
                     reader.readAsText(file);

@@ -66,7 +66,6 @@ customElements.define('agent-library', class extends HTMLElement {
 
 
 	createListItem(newAgent) {
-		console.log(newAgent)
 		// handleAgentStorageCreated (@controllerAT)
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;

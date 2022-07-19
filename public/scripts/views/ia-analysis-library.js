@@ -45,8 +45,6 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 
 	createListItem(model, idx = -1) {
-		console.log("Analysis Library - creating a list item")
-		console.log(model)
 		const id = model.urn || '';
 		const root = model.rootUrn;
 		const name = model.name;
