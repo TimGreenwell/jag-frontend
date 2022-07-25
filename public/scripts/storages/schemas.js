@@ -26,7 +26,7 @@ export default class Schemas {
 			name: 'activity',
 			key: 'urn',
 			deserialize: Activity.fromJSON,
-			rest: 'jagActivities',
+			rest: 'activities',
 			indexList: [{
 					name: 'urn-index',
 					property: 'urn',
@@ -39,7 +39,7 @@ export default class Schemas {
 			name: 'node',
 			key: 'id',
 			deserialize: NodeModel.fromJSON,
-			rest: 'jagCells',
+			rest: 'jags',
 			indexList: [{
 				name: 'id-index',
 				property: 'id',

@@ -333,9 +333,6 @@ export default class ControllerAT extends Controller {
     /**   -- Activity Library --  */
 
 
-
-
-
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
         // If match found, remove that child from the parent and signal update on the parent.
@@ -448,12 +445,6 @@ export default class ControllerAT extends Controller {
         for (let viewedProject of this._playground.viewedProjects) {
             if (viewedProject.id == deletedActivityUrn) {
                 await StorageService.delete(viewedProject, 'node');
-            } else {
-                console.log(viewedProject.id)
-                console.log(deletedActivityUrn)
-                console.log("(((((((((((((((((())))))))))))))))))))))")
-                console.log('I dont think its possibel to get here')
-                console.log("(((((((((((((((((())))))))))))))))))))))")
             }
         }
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn)
