@@ -11,14 +11,15 @@ import { UUIDv4 }  from '../utils/uuid.js'
 
 export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performers = new Set() } = {}) {
+	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
 		this._agentIds = agentIds;
-		this._performers = performers;
-		// enhanced
+		this._performerIds = performerIds;
+		// non-persistent
 		this._agents = [];
+		this._performers = [];
 	}
 
 	get id() {
@@ -64,22 +65,22 @@ export default class TeamModel extends EventTarget {
 	}
 
 	setPerformer(id, performer) {
-		if (this._performers.has(id) && !performer) {
-			this._performers.delete(id);
-		} else if (!this._performers.has(id) && performer) {
-			this._performers.add(id);
+		if (this._performerIds.has(id) && !performer) {
+			this._performerIds.delete(id);
+		} else if (!this._performerIds.has(id) && performer) {
+			this._performerIds.add(id);
 		} else {
 			return;
 		}
 
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "performers", "extra": { "performers": this._performers }}}));
+		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "performers", "extra": { "performers": this._performerIds }}}));
 	}
 
 	performer(id) {
 		const ids = this._agents.map(agent => agent.id);
 
 		if (ids.indexOf(id) >= 0)
-			return this._performers.has(id);
+			return this._performerIds.has(id);
 
 		return undefined;
 	}
@@ -93,7 +94,7 @@ export default class TeamModel extends EventTarget {
 			id: this._id,
 			name: this._name,
 			agentIds: this._agentIds,
-			performers: Array.from(this._performers)
+			performerIds: Array.from(this._performerIds)
 		};
 		return json;
 	}
@@ -112,7 +113,7 @@ export default class TeamModel extends EventTarget {
 		// }
 		// json.agents = agents;
 
-		json.performers = new Set(json.performers);
+		//json.performers = new Set(json.performers);
 		let returnValue = new TeamModel(json);
 		return returnValue;
 	}

@@ -14,16 +14,17 @@ export default class AgentModel extends EventTarget {
 	constructor({ id = UUIDv4(),
 					name = AgentModel.DEFAULT_NAME,
 					urn,
-					dateCreated,
 					description,
+					dateCreated,
 		            isLocked,
 					assessments = new Map() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
+		this._description = description;
 		this._urn = urn;
 		this._dateCreated = dateCreated;
-		this._description = description;
+
 		this._isLocked = isLocked;
 		this._assessments = assessments;     // a Map of urn to assessment
 	}
@@ -39,7 +40,6 @@ export default class AgentModel extends EventTarget {
 		this._name = name;
 		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
 	}
-
 
 	get urn() {
 		return this._urn;
@@ -140,5 +140,4 @@ AgentModel.CAN_DO_PERFECTLY = Symbol();
 AgentModel.CAN_DO = Symbol();
 AgentModel.CAN_HELP = Symbol();
 AgentModel.CANNOT_DO = Symbol();
-
 AgentModel.DEFAULT_NAME = 'Agent';

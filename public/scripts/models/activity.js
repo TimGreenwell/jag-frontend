@@ -23,7 +23,6 @@ export default class Activity extends EventTarget {
                     urn,
                     name,
                     description = '',
-                    definition = '',
                     connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
                     inputs = [],
                     outputs = [],
@@ -34,7 +33,6 @@ export default class Activity extends EventTarget {
                     modifiedDate,
                     lockedBy,
                     isLocked = Boolean(false),
-
                     collapsed = Boolean(false),
                 }) {
         super();
@@ -42,23 +40,23 @@ export default class Activity extends EventTarget {
         this._urn = urn;
         this._name = name;
         this._description = description;
-        this._definition = definition;
+        this._connector = connector;
+
+        this._inputs = inputs ? [...inputs] : new Array();
+        this._outputs = outputs ? [...outputs] : new Array();
+        this._children = children ? [...children] : new Array();
+        this._bindings = new Set(bindings);
+
         this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._lockedBy = lockedBy;
+        this._isLocked = isLocked;
+        this._collapsed = collapsed;
 
-        this._connector = connector;
         this._execution = connector.execution;
         this._returns = connector.returns;
         this._operator = connector.operator;
-
-        // Copy each array (inputs, outputs and children) for the instance if provided, else create a new array.
-        this._inputs = inputs ? [...inputs] : new Array();
-        this._outputs = outputs ? [...outputs] : new Array();
-        this._children = children ? [...children] : new Array();
-        // Copy bindings for the instance if provided, else create a new set.
-        this._bindings = new Set(bindings);
 
         // The below has not been looked at.
         for (let child of this._children) {
@@ -71,9 +69,8 @@ export default class Activity extends EventTarget {
             }
         }
 
-        this._isLocked = isLocked;
-        this._collapsed = collapsed;
-        this._definition = definition;
+
+
     }
 
 
@@ -101,14 +98,6 @@ export default class Activity extends EventTarget {
 
     get description() {
         return this._description;
-    }
-
-    get definition() {
-        return this._definition;
-    }
-
-    set definition(value) {
-        this._definition = value;
     }
 
     get author() {
