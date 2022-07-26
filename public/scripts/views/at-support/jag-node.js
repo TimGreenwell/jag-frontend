@@ -56,16 +56,12 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	}
 
-
-
 	set nodeModel(nodeModel) {           // another complex set                                                         yuk
 		this._nodeModel = nodeModel;
 	}
 	get nodeModel() {
 		return this._nodeModel;
 	}
-
-
 
 	set isExpanded(isExpanded) {               // complex...leave it
 		this._nodeModel.isExpanded = isExpanded;
@@ -462,7 +458,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		if(this._outs != undefined && (recursive || (recursive == undefined && !this._nodeModel.isExpanded))) {
 			this._outs.forEach((edge) => {
-			//	edge._node_end.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
+				edge._leadActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
 				edge._subActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
 			});
 		}

@@ -21,9 +21,6 @@ export default class ControllerDEF extends Controller {
         this._menu = null;
         this._definition = null;
 
-        // this._project = this.fetchProject(startProjectId)
-        // this.node = this._project.findChildById(startNodeId)
-
         StorageService.subscribe("command-node-updated", this.commandNodeUpdatedHandler.bind(this)); // }
         StorageService.subscribe("command-node-deleted", this.commandNodeDeletedHandler.bind(this)); // }
     }

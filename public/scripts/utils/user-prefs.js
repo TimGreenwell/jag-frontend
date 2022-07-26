@@ -10,14 +10,12 @@
 
 export default class UserPrefs {
 
-	//static defaultStorageService = 'idb-service'
-	static defaultStorageService = 'local-rest-service'
+	static defaultStorageService = 'idb-service'
+	//static defaultStorageService = 'local-rest-service'
 
 	static getDefaultStorageService() {
 		return this.defaultStorageService
 	}
-
-
 
 
 	static defaultUrnPrefix = "us:ihmc:";

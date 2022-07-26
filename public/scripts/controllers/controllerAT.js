@@ -24,11 +24,11 @@ export default class ControllerAT extends Controller {
         this._playground = null;
         this._properties = null;
 
-        StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));   // }
-        StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // }
-        StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));   // } All from observable
-        StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));     // } Cross-tab communications
-        StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this)); // }
+        StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));   //    }
+        StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // (a)}
+        StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));   // (a)} All from observable
+        StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));     //    } Cross-tab communications
+        StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this)); //    }
         StorageService.subscribe("command-node-created", this.commandNodeCreatedHandler.bind(this)); // }
         StorageService.subscribe("command-node-updated", this.commandNodeUpdatedHandler.bind(this)); // }
         StorageService.subscribe("command-node-deleted", this.commandNodeDeletedHandler.bind(this)); // }
@@ -37,25 +37,20 @@ export default class ControllerAT extends Controller {
     set menu(value) {
         this._menu = value;
     }
-
     set activityLibrary(value) {
         this._activityLibrary = value;
     }
-
     set projectLibrary(value) {
         this._projectLibrary = value;
     }
-
     set playground(value) {
         this._playground = value;
     }
-
     set properties(value) {
         this._properties = value;
     }
 
     async initialize() {
-    //    UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -63,12 +58,15 @@ export default class ControllerAT extends Controller {
 
     async initializeCache() {
         let allActivities = await StorageService.all('activity')
-        allActivities.forEach(activity => this.cacheActivity(activity));
+        allActivities.forEach(activity => {
+            this.cacheActivity(activity)
+        });
 
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => {
             this.repopulateActivity(node)
             this.repopulateParent(node)
+
             this.cacheProject(node);
         });
 
@@ -79,6 +77,7 @@ export default class ControllerAT extends Controller {
 
     initializePanels() {
         this._activityLibrary.addListItems([...this._activityMap.values()])
+
         let rootOnly = [...this.projectMap.values()].filter(node => {
             return node.isRoot();
         })
@@ -107,7 +106,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener('event-redraw-nodes', this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener('event-popup-importer', this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
 
-        this._activityLibrary.addEventListener('event-activity-selected', this.eventActivitySelectedHandler.bind(this));        // Clicking Activity instantiates Node in playground
+        this._activityLibrary.addEventListener('event-activity-selected', this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
         this._activityLibrary.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));        // 'Lock' Activity (restrict deletes and renames)
 
@@ -131,21 +130,21 @@ export default class ControllerAT extends Controller {
      * (C) indicates common methods between controllers (share code)
      *
      *    -- playground --
-     * eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
-     * eventActivityUpdatedHandler       (C)  - structure change
+     * eventActivityCreatedHandler    (a) (C) - popup create Activity (original event in menu starts playground popup)
+     * eventActivityUpdatedHandler    (a) (C) - structure change
+     * eventNodeUpdatedHandler            (a) - Node isExpanded property changed
      * eventNodesSelectedHandler              - user selects Node in graph
      * eventNodeRepositionedHandler           - user repositioned Node
-     * eventNodesConnectedHandler             - user connects two Nodes with an edge
-     * eventPlaygroundClickedHandler          - user selects node
-     * eventImportJagHandler                  - popup import JAG JSON
-     * eventNodeUpdatedHandler                - Node isExpanded property changed
+     * eventNodesConnectedHandler        (a)  - user connects two Nodes with an edge
+     * eventPlaygroundClickedHandler     (a)  - user selects node
+     * eventImportJagHandler             (a)  - popup import JAG JSON
      *
      *    -- properties --
-     * eventUrnChangedHandler            (C)  - URN field is changed
      * eventActivityUpdatedHandler       (C)  - user updates an Activity related field
      * eventNodeUpdatedHandler   (Playground) - user updates a Node related field
      * eventExportJagHandler                  - button to export JAG and Activities to file
-     * eventPromoteProjectHandler             - button to promote node to Jag (root)
+     * eventPromoteProjectHandler        (a)  - button to promote node to Jag (root)
+     * eventUrnChangedHandler         (a)(C)  - URN field is changed
      *
      *       -- menu --
      * eventAddActivityHandler                - menu item: call 'Create Activity' popup
@@ -155,14 +154,14 @@ export default class ControllerAT extends Controller {
      * eventPopupImporterHandler              - menu item: call 'Import Jag' popup
      *
      *  -- activity library --
-     * eventActivitySelectedHandler           - user selects Activity for playground (creates Graph)
-     * eventActivityDeletedHandler            - user permanently deletes Activity
-     * eventActivityLockedHandler             - user locks Activity against delete/updates
+     * eventActivitySelectedHandler       (a) - user selects Activity for playground (creates Graph)
+     * eventActivityDeletedHandler        (a) - user permanently deletes Activity
+     * eventActivityLockedHandler         (a) - user locks Activity against delete/updates
      *
      *   -- project library --
-     * eventProjectSelectedHandler           - user selects Graph for playground (recovers Graph)
-     * eventProjectDeletedHandler            - user permanently deletes Graph
-     * eventProjectLockedHandler             - user locks Graph against delete/updates
+     * eventProjectSelectedHandler        (a) - user selects Graph for playground (recovers Graph)
+     * eventProjectDeletedHandler         (a) - user permanently deletes Graph
+     * eventProjectLockedHandler          (a) - user locks Graph against delete/updates
      *
      */
 
@@ -171,6 +170,20 @@ export default class ControllerAT extends Controller {
     // eventActivityCreatedHandler --- hosted by common controller.
 
     // eventActivityUpdatedHandler --- hosted by common controller.
+
+    async eventNodeUpdatedHandler(event) {
+        // If the updated node (in event) is the project root, then StorageService the node.
+        // Otherwise, insert the node in the right place in the project and StorageService the project root.
+        let projectNode = null;
+        const updatedNodeModel = event.detail.nodeModel;
+        if (updatedNodeModel.id == updatedNodeModel.projectId) {
+            projectNode = updatedNodeModel
+        } else {
+            projectNode = this.fetchProject(updatedNodeModel.projectId)
+            projectNode.replaceChild(updatedNodeModel)
+        }
+        await StorageService.update(projectNode, 'node');
+    }
 
     eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
@@ -182,7 +195,8 @@ export default class ControllerAT extends Controller {
         let nodeModel = event.detail.nodeModel
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
-        //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
+        nodeModel._hasNewProperties = true;
+        this.cacheProject(nodeModel)
     }
 
     async eventNodesConnectedHandler(event) {            // only needed id's
@@ -220,8 +234,22 @@ export default class ControllerAT extends Controller {
         }
     }
 
-    eventPlaygroundClickedHandler() {
-        this._properties.handleSelectionUnselected()
+    async eventPlaygroundClickedHandler(event) {
+        this._properties.handleSelectionUnselected();
+
+        let unselectedNodes = event.detail.unselectedNodeArray;
+        let projectId = null;
+        let reasonToSave = false;
+        unselectedNodes.forEach(node => {
+            if (node._hasNewProperties) {
+                reasonToSave = true;
+                projectId = node.projectId;
+            }
+        })
+        if (reasonToSave){
+           // await StorageService.update(projectId, "node")
+        }
+
     }
 
     async eventImportJagHandler(event) {
@@ -242,19 +270,6 @@ export default class ControllerAT extends Controller {
         }
     }
 
-    async eventNodeUpdatedHandler(event) {
-        // If the updated node (in event) is the project root, then StorageService the node.
-        // Otherwise, insert the node in the right place in the project and StorageService the project root.
-        let projectNode = null;
-        const updatedNodeModel = event.detail.nodeModel;
-        if (updatedNodeModel.id == updatedNodeModel.projectId) {
-            projectNode = updatedNodeModel
-        } else {
-            projectNode = this.fetchProject(updatedNodeModel.projectId)
-            projectNode.replaceChild(updatedNodeModel)
-        }
-        await StorageService.update(projectNode, 'node');
-    }
 
     /**   -- Properties --  */
 
@@ -332,7 +347,6 @@ export default class ControllerAT extends Controller {
 
     /**   -- Activity Library --  */
 
-
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
         // If match found, remove that child from the parent and signal update on the parent.
@@ -361,7 +375,6 @@ export default class ControllerAT extends Controller {
         await StorageService.update(lockedActivity, 'activity');
     }
 
-
     async eventActivitySelectedHandler(event) {
         console.log("Local>> (Activity selected / Activity list item selected) ")
         const activitySelected = event.detail.activity;
@@ -371,7 +384,6 @@ export default class ControllerAT extends Controller {
        // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
         this._playground._rebuildNodeView(newProjectRootNode)
     }
-
 
     /**   -- Project Library --  */
 
@@ -499,7 +511,7 @@ export default class ControllerAT extends Controller {
      * buildNodeTreeFromActivity   (c)   Build node tree given root activity
      * gatherDescendentUrns              Build set of all child urns
      * gatherAncestorUrns                Build set of direct ancestor urns
-     * loopDetection                     -> No URN exists as noth descendant and ancestor (feedback detection)
+     * loopDetection                     -> No URN exists as both descendant and ancestor (feedback detection)
      *
      */
 

@@ -18,9 +18,9 @@ class AtPlayground extends Popupable {
         super();
         const margin = 50;
         this._edgeContainerDiv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this._edgeContainerDiv.id = "edges-container";
         this._edgeContainerDiv.setAttribute('version', '1.1');
         this._edgeContainerDiv.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this._edgeContainerDiv.id = "edges-container";
         this.appendChild(this._edgeContainerDiv);
 
         this._nodeContainerDiv = document.createElement('div');
@@ -29,8 +29,8 @@ class AtPlayground extends Popupable {
         this.setPopupBounds(this._nodeContainerDiv);
 
         this._viewedProjectsMap = new Map();         // All active Jag root nodes
-        this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (view) -- All elements (see viewedNodes for the supprting nodeModel)
-        this._selectedActivityNodeElementSet = new Set();  // set of ActivityNodes (view)
+        this._activeNodeElementSet = new Set();    // set of ActivityNodes (view) -- All elements (see viewedNodes for the supporting nodeModel)
+        this._selectedNodeElementSet = new Set();  // set of ActivityNodes (view)
         this._is_edge_being_created = false;
 
         this._cardinals = {
@@ -60,7 +60,7 @@ class AtPlayground extends Popupable {
 
         // Turned this off temporarily.  Most keys have no function here.  They all work when
         // a node inside is selected
-        // document.addEventListener('keydown', this.onKeyDown.bind(this));
+         document.addEventListener('keydown', this.onKeyDown.bind(this));
 
         this.addEventListener('mousedown', this.playgroundClicked.bind(this));
 
@@ -69,21 +69,21 @@ class AtPlayground extends Popupable {
             this._edgeContainerDiv.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
         });
 
-        //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
-        this.addEventListener('dragover', this.cancelDefault.bind(this));
-        this.addEventListener('drop', this.onImport.bind(this));
+        // 	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
+        // this.addEventListener('dragover', this.cancelDefault.bind(this));   // preventDefault
+        //  this.addEventListener('drop', this.onImport.bind(this));
 
     }
 
     get selectedNodes() {
-        let selectedIdArray = [...this._selectedActivityNodeElementSet].map(element => {
+        let selectedIdArray = [...this._selectedNodeElementSet].map(element => {
             return element.nodeModel
         })
         return selectedIdArray;
     }
 
     get viewedNodes() {             // Returns the nodeModels inside the active elements
-        let viewedIdArray = [...this._activeActivityNodeElementSet].map(element => {
+        let viewedIdArray = [...this._activeNodeElementSet].map(element => {
             return element.nodeModel
         })
         return viewedIdArray;
@@ -116,9 +116,9 @@ class AtPlayground extends Popupable {
 
     _handleEdgeSelected(e) {
         if (e.detail.selected) {
-            this._selectedActivityNodeElementSet.add(e.target);
+            this._selectedNodeElementSet.add(e.target);
         } else {
-            this._selectedActivityNodeElementSet.delete(e.target);
+            this._selectedNodeElementSet.delete(e.target);
         }
     }
 
@@ -246,7 +246,7 @@ class AtPlayground extends Popupable {
         return cardinal;
     }
 
-    _checkBounds(nodes = this._activeActivityNodeElementSet) {
+    _checkBounds(nodes = this._activeNodeElementSet) {
         const bounds = this.getBoundingClientRect();
         let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
         let showLeft, showRight, showUp, showDown;
@@ -262,7 +262,7 @@ class AtPlayground extends Popupable {
             }
         }
 
-        if (nodes == this._activeActivityNodeElementSet) {
+        if (nodes == this._activeNodeElementSet) {
             return this._showCardinals({
                 left: showLeft || false,
                 right: showRight || false,
@@ -305,7 +305,7 @@ class AtPlayground extends Popupable {
     }
 
     _dragView(dx, dy) {
-        for (let node of this._activeActivityNodeElementSet) {
+        for (let node of this._activeNodeElementSet) {
             node.translate(dx, dy, false);
 
             node.nodeModel.x = Math.round(node.nodeModel.x + dx);
@@ -338,30 +338,29 @@ class AtPlayground extends Popupable {
      *
      * playgroundClicked
      * cancelDefault
-     * onImport
      */
 
     handlePlaygroundSelectedNodes(e) {           // on mousedown  applied during jag-node create
         let $node = e.target.offsetParent
         if (!e.shiftKey) {
-            this._selectedActivityNodeElementSet.forEach(local_node => {
+            this._selectedNodeElementSet.forEach(local_node => {
                 if (local_node != $node)
                     local_node.setSelected(false);
             });
-            this._selectedActivityNodeElementSet.clear();
+            this._selectedNodeElementSet.clear();
         }
 
-        this._selectedActivityNodeElementSet.add($node);
+        this._selectedNodeElementSet.add($node);
 
         if (e.ctrlKey) {
             const all_selected = $node.setSelected(true, new Set());   // @TODO looks like it wants two booleans.  not a set.
             for (const sub_node of all_selected)
-                this._selectedActivityNodeElementSet.add(sub_node);
+                this._selectedNodeElementSet.add(sub_node);
         } else {
             $node.setSelected(true);
         }
 
-        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        let selectedActivityNodeElementArray = [...this._selectedNodeElementSet];
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
@@ -376,14 +375,21 @@ class AtPlayground extends Popupable {
 
     playgroundClicked(e) {
         // The background clicker
-        if (!e.shiftKey) this.deselectAll();
+        let unselectedNodeArray = [];
+        if (!e.shiftKey) {
+            let unselectedActivityNodeElementArray = [...this._selectedNodeElementSet];
+            unselectedNodeArray = unselectedActivityNodeElementArray.map(jagNodeElement => {          // unselected nodes saved (will check if they moved)
+                return jagNodeElement.nodeModel
+            })
+            this.deselectAll();
+        }
 
-        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        let selectedActivityNodeElementArray = [...this._selectedNodeElementSet];
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
         console.log("Clicked the background")
-        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
+        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray, unselectedNodeArray: unselectedNodeArray}}));
 
 
         this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
@@ -395,19 +401,19 @@ class AtPlayground extends Popupable {
         this.addEventListener('mousemove', this._boundDragView);
         this.addEventListener('mouseup', this._boundStopDragView);
     }
+    //
+    // cancelDefault(e) {
+    //     e.preventDefault();
+    // }
 
-    cancelDefault(e) {
-        e.preventDefault();
-    }
-
-    onImport(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        const reader = new FileReader();
-        reader.addEventListener('load', function (content) {
-        });
-        reader.readAsText(files[0]);
-    }
+    // onImport(e) {
+    //     e.preventDefault();
+    //     const files = e.dataTransfer.files;
+    //     const reader = new FileReader();
+    //     reader.addEventListener('load', function (content) {
+    //     });
+    //     reader.readAsText(files[0]);
+    // }
 
     ////////////////////////////////////////////////////////////////////////
     /////////////  Called from ControllerAT  ///////////////////////////////
@@ -497,11 +503,11 @@ class AtPlayground extends Popupable {
 
 
     clearPlayground(projectId = undefined) {
-        for (let jagNode of this._activeActivityNodeElementSet) {
+        for (let jagNode of this._activeNodeElementSet) {
             if ((projectId == undefined) || (jagNode.nodeModel.projectId == projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
-                this._activeActivityNodeElementSet.delete(jagNode);
+                this._activeNodeElementSet.delete(jagNode);
                 this._nodeContainerDiv.removeChild(jagNode);
             }
         }
@@ -511,7 +517,7 @@ class AtPlayground extends Popupable {
     // handleRefresh({activity, activity_set, alreadyRefreshedNodes = new Set()}) {
     //     const margin = 50;
     //
-    //     for (let node of this._activeActivityNodeElementSet) {
+    //     for (let node of this._activeNodeElementSet) {
     //         if (!alreadyRefreshedNodes.has(node) && node.activity === activity) {
     //             const root = node.getRoot();
     //
@@ -550,7 +556,7 @@ class AtPlayground extends Popupable {
 
 
     replaceActivityNode(newActivity, deadUrn) {
-        this._activeActivityNodeElementSet.forEach((node) => {
+        this._activeNodeElementSet.forEach((node) => {
             if (node.nodeModel.activity.urn == deadUrn) {
                 node.nodeModel.activity = newActivity;
             }
@@ -586,7 +592,7 @@ class AtPlayground extends Popupable {
         $node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
         $node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
 
-        this._activeActivityNodeElementSet.add($node);
+        this._activeNodeElementSet.add($node);
         this._nodeContainerDiv.appendChild($node);
         return $node;
     }
@@ -597,12 +603,12 @@ class AtPlayground extends Popupable {
         // with an ancestor matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId)
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+        for (let node of this._activeNodeElementSet) {           // search through active elements
             //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
             if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
                 node.removeAllEdges();
                 node.detachHandlers();
-                this._activeActivityNodeElementSet.delete(node);
+                this._activeNodeElementSet.delete(node);
                 this._nodeContainerDiv.removeChild(node);
             }
         }
@@ -610,7 +616,7 @@ class AtPlayground extends Popupable {
 
 
     getNodeViewById(id) {
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+        for (let node of this._activeNodeElementSet) {           // search through active elements
             if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
                 return node
             }
@@ -644,17 +650,17 @@ class AtPlayground extends Popupable {
 
 
     deselectAll() {
-        this._selectedActivityNodeElementSet.forEach(n => n.setSelected(false));
-        this._selectedActivityNodeElementSet.clear();
+        this._selectedNodeElementSet.forEach(n => n.setSelected(false));
+        this._selectedNodeElementSet.clear();
     }
 
     onKeyDown(event) {
         event.stopImmediatePropagation();
         let $node = event.target
         if (event.key == 'Delete') {
-            if (this._selectedActivityNodeElementSet.length > 1) {
+            if (this._selectedNodeElementSet.length > 1) {
                 alert("Can only clear/disconnect one selected item")
-            } else if (this._selectedActivityNodeElementSet.length < 1) {
+            } else if (this._selectedNodeElementSet.length < 1) {
                 alert("Must select at least one item to clear/disconnect")
             } else {
                 // if the selected node is a root - then clear the project from the tree

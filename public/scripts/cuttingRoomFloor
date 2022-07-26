@@ -68,7 +68,7 @@ There are pieces worth reviewing but deletion is imminent unless we go back to t
                 for (const node of tree) {
                     node.removeAllEdges();
                     node.detachHandlers();
-                    this._activeActivityNodeElementSet.delete(node);
+                    this._activeNodeElementSet.delete(node);
                     this._nodeContainerDiv.removeChild(node);
                 }
             }
@@ -154,17 +154,17 @@ Random - also from playground.. look through and wipe.
  *
  *
  *    // getSelectedAsJSON() {
- *     // 	if(this._selectedActivityNodeElementSet.size == 0)
+ *     // 	if(this._selectedNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.toJSON();
+ *     // 	return this._selectedNodeElementSet.values().next().value.activity.toJSON();
  *     // }
  *
  *     // getSelectedURN() {
- *     // 	if(this._selectedActivityNodeElementSet.size == 0)
+ *     // 	if(this._selectedNodeElementSet.size == 0)
  *     // 		return undefined;
  *     //
- *     // 	return this._selectedActivityNodeElementSet.values().next().value.activity.urn;
+ *     // 	return this._selectedNodeElementSet.values().next().value.activity.urn;
  *     // }
  *
  *

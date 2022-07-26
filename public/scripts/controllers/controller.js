@@ -60,10 +60,17 @@ export default class Controller extends EventTarget {
 
     cacheProject(project) {
         this._projectMap.set(project.id, project)
+        project.children.forEach(child => {
+            this.cacheProject(child)
+        })
     }
 
     fetchProject(projectId) {
-        return this._projectMap.get(projectId)
+        let cachedProject = this._projectMap.get(projectId)
+        if (!cachedProject) {
+            console.log(`Could not find the node ${projectId}. Expect some issues.  We should be going to DB at this point`)
+        }
+        return cachedProject
     }
 
 
