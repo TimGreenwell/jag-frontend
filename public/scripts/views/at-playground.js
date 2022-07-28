@@ -158,9 +158,6 @@ class AtPlayground extends Popupable {
         if (!this._is_edge_being_created)
             return;
 
-        console.log("MAIN ATTENTION HERE:")
-        console.log(JSON.stringify(node))
-
         if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
             this._is_edge_being_created = false;
             this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
@@ -393,7 +390,6 @@ class AtPlayground extends Popupable {
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
-        console.log("Clicked the background")
         this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray, unselectedNodeArray: unselectedNodeArray}}));
 
 
@@ -634,9 +630,39 @@ class AtPlayground extends Popupable {
         return $rootNode
     }
 
+
+
+ _filterOrphans(){
+
+     for (let [key,val] of this._viewedProjectsMap) {
+         if (!val.isRoot()) {
+             this._viewedProjectsMap.delete(key)
+         }
+     }
+
+
+     for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
+         if (this._viewedProjectsMap[index].nodeModel.id == updatedNodeModel.id) {
+             if (updatedNodeModel.id == updatedNodeModel.projectId) {
+                 let listItemElement = this.createListItemCollection(updatedNodeModel)
+                 console.log(`Potential list item going to be : `);
+                 console.log(listItemElement)
+                 this._libraryList[index] = listItemElement;
+             } else {
+                 this._libraryList.splice(index, 1);
+             }
+         }
+     }
+}
+
     _rebuildNodeView(projectNodeModel) {
         this.deleteNodeModel(projectNodeModel.id)
-        this.addNodeModel(projectNodeModel)
+
+        if (projectNodeModel.isRoot()) {
+            this.addNodeModel(projectNodeModel)
+        } else {
+            this._viewedProjectsMap.delete(projectNodeModel.id)
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -677,14 +703,6 @@ class AtPlayground extends Popupable {
                                 this.clearPlayground($node.nodeModel.projectId);
                 } else {
 
-                    //
-                    // this.popup({
-                    //     content: AtPlayground.NOTICE_REMOVE_CHILD,
-                    //     trackEl: this,
-                    //     inputs: {},//event: e},
-                    //     highlights: []
-                    // });
-
                     if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId = $node.nodeModel.childId
@@ -723,7 +741,6 @@ class AtPlayground extends Popupable {
         } else if (event.key == 'PageDown') {
             this._zoomView(this._zoomFactor * AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
         }
-        else {console.log("Not handling key " + event.key)}
     }
 
     _getNodePreferredHeight(jagNode, jagNodeMap) {

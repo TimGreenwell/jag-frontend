@@ -36,7 +36,7 @@ customElements.define('node-library', class extends HTMLElement {
 	}
 
 
-	clearLibraryList() {
+	clearLibraryList() {  // clearing the views
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
@@ -47,7 +47,7 @@ customElements.define('node-library', class extends HTMLElement {
 	//////////  Supporting controllerAT //////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 
-	createListItem(newNodeModel) {
+	createListItemCollection(newNodeModel) {
 		if (newNodeModel instanceof NodeModel) {
 			const urn = newNodeModel.urn;
 			const name = newNodeModel.contextualName || '';
@@ -144,13 +144,14 @@ customElements.define('node-library', class extends HTMLElement {
 	}
 
 
-	addListItem(newNodeModel) {
+	addListItem(newNodeModel) {                                 ///// WHEN NODE CREATED
 		// handleNodeStorageCreated (@controllerAT)
 		if (newNodeModel.isRoot()) {
-		let listItemElement = this.createListItem(newNodeModel)
-		this._libraryList.push(listItemElement);
-		this._$list.appendChild(listItemElement.element);
-		}}
+			let listItemCollection = this.createListItemCollection(newNodeModel)
+			this._libraryList.push(listItemCollection);
+			this._$list.appendChild(listItemCollection.element);
+		}
+	}
 
 	addListItems(nodeModelArray) {
 		// initializePanels (@controllerAT)
@@ -159,41 +160,34 @@ customElements.define('node-library', class extends HTMLElement {
 		});
 	}
 
-	updateItem(updatedNodeModel) {
+
+	updateItem(updatedNodeModel) {                                 ///// WHEN NODE UPDATED
 		//@TODO high priority to rethink
 		// Way too much spinning for something this simple
-		let listItemElement = this.createListItem(updatedNodeModel)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
-
+		this._libraryList = this._libraryList.filter(entry => {
+			return entry.nodeModel.isRoot()
+		})
 		// iterate backwards when splicing from inside
 		// but only splicing out max 1 thing - so irrelevant.
-		for (let index = this._libraryList.length - 1; index >= 0; --index) {
-			if (this._libraryList[index].nodeModel.id == updatedNodeModel.id) {
-				if (updatedNodeModel.id == updatedNodeModel.projectId) {
-					this._libraryList[index] = listItemElement;
-				}
-				else {
-					this._libraryList.splice(index, 1);
-				}
-			}
-		}
 
+		this._libraryList.forEach(libraryItem => {
+			if (libraryItem.nodeModel.id == updatedNodeModel.id) {
+				let listItemCollection = this.createListItemCollection(updatedNodeModel)
+				libraryItem.element = listItemCollection.element;
+				libraryItem.search_content = listItemCollection.search_content;
+				libraryItem.nodeModel = listItemCollection.nodeModel;
+			}
+		})
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}
 	}
 
-    // @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
-	replaceItem(newNodeModel, replacedUrn) {
-		// handleJagStorageReplaced (@controllerAT)
-		this.removeNodeLibraryListItem(replacedUrn);
-		this.appendChild(newNodeModel);
-	}
-
-	removeNodeLibraryListItem(id) {
+	removeNodeLibraryListItem(id) {                                             //// WHEN NODE DELETED
 		// handleNodeStorageDeleted (@controllerAT)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
@@ -207,18 +201,45 @@ customElements.define('node-library', class extends HTMLElement {
 	}
 
 
+
+
+
 	updateStructureChange(projectNodes) {
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 
-		projectNodes.forEach(project => this.createListItem(project))
+		projectNodes.forEach(project => this.createListItemCollection(project))
 
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}
 
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
+
+	replaceItem(newNodeModel, replacedUrn) {
+		// handleJagStorageReplaced (@controllerAT)
+		this.removeNodeLibraryListItem(replacedUrn);
+		this.appendChild(newNodeModel);
+	}
+
+
 
 	_filterFromSearchInput(e) {
 		const search_text = e.srcElement.value.toLowerCase();

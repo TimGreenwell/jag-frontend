@@ -111,7 +111,7 @@ export default class Node extends EventTarget {
 	}
 	set parent(parent) {
 		this._parent = parent;
-		this._parentId = parent.id
+		this._parentId = parent ? parent : null;
 	}
 
 
@@ -364,15 +364,8 @@ export default class Node extends EventTarget {
 				let workingNode = workStack.pop();
 				workingNode.children.forEach(child => {
 					if (child.id == newChild.id) {
-						console.log("REPLACING")
-						console.log(JSON.stringify(workingNode))
-
 						workingNode.removeChild(child)
-						console.log("REMOVVED")
-						console.log(JSON.stringify(workingNode))
 						workingNode.addChild(newChild)
-						console.log("Added")
-						console.log(JSON.stringify(workingNode))
 						return this;
 					}
 					else {

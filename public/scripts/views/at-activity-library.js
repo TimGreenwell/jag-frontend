@@ -48,7 +48,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	//////////////////////////////////////////////////////////////////////////////////
 
 	updateItem(updatedActivity) {
-		let listItemElement = this.createListItem(updatedActivity)
+		let listItemElement = this.createListItemCollection(updatedActivity)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
@@ -63,7 +63,7 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 
-	createListItem(newActivity) {
+	createListItemCollection(newActivity) {
 		// handleJagStorageCreated (@controllerAT)
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;
@@ -164,7 +164,7 @@ customElements.define('jag-library', class extends HTMLElement {
 
 	addListItem(newActivity) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItem(newActivity)
+		let listItemElement = this.createListItemCollection(newActivity)
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}

@@ -198,52 +198,44 @@ export default class ControllerAT extends Controller {
     }
 
     async eventNodesConnectedHandler(event) {            // only needed id's
-        console.log("Local>> (local nodes joined - eventNodesConnectedHandler) ")
-
         let projectNodeId = event.detail.projectNodeId
         let parentNodeId = event.detail.parentNodeId
         let childNodeId = event.detail.childNodeId
+
         let projectModel = this.fetchProject(projectNodeId)
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
         parentNodeModel.isExpanded = true;
         let childNodeModel = this.fetchProject(childNodeId)
-
+        console.log(`Local>> (Adopting - Project ${projectModel.name} assimilating node ${childNodeModel.name}) `)
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert("That node join results in an infinite loop problem - please consider an alternative design")
             this._playground._rebuildNodeView(projectModel)
         } else {
-            let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
-            event.detail.activity = parentNodeModel.activity;
 
 //conn
-            // Note: Normally, adding a child to an activity invokes a new child creation.  However,
-            // in this case, there is already a child to 'adopt'.
-            // options: clone child, attach it to parent and delete the original (keeps others in sync)
-            // option2: attach child, then delete project number and hope that doesnt affect the kid
             let losingProjectId = childNodeModel.projectId;
-
+            let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
             parentNodeModel.addChild(childNodeModel);
-            childNodeModel.parent = parentNodeModel;
-            this.repopulateProject(parentNodeModel, projectNodeId)
-            childNodeModel.childId = childId;
+            childNodeModel.parent=null;
+            childNodeModel.parentId = null;  ///         This changed because of the extra revesre step in AddChild. Change that then fix this.
 
-            event.detail.nodeModel = childNodeModel;
+            this.repopulateProject(parentNodeModel, projectNodeId)
+            childNodeModel.childId = childId;  // this could also be done later.. ok here
+
+            event.detail.nodeModel = childNodeModel;      // update the child - this will set up this node as a non-root.
             await this.eventNodeUpdatedHandler(event)
 
             event.detail.activity = parentNodeModel.activity;
             await this.eventActivityUpdatedHandler(event)
-            //  event.detail.nodeModelId = losingProjectId
-            // await this.eventProjectDeletedHandler(event)
+
         }
     }
 
 
 
     async eventPlaygroundClickedHandler(event) {
-        console.log(event.detail)
         if (event.detail.unselectedNodeArray) {
             for (let node of event.detail.unselectedNodeArray) {
-                console.log(node.urn)
                 await StorageService.update(node, "node")
             }
         }
@@ -270,16 +262,14 @@ export default class ControllerAT extends Controller {
     }
 
     async eventNodeUpdatedHandler(event) {
+
         // If the updated node (in event) is the project root, then StorageService the node.
         // Otherwise, insert the node in the right place in the project and StorageService the project root.
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        if (updatedNodeModel.id == updatedNodeModel.projectId) {
-            console.log(`NNNNOOOOOOOOOOOOOTTTTTTTTTTTTTTTTTTTTTTTTT    haHa    not Surgically adding the node: `)
+        if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = updatedNodeModel
         } else {
-            console.log(`Surgically adding the node: `)
-            console.log(JSON.stringify(updatedNodeModel))
             projectNode = this.fetchProject(updatedNodeModel.projectId)
             projectNode.replaceChild(updatedNodeModel)
         }
@@ -312,10 +302,7 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         let newProject = event.detail.node;
-
         let newNode = new NodeModel(newProject)
-
-
         this.relocateProject(newNode, 0, 200)
         this.repopulateProject(newNode, newProject.id)
         this.repopulateParent(newNode)
@@ -533,7 +520,7 @@ export default class ControllerAT extends Controller {
 
         this._playground._rebuildNodeView(updatedNodeModel)
         this._projectLibrary.updateItem(updatedNodeModel)
-        this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
+     //   this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
         // update playground
     }
     //nu

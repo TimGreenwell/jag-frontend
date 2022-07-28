@@ -576,8 +576,6 @@ export default class Activity extends EventTarget {
                 }
             });
         });
-        console.log("Here is what we are sending,,,")
-        console.log(json)
         return json
     }
 

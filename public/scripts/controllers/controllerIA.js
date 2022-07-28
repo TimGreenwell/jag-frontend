@@ -297,8 +297,6 @@ export default class ControllerIA extends Controller{
 
     async eventAnalysisCreatedHandler(event) {
         let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
-        console.log("--> standard Analysis")
-        console.log(standardAnalysis)
         this._iaProperties.team = standardAnalysis.team;
         //zzzz
     }

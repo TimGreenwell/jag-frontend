@@ -52,8 +52,6 @@ export default class RESTStorage {
 	async create(schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.create.replace("{urlHandle}", urlHandle);
-		console.log("C PATH = ")
-		console.log(path)
 		const reply =  await RESTUtils.create(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;
 	}
@@ -61,11 +59,6 @@ export default class RESTStorage {
 	async update(schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
 		const path = __REST_PATHS.update.replace("{urlHandle}", urlHandle).replace("{id}",id);
-		console.log("U PATH = ")
-		console.log(this._endpoint + path)
-		console.log("U WITH = ")
-		console.log(jsonObj)
-		console.log(JSON.stringify(jsonObj))
 
 		const reply = await RESTUtils.update(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;

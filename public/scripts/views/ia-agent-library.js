@@ -50,7 +50,7 @@ customElements.define('agent-library', class extends HTMLElement {
 	//////////////////////////////////////////////////////////////////////////////////
 
 	updateItem(updatedAgent) {
-		let listItemElement = this.createListItem(updatedAgent)
+		let listItemElement = this.createListItemCollection(updatedAgent)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
@@ -65,7 +65,7 @@ customElements.define('agent-library', class extends HTMLElement {
 	}
 
 
-	createListItem(newAgent) {
+	createListItemCollection(newAgent) {
 		// handleAgentStorageCreated (@controllerAT)
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;
@@ -164,7 +164,7 @@ customElements.define('agent-library', class extends HTMLElement {
 
 	addListItem(newAgent) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItem(newAgent)
+		let listItemElement = this.createListItemCollection(newAgent)
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}

@@ -44,7 +44,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 	//////////////////////////////////////////////////////////////////////////////////
 
 
-	createListItem(model, idx = -1) {
+	createListItemCollection(model, idx = -1) {
 		const id = model.urn || '';
 		const root = model.rootUrn;
 		const name = model.name;
@@ -137,7 +137,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 	addListItem(analysisModel) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItem(analysisModel)
+		let listItemElement = this.createListItemCollection(analysisModel)
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}
