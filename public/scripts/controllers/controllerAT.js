@@ -13,6 +13,7 @@ import StorageService from "../services/storage-service.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
+import {UUIDv4} from "../utils/uuid.js";
 
 export default class ControllerAT extends Controller {
 
@@ -92,7 +93,7 @@ export default class ControllerAT extends Controller {
         this._playground.addEventListener('event-nodes-selected', this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
         this._playground.addEventListener('event-node-repositioned', this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
         this._playground.addEventListener('event-nodes-connected', this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
-        this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));       // user selects node
+        this._playground.addEventListener('event-playground-clicked', this.eventPlaygroundClickedHandler.bind(this));       // user deselects by clicking background
         this._playground.addEventListener('event-import-jag', this.eventImportJagHandler.bind(this));                       // popup to import JAG JSON
 
         this._properties.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
@@ -196,31 +197,61 @@ export default class ControllerAT extends Controller {
         parentNodeModel.isExpanded = true;
         let childNodeModel = this.fetchProject(childNodeId)
 
+        console.log("User just connected two JAGS.  eventNodesConnectedHandler")
+        console.log("___________incoming through event")
+        console.log(JSON.stringify(projectModel))
+        console.log(JSON.stringify(parentNodeModel))
+        console.log(JSON.stringify(childNodeModel))
+
+
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert("That node join results in an infinite loop problem - please consider an alternative design")
             this._playground._rebuildNodeView(projectModel)
         } else {
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
-            event.detail.activity = parentNodeModel.activity;
+            console.log(`childId = ${childId}`)
 
+//conn
             // Note: Normally, adding a child to an activity invokes a new child creation.  However,
             // in this case, there is already a child to 'adopt'.
             // options: clone child, attach it to parent and delete the original (keeps others in sync)
             // option2: attach child, then delete project number and hope that doesnt affect the kid
+
+            // const newChild = JSON.parse(JSON.stringify(childNodeModel));
+            // newChild.id = UUIDv4();
+
             let losingProjectId = childNodeModel.projectId;
 
-            parentNodeModel.addChild(childNodeModel);
-            this.repopulateProject(parentNodeModel, projectNodeId)
-            childNodeModel.parent = parentNodeModel;
-            childNodeModel.childId = childId;
+            // childNodeModel.id = UUIDv4();
 
+
+            parentNodeModel.addChild(childNodeModel);
+            childNodeModel.parent = parentNodeModel;
+            this.repopulateProject(parentNodeModel, projectNodeId)
+            childNodeModel.childId = childId;
+            console.log("Sanity Check - Looks like need parent Id and change projectid")
+
+            event.detail.nodeModel = childNodeModel;
+            await this.eventNodeUpdatedHandler(event)
+
+            event.detail.activity = parentNodeModel.activity;
             await this.eventActivityUpdatedHandler(event)
-            event.detail.nodeModelId = losingProjectId
-            await this.eventProjectDeletedHandler(event)
+            //  event.detail.nodeModelId = losingProjectId
+            // await this.eventProjectDeletedHandler(event)
         }
     }
 
-    eventPlaygroundClickedHandler() {
+
+
+    async eventPlaygroundClickedHandler(event) {
+        console.log(event.detail)
+        if (event.detail.unselectedNodeArray) {
+            for (let node of event.detail.unselectedNodeArray) {
+                console.log(node.urn)
+                await StorageService.update(node, "node")
+            }
+        }
+
         this._properties.handleSelectionUnselected()
     }
 
@@ -248,8 +279,11 @@ export default class ControllerAT extends Controller {
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
         if (updatedNodeModel.id == updatedNodeModel.projectId) {
+            console.log(`NNNNOOOOOOOOOOOOOTTTTTTTTTTTTTTTTTTTTTTTTT    haHa    not Surgically adding the node: `)
             projectNode = updatedNodeModel
         } else {
+            console.log(`Surgically adding the node: `)
+            console.log(JSON.stringify(updatedNodeModel))
             projectNode = this.fetchProject(updatedNodeModel.projectId)
             projectNode.replaceChild(updatedNodeModel)
         }
@@ -367,6 +401,12 @@ export default class ControllerAT extends Controller {
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
         let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
+
+        this.repopulateParent(newProjectRootNode)
+        this.repopulateActivity(newProjectRootNode);
+        this.repopulateProject(newProjectRootNode, newProjectRootNode.id)
+        newProjectRootNode.leafCount = newProjectRootNode.leafcounter()
+
         await StorageService.create(newProjectRootNode, "node");
        // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
         this._playground._rebuildNodeView(newProjectRootNode)
@@ -424,17 +464,17 @@ export default class ControllerAT extends Controller {
         this.cacheActivity(createdActivity)
     }
 
-    async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
-        this.cacheActivity(updatedActivity)
-        for (let viewedProject of this._playground.viewedProjects) {
-            if (viewedProject.isActivityInProject(updatedActivityUrn)) {
-                let updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
-                await StorageService.update(updatedProject, 'node');
-            }
-        }
-        this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
-        this._activityLibrary.updateItem(updatedActivity);
-    }
+    // async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
+    //     this.cacheActivity(updatedActivity)
+    //     for (let viewedProject of this._playground.viewedProjects) {
+    //         if (viewedProject.isActivityInProject(updatedActivityUrn)) {
+    //             let updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
+    //             await StorageService.update(updatedProject, 'node');
+    //         }
+    //     }
+    //     this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
+    //     this._activityLibrary.updateItem(updatedActivity);
+    // }
 
     async commandActivityDeletedHandler(deletedActivityUrn) {
         // If the deleted Activity is the Project's root, then the Project is deleted.
@@ -461,6 +501,10 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn)                   // Replace Activity list item in activityLibrary
     }
 
+
+
+
+
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) { /// this coming in is no good
         console.log("((COMMAND INCOMING) >>  Node Created")
         this.repopulateParent(createdNodeModel)
@@ -472,6 +516,20 @@ export default class ControllerAT extends Controller {
      //   this._playground.addNodeModel(createdNodeModel)
     }
 
+    async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
+        this.cacheActivity(updatedActivity)
+        for (let viewedProject of this._playground.viewedProjects) {
+            if (viewedProject.isActivityInProject(updatedActivityUrn)) {
+                let updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
+                await StorageService.update(updatedProject, 'node');
+            }
+        }
+        this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
+        this._activityLibrary.updateItem(updatedActivity);
+    }
+//au
+
+
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log("((COMMAND INCOMING) >>  Node Updated " + updatedNodeModel.urn + " / " + updatedNodeId)
 
@@ -482,14 +540,16 @@ export default class ControllerAT extends Controller {
         this.cacheProject(updatedNodeModel)
 
         this._playground._rebuildNodeView(updatedNodeModel)
-        this._projectLibrary.updateItem(updatedNodeModel)
+
+        this._projectLibrary.updateItem(updatedNodeModel)   //
         this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
         // update playground
     }
+    //nu
 
     commandNodeDeletedHandler(deletedNodeId) {
         this.uncacheProject(deletedNodeId)
-        this._playground.deleteNodeModel(deletedNodeId)
+      //  this._playground.deleteNodeModel(deletedNodeId)
         this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
     }
 

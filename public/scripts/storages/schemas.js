@@ -112,7 +112,10 @@ export default class Schemas {
     }
 
 	static getRest(schema) {
-		return Schemas.get(schema).rest;
+		let restSchema =  Schemas.get(schema).rest;
+		console.log("REST VALUE USING..")
+		console.log(restSchema)
+		return restSchema;
 	}
 
 	static getKeyValue(schema,obj) {

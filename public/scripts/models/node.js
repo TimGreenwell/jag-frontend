@@ -107,6 +107,7 @@ export default class Node extends EventTarget {
 	}
 	set parent(parent) {
 		this._parent = parent;
+		this._parentId = parent.id
 	}
 
 
@@ -307,7 +308,6 @@ export default class Node extends EventTarget {
 
 	addChild(node){                              // moved to controller
 		if (this.canHaveChildren) {
-			const child = new Node();
 			this._children.push(node);
 			node.parent = this;
 			this.incrementDepth(1);
@@ -315,6 +315,12 @@ export default class Node extends EventTarget {
 			alert("Node must first be assigned a valid URN")
 		}
 	}
+
+	reId() {
+		this.id = UUIDv4();
+		return this;
+	}
+
 
 
 	leafcounter(){
@@ -354,8 +360,15 @@ export default class Node extends EventTarget {
 				let workingNode = workStack.pop();
 				workingNode.children.forEach(child => {
 					if (child.id == newChild.id) {
+						console.log("REPLACING")
+						console.log(JSON.stringify(workingNode))
+
 						workingNode.removeChild(child)
+						console.log("REMOVVED")
+						console.log(JSON.stringify(workingNode))
 						workingNode.addChild(newChild)
+						console.log("Added")
+						console.log(JSON.stringify(workingNode))
 						return this;
 					}
 					else {

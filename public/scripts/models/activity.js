@@ -68,16 +68,12 @@ export default class Activity extends EventTarget {
                 child.annotations = annotations;
             }
         }
-
-
-
     }
 
 
     get urn() {
         return this._urn;
     }
-
     set urn(urn) {
         if (!ValidationUtility.isValidUrn(this._urn)) {
             this._urn = urn;
@@ -87,7 +83,6 @@ export default class Activity extends EventTarget {
     set name(name) {
         this._name = name;
     }
-
     get name() {
         return this._name;
     }
@@ -95,7 +90,6 @@ export default class Activity extends EventTarget {
     set description(description) {
         this._description = description;
     }
-
     get description() {
         return this._description;
     }
@@ -103,7 +97,6 @@ export default class Activity extends EventTarget {
     get author() {
         return this._author;
     }
-
     set author(value) {
         this._author = value;
     }
@@ -111,7 +104,6 @@ export default class Activity extends EventTarget {
     get createdDate() {
         return this._createdDate;
     }
-
     set createdDate(value) {
         this._createdDate = value;
     }
@@ -119,7 +111,6 @@ export default class Activity extends EventTarget {
     get modifiedDate() {
         return this._modifiedDate;
     }
-
     set modifiedDate(value) {
         this._modifiedDate = value;
     }
@@ -127,7 +118,6 @@ export default class Activity extends EventTarget {
     get lockedBy() {
         return this._lockedBy;
     }
-
     set lockedBy(value) {
         this._lockedBy = value;
     }
@@ -135,7 +125,6 @@ export default class Activity extends EventTarget {
     set connector(value) {
         this._connector = value;
     }
-
     get connector() {
         return this._connector;
     }
@@ -143,11 +132,9 @@ export default class Activity extends EventTarget {
     set inputs(value) {
         this._inputs = value;
     }
-
     get inputs() {
         return [...this._inputs];
     }
-
     addInput(input) {
         this._inputs.push(input);
     }
@@ -155,11 +142,9 @@ export default class Activity extends EventTarget {
     set outputs(value) {
         this._outputs = value;
     }
-
     get outputs() {
         return [...this._outputs];
     }
-
     addOutput(output) {
         this._outputs.push(output);
     }
@@ -190,7 +175,6 @@ export default class Activity extends EventTarget {
     set bindings(value) {
         this._bindings = value;
     }
-
     get bindings() {
         return [...this._bindings];
     }
@@ -198,7 +182,6 @@ export default class Activity extends EventTarget {
     set execution(type) {
         this._execution = type;
     }
-
     get execution() {
         return this._execution;
     }
@@ -206,7 +189,6 @@ export default class Activity extends EventTarget {
     set operator(type) {
         this._operator = type;
     }
-
     get operator() {
         return this._operator;
     }
@@ -214,7 +196,6 @@ export default class Activity extends EventTarget {
     set returns(type) {
         this._returns = type;
     }
-
     get returns() {
         return this._returns;
     }
@@ -222,16 +203,13 @@ export default class Activity extends EventTarget {
     set isLocked(bool) {
         this._isLocked = bool;
     }
-
     get isLocked() {
         return this._isLocked;
     }
 
-
     get collapsed() {
         return this._collapsed;
     }
-
     set collapsed(value) {
         this._collapsed = value;
     }
@@ -537,7 +515,7 @@ export default class Activity extends EventTarget {
     }
 
 
-    toJSON() {
+    toJSON() {  //@todo -- make children in a map or something simpler
         const json = {
             urn: this._urn,
             name: this._name,
@@ -555,6 +533,8 @@ export default class Activity extends EventTarget {
             isLocked: this._isLocked,
             collapsed: this._collapsed
         };
+
+
         this._children.forEach((child) => {
             let descriptor = {
                 urn: child.urn,
@@ -573,9 +553,11 @@ export default class Activity extends EventTarget {
             if (child.iterable) {
                 descriptor.iterable = true;
             }
-
             json.children.push(descriptor);
+
         });
+
+
         this._inputs.forEach(input => {
             json.inputs.push(input);
         });
@@ -594,7 +576,8 @@ export default class Activity extends EventTarget {
                 }
             });
         });
-
+        console.log("Here is what we are sending,,,")
+        console.log(json)
         return json
     }
 
@@ -606,6 +589,9 @@ export default class Activity extends EventTarget {
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
+
+
+
                 let returnValue = Activity(element);
                 return returnValue;
             })
@@ -617,6 +603,8 @@ export default class Activity extends EventTarget {
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
+
+
             let returnValue = new Activity(json);
             return returnValue;
             // @TODO: explode the json definition to use the constructor below

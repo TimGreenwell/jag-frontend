@@ -146,10 +146,11 @@ customElements.define('node-library', class extends HTMLElement {
 
 	addListItem(newNodeModel) {
 		// handleNodeStorageCreated (@controllerAT)
+		if (newNodeModel.isRoot()) {
 		let listItemElement = this.createListItem(newNodeModel)
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
-		}
+		}}
 
 	addListItems(nodeModelArray) {
 		// initializePanels (@controllerAT)
@@ -159,15 +160,26 @@ customElements.define('node-library', class extends HTMLElement {
 	}
 
 	updateItem(updatedNodeModel) {
+		//@TODO high priority to rethink
+		// Way too much spinning for something this simple
 		let listItemElement = this.createListItem(updatedNodeModel)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
-		for (let idx in this._libraryList) {
-			if (this._libraryList[idx].nodeModel.id == updatedNodeModel.id) {
-				this._libraryList[idx] = listItemElement;
+
+		// iterate backwards when splicing from inside
+		// but only splicing out max 1 thing - so irrelevant.
+		for (let index = this._libraryList.length - 1; index >= 0; --index) {
+			if (this._libraryList[index].nodeModel.id == updatedNodeModel.id) {
+				if (updatedNodeModel.id == updatedNodeModel.projectId) {
+					this._libraryList[index] = listItemElement;
+				}
+				else {
+					this._libraryList.splice(index, 1);
+				}
 			}
 		}
+
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}

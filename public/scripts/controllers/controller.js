@@ -219,7 +219,10 @@ export default class Controller extends EventTarget {
                 })
                 let validNodeChildren = changedActivity.children;
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
+                console.log(`Kids to add: ${kidsToAdd.length}`)
                 let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
+                console.log(`Kids to remove: ${kidsToRemove.length}`)
+
                 kidsToAdd.forEach(child => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
@@ -376,10 +379,11 @@ export default class Controller extends EventTarget {
     }
 
     repopulateProject(currentNode, projectId) {
+
+        console.log(`setting ${currentNode.urn} from  ${currentNode.projectId} to ${projectId}`)
         currentNode.projectId = projectId
         for (let child of currentNode.children) {
-            child.projectId = projectId;
-            this.repopulateParent(child, projectId)
+            this.repopulateProject(child, projectId)
         }
     }
 

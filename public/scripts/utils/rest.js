@@ -11,7 +11,9 @@ export default class RESTUtils {
 
 	static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
 
-
+console.log("Pre Rest Request - looking for: ")
+		console.log(details)
+		console.log("At: " + url)
 		const response = await fetch(url, details).catch((error_message) => {
 			throw new Error(`${error_prefix}: ${error_message}`);
 		});

@@ -158,6 +158,9 @@ class AtPlayground extends Popupable {
         if (!this._is_edge_being_created)
             return;
 
+        console.log("MAIN ATTENTION HERE:")
+        console.log(JSON.stringify(node))
+
         if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
             this._is_edge_being_created = false;
             this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
@@ -376,14 +379,22 @@ class AtPlayground extends Popupable {
 
     playgroundClicked(e) {
         // The background clicker
-        if (!e.shiftKey) this.deselectAll();
+
+        let unselectedNodeArray = null;
+        if (!e.shiftKey) {
+            let unselectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+            unselectedNodeArray = unselectedActivityNodeElementArray.map(jagNodeElement => {
+                return jagNodeElement.nodeModel
+            })
+            this.deselectAll();
+        }
 
         let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
             return jagNodeElement.nodeModel
         })
         console.log("Clicked the background")
-        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray}}));
+        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray, unselectedNodeArray: unselectedNodeArray}}));
 
 
         this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
@@ -591,6 +602,16 @@ class AtPlayground extends Popupable {
         return $node;
     }
 
+
+
+    getNodeViewById(id) {
+        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
+                return node
+            }
+        }
+    }
+
     deleteNodeModel(deadId) {
         // The deadId is a node marked for deletion.  Death can either be
         // annihilation or absorption into another project.  AtPlayground nodes
@@ -608,15 +629,6 @@ class AtPlayground extends Popupable {
         }
     }
 
-
-    getNodeViewById(id) {
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
-                return node
-            }
-        }
-    }
-
     addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
         let $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
@@ -624,6 +636,10 @@ class AtPlayground extends Popupable {
     }
 
     _rebuildNodeView(projectNodeModel) {
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log(JSON.stringify(projectNodeModel))
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         this.deleteNodeModel(projectNodeModel.id)
         this.addNodeModel(projectNodeModel)
     }
