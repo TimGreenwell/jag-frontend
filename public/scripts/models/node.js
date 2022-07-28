@@ -52,6 +52,10 @@ export default class Node extends EventTarget {
 		this._activity = undefined;
 		this._leafCount = 1;
 		this._treeDepth = 0;
+		// Temp
+		this._hasNewStructure = false;
+		this._hasNewProperties = false;
+
 	}
 
 	get id() {

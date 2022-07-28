@@ -18,9 +18,9 @@ class AtPlayground extends Popupable {
         super();
         const margin = 50;
         this._edgeContainerDiv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this._edgeContainerDiv.id = "edges-container";
         this._edgeContainerDiv.setAttribute('version', '1.1');
         this._edgeContainerDiv.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this._edgeContainerDiv.id = "edges-container";
         this.appendChild(this._edgeContainerDiv);
 
         this._nodeContainerDiv = document.createElement('div');
@@ -60,7 +60,7 @@ class AtPlayground extends Popupable {
 
         // Turned this off temporarily.  Most keys have no function here.  They all work when
         // a node inside is selected
-        // document.addEventListener('keydown', this.onKeyDown.bind(this));
+         document.addEventListener('keydown', this.onKeyDown.bind(this));
 
         this.addEventListener('mousedown', this.playgroundClicked.bind(this));
 
@@ -69,9 +69,9 @@ class AtPlayground extends Popupable {
             this._edgeContainerDiv.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
         });
 
-        //	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
-        this.addEventListener('dragover', this.cancelDefault.bind(this));
-        this.addEventListener('drop', this.onImport.bind(this));
+        // 	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
+        // this.addEventListener('dragover', this.cancelDefault.bind(this));   // preventDefault
+        //  this.addEventListener('drop', this.onImport.bind(this));
 
     }
 
@@ -406,19 +406,19 @@ class AtPlayground extends Popupable {
         this.addEventListener('mousemove', this._boundDragView);
         this.addEventListener('mouseup', this._boundStopDragView);
     }
+    //
+    // cancelDefault(e) {
+    //     e.preventDefault();
+    // }
 
-    cancelDefault(e) {
-        e.preventDefault();
-    }
-
-    onImport(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        const reader = new FileReader();
-        reader.addEventListener('load', function (content) {
-        });
-        reader.readAsText(files[0]);
-    }
+    // onImport(e) {
+    //     e.preventDefault();
+    //     const files = e.dataTransfer.files;
+    //     const reader = new FileReader();
+    //     reader.addEventListener('load', function (content) {
+    //     });
+    //     reader.readAsText(files[0]);
+    // }
 
     ////////////////////////////////////////////////////////////////////////
     /////////////  Called from ControllerAT  ///////////////////////////////
@@ -602,16 +602,6 @@ class AtPlayground extends Popupable {
         return $node;
     }
 
-
-
-    getNodeViewById(id) {
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
-            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
-                return node
-            }
-        }
-    }
-
     deleteNodeModel(deadId) {
         // The deadId is a node marked for deletion.  Death can either be
         // annihilation or absorption into another project.  AtPlayground nodes
@@ -629,6 +619,15 @@ class AtPlayground extends Popupable {
         }
     }
 
+
+    getNodeViewById(id) {
+        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
+                return node
+            }
+        }
+    }
+
     addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
         let $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
@@ -636,10 +635,6 @@ class AtPlayground extends Popupable {
     }
 
     _rebuildNodeView(projectNodeModel) {
-        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        console.log(JSON.stringify(projectNodeModel))
-        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         this.deleteNodeModel(projectNodeModel.id)
         this.addNodeModel(projectNodeModel)
     }

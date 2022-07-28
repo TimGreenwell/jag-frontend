@@ -13,7 +13,6 @@ import StorageService from "../services/storage-service.js";
 import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
-import {UUIDv4} from "../utils/uuid.js";
 
 export default class ControllerAT extends Controller {
 
@@ -25,11 +24,11 @@ export default class ControllerAT extends Controller {
         this._playground = null;
         this._properties = null;
 
-        StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));   // }
-        StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // }
-        StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));   // } All from observable
-        StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));     // } Cross-tab communications
-        StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this)); // }
+        StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));   //    }
+        StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // (a)}
+        StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));   // (a)} All from observable
+        StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));     //    } Cross-tab communications
+        StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this)); //    }
         StorageService.subscribe("command-node-created", this.commandNodeCreatedHandler.bind(this)); // }
         StorageService.subscribe("command-node-updated", this.commandNodeUpdatedHandler.bind(this)); // }
         StorageService.subscribe("command-node-deleted", this.commandNodeDeletedHandler.bind(this)); // }
@@ -38,25 +37,20 @@ export default class ControllerAT extends Controller {
     set menu(value) {
         this._menu = value;
     }
-
     set activityLibrary(value) {
         this._activityLibrary = value;
     }
-
     set projectLibrary(value) {
         this._projectLibrary = value;
     }
-
     set playground(value) {
         this._playground = value;
     }
-
     set properties(value) {
         this._properties = value;
     }
 
     async initialize() {
-    //    UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
@@ -64,7 +58,9 @@ export default class ControllerAT extends Controller {
 
     async initializeCache() {
         let allActivities = await StorageService.all('activity')
-        allActivities.forEach(activity => this.cacheActivity(activity));
+        allActivities.forEach(activity => {
+            this.cacheActivity(activity)
+        });
 
         let allNodes = await StorageService.all('node')
         allNodes.forEach(node => {
@@ -108,7 +104,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener('event-redraw-nodes', this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener('event-popup-importer', this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
 
-        this._activityLibrary.addEventListener('event-activity-selected', this.eventActivitySelectedHandler.bind(this));        // Clicking Activity instantiates Node in playground
+        this._activityLibrary.addEventListener('event-activity-selected', this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener('event-activity-deleted', this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
         this._activityLibrary.addEventListener('event-activity-locked', this.eventActivityLockedHandler.bind(this));        // 'Lock' Activity (restrict deletes and renames)
 
@@ -132,21 +128,22 @@ export default class ControllerAT extends Controller {
      * (C) indicates common methods between controllers (share code)
      *
      *    -- playground --
-     * eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
-     * eventActivityUpdatedHandler       (C)  - structure change
+     * eventActivityCreatedHandler    (a) (C) - popup create Activity (original event in menu starts playground popup)
+     * eventActivityUpdatedHandler    (a) (C) - structure change
+     * eventNodeUpdatedHandler            (a) - Node isExpanded property changed
      * eventNodesSelectedHandler              - user selects Node in graph
      * eventNodeRepositionedHandler           - user repositioned Node
-     * eventNodesConnectedHandler             - user connects two Nodes with an edge
-     * eventPlaygroundClickedHandler          - user selects node
-     * eventImportJagHandler                  - popup import JAG JSON
-     * eventNodeUpdatedHandler                - Node isExpanded property changed
+     * eventNodesConnectedHandler        (a)  - user connects two Nodes with an edge
+     * eventPlaygroundClickedHandler     (a)  - user selects node
+     * eventImportJagHandler             (a)  - popup import JAG JSON
      *
      *    -- properties --
      * eventUrnChangedHandler            (C)  - URN field is changed
      * eventActivityUpdatedHandler       (C)  - user updates an Activity related field
      * eventNodeUpdatedHandler   (Playground) - user updates a Node related field
      * eventExportJagHandler                  - button to export JAG and Activities to file
-     * eventPromoteProjectHandler             - button to promote node to Jag (root)
+     * eventPromoteProjectHandler        (a)  - button to promote node to Jag (root)
+     * eventUrnChangedHandler         (a)(C)  - URN field is changed
      *
      *       -- menu --
      * eventAddActivityHandler                - menu item: call 'Create Activity' popup
@@ -156,14 +153,14 @@ export default class ControllerAT extends Controller {
      * eventPopupImporterHandler              - menu item: call 'Import Jag' popup
      *
      *  -- activity library --
-     * eventActivitySelectedHandler           - user selects Activity for playground (creates Graph)
-     * eventActivityDeletedHandler            - user permanently deletes Activity
-     * eventActivityLockedHandler             - user locks Activity against delete/updates
+     * eventActivitySelectedHandler       (a) - user selects Activity for playground (creates Graph)
+     * eventActivityDeletedHandler        (a) - user permanently deletes Activity
+     * eventActivityLockedHandler         (a) - user locks Activity against delete/updates
      *
      *   -- project library --
-     * eventProjectSelectedHandler           - user selects Graph for playground (recovers Graph)
-     * eventProjectDeletedHandler            - user permanently deletes Graph
-     * eventProjectLockedHandler             - user locks Graph against delete/updates
+     * eventProjectSelectedHandler        (a) - user selects Graph for playground (recovers Graph)
+     * eventProjectDeletedHandler         (a) - user permanently deletes Graph
+     * eventProjectLockedHandler          (a) - user locks Graph against delete/updates
      *
      */
 
@@ -172,6 +169,20 @@ export default class ControllerAT extends Controller {
     // eventActivityCreatedHandler --- hosted by common controller.
 
     // eventActivityUpdatedHandler --- hosted by common controller.
+
+    async eventNodeUpdatedHandler(event) {
+        // If the updated node (in event) is the project root, then StorageService the node.
+        // Otherwise, insert the node in the right place in the project and StorageService the project root.
+        let projectNode = null;
+        const updatedNodeModel = event.detail.nodeModel;
+        if (updatedNodeModel.id == updatedNodeModel.projectId) {
+            projectNode = updatedNodeModel
+        } else {
+            projectNode = this.fetchProject(updatedNodeModel.projectId)
+            projectNode.replaceChild(updatedNodeModel)
+        }
+        await StorageService.update(projectNode, 'node');
+    }
 
     eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
@@ -197,39 +208,24 @@ export default class ControllerAT extends Controller {
         parentNodeModel.isExpanded = true;
         let childNodeModel = this.fetchProject(childNodeId)
 
-        console.log("User just connected two JAGS.  eventNodesConnectedHandler")
-        console.log("___________incoming through event")
-        console.log(JSON.stringify(projectModel))
-        console.log(JSON.stringify(parentNodeModel))
-        console.log(JSON.stringify(childNodeModel))
-
-
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert("That node join results in an infinite loop problem - please consider an alternative design")
             this._playground._rebuildNodeView(projectModel)
         } else {
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
-            console.log(`childId = ${childId}`)
+            event.detail.activity = parentNodeModel.activity;
 
 //conn
             // Note: Normally, adding a child to an activity invokes a new child creation.  However,
             // in this case, there is already a child to 'adopt'.
             // options: clone child, attach it to parent and delete the original (keeps others in sync)
             // option2: attach child, then delete project number and hope that doesnt affect the kid
-
-            // const newChild = JSON.parse(JSON.stringify(childNodeModel));
-            // newChild.id = UUIDv4();
-
             let losingProjectId = childNodeModel.projectId;
-
-            // childNodeModel.id = UUIDv4();
-
 
             parentNodeModel.addChild(childNodeModel);
             childNodeModel.parent = parentNodeModel;
             this.repopulateProject(parentNodeModel, projectNodeId)
             childNodeModel.childId = childId;
-            console.log("Sanity Check - Looks like need parent Id and change projectid")
 
             event.detail.nodeModel = childNodeModel;
             await this.eventNodeUpdatedHandler(event)
@@ -501,10 +497,6 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn)                   // Replace Activity list item in activityLibrary
     }
 
-
-
-
-
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) { /// this coming in is no good
         console.log("((COMMAND INCOMING) >>  Node Created")
         this.repopulateParent(createdNodeModel)
@@ -540,8 +532,7 @@ export default class ControllerAT extends Controller {
         this.cacheProject(updatedNodeModel)
 
         this._playground._rebuildNodeView(updatedNodeModel)
-
-        this._projectLibrary.updateItem(updatedNodeModel)   //
+        this._projectLibrary.updateItem(updatedNodeModel)
         this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
         // update playground
     }
@@ -549,7 +540,7 @@ export default class ControllerAT extends Controller {
 
     commandNodeDeletedHandler(deletedNodeId) {
         this.uncacheProject(deletedNodeId)
-      //  this._playground.deleteNodeModel(deletedNodeId)
+        this._playground.deleteNodeModel(deletedNodeId)
         this._projectLibrary.removeNodeLibraryListItem(deletedNodeId)
     }
 
@@ -559,7 +550,7 @@ export default class ControllerAT extends Controller {
      * buildNodeTreeFromActivity   (c)   Build node tree given root activity
      * gatherDescendentUrns              Build set of all child urns
      * gatherAncestorUrns                Build set of direct ancestor urns
-     * loopDetection                     -> No URN exists as noth descendant and ancestor (feedback detection)
+     * loopDetection                     -> No URN exists as both descendant and ancestor (feedback detection)
      *
      */
 
