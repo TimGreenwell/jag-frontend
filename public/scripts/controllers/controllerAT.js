@@ -169,20 +169,28 @@ export default class ControllerAT extends Controller {
     // eventActivityCreatedHandler --- hosted by common controller.
 
     // eventActivityUpdatedHandler --- hosted by common controller.
-
+//lala
     async eventNodeUpdatedHandler(event) {
-        // If the updated node (in event) is the project root, then StorageService the node.
-        // Otherwise, insert the node in the right place in the project and StorageService the project root.
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        if (updatedNodeModel.id == updatedNodeModel.projectId) {
+        console.log("-->")
+        console.log(updatedNodeModel.parentId)
+     //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
+        if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = updatedNodeModel
         } else {
+
+
             projectNode = this.fetchProject(updatedNodeModel.projectId)
+            console.log("Starting JSON")
+            console.log(JSON.stringify(projectNode))
             projectNode.replaceChild(updatedNodeModel)
+            console.log("Ending JSON")
+            console.log(JSON.stringify(projectNode))
         }
         await StorageService.update(projectNode, 'node');
     }
+
 
     eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
@@ -261,20 +269,7 @@ export default class ControllerAT extends Controller {
         }
     }
 
-    async eventNodeUpdatedHandler(event) {
 
-        // If the updated node (in event) is the project root, then StorageService the node.
-        // Otherwise, insert the node in the right place in the project and StorageService the project root.
-        let projectNode = null;
-        const updatedNodeModel = event.detail.nodeModel;
-        if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
-            projectNode = updatedNodeModel
-        } else {
-            projectNode = this.fetchProject(updatedNodeModel.projectId)
-            projectNode.replaceChild(updatedNodeModel)
-        }
-        await StorageService.update(projectNode, 'node');
-    }
 
     /**   -- Properties --  */
 

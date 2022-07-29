@@ -86,12 +86,12 @@ customElements.define('jag-properties', class extends HTMLElement {
         this._$descInput.className = "direct-property";
         desc_el.appendChild(this._$descInput);
 
-        const name_ctx_el = FormUtils.createPropertyElement('name-ctx-property', 'Contextual Name');
+        const name_ctx_el = FormUtils.createPropertyElement('name-ctx', 'Contextual Name');
         this._$name_ctxInput = FormUtils.createTextInput('name-ctx-property');
         this._$name_ctxInput.className = "contextual";
         name_ctx_el.appendChild(this._$name_ctxInput);
 
-        const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx-property', 'Contextual Description');
+        const desc_ctx_el = FormUtils.createPropertyElement('desc-ctx', 'Contextual Description');
         this._$desc_ctxInput = FormUtils.createTextInput('desc-ctx-property');
         this._$desc_ctxInput.className = "contextual";
         desc_ctx_el.appendChild(this._$desc_ctxInput);
@@ -307,8 +307,13 @@ customElements.define('jag-properties', class extends HTMLElement {
     }
     _handleContextualDescriptionChange(e) {
         e.stopImmediatePropagation();
+        console.log("_handleContextualDescriptionChange +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        console.log(JSON.stringify(this._nodeModel))
         if (this._nodeModel) {
+
             this._nodeModel.contextualDescription = this._$desc_ctxInput.value;
+            console.log(this._$desc_ctxInput.value)
+            console.log(JSON.stringify(this._nodeModel))
             this.dispatchEvent(new CustomEvent('event-node-updated', {
                 bubbles: true,
                 composed: true,
