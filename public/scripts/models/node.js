@@ -111,7 +111,7 @@ export default class Node extends EventTarget {
 	}
 	set parent(parent) {
 		this._parent = parent;
-		this._parentId = parent ? parent : null;
+		this._parentId = parent ? parent.id : null;
 	}
 
 
@@ -449,8 +449,7 @@ export default class Node extends EventTarget {
 			x: this._x,
 			y: this._y,
 			contextualName: this._contextualName,
-			contextualDescription: this._contextualDescription,
-			subscriptions: [],
+			contextualDescription: this._contextualDescription,			subscriptions: [],
 			returnValue: this._returnValue,
 			returnState: this._returnState,
 			testReturnValue: this._testReturnValue,

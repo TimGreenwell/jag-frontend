@@ -169,11 +169,12 @@ export default class ControllerAT extends Controller {
     // eventActivityCreatedHandler --- hosted by common controller.
 
     // eventActivityUpdatedHandler --- hosted by common controller.
-//lala
+
     async eventNodeUpdatedHandler(event) {
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
         console.log("-->")
+        console.log(updatedNodeModel)
         console.log(updatedNodeModel.parentId)
      //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
         if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
@@ -213,6 +214,11 @@ export default class ControllerAT extends Controller {
         let projectModel = this.fetchProject(projectNodeId)
         let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId)
         parentNodeModel.isExpanded = true;
+
+        console.log("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{")
+        console.log(parentNodeId)
+        console.log(parentNodeModel)
+
         let childNodeModel = this.fetchProject(childNodeId)
         console.log(`Local>> (Adopting - Project ${projectModel.name} assimilating node ${childNodeModel.name}) `)
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
@@ -221,7 +227,7 @@ export default class ControllerAT extends Controller {
         } else {
 
 //conn
-            let losingProjectId = childNodeModel.projectId;
+
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn)
             parentNodeModel.addChild(childNodeModel);
             childNodeModel.parent=null;
@@ -231,6 +237,7 @@ export default class ControllerAT extends Controller {
             childNodeModel.childId = childId;  // this could also be done later.. ok here
 
             event.detail.nodeModel = childNodeModel;      // update the child - this will set up this node as a non-root.
+            console.log(childNodeModel + "--")
             await this.eventNodeUpdatedHandler(event)
 
             event.detail.activity = parentNodeModel.activity;

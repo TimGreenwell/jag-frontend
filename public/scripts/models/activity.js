@@ -23,7 +23,10 @@ export default class Activity extends EventTarget {
                     urn,
                     name,
                     description = '',
-                    connector = {execution: Activity.EXECUTION.NONE.name, returns: Activity.RETURNS.ALL.name, operator: Activity.OPERATOR.NONE.name},
+                    connector = {execution: Activity.EXECUTION.NONE.name,
+                                      returns: Activity.RETURNS.ALL.name,
+                                      operator: Activity.OPERATOR.NONE.name,
+                                      onfail: Activity.RETURNS.NONE.name},
                     inputs = [],
                     outputs = [],
                     children = [],
@@ -588,8 +591,6 @@ export default class Activity extends EventTarget {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
 
-
-
                 let returnValue = Activity(element);
                 return returnValue;
             })
@@ -631,6 +632,18 @@ export default class Activity extends EventTarget {
         }
         return returnsOptions;
     }
+
+    static getOnFailOptions(executionName) {
+        let onfailOptions = []
+        let onfails = Activity.ONFAIL;
+        for (let step in onfails) {
+            if (onfails[step].condition.includes(executionName)) {
+                onfailOptions.push({value: onfails[step].name, text: onfails[step].text})
+            }
+        }
+        return onfailOptions;
+    }
+
 
 
     static getOperatorOptions(returnName) {
@@ -684,6 +697,62 @@ Activity.EXECUTION = {
         description: 'Some sub-activities execute simultaneously'
     }
 }
+
+
+Activity.ONFAIL = {
+    NONE: {
+        name: 'node.onfail.none',
+        text: 'none',
+        description: 'No action on fail notice',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+    },
+    RETRY: {
+        name: 'node.onfail.retry',
+        text: 'repeat this action',
+        description: 'Continue to repeat this action',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+    },
+    RESTART: {
+        name: 'node.onfail.restart',
+        text: 'return to beginning',
+        description: 'Start over from first step',
+        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+    },
+    PREVIOUS: {
+        name: 'node.onfail.previous',
+        text: 'return to previous',
+        description: 'restart previous action',
+        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+    },
+    SKIP: {
+        name: 'node.onfail.skip',
+        text: 'skip next',
+        description: 'Skip the next action',
+        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+    },
+    RETURN: {
+        name: 'node.onfail.return',
+        text: 'skip remaining',
+        description: 'Skip the remaining actions',
+        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+    },
+    RECOVER: {
+        name: 'node.onfail.recover',
+        text: '"Recover"',
+        description: 'Run the "Recover" function',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+    },
+    ABORT: {
+        name: 'node.onfail.abort',
+        text: '"Abort"',
+        description: 'Run the "Abort" function',
+        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+    },
+
+}
+
+
+
 
 
 Activity.RETURNS = {

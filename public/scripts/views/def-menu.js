@@ -90,6 +90,22 @@ customElements.define('def-menu', class extends HTMLElement {
         return_el.appendChild(this._returnSelect);
         $centerLiDiv.appendChild(return_el);
 
+
+
+        let onFailOptions = Activity.getOnFailOptions(this._executionSelect.value)
+
+        const onfail_el = FormUtils.createPropertyElement('onfail-property', 'OnFail');
+        onfail_el.className = "menu-select"
+        this._onfailSelect = FormUtils.createSelect('execution-property', onFailOptions);
+        this._onfailSelect.label = "on Fail"
+        // this._returnSelect.className = 'menu-select';
+        this._onfailSelect.disabled = true;
+        onfail_el.appendChild(this._onfailSelect);
+        $centerLiDiv.appendChild(onfail_el);
+
+
+
+
         let operatorOptions = []
         let operator = Activity.OPERATOR;
          for (let step in operator) {
@@ -130,6 +146,7 @@ customElements.define('def-menu', class extends HTMLElement {
         this._executionSelect.addEventListener('change', this._executionSelectChange.bind(this));
         this._returnSelect.addEventListener('change', this._returnsSelectChange.bind(this));
         this._operatorSelect.addEventListener('change', this._operatorSelectChange.bind(this));
+        this._onfailSelect.addEventListener('change', this._onfailSelectChange.bind(this));
     }
 
 
@@ -140,6 +157,20 @@ customElements.define('def-menu', class extends HTMLElement {
             detail: {execution: event.value}
         }));
         if (this._executionSelect.value != 'node.execution.none') {
+            let onfailOptions = Activity.getOnFailOptions(this._executionSelect.value)
+            while (this._onfailSelect.options.length > 0) {
+                this._onfailSelect.remove(0);
+            }
+            onfailOptions.forEach(option => {
+                let opt = document.createElement("option");
+                opt.value = option.value;
+                opt.text = option.text;
+                this._onfailSelect.options.add(opt)
+            })
+            this._onfailSelect.disabled = false;
+
+
+
             let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value)
             while (this._returnSelect.options.length > 0) {
                 this._returnSelect.remove(0);
@@ -153,6 +184,15 @@ customElements.define('def-menu', class extends HTMLElement {
             this._returnSelect.disabled = false;
         }
     }
+
+    _onfailSelectChange(event) {
+        this.dispatchEvent(new CustomEvent('event-onfail-updated', {
+            bubbles: true,
+            composed: true,
+            detail: {returns: this._returnSelect.value, operator: this._operatorSelect.value}
+        }));
+    }
+
 
     _returnsSelectChange(event) {
         this.dispatchEvent(new CustomEvent('event-returns-updated', {
@@ -174,13 +214,14 @@ customElements.define('def-menu', class extends HTMLElement {
     }
 
     _operatorSelectChange(event) {
-        this._operatorSelect.value;
         this.dispatchEvent(new CustomEvent('event-operator-updated', {
             bubbles: true,
             composed: true,
             detail: {returns: this._returnSelect.value, operator: this._operatorSelect.value}
         }));
     }
+
+
 
 
 });
