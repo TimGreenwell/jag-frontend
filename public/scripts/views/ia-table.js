@@ -25,7 +25,7 @@ import UserPrefs from "../utils/user-prefs.js";
 
 class IATable extends Popupable {
 
-    constructor() {
+    constructor () {
         super();
         this.setPopupBounds(this);
         this._analysisModel = null;                    // the Analysis Model holding the data
@@ -39,17 +39,17 @@ class IATable extends Popupable {
         this._boundRefresh = this._refresh.bind(this);
     }
 
-    get analysisModel() {
+    get analysisModel () {
         return this._analysisModel;
     }
-    set analysisModel(newAnalysisModel) {
+    set analysisModel (newAnalysisModel) {
         this._analysisModel = newAnalysisModel;
     }
 
-    get availableActivityUrns() {
+    get availableActivityUrns () {
         return this._availableActivityUrns;
     }
-    set availableActivityUrns(jagUrnList) {
+    set availableActivityUrns (jagUrnList) {
         this._availableActivityUrns = jagUrnList;
     }
 
@@ -58,7 +58,7 @@ class IATable extends Popupable {
     // }
 
 
-    displayAnalysis(analysisModel = this._analysisModel) {
+    displayAnalysis (analysisModel = this._analysisModel) {
         // Called by ControllerIA..
 
         // remove current view if it exists
@@ -72,54 +72,54 @@ class IATable extends Popupable {
         this.appendChild(analysisView);
         this._domElements.analysis = analysisView;
         // Enable name and description (@TODO - this might make more sense in a separate panel (like AT Properties)
-        this._domElements.name.removeAttribute('disabled');
+        this._domElements.name.removeAttribute(`disabled`);
         this._domElements.name.value = this._analysisModel.name;
-        this._domElements.description.removeAttribute('disabled');
+        this._domElements.description.removeAttribute(`disabled`);
         this._domElements.description.value = this._analysisModel.description;
 
-        this._analysisModel.team.addEventListener('update', this._boundRefresh);
+        this._analysisModel.team.addEventListener(`update`, this._boundRefresh);
         this._agents = this._analysisModel.team.agents;
         for (const agent of this._agents) {
-            agent.addEventListener('update', this._boundRefresh);
+            agent.addEventListener(`update`, this._boundRefresh);
         }
 
     }
 
 
-    _initUI() {
-        const $header = document.createElement('header');
+    _initUI () {
+        const $header = document.createElement(`header`);
         // const $new_analysis = document.createElement('button');
 
-        const $analysis_name_wrapper = document.createElement('div');
-        const $analysis_name_label = document.createElement('label');
-        const $analysis_name = document.createElement('input');
+        const $analysis_name_wrapper = document.createElement(`div`);
+        const $analysis_name_label = document.createElement(`label`);
+        const $analysis_name = document.createElement(`input`);
 
-        const $analysis_description_wrapper = document.createElement('div');
-        const $analysis_description_label = document.createElement('label');
-        const $analysis_description = document.createElement('input');
+        const $analysis_description_wrapper = document.createElement(`div`);
+        const $analysis_description_label = document.createElement(`label`);
+        const $analysis_description = document.createElement(`input`);
 
         // const $export_analysis = document.createElement('button');
         // const $import_analysis = document.createElement('button');
-        const $analysis_file = document.createElement('input');
+        const $analysis_file = document.createElement(`input`);
 
         // $new_analysis.innerText = 'Create AnalysisModel';
         // $new_analysis.setAttribute('id', 'new-analysis');
-        $analysis_name_label.setAttribute('for', 'analysis-name');
-        $analysis_name_label.innerText = 'Name';
-        $analysis_name.setAttribute('name', 'analysis-name');
-        $analysis_name.setAttribute('id', 'analysis-name');
-        $analysis_name.setAttribute('disabled', '');
-        $analysis_description_label.setAttribute('for', 'analysis-description');
-        $analysis_description_label.innerText = 'Description';
-        $analysis_description.setAttribute('name', 'analysis-description');
-        $analysis_description.setAttribute('id', 'analysis-description');
-        $analysis_description.setAttribute('disabled', '');
+        $analysis_name_label.setAttribute(`for`, `analysis-name`);
+        $analysis_name_label.innerText = `Name`;
+        $analysis_name.setAttribute(`name`, `analysis-name`);
+        $analysis_name.setAttribute(`id`, `analysis-name`);
+        $analysis_name.setAttribute(`disabled`, ``);
+        $analysis_description_label.setAttribute(`for`, `analysis-description`);
+        $analysis_description_label.innerText = `Description`;
+        $analysis_description.setAttribute(`name`, `analysis-description`);
+        $analysis_description.setAttribute(`id`, `analysis-description`);
+        $analysis_description.setAttribute(`disabled`, ``);
         // $export_analysis.innerText = 'Export';
         // $export_analysis.setAttribute('id', 'export-analysis');
         // $import_analysis.innerText = 'Import';
         // $import_analysis.setAttribute('id', 'import-analysis');
-        $analysis_file.setAttribute('id', 'analysis-file');
-        $analysis_file.setAttribute('type', 'file');
+        $analysis_file.setAttribute(`id`, `analysis-file`);
+        $analysis_file.setAttribute(`type`, `file`);
 
         // $header.appendChild($new_analysis);
         $header.appendChild($analysis_name_label);
@@ -137,11 +137,11 @@ class IATable extends Popupable {
         $header.appendChild($analysis_file);
 
         // $new_analysis.addEventListener('click', this._handleNewAnalysisPopup.bind(this));
-        $analysis_name.addEventListener('blur', this._handleAnalysisNameChange.bind(this));
-        $analysis_description.addEventListener('blur', this._handleAnalysisDescriptionChange.bind(this));
+        $analysis_name.addEventListener(`blur`, this._handleAnalysisNameChange.bind(this));
+        $analysis_description.addEventListener(`blur`, this._handleAnalysisDescriptionChange.bind(this));
         // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
         // $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
-        $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
+        $analysis_file.addEventListener(`change`, this._handleUploadAnalysis.bind(this));
 
         this.appendChild($header);
 
@@ -153,12 +153,12 @@ class IATable extends Popupable {
         this._domElements.file = $analysis_file;
     }
 
-    _refresh(e) {
+    _refresh () {
         this._domElements.analysis.layout();
     }
 
-    _handleNewAnalysisPopup() {
-        const $initiator = document.getElementById('assessment-new');
+    _handleNewAnalysisPopup () {
+        const $initiator = document.getElementById(`assessment-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_ANALYSIS,
             trackEl: this,                                        //this._domElements.create,
@@ -167,8 +167,8 @@ class IATable extends Popupable {
         });
     }
 
-    _handleNewAgentPopup() {
-        const $initiator = document.getElementById('agent-new');
+    _handleNewAgentPopup () {
+        const $initiator = document.getElementById(`agent-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_AGENT,
             trackEl: this,                                        //this._domElements.create,
@@ -179,7 +179,7 @@ class IATable extends Popupable {
 
 
 
-    _handleExportAnalysisPopup() {
+    _handleExportAnalysisPopup () {
         this.popup({
             content: IATable.NOTICE_EXPORT_STATIC,
             trackEl: this._domElements.export,
@@ -188,14 +188,14 @@ class IATable extends Popupable {
         });
     }
 
-    _handleAnalysisNameChange(event) {
+    _handleAnalysisNameChange (event) {
         this._analysisModel.name = event.target.value;
-        this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
-    _handleAnalysisDescriptionChange(event) {
+    _handleAnalysisDescriptionChange (event) {
         this._analysisModel.description = event.target.value;
-        this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
     }
 
     /**
@@ -205,7 +205,7 @@ class IATable extends Popupable {
      *
      */
 
-    async _handleUploadAnalysis(e) {
+    async _handleUploadAnalysis () {
         const files = this._domElements.file.files;
 
         if (files.length < 1)
@@ -267,7 +267,7 @@ class IATable extends Popupable {
     //     }
     // }
 
-    _handleImportAnalysis(e) {
+    _handleImportAnalysis () {
         this._domElements.file.click();
     }
 
@@ -284,7 +284,7 @@ class IATable extends Popupable {
     //     return $option;
     // }
 
-    async import(analysisModelImport) {
+    async import (analysisModelImport) {
         {
             // Sort nodes with the least number of children first.
             analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
@@ -305,12 +305,12 @@ class IATable extends Popupable {
 
             for (const team of analysisModelImport.teams) {
                 for (const agent of team.agents) {
-                    await StorageService.create(AgentModel.fromJSON(agent), 'agent');
+                    await StorageService.create(AgentModel.fromJSON(agent), `agent`);
                 }
 
                 team.agents = team.agents.map((agent) => agent.id);
                 const agentModel = await TeamModel.fromJSON(team);
-                await StorageService.create(agentModel, 'team');
+                await StorageService.create(agentModel, `team`);
             }
         }
 
@@ -321,16 +321,16 @@ class IATable extends Popupable {
             id: analysisModel.id,
             name: analysisModel.name,
             root: analysisModel.root,
-            description: analysisModel.description || '',
+            description: analysisModel.description || ``,
             teams: analysisModel.teams.map((team) => team.id)
         });
 
-        await StorageService.create(analysisModel, 'analysis');
+        await StorageService.create(analysisModel, `analysis`);
 
-        this.dispatchEvent(new CustomEvent('create-analysis', {detail: {analysis: analysisModel}}));
+        this.dispatchEvent(new CustomEvent(`create-analysis`, {detail: {analysis: analysisModel}}));
     }
 
-    async export(static_jags) {
+    async export (static_jags) {
         const analysisModel = this._analysisModel;
         const json = analysisModel.toJSON();
 
@@ -354,7 +354,7 @@ class IATable extends Popupable {
 
             json.nodes.push(child.toJSON());
 
-            if (child.urn != '' && jags.indexOf(child.urn) === -1) {
+            if (child.urn != `` && jags.indexOf(child.urn) === -1) {
                 jags.push(child.urn);
             }
         }
@@ -365,7 +365,7 @@ class IATable extends Popupable {
             //const service = StorageService.getStorageInstance('idb-service');
 
             for (let jag of jags) {
-                const activity = await StorageService.get(jag, 'activity');
+                const activity = await StorageService.get(jag, `activity`);
                 json.jags.push(activity.toJSON());
             }
         }
@@ -384,7 +384,7 @@ class IATable extends Popupable {
         }
         json.teams = teams;
 
-        const a = document.createElement('a');
+        const a = document.createElement(`a`);
         const data = `data:application/json,${encodeURI(JSON.stringify(json))}`;
         a.href = data;
         a.download = `${analysisModel.name}.json`;
@@ -393,23 +393,23 @@ class IATable extends Popupable {
 }
 
 IATable.POPUP_TYPES = {
-    WARNING: 'popup-warning',
-    NOTICE: 'popup-notice',
-    INFO: 'popup-info'
+    WARNING: `popup-warning`,
+    NOTICE: `popup-notice`,
+    INFO: `popup-info`
 };
 
 IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
-    name: "Create AnalysisModel",
-    description: "Provide a name and root node to create a new analysis.",
+    name: `Create AnalysisModel`,
+    description: `Provide a name and root node to create a new analysis.`,
     properties: [
-        {name: 'name', label: 'Name', type: 'text'},
+        {name: `name`, label: `Name`, type: `text`},
         {
-            name: 'root', label: 'Root JAG', type: 'select',
+            name: `root`, label: `Root JAG`, type: `select`,
             options: async function () {
                 const options = [];
 
-                const jags = await StorageService.all('activity');     // @todo check if StorageService is really necessary
+                const jags = await StorageService.all(`activity`);     // @todo check if StorageService is really necessary
 
                 for (const jag of jags) {
                     options.push({
@@ -424,29 +424,29 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
     ],
     actions: [
         {
-            text: "Create", color: "white", bgColor: "green",
+            text: `Create`, color: `white`, bgColor: `green`,
             action: async function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
                 // let id = await this._controller.createAnalysis(name,root);
-                this.dispatchEvent(new CustomEvent('event-analysis-created', {detail: {name: name, rootUrn: root}}));
+                this.dispatchEvent(new CustomEvent(`event-analysis-created`, {detail: {name: name, rootUrn: root}}));
             }
         },
-        {text: "Cancel", color: "black", bgColor: "white"}
+        {text: `Cancel`, color: `black`, bgColor: `white`}
     ]
 });
 
 IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
-    name: "Export Static",
-    description: "Export this IA table with a static copy of current JAGs?",
+    name: `Export Static`,
+    description: `Export this IA table with a static copy of current JAGs?`,
     actions: [
         {
-            text: "Yes", color: "black", bgColor: "red",
+            text: `Yes`, color: `black`, bgColor: `red`,
             action: function ({inputs: {table}}) {
                 table.export(true);
             }
         },
         {
-            text: "No", color: "white", bgColor: "black",
+            text: `No`, color: `white`, bgColor: `black`,
             action: function ({inputs: {table}}) {
                 table.export(false);
             }
@@ -456,16 +456,16 @@ IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
 
 IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
-    name: "Overwrite AnalysisModel",
-    description: "Data already exists for this analysis. Overwrite existing data?",
+    name: `Overwrite AnalysisModel`,
+    description: `Data already exists for this analysis. Overwrite existing data?`,
     actions: [
         {
-            text: "Overwrite", color: "black", bgColor: "red",
+            text: `Overwrite`, color: `black`, bgColor: `red`,
             action: function ({inputs: {table, analysis}}) {
                 table.import(analysisModel);
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"}
+        {text: `Cancel`, color: `white`, bgColor: `black`}
     ],
     fallback: 0,
     skip: ({inputs: {conflict}}) => !conflict
@@ -473,67 +473,67 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
 
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
-    name: "Overwrite JAGs",
+    name: `Overwrite JAGs`,
     description: ({inputs: {jag}}) => `The uploaded analysisModel contains a activity at (${jag.urn}), which you already have. Replace it?`,
     actions: [
         {
-            text: "Overwrite", color: "black", bgColor: "red",
+            text: `Overwrite`, color: `black`, bgColor: `red`,
             action: async function ({inputs: {jag}}) {
                 const newActivity = ActivityModel.fromJSON(jag);
-                this.dispatchEvent(new CustomEvent('event-analysis-updated', {bubbles: true, composed: true, detail: {activity: newActivity}}));
+                this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {activity: newActivity}}));
                 // seems like a create - but really an update --- an upstream check for 'isLocked' should be made.
              //   await StorageService.create(newActivity, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"}
+        {text: `Cancel`, color: `white`, bgColor: `black`}
     ]
 });
 
 // why cant this go inside scope.? Does anyone else need it?
 IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
-    name: "Add New Agent",
-    description: "Be precise.  You can always edit this later.",
+    name: `Add New Agent`,
+    description: `Be precise.  You can always edit this later.`,
     properties: [
         {
-            name: 'name', label: 'Name', type: 'text', options: function () {
+            name: `name`, label: `Name`, type: `text`, options: function () {
                 let eventMap = new Map();
-                eventMap.set('input', () => {
-                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('name').value;
-                    const convName = newName.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
-                    document.getElementById('urn').value = convName;
+                eventMap.set(`input`, () => {
+                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
+                    const convName = newName.replace(` `, `-`).replace(/[^0-9a-zA-Z:-]+/g, ``).toLowerCase();
+                    document.getElementById(`urn`).value = convName;
                 });
                 return eventMap;
             }
         },
         {
-            name: 'urn', label: 'URN', type: 'text', options: function () {
+            name: `urn`, label: `URN`, type: `text`, options: function () {
                 let eventMap = new Map();
                 return eventMap;
             }
         },
         {
-            name: 'description', label: 'Description', type: 'textarea',
+            name: `description`, label: `Description`, type: `textarea`,
             options: async function () {
                 let paramMap = new Map();
-                paramMap.set('cols', 24);
-                paramMap.set('rows', 4);
+                paramMap.set(`cols`, 24);
+                paramMap.set(`rows`, 4);
                 return paramMap;
             }
         },
     ],
     actions: [
         {
-            text: "Create", color: "black", bgColor: "red",
+            text: `Create`, color: `black`, bgColor: `red`,
             action: async function ({inputs: {}, outputs: agentConstruct}) {
-                this.dispatchEvent(new CustomEvent('event-agent-created', {
+                this.dispatchEvent(new CustomEvent(`event-agent-created`, {
                     bubbles: true,
                     composed: true,
                     detail: {agentConstruct: agentConstruct}
                 }));
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"}
+        {text: `Cancel`, color: `white`, bgColor: `black`}
 
 
     ]
@@ -546,9 +546,9 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
 
 
 //IATable.defaultUrn = "us:ihmc:";
-IATable.FALLBACK_ANALYSIS_NAME = 'AnalysisModel w/o name';
-IATable.ANALYSIS_SELECTOR_TITLE = 'Select an analysis';
+IATable.FALLBACK_ANALYSIS_NAME = `AnalysisModel w/o name`;
+IATable.ANALYSIS_SELECTOR_TITLE = `Select an analysis`;
 
-customElements.define('ia-table', IATable);
-export default customElements.get('ia-table');
+customElements.define(`ia-table`, IATable);
+export default customElements.get(`ia-table`);
 

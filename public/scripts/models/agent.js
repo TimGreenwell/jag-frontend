@@ -11,7 +11,7 @@ import {UUIDv4} from '../utils/uuid.js';
 
 export default class AgentModel extends EventTarget {
 
-	constructor({ id = UUIDv4(),
+	constructor ({ id = UUIDv4(),
 					name = AgentModel.DEFAULT_NAME,
 					urn,
 					description,
@@ -29,59 +29,59 @@ export default class AgentModel extends EventTarget {
 		this._assessments = assessments;     // a Map of urn to assessment
 	}
 
-	get id() {
+	get id () {
 		return this._id;
 	}
 
-	get name() {
+	get name () {
 		return this._name;
 	}
-	set name(name) {
+	set name (name) {
 		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { "id": this._id, "property": `name`, "extra": { "name": name }}}));
 	}
 
-	get urn() {
+	get urn () {
 		return this._urn;
 	}
-	set urn(value) {
+	set urn (value) {
 		this._urn = value;
 	}
 
-	get dateCreated() {
+	get dateCreated () {
 		return this._dateCreated;
 	}
-	set dateCreated(value) {
+	set dateCreated (value) {
 		this._dateCreated = value;
 	}
 
-	get description() {
+	get description () {
 		return this._description;
 	}
-	set description(value) {
+	set description (value) {
 		this._description = value;
 	}
 
-	get isLocked() {
+	get isLocked () {
 		return this._isLocked;
 	}
-	set isLocked(value) {
+	set isLocked (value) {
 		this._isLocked = value;
 	}
 
-	setAssessment(urn, assessment) {
+	setAssessment (urn, assessment) {
 		this._assessments.set(urn, assessment);
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "assessment", "extra": { "urn": urn, "assessment": assessment }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { "id": this._id, "property": `assessment`, "extra": { "urn": urn, "assessment": assessment }}}));
 	}
 
-	assessment(node) {
-		if (node.urn === '')
+	assessment (node) {
+		if (node.urn === ``)
 			return undefined;
 
 		return this._assessments.get(node.urn);
 	}
 
-	static fromJSON(json) {
+	static fromJSON (json) {
 		const assessments = new Map();
 		for (const urn in json.assessments) {
 			const value = json.assessments[urn];
@@ -104,7 +104,7 @@ export default class AgentModel extends EventTarget {
 		return new AgentModel(json);
 	}
 
-	toJSON() {
+	toJSON () {
 		let json = {
 			id: this._id,
 			name: this._name,
@@ -140,4 +140,4 @@ AgentModel.CAN_DO_PERFECTLY = Symbol();
 AgentModel.CAN_DO = Symbol();
 AgentModel.CAN_HELP = Symbol();
 AgentModel.CANNOT_DO = Symbol();
-AgentModel.DEFAULT_NAME = 'Agent';
+AgentModel.DEFAULT_NAME = `Agent`;

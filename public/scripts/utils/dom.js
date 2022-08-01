@@ -10,7 +10,7 @@
 export default class DOMUtils {
 
 
-	static create(description) {
+	static create (description) {
 		const element = document.createElement(description.type);
 		for(let attribute in description.attributes)
 			element.setAttribute(attribute, description.attributes[attribute]);
@@ -26,7 +26,7 @@ export default class DOMUtils {
 	}
 
 	// Select the text in $node
-	static selectNodeText($node) {
+	static selectNodeText ($node) {
 		const selection = window.getSelection();
 		const range = document.createRange();
 		selection.removeAllRanges();

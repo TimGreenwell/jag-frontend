@@ -16,12 +16,12 @@ export default class SharedObservable extends SharedService {
 
     static {
         this._subscribers = new Map();
-        this.sharedWorker = new SharedWorker('scripts/services/shared-worker.js');
+        this.sharedWorker = new SharedWorker(`scripts/services/shared-worker.js`);
         this.sharedWorker.port.onmessage = this.handleReceiveMessage.bind(this);
     }
 
 
-    static get subscribers() {
+    static get subscribers () {
         return this._subscribers;
     }
 
@@ -29,7 +29,7 @@ export default class SharedObservable extends SharedService {
      * Interested listeners register an activity-type (topic) and
      * a subscriber-bound callback (subscriber)
      */
-    static subscribe(topic, subscriber) {
+    static subscribe (topic, subscriber) {
         if (!this._subscribers.has(topic))
             this._subscribers.set(topic, new Set());
         this._subscribers.get(topic).add(subscriber);
@@ -39,7 +39,7 @@ export default class SharedObservable extends SharedService {
      * Listener to remove itself from further notifications
      * @TODO unused, untested
      */
-    static unsubscribe(topic, subscriber) {
+    static unsubscribe (topic, subscriber) {
         this._subscribers.get(topic).delete(subscriber);
     }
 
@@ -48,9 +48,9 @@ export default class SharedObservable extends SharedService {
      * Remote action received from SharedWorker. Any included object-descriptions will
      * be deserialized here before further propagation.
      */
-    static async handleReceiveMessage(message) {
-        console.log("{@} Message received from web worker -- posting to all subscribers");
-        console.log("{@} (" + message.data.id + ") / (" + message.data.topic + ")\n")
+    static async handleReceiveMessage (message) {
+        console.log(`{@} Message received from web worker -- posting to all subscribers`);
+        console.log(`{@} (` + message.data.id + `) / (` + message.data.topic + `)\n`);
         let schema = message.data.schema;
         let topic = message.data.topic;
         let description = message.data.description;
@@ -66,8 +66,8 @@ export default class SharedObservable extends SharedService {
     /**
      * Local action to be propagated across SharedWorker for remote listeners.
      */
-    static confirmStorageChange({topic, schema, id, description}) {
-        console.log(" {SHARING>} - - Database change confirmed, (" + id + "/" + topic + ") -- posting message across shared web worker")
+    static confirmStorageChange ({topic, schema, id, description}) {
+        console.log(` {SHARING>} - - Database change confirmed, (` + id + `/` + topic + `) -- posting message across shared web worker`);
         this.sharedWorker.port.postMessage({topic: topic, schema: schema, id: id, description: description});
     }
 
@@ -75,8 +75,8 @@ export default class SharedObservable extends SharedService {
      * Final distribution of processed remote/local event messages
      * Callback functions were provided at initial subscription.js.
      */
-    static notifySubscribers(topic, dataModel, id) {
-        console.log("\n {COMMANDED} (" + topic + ") : (" + id + ")")
+    static notifySubscribers (topic, dataModel, id) {
+        console.log(`\n {COMMANDED} (` + topic + `) : (` + id + `)`);
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {
@@ -89,7 +89,7 @@ export default class SharedObservable extends SharedService {
             });
         }
         else
-        {console.log("{No subscribers to : " + topic)}
+        {console.log(`{No subscribers to : ` + topic);}
     }
 }
 

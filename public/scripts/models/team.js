@@ -7,11 +7,11 @@
 
 'use strict';
 
-import { UUIDv4 }  from '../utils/uuid.js'
+import { UUIDv4 }  from '../utils/uuid.js';
 
 export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set() } = {}) {
+	constructor ({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set() } = {}) {
 		super();
 		this._id = id;
 		this._name = name;
@@ -22,49 +22,49 @@ export default class TeamModel extends EventTarget {
 		this._performers = [];
 	}
 
-	get id() {
+	get id () {
 		return this._id;
 	}
 
-	get name() {
+	get name () {
 		return this._name;
 	}
 
-	set name(name) {
+	set name (name) {
 		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "name", "extra": { "name": this._name }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { id: this._id, "property": `name`, "extra": { "name": this._name }}}));
 	}
 
-	get agentIds() {
+	get agentIds () {
 		return this._agentIds;
 	}
 
-	set agentIds(value) {
+	set agentIds (value) {
 		this._agentIds = value;
 	}
 
-	get agents() {
+	get agents () {
 		return this._agents;
 	}
 
 
-	set agents(value) {
+	set agents (value) {
 		this._agents = value;
 	}
 
-	addAgent(agent) {
+	addAgent (agent) {
 		this._agents.push(agent);
-		this._agentIds.push(agent.id)
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
+		this._agentIds.push(agent.id);
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { id: this._id, "property": `agents`, "extra": { "agents": this._agents }}}));
 	}
 
-	removeAgent(agent) {
+	removeAgent (agent) {
 		this._agents.splice(this._agents.indexOf(agent), 1);
 		this._agentIds.splice(this._agentIds.indexOf(agent.id), 1);
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { id: this._id, "property": `agents`, "extra": { "agents": this._agents }}}));
 	}
 
-	setPerformer(id, performer) {
+	setPerformer (id, performer) {
 		if (this._performerIds.has(id) && !performer) {
 			this._performerIds.delete(id);
 		} else if (!this._performerIds.has(id) && performer) {
@@ -73,10 +73,10 @@ export default class TeamModel extends EventTarget {
 			return;
 		}
 
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "performers", "extra": { "performers": this._performerIds }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { detail: { id: this._id, "property": `performers`, "extra": { "performers": this._performerIds }}}));
 	}
 
-	performer(id) {
+	performer (id) {
 		const ids = this._agents.map(agent => agent.id);
 
 		if (ids.indexOf(id) >= 0)
@@ -85,11 +85,11 @@ export default class TeamModel extends EventTarget {
 		return undefined;
 	}
 
-	save() {
+	save () {
 		//TeamService.store(this);
 	}
 
-	toJSON() {
+	toJSON () {
 		const json = {
 			id: this._id,
 			name: this._name,
@@ -99,7 +99,7 @@ export default class TeamModel extends EventTarget {
 		return json;
 	}
 
-	static async fromJSON(json) {
+	static async fromJSON (json) {
 		// const agents = [];
 		// for (const agent_id of json.agents) {
 		// 	let agent = await StorageService.get(agent_id,'agent');
@@ -120,5 +120,5 @@ export default class TeamModel extends EventTarget {
 
 }
 
-TeamModel.DEFAULT_NAME = 'Team name';
+TeamModel.DEFAULT_NAME = `Team name`;
 

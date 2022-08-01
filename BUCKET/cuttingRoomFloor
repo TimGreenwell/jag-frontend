@@ -1,0 +1,1277 @@
+************************************************************************************************************************
+************************************************************************************************************************
+From AtPlayground:
+This used to be used when 'nodes' were more 'activity-like' and construction was done with a root and an array of children.
+There are pieces worth reviewing but deletion is imminent unless we go back to the old way.
+ See (_buildNodeViewFromNodeModel) for its later version
+
+    //  the way with HEAD + child map   ===> want to go to the tree method.
+    // replaced -- but keep for now - new method missing some things still
+    traverseActivityNodeTree(currentParentActivityNode, descendantActivityNodeMap, isExpanded, margin, x, y, childURN = undefined, context = undefined) {
+        // if no child...  createActivityNode
+        // else proceed with the current child
+        const node = childURN || this.createActivityNode(currentParentActivityNode, isExpanded);
+
+        if (context) {
+            if (context.name) node.setContextualName(context.name);
+            if (context.description) node.setContextualDescription(context.description);
+        }
+
+        node.setTranslation(x + node.clientWidth / 2.0, y + node.clientHeight / 2.0);
+
+        if (!currentParentActivityNode.children)
+            return node;
+
+        const preferred_size = this._getNodePreferredHeight(currentParentActivityNode, descendantActivityNodeMap);          // hhhh
+
+        // assume all children have same height as the parent.
+        const node_height = node.clientHeight + margin;
+        const preferred_height = preferred_size * node_height;
+        const x_offset = x + node.clientWidth + margin;
+        let y_offset = y - preferred_height / 2;
+
+        const childrenMap = new Map();
+        for (const child_edge of node.getChildEdges()) {
+            childrenMap.set(child_edge.getChildId(), child_edge.getSubActivityNode());
+        }
+
+        currentParentActivityNode.children.forEach((child) => {
+            const currentChildActivityNode = descendantActivityNodeMap.get(child.urn);
+            const local_preferred_size = this._getNodePreferredHeight(currentChildActivityNode, descendantActivityNodeMap);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            const sub_node = this._traverseActivityNodeTree(currentChildActivityNode, descendantActivityNodeMap, true, margin, x_offset, y_offset, childrenMap.get(child.id), child);
+            y_offset += (local_preferred_size * node_height) / 2;
+
+            if (!childrenMap.has(child.id)) {
+                let edge = this._createEdge(node, child.id);
+                edge.setSubActivityNode(sub_node);
+                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+            }
+
+            if (child.name) sub_node.setContextualName(child.name);
+            if (child.description) sub_node.setContextualDescription(child.description);
+        });
+
+        for (const [id, child] of childrenMap.entries()) {
+            let actual = false;
+
+            for (const actual_child of currentParentActivityNode.children) {
+                if (actual_child.id == id) {
+                    actual = true;
+                    break;
+                }
+            }
+
+            if (!actual) {
+                const tree = child.getTree();
+                for (const node of tree) {
+                    node.removeAllEdges();
+                    node.detachHandlers();
+                    this._activeNodeElementSet.delete(node);
+                    this._nodeContainerDiv.removeChild(node);
+                }
+            }
+        }
+        return node;
+    }
+
+    part 2
+
+
+    // add ActivityNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
+    _addActivityNodeTree(selectedActivity, selectedActivityDescendants = new Map(), isExpanded = false) {
+        //const margin = 50;
+        const height = this.clientHeight;
+        const node = this._traverseActivityNodeTree(selectedActivity, selectedActivityDescendants, isExpanded, margin, 10, height / 2);
+        this._checkBounds(node.getTree());
+    }
+
+************************************************************************************************************************
+************************************************************************************************************************
+I am unsure of the origin of this code clip.  It looks like a traverse at the view level.  It migth be nice to step through
+slowly once, understand well and then trash.  Maybe it offers improvements in technique.
+
+    // for (let rootNode of this._viewedProjectsMap.values()) {
+    //     let workStack = [];
+    //     workStack.push(rootNode);
+    //     while (workStack.length > 0) {
+    //         let currentNodeModel = workStack.pop();
+    //         const $newViewNode = this.createActivityNode(currentNodeModel)
+    //         $newViewNode.setTranslation(currentNodeModel.x + $newViewNode.clientWidth / 2.0, currentNodeModel.y + $newViewNode.clientHeight / 2.0);
+    //
+    //         currentNodeModel.children.forEach((child) => {
+    //             let edge = this._createEdge(currentNodeModel, child.id);
+    //             edge.setSubActivityNode(child);
+    //             edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+    //             workStack.push(child)
+    //     //        this._edgeContainerDiv.appendChild(edge);
+    //         })
+    //     }
+    //
+    //
+    // }
+
+    // if (child.name) sub_node.setContextualName(child.name);
+    // if (child.description) sub_node.setContextualDescription(child.description);
+************************************************************************************************************************
+************************************************************************************************************************
+Random - also from playground.. look through and wipe.
+/**
+ * Apparently UNUSED???
+ *
+ // _generateActivityGraphFromJSON(json) {
+  	// 	let root_goal = json.rootGoal;
+  	// 	let root_node = this.addRootGoal(root_goal.name, root_goal.description);
+  	// 	root_node.getConnector().setType(root_goal.connectorType);
+  	// 	root_node.setTranslation(50, 50);
+  	// 	this._generateSubGoals(root_node, root_goal);
+  	// }
+ //
+ // _generateSubGoals(root_node, root) {
+  	// 	let x_start = root_node._translation.x,
+  	// 		y_offset = root_node._translation.y + 150;
+  	//
+  	// 	if(!root.subgoals)
+  	// 		return;
+  	//
+  	// 	root.subgoals.forEach(subgoal => {
+  	// 		let node;
+  	// 		if(subgoal.type == 'GOAL') {
+  	// 			node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
+  	// 			node.getConnector().setType(subgoal.item.connectorType);
+  	// 		} else {
+  	// 			node = this.addActivity(subgoal.item.name, subgoal.item.description);
+  	// 		}
+  	//
+  	// 		node.setTranslation(x_start, y_offset);
+  	// 		let edge = this._createEdge(root_node);
+  	// 		edge.setSubActivityNode(node);
+  	// 		this._generateSubGoals(node, subgoal.item);
+  	// 		x_start += 175;
+  	// 	});
+  	// }
+ *
+ *
+ *    // getSelectedAsJSON() {
+ *     // 	if(this._selectedNodeElementSet.size == 0)
+ *     // 		return undefined;
+ *     //
+ *     // 	return this._selectedNodeElementSet.values().next().value.activity.toJSON();
+ *     // }
+ *
+ *     // getSelectedURN() {
+ *     // 	if(this._selectedNodeElementSet.size == 0)
+ *     // 		return undefined;
+ *     //
+ *     // 	return this._selectedNodeElementSet.values().next().value.activity.urn;
+ *     // }
+ *
+ *
+ */
+ ************************************************************************************************************************
+ ************************************************************************************************************************
+ /*
+ * Replaced by having playground provide the viewed project instead of this alert.
+ *
+ *    affectProjectView(updatedUrn) {             // Activity got updated - does it affect our projects?
+ *        //     for (let node of this._viewedProjectsMap.values()) { // Return events with affected Project ids and the URN
+ *        // Note: This is not looking at the view-level. Only at the data-level.  This seems accurate.
+ *        // Would have pushed up higher - but need to know which projects are in viewedProjectsMap (not available above)
+ *
+ *        this._viewedProjectsMap.forEach((value, key) => {
+ *            let node = value;
+ *            if (node.isActivityInProject(updatedUrn)) {
+ *                this.dispatchEvent(new CustomEvent('response-activity-updated', {
+ *                    detail: {
+ *                        projectId: node.id,
+ *                        activityUrn: updatedUrn
+ *                    }
+ *                })); // event-activity-created in playground uses node
+ *            }
+ *        })
+ *    }
+ *
+ *
+ *
+ *
+ *
+ */
+
+
+
+
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "rules": {
+
+        "array-callback-return": "error",
+//        Enforce return statements in callbacks of array methods
+
+        "constructor-super": "error",
+//        Require `super()` calls in constructors
+
+
+        "for-direction": "error",
+//        Enforce "for" loop update clause moving the counter in the right direction.
+
+
+        "getter-return": "error",
+//        Enforce `return` statements in getters
+
+
+        "no-async-promise-executor": "error",
+//        Disallow using an async function as a Promise executor
+
+
+        "no-await-in-loop": "error",
+//        Disallow `await` inside of loops
+
+
+        "no-class-assign": "error",
+//        Disallow reassigning class members
+
+
+        "no-compare-neg-zero": "error",
+//        Disallow comparing against -0
+
+
+        "no-cond-assign": "error",
+//        Disallow assignment operators in conditional expressions
+
+
+        "no-const-assign": "error",
+//        Disallow reassigning `const` variables
+
+
+        "no-constant-binary-expression": "error",
+//        Disallow expressions where the operation doesn't affect the value
+
+
+        "no-constant-condition": "error",
+//        Disallow constant expressions in conditions
+
+
+        "no-constructor-return": "error",
+//        Disallow returning value from constructor
+
+
+        "no-control-regex": "error",
+//        Disallow control characters in regular expressions
+
+
+        "no-debugger": "error",
+//        Disallow the use of `debugger`
+
+
+        "no-dupe-args": "error",
+//        Disallow duplicate arguments in `function` definitions
+
+
+        "no-dupe-class-members": "error",
+//        Disallow duplicate class members
+
+
+        "no-dupe-else-if": "error",
+//        Disallow duplicate conditions in if-else-if chains
+
+
+        "no-dupe-keys": "error",
+//        Disallow duplicate keys in object literals
+
+
+        "no-duplicate-case": "error",
+//        Disallow duplicate case labels
+
+
+        "no-duplicate-imports": "error",
+//        Disallow duplicate module imports
+
+
+        "no-empty-character-class": "error",
+//        Disallow empty character classes in regular expressions
+
+
+        "no-empty-pattern": "error",
+//        Disallow empty destructuring patterns
+
+
+        "no-ex-assign": "error",
+//        Disallow reassigning exceptions in `catch` clauses
+
+
+        "no-fallthrough": "error",
+//        Disallow fallthrough of `case` statements
+
+
+        "no-func-assign": "error",
+//        Disallow reassigning `function` declarations
+
+
+        "no-import-assign": "error",
+//        Disallow assigning to imported bindings
+
+
+        "no-inner-declarations": "error",
+//        Disallow variable or `function` declarations in nested blocks
+
+
+        "no-invalid-regexp": "error",
+//        Disallow invalid regular expression strings in `RegExp` constructors
+
+
+        "no-irregular-whitespace": "error",
+//        Disallow irregular whitespace
+
+
+        "no-loss-of-precision": "error",
+//        Disallow literal numbers that lose precision
+
+
+        "no-misleading-character-class": "error",
+//        Disallow characters which are made with multiple code points in character class syntax
+
+
+        "no-new-symbol": "error",
+//        Disallow `new` operators with the `Symbol` object
+
+
+        "no-obj-calls": "error",
+//        Disallow calling global object properties as functions
+
+
+        "no-promise-executor-return": "error",
+//        Disallow returning values from Promise executor functions
+
+
+        "no-prototype-builtins": "error",
+//        Disallow calling some `Object.prototype` methods directly on objects
+
+
+        "no-self-assign": "error",
+//        Disallow assignments where both sides are exactly the same
+
+
+        "no-self-compare": "error",
+//        Disallow comparisons where both sides are exactly the same
+
+
+        "no-setter-return": "error",
+//        Disallow returning values from setters
+
+
+        "no-sparse-arrays": "error",
+//        Disallow sparse arrays
+
+
+        "no-template-curly-in-string": "error",
+//        Disallow template literal placeholder syntax in regular strings
+
+
+        "no-this-before-super": "error",
+//        Disallow `this`/`super` before calling `super()` in constructors
+
+
+        "no-undef": "error",
+//        Disallow the use of undeclared variables unless mentioned in `/*global */` comments
+
+
+        "no-unexpected-multiline": "error",
+//        Disallow confusing multiline expressions
+
+
+        "no-unmodified-loop-condition": "error",
+//        Disallow unmodified loop conditions
+
+
+        "no-unreachable": "error",
+//        Disallow unreachable code after `return`, `throw`, `continue`, and `break` statements
+
+
+        "no-unreachable-loop": "error",
+//        Disallow loops with a body that allows only one iteration
+
+
+        "no-unsafe-finally": "error",
+//        Disallow control flow statements in `finally` blocks
+
+
+        "no-unsafe-negation": "error",
+//        Disallow negating the left operand of relational operators
+
+
+        "no-unsafe-optional-chaining": "error",
+//        Disallow use of optional chaining in contexts where the `undefined` value is not allowed
+
+
+        "no-unused-private-class-members": "error",
+//        Disallow unused private class members
+
+
+        "no-unused-vars": "error",
+//        Disallow unused variables
+
+
+        "no-use-before-define": "error",
+//        Disallow the use of variables before they are defined
+
+
+        "no-useless-backreference": "error",
+//        Disallow useless backreferences in regular expressions
+
+
+        "require-atomic-updates": "error",
+//        Disallow assignments that can lead to race conditions due to usage of `await` or `yield`
+
+
+        "use-isnan": "error",
+//        Require calls to `isNaN()` when checking for `NaN`
+
+
+        "valid-typeof": "error",
+//        Enforce comparing `typeof` expressions against valid strings
+
+
+     //   Suggestions
+     //  These rules suggest alternate ways of doing things:
+
+        "accessor-pairs": "warn",
+//        Enforce getter and setter pairs in objects and classes
+
+
+        "arrow-body-style": "warn",
+//        Require braces around arrow function bodies
+
+
+        "block-scoped-var": "warn",
+//        Enforce the use of variables within the scope they are defined
+
+
+        "camelcase": "warn",
+//        Enforce camelcase naming convention
+
+
+        "capitalized-comments": "warn",
+//        Enforce or disallow capitalization of the first letter of a comment
+
+
+        "class-methods-use-this": "warn",
+//        Enforce that class methods utilize `this`
+
+
+        "complexity": "warn",
+//        Enforce a maximum cyclomatic complexity allowed in a program
+
+
+        "consistent-return": "warn",
+//        Require `return` statements to either always or never specify values
+
+
+        "consistent-this": "warn",
+//        Enforce consistent naming when capturing the current execution context
+
+
+        "curly": "warn",
+//        Enforce consistent brace style for all control statements
+
+
+        "default-case": "warn",
+//        Require `default` cases in `switch` statements
+
+
+        "default-case-last": "warn",
+//        Enforce default clauses in switch statements to be last
+
+
+        "default-param-last": "warn",
+//        Enforce default parameters to be last
+
+
+        "dot-notation": "warn",
+//        Enforce dot notation whenever possible
+
+
+        "eqeqeq": "warn",
+//        Require the use of `===` and `!==`
+
+
+        "func-name-matching": "warn",
+//        Require function names to match the name of the variable or property to which they are assigned
+
+
+        "func-names": "warn",
+//        Require or disallow named `function` expressions
+
+
+        "func-style": "warn",
+//        Enforce the consistent use of either `function` declarations or expressions
+
+
+        "grouped-accessor-pairs": "warn",
+//        Require grouped accessor pairs in object literals and classes
+
+
+        "guard-for-in": "warn",
+//        Require `for-in` loops to include an `if` statement
+
+
+        "id-denylist": "warn",
+//        Disallow specified identifiers
+
+
+        "id-length": "warn",
+//        Enforce minimum and maximum identifier lengths
+
+
+        "id-match": "warn",
+//        Require identifiers to match a specified regular expression
+
+
+        "init-declarations": "warn",
+//        Require or disallow initialization in variable declarations
+
+
+        "max-classes-per-file": "warn",
+//        Enforce a maximum number of classes per file
+
+
+        "max-depth": "warn",
+//        Enforce a maximum depth that blocks can be nested
+
+
+        "max-lines": "warn",
+//        Enforce a maximum number of lines per file
+
+
+        "max-lines-per-function": "warn",
+//        Enforce a maximum number of lines of code in a function
+
+
+        "max-nested-callbacks": "warn",
+//        Enforce a maximum depth that callbacks can be nested
+
+
+        "max-params": "warn",
+//        Enforce a maximum number of parameters in function definitions
+
+
+        "max-statements": "warn",
+//        Enforce a maximum number of statements allowed in function blocks
+
+
+        "multiline-comment-style": "warn",
+//        Enforce a particular style for multiline comments
+
+
+        "new-cap": "warn",
+//        Require constructor names to begin with a capital letter
+
+
+        "no-alert": "warn",
+//        Disallow the use of `alert`, `confirm`, and `prompt`
+
+
+        "no-array-constructor": "warn",
+//        Disallow `"Array"` constructors
+
+
+        "no-bitwise": "warn",
+//        Disallow bitwise operators
+
+
+        "no-caller": "warn",
+//        Disallow the use of `arguments.caller` or `arguments.callee`
+
+
+        "no-case-declarations": "warn",
+//        Disallow lexical declarations in case clauses
+
+
+        "no-confusing-arrow": "warn",
+//        Disallow arrow functions where they could be confused with comparisons
+
+
+        "no-console": "warn",
+//        Disallow the use of `console`
+
+
+        "no-continue": "warn",
+//        Disallow `continue` statements
+
+
+        "no-delete-var": "warn",
+//        Disallow deleting variables
+
+
+        "no-div-regex": "warn",
+//        Disallow division operators explicitly at the beginning of regular expressions
+
+
+        "no-else-return": "warn",
+//        Disallow `else` blocks after `return` statements in `if` statements
+
+
+        "no-empty": "warn",
+//        Disallow empty block statements
+
+
+        "no-empty-function": "warn",
+//        Disallow empty functions
+
+
+        "no-eq-null": "warn",
+//        Disallow `null` comparisons without type-checking operators
+
+
+        "no-eval": "warn",
+//        Disallow the use of `eval()`
+
+
+        "no-extend-native": "warn",
+//        Disallow extending native types
+
+
+        "no-extra-bind": "warn",
+//        Disallow unnecessary calls to `.bind()`
+
+
+        "no-extra-boolean-cast": "warn",
+//        Disallow unnecessary boolean casts
+
+
+        "no-extra-label": "warn",
+//        Disallow unnecessary labels
+
+
+        "no-extra-semi": "warn",
+//        Disallow unnecessary semicolons
+
+
+        "no-floating-decimal": "warn",
+//        Disallow leading or trailing decimal points in numeric literals
+
+
+        "no-global-assign": "warn",
+//        Disallow assignments to native objects or read-only global variables
+
+
+        "no-implicit-coercion": "warn",
+//        Disallow shorthand type conversions
+
+
+        "no-implicit-globals": "warn",
+//        Disallow declarations in the global scope
+
+
+        "no-implied-eval": "warn",
+//        Disallow the use of `eval()`-like methods
+
+
+        "no-inline-comments": "warn",
+//        Disallow inline comments after code
+
+
+        "no-invalid-this": "warn",
+//        Disallow use of `this` in contexts where the value of `this` is `undefined`
+
+
+        "no-iterator": "warn",
+//        Disallow the use of the `__iterator__` property
+
+
+        "no-label-var": "warn",
+//        Disallow labels that share a name with a variable
+
+
+        "no-labels": "warn",
+//        Disallow labeled statements
+
+
+        "no-lone-blocks": "warn",
+//        Disallow unnecessary nested blocks
+
+
+        "no-lonely-if": "warn",
+//        Disallow `if` statements as the only statement in `else` blocks
+
+
+        "no-loop-func": "warn",
+//        Disallow function declarations that contain unsafe references inside loop statements
+
+
+        "no-magic-numbers": "warn",
+//        Disallow magic numbers
+
+
+        "no-mixed-operators": "warn",
+//        Disallow mixed binary operators
+
+
+        "no-multi-assign": "warn",
+//        Disallow use of chained assignment expressions
+
+
+        "no-multi-str": "warn",
+//        Disallow multiline strings
+
+
+        "no-negated-condition": "warn",
+//        Disallow negated conditions
+
+
+        "no-nested-ternary": "warn",
+//        Disallow nested ternary expressions
+
+
+        "no-new": "warn",
+//        Disallow `new` operators outside of assignments or comparisons
+
+
+        "no-new-func": "warn",
+//        Disallow `new` operators with the `Function` object
+
+
+        "no-new-object": "warn",
+//        Disallow `Object` constructors
+
+
+        "no-new-wrappers": "warn",
+//        Disallow `new` operators with the `String`, `Number`, and `Boolean` objects
+
+
+        "no-nonoctal-decimal-escape": "warn",
+//        Disallow `\8` and `\9` escape sequences in string literals
+
+
+        "no-octal": "warn",
+//        Disallow octal literals
+
+
+        "no-octal-escape": "warn",
+//        Disallow octal escape sequences in string literals
+
+
+        "no-param-reassign": "warn",
+//        Disallow reassigning `function` parameters
+
+
+        "no-plusplus": "warn",
+//        Disallow the unary operators `++` and `--`
+
+
+        "no-proto": "warn",
+//        Disallow the use of the `__proto__` property
+
+
+        "no-redeclare": "warn",
+//        Disallow variable redeclaration
+
+
+        "no-regex-spaces": "warn",
+//        Disallow multiple spaces in regular expressions
+
+
+        "no-restricted-exports": "warn",
+//        Disallow specified names in exports
+
+
+        "no-restricted-globals": "warn",
+//        Disallow specified global variables
+
+
+        "no-restricted-imports": "warn",
+//        Disallow specified modules when loaded by `import`
+
+
+        "no-restricted-properties": "warn",
+//        Disallow certain properties on certain objects
+
+
+        "no-restricted-syntax": "warn",
+//        Disallow specified syntax
+
+
+        "no-return-assign": "warn",
+//        Disallow assignment operators in `return` statements
+
+
+        "no-return-await": "warn",
+//        Disallow unnecessary `return await`
+
+
+        "no-script-url": "warn",
+//        Disallow `javascript:` urls
+
+
+        "no-sequences": "warn",
+//        Disallow comma operators
+
+
+        "no-shadow": "warn",
+//        Disallow variable declarations from shadowing variables declared in the outer scope
+
+
+        "no-shadow-restricted-names": "warn",
+//        Disallow identifiers from shadowing restricted names
+
+
+        "no-ternary": "warn",
+//        Disallow ternary operators
+
+
+        "no-throw-literal": "warn",
+//        Disallow throwing literals as exceptions
+
+
+        "no-undef-init": "warn",
+//        Disallow initializing variables to `undefined`
+
+
+        "no-undefined": "warn",
+        //    Disallow the use of `undefined` as an identifier
+
+
+        "no-underscore-dangle": "warn",
+        //    Disallow dangling underscores in identifiers
+
+
+        "no-unneeded-ternary": "warn",
+        //    Disallow ternary operators when simpler alternatives exist
+
+
+        "no-unused-expressions": "warn",
+        //    Disallow unused expressions
+
+
+        "no-unused-labels": "warn",
+        //    Disallow unused labels
+
+
+        "no-useless-call": "warn",
+        //    Disallow unnecessary calls to `.call()` and `.apply()`
+
+
+        "no-useless-catch": "warn",
+        //    Disallow unnecessary `catch` clauses
+
+
+        "no-useless-computed-key": "warn",
+        //    Disallow unnecessary computed property keys in objects and classes
+
+
+        "no-useless-concat": "warn",
+        //    Disallow unnecessary concatenation of literals or template literals
+
+
+        "no-useless-constructor": "warn",
+        //    Disallow unnecessary constructors
+
+
+        "no-useless-escape": "warn",
+        //    Disallow unnecessary escape characters
+
+
+        "no-useless-rename": "warn",
+        //    Disallow renaming import, export, and destructured assignments to the same name
+
+
+        "no-useless-return": "warn",
+        //    Disallow redundant return statements
+
+
+        "no-var": "warn",
+        //    Require `let` or `const` instead of `var`
+
+
+        "no-void": "warn",
+        //    Disallow `void` operators
+
+
+        "no-warning-comments": "warn",
+        //    Disallow specified warning terms in comments
+
+
+        "no-with": "warn",
+        //    Disallow `with` statements
+
+
+        "object-shorthand": "warn",
+        //    Require or disallow method and property shorthand syntax for object literals
+
+
+        "one-var": "warn",
+        //   Enforce variables to be declared either together or separately in functions
+
+
+        "one-var-declaration-per-line": "warn",
+        //    Require or disallow newlines around variable declarations
+
+
+        "operator-assignment": "warn",
+        //    Require or disallow assignment operator shorthand where possible
+
+
+        "prefer-arrow-callback": "warn",
+        //    Require using arrow functions for callbacks
+
+
+        "prefer-const": "warn",
+        //    Require `const` declarations for variables that are never reassigned after declared
+
+
+        "prefer-destructuring": "warn",
+        //    Require destructuring from arrays and/or objects
+
+
+        "prefer-exponentiation-operator": "warn",
+        //    Disallow the use of `Math.pow` in favor of the `**` operator
+
+
+        "prefer-named-capture-group": "warn",
+        //   Enforce using named capture group in regular expression
+
+
+        "prefer-numeric-literals": "warn",
+        //    Disallow `parseInt()` and `Number.parseInt()` in favor of binary, octal, and hexadecimal literals
+
+
+        "prefer-object-has-own": "warn",
+        //    Disallow use of `Object.prototype.hasOwnProperty.call()` and prefer use of `Object.hasOwn()`
+
+
+        "prefer-object-spread": "warn",
+        //    Disallow using Object.assign with an object literal as the first argument and prefer the use of object spread instead.
+
+
+        "prefer-promise-reject-errors": "warn",
+        //    Require using Error objects as Promise rejection reasons
+
+
+        "prefer-regex-literals": "warn",
+        //    Disallow use of the `RegExp` constructor in favor of regular expression literals
+
+
+        "prefer-rest-params": "warn",
+        //    Require rest parameters instead of `arguments`
+
+
+        "prefer-spread": "warn",
+        //    Require spread operators instead of `.apply()`
+
+
+        "prefer-template": "warn",
+        //    Require template literals instead of string concatenation
+
+
+        "quote-props": "warn",
+        //    Require quotes around object literal property names
+
+
+        "radix": "warn",
+        //   Enforce the consistent use of the radix argument when using `parseInt()`
+
+
+        "require-await": "warn",
+        //    Disallow async functions which have no `await` expression
+
+
+        "require-unicode-regexp": "warn",
+        //   Enforce the use of `u` flag on RegExp
+
+
+        "require-yield": "warn",
+        //    Require generator functions to contain `yield`
+
+
+        "sort-imports": "warn",
+        //   Enforce sorted import declarations within modules
+
+
+        "sort-keys": "warn",
+        //    Require object keys to be sorted
+
+
+        "sort-vars": "warn",
+        //    Require variables within the same declaration block to be sorted
+
+
+        "spaced-comment": "warn",
+        //   Enforce consistent spacing after the `//` or `/*` in a comment
+
+
+        "strict": "warn",
+        //    Require or disallow strict mode directives
+
+
+        "symbol-description": "warn",
+        //    Require symbol descriptions
+
+
+        "vars-on-top": "warn",
+        //    Require `var` declarations be placed at the top of their containing scope
+
+
+        "yoda": "warn",
+        //    Require or disallow "Yoda" conditions
+
+
+//        Layout & Formatting
+//        These rules care about how the code looks rather than how it executes:
+
+        "array-bracket-newline": "warn",
+        //   Enforce linebreaks after opening and before closing array brackets
+
+
+        "array-bracket-spacing": "warn",
+        //   Enforce consistent spacing inside array brackets
+
+
+        "array-element-newline": "warn",
+        //   Enforce line breaks after each array element
+
+
+        "arrow-parens": "warn",
+        //    Require parentheses around arrow function arguments
+
+
+        "arrow-spacing": "warn",
+        //   Enforce consistent spacing before and after the arrow in arrow functions
+
+
+        "block-spacing": "warn",
+        //    Disallow or enforce spaces inside of blocks after opening block and before closing block
+
+
+        "brace-style": "warn",
+        //   Enforce consistent brace style for blocks
+
+
+        "comma-dangle": "warn",
+        //    Require or disallow trailing commas
+
+
+        "comma-spacing": "warn",
+        //   Enforce consistent spacing before and after commas
+
+
+        "comma-style": "warn",
+        //   Enforce consistent comma style
+
+
+        "computed-property-spacing": "warn",
+        //   Enforce consistent spacing inside computed property brackets
+
+
+        "dot-location": "warn",
+        //   Enforce consistent newlines before and after dots
+
+
+        "eol-last": "warn",
+        //    Require or disallow newline at the end of files
+
+
+        "func-call-spacing": "warn",
+        //    Require or disallow spacing between function identifiers and their invocations
+
+
+        "function-call-argument-newline": "warn",
+        //   Enforce line breaks between arguments of a function call
+
+
+        "function-paren-newline": "warn",
+        //   Enforce consistent line breaks inside function parentheses
+
+
+        "generator-star-spacing": "warn",
+        //   Enforce consistent spacing around `*` operators in generator functions
+
+
+        "implicit-arrow-linebreak": "warn",
+        //   Enforce the location of arrow function bodies
+
+
+        "indent": "warn",
+        //   Enforce consistent indentation
+
+
+        "jsx-quotes": "warn",
+        //   Enforce the consistent use of either double or single quotes in JSX attributes
+
+
+        "key-spacing": "warn",
+        //   Enforce consistent spacing between keys and values in object literal properties
+
+
+        "keyword-spacing": "warn",
+        //   Enforce consistent spacing before and after keywords
+
+
+        "line-comment-position": "warn",
+        //   Enforce position of line comments
+
+
+        "linebreak-style": "warn",
+        //   Enforce consistent linebreak style
+
+
+        "lines-around-comment": "warn",
+        //    Require empty lines around comments
+
+
+        "lines-between-class-members": "warn",
+        //    Require or disallow an empty line between class members
+
+
+        "max-len": "warn",
+        //   Enforce a maximum line length
+
+
+        "max-statements-per-line": "warn",
+        //   Enforce a maximum number of statements allowed per line
+
+
+        "multiline-ternary": "warn",
+        //   Enforce newlines between operands of ternary expressions
+
+
+        "new-parens": "warn",
+        //   Enforce or disallow parentheses when invoking a constructor with no arguments
+
+
+        "newline-per-chained-call": "warn",
+        //    Require a newline after each call in a method chain
+
+
+        "no-extra-parens": "warn",
+        //    Disallow unnecessary parentheses
+
+
+        "no-mixed-spaces-and-tabs": "warn",
+        //    Disallow mixed spaces and tabs for indentation
+
+
+        "no-multi-spaces": "warn",
+        //    Disallow multiple spaces
+
+
+        "no-multiple-empty-lines": "warn",
+        //    Disallow multiple empty lines
+
+
+        "no-tabs": "warn",
+        //    Disallow all tabs
+
+
+        "no-trailing-spaces": "warn",
+        //    Disallow trailing whitespace at the end of lines
+
+
+        "no-whitespace-before-property": "warn",
+        //    Disallow whitespace before properties
+
+
+        "nonblock-statement-body-position": "warn",
+        //   Enforce the location of single-line statements
+
+
+        "object-curly-newline": "warn",
+        //   Enforce consistent line breaks after opening and before closing braces
+
+
+        "object-curly-spacing": "warn",
+        //   Enforce consistent spacing inside braces
+
+
+        "object-property-newline": "warn",
+        //   Enforce placing object properties on separate lines
+
+
+        "operator-linebreak": "warn",
+        //   Enforce consistent linebreak style for operators
+
+
+        "padded-blocks": "warn",
+        //    Require or  Disallow padding within blocks
+
+
+        "padding-line-between-statements": "warn",
+        //    Require or disallow padding lines between statements
+
+
+        "quotes": "warn",
+        //   Enforce the consistent use of either backticks, double, or single quotes
+
+
+        "rest-spread-spacing": "warn",
+        //   Enforce spacing between rest and spread operators and their expressions
+
+
+        "semi": "warn",
+        //    Require or disallow semicolons instead of ASI
+
+
+        "semi-spacing": "warn",
+        //   Enforce consistent spacing before and after semicolons
+
+
+        "semi-style": "warn",
+        //   Enforce location of semicolons
+
+
+        "space-before-blocks": "warn",
+        //   Enforce consistent spacing before blocks
+
+
+        "space-before-function-paren": "warn",
+        //   Enforce consistent spacing before `function` definition opening parenthesis
+
+
+        "space-in-parens": "warn",
+        //   Enforce consistent spacing inside parentheses
+
+
+        "space-infix-ops": "warn",
+        //    Require spacing around infix operators
+
+
+        "space-unary-ops": "warn",
+        //   Enforce consistent spacing before or after unary operators
+
+
+        "switch-colon-spacing": "warn",
+        //   Enforce spacing around colons of switch statements
+
+
+        "template-curly-spacing": "warn",
+        //    Require or disallow spacing around embedded expressions of template strings
+
+
+        "template-tag-spacing": "warn",
+        //    Require or disallow spacing between template tags and their literals
+
+
+        "unicode-bom": "warn",
+        //    Require or disallow Unicode byte order mark (BOM)
+
+
+        "wrap-iife": "warn",
+        //    Require parentheses around immediate `function` invocations
+
+
+        "wrap-regex": "warn",
+        //    Require parenthesis around regex literals
+
+
+        "yield-star-spacing": "warn"
+        //    Require or disallow spacing around the `*` in `yield*` expressions
+
+    }
+}

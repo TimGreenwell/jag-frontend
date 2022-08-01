@@ -8,37 +8,37 @@
 
 import Activity from '../models/activity.js';
 
-customElements.define('jag-library', class extends HTMLElement {
+customElements.define(`jag-library`, class extends HTMLElement {
 
-	constructor() {
+	constructor () {
 		super();
 		this._libraryList = [];                         // <li> elements holding activity.name & description + (search context) + activity
 		this._initUI();
 		this.clearLibraryList();
 	};
 
-	clearLibraryList() {
+	clearLibraryList () {
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 		this._libraryList = [];
 	}
 
-	_initUI() {
-		const $header = document.createElement('header');
-		const $search = document.createElement('input');
-		const $list = document.createElement('ol');
+	_initUI () {
+		const $header = document.createElement(`header`);
+		const $search = document.createElement(`input`);
+		const $list = document.createElement(`ol`);
 
-		$search.classList.add('library-search');
-		$search.placeholder = "Activities"
-		$list.classList.add('library-list');
+		$search.classList.add(`library-search`);
+		$search.placeholder = `Activities`;
+		$list.classList.add(`library-list`);
 
 		this.appendChild($search);
 		this.appendChild($list);
 
 		this._$list = $list;
 
-		$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+		$search.addEventListener(`keyup`, this._filterFromSearchInput.bind(this));
 	}
 
 
@@ -47,8 +47,8 @@ customElements.define('jag-library', class extends HTMLElement {
 	//////////  Supporting controllerAT //////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////
 
-	updateItem(updatedActivity) {
-		let listItemElement = this.createListItemCollection(updatedActivity)
+	updateItem (updatedActivity) {
+		let listItemElement = this.createListItemCollection(updatedActivity);
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
@@ -63,57 +63,57 @@ customElements.define('jag-library', class extends HTMLElement {
 	}
 
 
-	createListItemCollection(newActivity) {
+	createListItemCollection (newActivity) {
 		// handleJagStorageCreated (@controllerAT)
 		let existingUrns = this._libraryList.filter(entry => {
 			return entry.urn;
-		})
+		});
 		if (!existingUrns.includes(newActivity.urn)) {
 			if (newActivity instanceof Activity) {
 				const urn = newActivity.urn;
-				const name = newActivity.name || '';
-				const description = newActivity.description || '';
+				const name = newActivity.name || ``;
+				const description = newActivity.description || ``;
 
-				const li = document.createElement('li');
-				li.className = "list-item"
+				const li = document.createElement(`li`);
+				li.className = `list-item`;
 
 				let deleteIconClickedHandler = function (event) {
 					event.stopPropagation();
-					this.dispatchEvent(new CustomEvent('event-activity-deleted', {
+					this.dispatchEvent(new CustomEvent(`event-activity-deleted`, {
 						detail: {activityUrn: newActivity.urn}
-					}))
-				}
+					}));
+				};
 
 				let lockIconClickedHandler = function (event) {
 					event.stopPropagation();
-					this.dispatchEvent(new CustomEvent('event-activity-locked', {
+					this.dispatchEvent(new CustomEvent(`event-activity-locked`, {
 						detail: {activity: newActivity}
-					}))
-				}
+					}));
+				};
 
-				const $topHalfWrapper = document.createElement('div');
-				$topHalfWrapper.className = "top-half item-line"
-				const $nameEntry = document.createElement('span')
-				$nameEntry.classList.add('name-entry')
+				const $topHalfWrapper = document.createElement(`div`);
+				$topHalfWrapper.className = `top-half item-line`;
+				const $nameEntry = document.createElement(`span`);
+				$nameEntry.classList.add(`name-entry`);
 				$nameEntry.innerText = newActivity.name;
 
-				const toggleLock = document.createElement('div');
-				toggleLock.classList.add('library-button', 'lock-button');
-				toggleLock.addEventListener('click', lockIconClickedHandler.bind(this))
+				const toggleLock = document.createElement(`div`);
+				toggleLock.classList.add(`library-button`, `lock-button`);
+				toggleLock.addEventListener(`click`, lockIconClickedHandler.bind(this));
 
 				$topHalfWrapper.appendChild(toggleLock);
 				$topHalfWrapper.appendChild($nameEntry);
 
-				const $bottomHalfWrapper = document.createElement('div');
-				$bottomHalfWrapper.className = "bottom-half item-line"
-				const $descriptionEntry = document.createElement('span')
-				$descriptionEntry.classList.add('description-entry')
+				const $bottomHalfWrapper = document.createElement(`div`);
+				$bottomHalfWrapper.className = `bottom-half item-line`;
+				const $descriptionEntry = document.createElement(`span`);
+				$descriptionEntry.classList.add(`description-entry`);
 				$descriptionEntry.innerText = newActivity.description;
 
-				const deleteJag = document.createElement('div');
+				const deleteJag = document.createElement(`div`);
 				if (!newActivity.isLocked) {
-					deleteJag.classList.add('library-button', 'delete-button');
-					deleteJag.addEventListener('click',  deleteIconClickedHandler.bind(this))
+					deleteJag.classList.add(`library-button`, `delete-button`);
+					deleteJag.addEventListener(`click`,  deleteIconClickedHandler.bind(this));
 				}
 
 				$bottomHalfWrapper.appendChild(deleteJag);
@@ -128,26 +128,26 @@ customElements.define('jag-library', class extends HTMLElement {
 				search_params.push(description.toLowerCase());
 
 				// Send the newActivity and all its children through the dispatch
-				$bottomHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('event-activity-selected', {
+				$bottomHalfWrapper.addEventListener(`click`, (event) => {
+					this.dispatchEvent(new CustomEvent(`event-activity-selected`, {
 						detail: {
 							activity: newActivity,
 							isExpanded: false
 						}
-					}))});
+					}));});
 
-				$topHalfWrapper.addEventListener('click', (event) => {
-					this.dispatchEvent(new CustomEvent('event-activity-selected', {
+				$topHalfWrapper.addEventListener(`click`, (event) => {
+					this.dispatchEvent(new CustomEvent(`event-activity-selected`, {
 						detail: {
 							activity: newActivity,
 							isExpanded: false
 						}
-					}))
+					}));
 				});
 
 				let newItem = {
 					element: li,
-					search_content: search_params.join(" "),
+					search_content: search_params.join(` `),
 					activity: newActivity
 				};
 
@@ -155,63 +155,63 @@ customElements.define('jag-library', class extends HTMLElement {
 
 				//	activity.addEventListener('copy', this._createItem.bind(this));         // temp out - what does this do? looks obs.
 			} else {
-				console.log("ERROR -- unexpected type for newActivity [library-addItem]")
+				console.log(`ERROR -- unexpected type for newActivity [library-addItem]`);
 			}
 		} else {
-			console.log("ERROR -- URN already exists [library-addItem]")
+			console.log(`ERROR -- URN already exists [library-addItem]`);
 		}
 	}
 
-	addListItem(newActivity) {
+	addListItem (newActivity) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItemCollection(newActivity)
+		let listItemElement = this.createListItemCollection(newActivity);
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}
 
-	addListItems(activityArray) {
+	addListItems (activityArray) {
 		// initializePanels (@controllerAT)
 		activityArray.forEach(activity => {
-			this.addListItem(activity)
+			this.addListItem(activity);
 		});
 	}
 
 
 	// @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
-	replaceItem(newActivity, replacedUrn) {
+	replaceItem (newActivity, replacedUrn) {
 		// handleJagStorageReplaced (@controllerAT)
 		this.removeLibraryListItem(replacedUrn);
 		this.appendChild(newActivity);
 	}
 
-	removeLibraryListItem(deletedUrn) {
+	removeLibraryListItem (deletedUrn) {
 		// handleJagStorageDeleted (@controllerAT)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 		this._libraryList = this._libraryList.filter(entry => {
-			return entry.activity.urn != deletedUrn
-		})
+			return entry.activity.urn != deletedUrn;
+		});
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}
 	}
 
-	_filterFromSearchInput(e) {
+	_filterFromSearchInput (e) {
 		const search_text = e.srcElement.value.toLowerCase();
 		this._libraryList.forEach((item) => {
 			if (item.element) {
-				item.element.style.display = 'block';
+				item.element.style.display = `block`;
 				if(!item.search_content.includes(search_text))
-					item.element.style.display = 'none';
+					item.element.style.display = `none`;
 			}
 		});
 	}
 
 });
 
-export default customElements.get('jag-library');
+export default customElements.get(`jag-library`);
 
 // <jag-library> (this)
 //   <input class='library-search'></input>

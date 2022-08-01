@@ -18,9 +18,9 @@ import Activity from "../../models/activity.js";
 const SNAP_SIZE = 10.0;
 import JAG from '../../models/activity.js';
 
-customElements.define('jag-node', class extends HTMLElement {
+customElements.define(`jag-node`, class extends HTMLElement {
 
-	constructor(nodeModel) {
+	constructor (nodeModel) {
 		super();
 		this._translation = {x: 0, y:0};        // set_translation below == doesnt that make this useless.
 		this._outs = new Set();
@@ -41,29 +41,29 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.becomeVisible();
 /////////////////////////////////////////////////////////
 		if (this._nodeModel) {
-			this._nodeModel.removeEventListener('update', this._boundUpdateHandler);
+			this._nodeModel.removeEventListener(`update`, this._boundUpdateHandler);
 		}
 		this.id = nodeModel.id;
 		this._translation.x = (nodeModel.x) ? nodeModel.x : 0;
 		this._translation.y = (nodeModel.y) ? nodeModel.y : 0;
-		this.setAttribute("urn",nodeModel.activity.urn)
-		this.setAttribute("project", nodeModel.id)
+		this.setAttribute(`urn`,nodeModel.activity.urn);
+		this.setAttribute(`project`, nodeModel.id);
 		this._nodeModel = nodeModel;
-		this._nodeModel.addEventListener('update', this._boundUpdateHandler);
+		this._nodeModel.addEventListener(`update`, this._boundUpdateHandler);
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
 
 	}
 
-	set nodeModel(nodeModel) {           // another complex set                                                         yuk
+	set nodeModel (nodeModel) {           // another complex set                                                         yuk
 		this._nodeModel = nodeModel;
 	}
-	get nodeModel() {
+	get nodeModel () {
 		return this._nodeModel;
 	}
 
-	set isExpanded(isExpanded) {               // complex...leave it
+	set isExpanded (isExpanded) {               // complex...leave it
 		this._nodeModel.isExpanded = isExpanded;
 
 		for (const edge of this._outs) {
@@ -73,67 +73,67 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 
 		if (this._nodeModel.isExpanded) {
-			this._$expand.innerHTML = "<";
+			this._$expand.innerHTML = `<`;
 		} else {
-			this._$expand.innerHTML = ">";
+			this._$expand.innerHTML = `>`;
 		}
 
 		if (this._nodeModel.hasChildren() && this._visible) {
-			this._$expand.style.visibility = "visible";
+			this._$expand.style.visibility = `visible`;
 		} else {
-			this._$expand.style.visibility = "hidden";
+			this._$expand.style.visibility = `hidden`;
 		}
 	}
 
 
 
 
-	get isExpanded() {
+	get isExpanded () {
 		return this._nodeModel.isExpanded;
 	}
 
 	//complex set visible
-	set visible(visible) {                       // complex...leave it
+	set visible (visible) {                       // complex...leave it
 		this._visible = visible;
 
 		if (this._visible) {
-			this.becomeVisible()
+			this.becomeVisible();
 		}
 		else {
-			this.becomeInvisible()
+			this.becomeInvisible();
 		}
 	}
 
 
-	becomeVisible(){
+	becomeVisible () {
 		this._visible = true;
 		for (const edge of this._outs) {
 			const child = edge.getSubActivityNode();
 			edge.visible = this._visible;
 			child.becomeVisible();
 		}
-		this.style.visibility = "visible";
+		this.style.visibility = `visible`;
 		this.isExpanded = this.isExpanded;
-		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: this._visible }));
+		this.dispatchEvent(new CustomEvent(`toggle-visible`, { detail: this._visible }));
 	}
-	becomeInvisible(){
+	becomeInvisible () {
 		this._visible = false;
 		for (const edge of this._outs) {
 			const child = edge.getSubActivityNode();
 			edge.visible = this._visible;
 			child.becomeInvisible();
 		}
-		this.style.visibility = "hidden";
-		this._$expand.style.visibility = "hidden";
-		this.dispatchEvent(new CustomEvent('toggle-visible', { detail: this._visible }));
+		this.style.visibility = `hidden`;
+		this._$expand.style.visibility = `hidden`;
+		this.dispatchEvent(new CustomEvent(`toggle-visible`, { detail: this._visible }));
 	}
 
-	get visible() {
+	get visible () {
 		return this._visible;
 	}
 
 
-	isAtomic() {
+	isAtomic () {
 		// If there are upstream nodes, check for atomicity.
 		if (this._in) return this._in.isAtomic();
 
@@ -141,25 +141,25 @@ customElements.define('jag-node', class extends HTMLElement {
 		return false;
 	}
 
-	addInEdge(edge) {
+	addInEdge (edge) {
 		if (this._in == undefined) {
 			let [h_center_x, h_center_y] = this._computeNodeInputAttachment();
 			edge.setEnd(h_center_x, h_center_y);
 			this._in = edge;
 		} else {
-			throw new Error("Cannot have multiple edges in to a node!");
+			throw new Error(`Cannot have multiple edges in to a node!`);
 		}
 	}
 
-	removeInEdge(edge) {
+	removeInEdge (edge) {
 		if (this._in == edge) {
 			this._in = undefined;
 		} else {
-			throw new Error("Attempting to remove unknown in edge from node!");
+			throw new Error(`Attempting to remove unknown in edge from node!`);
 		}
 	}
 
-	removeAllEdges() {
+	removeAllEdges () {
 		if (this._in) {
 			this._in.destroy();
 		}
@@ -167,24 +167,24 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._outs.forEach(edge => edge.destroy());
 	}
 
-	addOnEdgeInitializedListener(listener) {
-		this._$connector.addEventListener('mousedown', e => {
+	addOnEdgeInitializedListener (listener) {
+		this._$connector.addEventListener(`mousedown`, e => {
 			listener(e, this);
 		});
 	}
 
-	addOnEdgeFinalizedListener(listener) {
-		this.addEventListener('mouseup', e => {
+	addOnEdgeFinalizedListener (listener) {
+		this.addEventListener(`mouseup`, e => {
 			listener(e, this);
 		});
 	}
 
-	prepareOutEdge(edge) {
+	prepareOutEdge (edge) {
 		let [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
 		edge.setOrigin(c_center_x, c_center_y);
 	}
 
-	completeOutEdge(edge, id = undefined) {
+	completeOutEdge (edge, id = undefined) {
 		this._outs.add(edge);
 		this.isExpanded = this.isExpanded;
 
@@ -193,11 +193,11 @@ customElements.define('jag-node', class extends HTMLElement {
 		//@todo - wondering if node and jag models need to be modded  < hate this
 	}  // returns the ID of the jag child (urn,id) -- for main to refer to subactivity
 
-	removeOutEdge(edge, id) {
+	removeOutEdge (edge, id) {
 		this._outs.delete(edge);
 	}
 
-	removeChild(edge, id) {
+	removeChild (edge, id) {
 		if (edge.getSubActivityNode()) {
 			this._nodeModel.activity.removeChild({ id: id, activity: edge.getSubActivityNode().activity });
 			this._outs.delete(edge);
@@ -205,18 +205,18 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
-	getURN() {
+	getURN () {
 		return this._nodeModel.activity.urn;
 	}
 
-	getParent() {
+	getParent () {
 		if (this._in) {
 			return this._in.getLeadActivityNode();
 		}
 		return undefined;
 	}
 
-	getParentURN() {
+	getParentURN () {
 		if (this._in) {
 			return this._in.getParentURN();
 		}
@@ -224,15 +224,15 @@ customElements.define('jag-node', class extends HTMLElement {
 		return undefined;
 	}
 
-	getRoot() {
+	getRoot () {
 		if (this._in) {
 			return this._in.getLeadActivityNode().getRoot();
 		}
 		return this;
 	}
 
-	refresh(alreadyRefreshed = new Set()) {
-		this.dispatchEvent(new CustomEvent('refresh', { detail: { activity: this._nodeModel.activity, refreshed: alreadyRefreshed } }));
+	refresh (alreadyRefreshed = new Set()) {
+		this.dispatchEvent(new CustomEvent(`refresh`, { detail: { activity: this._nodeModel.activity, refreshed: alreadyRefreshed } }));
 	}
 
 	// getChildren() {
@@ -247,22 +247,22 @@ customElements.define('jag-node', class extends HTMLElement {
 
 
 
-	getContextualName() {
+	getContextualName () {
 		return this._nodeModel.contextualName;
 	}
 
 
-	setChildName(id, name) {
+	setChildName (id, name) {
 		this._nodeModel.activity.setChildName(id, name);
 	}
 
-	setChildDescription(id, description) {
+	setChildDescription (id, description) {
 		this._nodeModel.activity.setChildDescription(id, description);
 	}
 
 
 	// @TODO Break this up into 2 functions: getNodeDescendantSet(node)  &  selectNodes(Set)
-	setSelected(is_selected, nodeDescendantSet = undefined) {
+	setSelected (is_selected, nodeDescendantSet = undefined) {
 		if (is_selected != this._is_selected) {
 			this._animationRefresh();
 		}
@@ -270,7 +270,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		this._is_selected = is_selected;
 
 		if (is_selected) {
-			this.classList.add('selected-node');
+			this.classList.add(`selected-node`);
 
 			if (nodeDescendantSet) {
 				for (const out_edge of this._outs) {
@@ -280,23 +280,23 @@ customElements.define('jag-node', class extends HTMLElement {
 				}
 			}
 		} else {
-			this.classList.remove('selected-node');
+			this.classList.remove(`selected-node`);
 		}
 		return nodeDescendantSet;
 	}
 
-	getParentEdge() {
+	getParentEdge () {
 		if (this._in !== undefined) {
 			return this._in;
 		}
 	}
 
 
-	getChildEdges() {
+	getChildEdges () {
 		return this._outs;
 	}
 
-	getChildren() {
+	getChildren () {
 		const all_children = new Set();
 
 		for (const out_edge of this._outs) {
@@ -306,7 +306,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		return all_children;
 	}
 
-	getTree(tree = new Set()) {
+	getTree (tree = new Set()) {
 		tree.add(this);
 
 		for (const out_edge of this._outs) {
@@ -316,23 +316,23 @@ customElements.define('jag-node', class extends HTMLElement {
 		return tree;
 	}
 
-	_initUI() {
-		this.setAttribute('tabindex', '-1');
+	_initUI () {
+		this.setAttribute(`tabindex`, `-1`);
 
-		this._$header = document.createElement('header');
-		this._$header_name = document.createElement('h1');
-		this._$header_name.className = 'node-name';
+		this._$header = document.createElement(`header`);
+		this._$header_name = document.createElement(`h1`);
+		this._$header_name.className = `node-name`;
 		this._$header.appendChild(this._$header_name);
 
-		this._$connector = document.createElement('div');
-		this._$connector.className = 'connector';
+		this._$connector = document.createElement(`div`);
+		this._$connector.className = `connector`;
 
-		this._$expand = document.createElement('div');
-		this._$expand.className = 'expand';
-		this._$expand.innerHTML = '>';
+		this._$expand = document.createElement(`div`);
+		this._$expand.className = `expand`;
+		this._$expand.innerHTML = `>`;
 
-		this._$concurrency = document.createElement('div');
-		this._$concurrency.className = 'concurrency';
+		this._$concurrency = document.createElement(`div`);
+		this._$concurrency.className = `concurrency`;
 
 		this.appendChild(this._$header);
 		this.appendChild(this._$connector);
@@ -341,7 +341,7 @@ customElements.define('jag-node', class extends HTMLElement {
 
 	}
 
-	_drag(e) {
+	_drag (e) {
 		if (!this._is_moving)
 			return;
 
@@ -350,14 +350,14 @@ customElements.define('jag-node', class extends HTMLElement {
 		this.translate(e.movementX * scaleFactor, e.movementY * scaleFactor, e.shiftKey ? true : undefined);
 	}
 
-	_mouseUp() {
+	_mouseUp () {
 		this._is_moving = false;
-		this._$header.className = '';
+		this._$header.className = ``;
 		this._snap();
-		this.dispatchEvent(new CustomEvent('drag'));
-		this.removeEventListener('mousemove', this._boundNodeDrag);
+		this.dispatchEvent(new CustomEvent(`drag`));
+		this.removeEventListener(`mousemove`, this._boundNodeDrag);
 	//	this.parentNode.removeEventListener('mousemove', this._boundDrag);                // tlg I thook this out -- being annoying -- what is parentNode..never defined
-		this.dispatchEvent(new CustomEvent('event-node-repositioned', {
+		this.dispatchEvent(new CustomEvent(`event-node-repositioned`, {
 			bubbles: true,
 			detail: {
 				nodeModel: this._nodeModel,
@@ -367,34 +367,34 @@ customElements.define('jag-node', class extends HTMLElement {
 		}));
 	}
 
-	_initHandlers() {
-		this._$header.addEventListener('mousedown', (e) => {
+	_initHandlers () {
+		this._$header.addEventListener(`mousedown`, (e) => {
 			this._center_offset = {
 				x: this._$header.clientWidth / 2.0 - e.offsetX,
 				y: this._$header.clientHeight / 2.0 - e.offsetY
 			};
 
 			this._is_moving = true;
-			this._$header.className = 'moving';
+			this._$header.className = `moving`;
 
-			this._$header.addEventListener('mousemove', this._boundNodeDrag);
+			this._$header.addEventListener(`mousemove`, this._boundNodeDrag);
 			
-			this.parentNode.addEventListener('mousemove', this._boundDrag);
+			this.parentNode.addEventListener(`mousemove`, this._boundDrag);
 
-			this._$header.addEventListener('mouseup', this._boundMouseUp);
+			this._$header.addEventListener(`mouseup`, this._boundMouseUp);
 
-			this.parentNode.addEventListener('mouseup', this._boundMouseUp);
+			this.parentNode.addEventListener(`mouseup`, this._boundMouseUp);
 		});
 
-		this._$header.addEventListener('transitionend', () => {
+		this._$header.addEventListener(`transitionend`, () => {
 			window.cancelAnimationFrame(this._animation_frame_id);
 		});
 
-		this._$expand.addEventListener('click', () => {
+		this._$expand.addEventListener(`click`, () => {
 		//	this._nodeModel.isExpanded = !this._nodeModel.isExpanded;
 			this.isExpanded = !this.isExpanded;
-			let updateNode = (this._nodeModel.isRoot()) ?  this._nodeModel : this._nodeModel.parent
-			this.dispatchEvent(new CustomEvent('event-node-updated', {
+			let updateNode = (this._nodeModel.isRoot()) ?  this._nodeModel : this._nodeModel.parent;
+			this.dispatchEvent(new CustomEvent(`event-node-updated`, {
 				bubbles: true,
 				composed: true,
 				detail: {nodeModel: updateNode}
@@ -403,35 +403,35 @@ customElements.define('jag-node', class extends HTMLElement {
 		});
 	}
 
-	detachHandlers() {
-		this.parentNode.removeEventListener('mouseup', this._boundMouseUp);
-		this.parentNode.removeEventListener('mousemove', this._boundDrag);
+	detachHandlers () {
+		this.parentNode.removeEventListener(`mouseup`, this._boundMouseUp);
+		this.parentNode.removeEventListener(`mousemove`, this._boundDrag);
 	}
 
-	syncViewToNodeModel(nodeModel) {
+	syncViewToNodeModel (nodeModel) {
 		this._nodeModel = nodeModel;
 		this._translation.x = this._nodeModel.x;
 		this._translation.y = this._nodeModel.y;
-		this.syncViewToActivity(nodeModel.activity)
+		this.syncViewToActivity(nodeModel.activity);
 	}
 
-	syncViewToActivity(activity) {
+	syncViewToActivity (activity) {
 		this._nodeModel.activity = activity;
 		this._applyName();
 		this._applyOperator();
 		this._applyExecution();
 	}
 
-	_updateHandler(e) {
+	_updateHandler (e) {
 		const property = e.detail.property;
 
-		if (property == "operator") {
+		if (property == `operator`) {
 			this._applyOperator();
-		} else if (property == "execution") {
+		} else if (property == `execution`) {
 			this._applyExecution();
-		} else if (property == "name") {
+		} else if (property == `name`) {
 			this._applyName();
-		} else if (property == "children-meta") {
+		} else if (property == `children-meta`) {
 			const meta_map = new Map();
 
 			e.detail.extra.children.forEach((child) => {
@@ -444,16 +444,16 @@ customElements.define('jag-node', class extends HTMLElement {
 				if (child_meta.name) child_edge.setChildName(child_meta.name);
 				if (child_meta.description) child_edge.setChildDescription(child_meta.description);
 			});
-		} else if (property == "children") {
+		} else if (property == `children`) {
 			this.refresh();
 		}
 	}
 
-	_defineModel(e) {
+	_defineModel (e) {
 		this.activity = e.detail.activity;
 	}
 
-	translate(dx, dy, recursive = undefined) {
+	translate (dx, dy, recursive = undefined) {
 		this.setTranslation(this._translation.x + dx, this._translation.y + dy);
 
 		if(this._outs != undefined && (recursive || (recursive == undefined && !this._nodeModel.isExpanded))) {
@@ -464,7 +464,7 @@ customElements.define('jag-node', class extends HTMLElement {
 		}
 	}
 
-	setTranslation(x, y) {
+	setTranslation (x, y) {
 		this._translation.x = x;
 		this._translation.y = y;
 		if(!this.parentNode) return;
@@ -487,16 +487,16 @@ customElements.define('jag-node', class extends HTMLElement {
 			});
 		}
 
-		this.dispatchEvent(new CustomEvent('change-position', { detail: { x: x, y: y }}));
+		this.dispatchEvent(new CustomEvent(`change-position`, { detail: { x: x, y: y }}));
 	}
 
-	_applyName(override = undefined) {
+	_applyName (override = undefined) {
 		this._$header_name.innerHTML = this.getContextualName();
 		this._snap();
 	}
 
-	_applyOperator() {
-		let op = '';
+	_applyOperator () {
+		let op = ``;
 
 		let operator = Activity.OPERATOR;
 		for (let step in operator) {
@@ -507,17 +507,17 @@ customElements.define('jag-node', class extends HTMLElement {
 
 		this._$connector.innerHTML = op;
 		// @TODO: move this to styling;
-		if(op == '')
-			this._$connector.style.display = 'none';
+		if(op == ``)
+			this._$connector.style.display = `none`;
 		else
-			this._$connector.style.display = 'block';
+			this._$connector.style.display = `block`;
 
 		this._snap();
 	}
 
-	_applyExecution() {
-		this._$concurrency.style.display = 'none';
-		this._$concurrency.innerHTML = '';
+	_applyExecution () {
+		this._$concurrency.style.display = `none`;
+		this._$concurrency.innerHTML = ``;
 
 		if (this._nodeModel.activity.execution != JAG.EXECUTION.SEQUENTIAL.name)
 			return;
@@ -526,47 +526,47 @@ customElements.define('jag-node', class extends HTMLElement {
 			return;
 
 		for (const child of this._nodeModel.activity.children) {
-			if (!child.annotations || !child.annotations.has('no-wait') || child.annotations.get('no-wait') != true) {
+			if (!child.annotations || !child.annotations.has(`no-wait`) || child.annotations.get(`no-wait`) != true) {
 				return;
 			}
 		}
 
 		// Sequential nodes whose children are annotated 'no-wait' display a concurrency icon.
-		this._$concurrency.style.display = 'block';
-		this._$concurrency.innerHTML = "&#xf0c0;";
+		this._$concurrency.style.display = `block`;
+		this._$concurrency.innerHTML = `&#xf0c0;`;
 	}
 
-	_animationRefresh() {
+	_animationRefresh () {
 		this._resetLocation();
 		this._animation_frame_id = window.requestAnimationFrame(this._animationRefresh.bind(this));
 	}
 
-	_resetLocation() {
+	_resetLocation () {
 		this.setTranslation(this._translation.x, this._translation.y);
 	}
 
-	_snap() {
-		this._translation.z = Math.round( this._translation.x / SNAP_SIZE ) * SNAP_SIZE;
-		this._translation.y = Math.round( this._translation.y / SNAP_SIZE ) * SNAP_SIZE;
+	_snap () {
+		this._translation.z = Math.round(this._translation.x / SNAP_SIZE) * SNAP_SIZE;
+		this._translation.y = Math.round(this._translation.y / SNAP_SIZE) * SNAP_SIZE;
 		this._resetLocation();
 		// return [adj_x, adj_y];
 	}
 
-	getPosition() {
+	getPosition () {
 		const x = Math.round(this._translation.x - this.clientWidth / 2.0);
 		const y = Math.round(this._translation.y - this.clientHeight / 2.0);
 
 		return [x,y];
 	}
 
-	_computeNodeInputAttachment() {
+	_computeNodeInputAttachment () {
 		const x = this._translation.x - this._$header.clientWidth / 2.0;
 		const y = this._translation.y;
 
 		return [x, y];
 	}
 
-	_computeNodeOutputAttachment() {
+	_computeNodeOutputAttachment () {
 		const x = this._translation.x + this.clientWidth / 2.0;
 		const y = this._translation.y;
 
@@ -575,5 +575,5 @@ customElements.define('jag-node', class extends HTMLElement {
 
 });
 
-export default customElements.get('jag-node');
+export default customElements.get(`jag-node`);
 

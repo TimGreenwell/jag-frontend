@@ -2,20 +2,20 @@
 
 export default class GraphService extends EventTarget {
 
-	constructor() {
+	constructor () {
 		super();
 	}
 
-	connect() {
-		const host = 'localhost';
+	connect () {
+		const host = `localhost`;
 		this._ch = new WebSocket(`wss://${host}:8887`);
-		this._ch.addEventListener('open', this._handleConnection.bind(this));
-		this._ch.addEventListener('message', this._handleMessage.bind(this));
-		this._ch.addEventListener('error', this._handleConnection.bind(this));
+		this._ch.addEventListener(`open`, this._handleConnection.bind(this));
+		this._ch.addEventListener(`message`, this._handleMessage.bind(this));
+		this._ch.addEventListener(`error`, this._handleConnection.bind(this));
 	}
 
-	_handleConnection(e) {
-		this.dispatchEvent(new CustomEvent('connection', {
+	_handleConnection (e) {
+		this.dispatchEvent(new CustomEvent(`connection`, {
 			detail: {
 				type: e.type,
 				data: {
@@ -26,14 +26,14 @@ export default class GraphService extends EventTarget {
 		}));
 	}
 
-	_handleMessage(e) {
+	_handleMessage (e) {
 		const data = JSON.parse(e.detail);
 		this.dispatchEvent(new CustomEvent(data.type, { detail: data }));
 	}
 
-	runGraph(urn, data) {
+	runGraph (urn, data) {
 		const payload = {
-			type: 'run',
+			type: `run`,
 			data: {
 				urn: urn,
 				inputs: data.inputs,
@@ -43,9 +43,9 @@ export default class GraphService extends EventTarget {
 		this._ch.send(JSON.stringify(payload));
 	}
 
-	uploadGraph(graph) {
+	uploadGraph (graph) {
 		const payload = {
-			type: 'upload',
+			type: `upload`,
 			data: graph
 		};
 		this._ch.send(JSON.stringify(payload));

@@ -10,7 +10,7 @@
 
 class AutoComplete extends HTMLElement {
 
-	constructor() {
+	constructor () {
 		super();
 
 		this._suggestions = undefined;
@@ -19,15 +19,15 @@ class AutoComplete extends HTMLElement {
 		this._selected_index = 0;
 	}
 
-	get selected() {
+	get selected () {
 		return this._filtered_suggestions[this._selected_index];
 	}
 
-	set suggestions(suggestions) {
+	set suggestions (suggestions) {
 		this._suggestions = suggestions;
 	}
 
-	filter(value) {
+	filter (value) {
 		this._filtered_suggestions = this._suggestions.filter(suggestion => {
 			return suggestion.indexOf(value) === 0;
 		});
@@ -35,13 +35,13 @@ class AutoComplete extends HTMLElement {
 		this.render();
 	}
 
-	hide() {
-		this.classList.remove('visible');
+	hide () {
+		this.classList.remove(`visible`);
 	}
 
-	render() {
+	render () {
 		// Hide first to minimize repaints
-		this.classList.remove('visible');
+		this.classList.remove(`visible`);
 		this._selected_index = 0;
 
 		// Removes all existing childs
@@ -54,41 +54,41 @@ class AutoComplete extends HTMLElement {
 		const $suggestions = document.createDocumentFragment();
 
 		this._filtered_suggestions.forEach((suggestion, idx) => {
-			const $suggestion = document.createElement('div');
+			const $suggestion = document.createElement(`div`);
 			$suggestion.innerText = suggestion;
-			$suggestion.addEventListener('mouseenter', this._handleMouseEnter.bind(this, idx));
+			$suggestion.addEventListener(`mouseenter`, this._handleMouseEnter.bind(this, idx));
 			$suggestions.appendChild($suggestion);
 			if(idx === this._selected_index)
-				$suggestion.classList.add('selected');
+				$suggestion.classList.add(`selected`);
 		});
 
 		this.appendChild($suggestions);
-		this.classList.add('visible');
+		this.classList.add(`visible`);
 	}
 
-	select(direction) {
+	select (direction) {
 		if(this._selected_index >= 0) {
-			this.children[this._selected_index].classList.remove('selected');
+			this.children[this._selected_index].classList.remove(`selected`);
 		}
 
 		this._selected_index = (this._selected_index + this.children.length + direction) % this.children.length;
 
-		this.children[this._selected_index].classList.add('selected');
+		this.children[this._selected_index].classList.add(`selected`);
 	}
 
-	_handleMouseEnter(idx, event) {
+	_handleMouseEnter (idx, event) {
 		if(this._selected_index >= 0) {
-			this.children[this._selected_index].classList.remove('selected');
+			this.children[this._selected_index].classList.remove(`selected`);
 		}
 
 		this._selected_index = idx;
 
-		this.children[this._selected_index].classList.add('selected');
+		this.children[this._selected_index].classList.add(`selected`);
 	}
 }
 
 
-customElements.define('auto-complete', AutoComplete);
-export default customElements.get('auto-complete');
+customElements.define(`auto-complete`, AutoComplete);
+export default customElements.get(`auto-complete`);
 
 

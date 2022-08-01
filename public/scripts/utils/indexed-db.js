@@ -8,20 +8,20 @@
 
 export default class IndexedDBUtils {
 
-	static initStorage(id, version, storesConfig) {
+	static initStorage (id, version, storesConfig) {
 		return new Promise((resolve, reject) => {
 			const request = indexedDB.open(id, version);
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				const error = event.target.error;
 				reject(new Error(`Error while connecting to the database ${error}`));
 			});
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('upgradeneeded', event => {
+			request.addEventListener(`upgradeneeded`, event => {
 				const db = event.target.result;
 				// After extensive testing, it seems that success waits for all store creation to be completed
 				storesConfig.forEach(storeConfig => IndexedDBUtils.createStore(db, storeConfig));
@@ -29,7 +29,7 @@ export default class IndexedDBUtils {
 		});
 	}
 
-	static createStore(db, storeConfig) {
+	static createStore (db, storeConfig) {
 		if (db.objectStoreNames.contains(name)) {
 			db.deleteObjectStore(name);
 		}
@@ -41,9 +41,9 @@ export default class IndexedDBUtils {
 		});
 	}
 
-	static store(db, store, value, key) {
+	static store (db, store, value, key) {
 		return new Promise((resolve, reject) => {
-			const transaction = db.transaction(store, 'readwrite');
+			const transaction = db.transaction(store, `readwrite`);
 			const object_store = transaction.objectStore(store);
 			let request;
 			if (key)
@@ -52,122 +52,122 @@ export default class IndexedDBUtils {
 			else
 			{request = object_store.add(value);}
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while storing key value pair in store ${store}\nKey: ${key}\nValue: ${value}\nError: ${event.target.error}`));
 			});
 		});
 	}
 
-	static get(db, store, key) {
+	static get (db, store, key) {
 		return new Promise((resolve, reject) => {
-			const transaction = db.transaction(store, 'readonly');
+			const transaction = db.transaction(store, `readonly`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.get(key);
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while retrieving value from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
 			});
 		});
 	}
 
-	static delete2(db, store, key){  //  only keeping this around to see if i like this format better...
-		const request = db.transaction(store, 'readwrite').objectStore(store).delete(key);
+	static delete2 (db, store, key) {  //  only keeping this around to see if i like this format better...
+		const request = db.transaction(store, `readwrite`).objectStore(store).delete(key);
 
 		request.onsuccess = ()=> {
 			console.log(`SUCCESS: ${request.result}`);
-		}
+		};
 
 		request.onerror = (err)=> {
-			console.error(`FAILED: ${err}`)
-		}
+			console.error(`FAILED: ${err}`);
+		};
 	}
 
 	//tlg
-	static clear(db, store, key) {
+	static clear (db, store, key) {
 		return new Promise((resolve,reject) => {
-			const transaction = db.transaction(store, 'readwrite');
+			const transaction = db.transaction(store, `readwrite`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.clear();
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while clearing store ${store}\nError: ${event.target.error}`));
 			});
-		})
+		});
 	};
 
 
 	//tlg
-	static delete(db, store, key) {
+	static delete (db, store, key) {
 		return new Promise((resolve,reject) => {
-			const transaction = db.transaction(store, 'readwrite');
+			const transaction = db.transaction(store, `readwrite`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.delete(key);
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while deleting key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
 			});
-		})
+		});
 	};
 
-	static getKey(db, store, key) {
+	static getKey (db, store, key) {
 		return new Promise((resolve, reject) => {
-			const transaction = db.transaction(store, 'readonly');
+			const transaction = db.transaction(store, `readonly`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.getKey(key);
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while retrieving key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
 			});
 		});
 	}
 
-	static all(db, store, query, count) {
+	static all (db, store, query, count) {
 		return new Promise((resolve, reject) => {
-			const transaction = db.transaction(store, 'readonly');
+			const transaction = db.transaction(store, `readonly`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.getAll(query, count);
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while retrieving objects for store ${store} : ${event.target.error}`));
 			});
 		});
 	}
 
-	static keys(db, store) {
+	static keys (db, store) {
 		return new Promise((resolve, reject) => {
-			const transaction = db.transaction(store, 'readonly');
+			const transaction = db.transaction(store, `readonly`);
 			const object_store = transaction.objectStore(store);
 			const request = object_store.getAllKeys();
 
-			request.addEventListener('success', event => {
+			request.addEventListener(`success`, event => {
 				resolve(event.target.result);
 			});
 
-			request.addEventListener('error', event => {
+			request.addEventListener(`error`, event => {
 				reject(new Error(`Error while retreiving keys for store ${store} : ${event.target.error}`));
 			});
 		});

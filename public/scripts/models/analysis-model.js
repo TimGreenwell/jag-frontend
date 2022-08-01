@@ -12,7 +12,7 @@ import { UUIDv4 } from '../utils/uuid.js';
 export default class AnalysisModel extends EventTarget {
 
 	// constructor : why pass in root into a new CellModel? results in same.  hrm
-	constructor({
+	constructor ({
 					id = UUIDv4(),
 					name = AnalysisModel.DEFAULT_NAME,
 					description = AnalysisModel.DEFAULT_DESCRIPTION,
@@ -36,75 +36,75 @@ export default class AnalysisModel extends EventTarget {
 
 
 	// @TODO - Model is pumping out Dispatches in the setters.  Not bad idea - but convention..
-	get id() {
+	get id () {
 		return this._id;
 	}
 
-	get name() {
+	get name () {
 		return this._name;
 	}
-	set name(name) {
+	set name (name) {
 		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name','extra': { 'name': this._name }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { 'detail': { 'id': this._id, 'property': `name`,'extra': { 'name': this._name }}}));
 	}
 
-	get description() {
+	get description () {
 		return this._description;
 	}
-	set description(description) {
+	set description (description) {
 		this._description = description;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description','extra': { 'description': this._description }}}));
+		this.dispatchEvent(new CustomEvent(`update`, { 'detail': { 'id': this._id, 'property': `description`,'extra': { 'description': this._description }}}));
 	}
 
-	get rootUrn() {
+	get rootUrn () {
 		return this._rootUrn;
 	}
-	set rootUrn(value) {
+	set rootUrn (value) {
 		this._rootUrn = value;
 	}
-	get teamId() {
+	get teamId () {
 		return this._teamId;
 	}
-	set teamId(value) {
+	set teamId (value) {
 		this._teamId = value;
 	}
-	get isLocked() {
+	get isLocked () {
 		return this._isLocked;
 	}
-	set isLocked(value) {
+	set isLocked (value) {
 		this._isLocked = value;
 	}
 
 
-	get team() {
+	get team () {
 		return this._team;
 	}
 
-	set team(value) {
+	set team (value) {
 		this._team = value;
 	}
 
-	get rootCellModel() {
+	get rootCellModel () {
 		return this._rootCellModel;
 	}
-	set rootCellModel(value) {
+	set rootCellModel (value) {
 		this._rootCellModel = value;
 	}
 
-	findNode(id){
-		const searchStack = []
-		searchStack.push(this._rootCellModel)
+	findNode (id) {
+		const searchStack = [];
+		searchStack.push(this._rootCellModel);
 		while (searchStack.length != 0) {
 			let currentNode = searchStack.pop();
 			if (currentNode.id == id) {
 				return currentNode;
 			}
-			currentNode.children.forEach(child => searchStack.push(child))
+			currentNode.children.forEach(child => searchStack.push(child));
 		}
 	}
 
 
-	static async fromJSON(json) {
+	static async fromJSON (json) {
 		// const team_id = json.team;
 		// let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
 		// json.team = teamNode;                                                          // Exists only to store its data (team is in team)
@@ -112,7 +112,7 @@ export default class AnalysisModel extends EventTarget {
 		return newAnalysis;
 	}
 
-	toJSON() {
+	toJSON () {
 		const json = {
 			id: this._id,
 			name: this._name,
@@ -126,5 +126,5 @@ export default class AnalysisModel extends EventTarget {
 
 }
 
-AnalysisModel.DEFAULT_NAME = '';
-AnalysisModel.DEFAULT_DESCRIPTION = '';
+AnalysisModel.DEFAULT_NAME = ``;
+AnalysisModel.DEFAULT_DESCRIPTION = ``;

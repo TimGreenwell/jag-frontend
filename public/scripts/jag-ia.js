@@ -20,34 +20,34 @@ import ControllerIA from "./controllers/controllerIA.js";
 import UserPrefs from "./utils/user-prefs.js";
 
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener(`DOMContentLoaded`, async () => {
 
 	// Initializes local storage
-	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
+	const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
 	await idb_storage.init();
-	StorageService.addStorageInstance('idb-service', idb_storage);
+	StorageService.addStorageInstance(`idb-service`, idb_storage);
 
 	// Initializes a rest storage
-	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:8080/api/v1');
+	const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8080/api/v1`);
 	await rest_storage.init();
-	StorageService.addStorageInstance('local-rest-service', rest_storage);
+	StorageService.addStorageInstance(`local-rest-service`, rest_storage);
 
     // storage choices
 
 	StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());          // which storage used for reads
 	StorageService.setStoragesSynced(false);                                           // write to all storages or just preferred
-	SharedService.senderId = 'jag-ia';
+	SharedService.senderId = `jag-ia`;
 
 	let controller = new ControllerIA();
 
 	// Load DOM outer skeleton for Authoring Tool
-	const body = document.querySelector('body');
-	const mainPanels = document.createElement("div")
-	mainPanels.setAttribute("id","main-panels")
-	const leftPanel = document.createElement("div")
-	leftPanel.setAttribute("id","left-panel")
-	const rightPanel = document.createElement("div")
-	rightPanel.setAttribute("id","right-panel")
+	const body = document.querySelector(`body`);
+	const mainPanels = document.createElement(`div`);
+	mainPanels.setAttribute(`id`,`main-panels`);
+	const leftPanel = document.createElement(`div`);
+	leftPanel.setAttribute(`id`,`left-panel`);
+	const rightPanel = document.createElement(`div`);
+	rightPanel.setAttribute(`id`,`right-panel`);
 	const iaMenu = new IAMenu();
 	const analysisLibrary = new IAAnalysisLibrary();
 	const agentLibrary = new IAAgentLibrary();
@@ -55,12 +55,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const iaProperties = new IAProperties();
 	body.appendChild(iaMenu);
 	mainPanels.appendChild(leftPanel);
-	leftPanel.appendChild(analysisLibrary)
+	leftPanel.appendChild(analysisLibrary);
 	mainPanels.appendChild(iaTable);
 	mainPanels.appendChild(rightPanel);
-	rightPanel.appendChild(iaProperties)
-	rightPanel.appendChild(agentLibrary)
-	body.appendChild(mainPanels)
+	rightPanel.appendChild(iaProperties);
+	rightPanel.appendChild(agentLibrary);
+	body.appendChild(mainPanels);
 
 	controller.analysisLibrary = analysisLibrary;
 	controller.iaTable = iaTable;
@@ -69,10 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 	controller.agentLibrary = agentLibrary;
 	await controller.initialize();
 
-	//////////////////////////////////////////////////////////////////////
 	// Event: 'create-analysis' -
-	iaTable.addEventListener('create-analysis', (e) => {
-	//	library.addItem(e.detail.analysis, 0);
-		///////////////////////////////////////////////editor.team = e.detail.analysis.team;
-	});
+	iaTable.addEventListener(`create-analysis`, () => {});
 });

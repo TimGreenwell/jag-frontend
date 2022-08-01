@@ -23,26 +23,26 @@ export default class Schemas {
 	static
 	{
 		const ACTIVITY_STORE = {
-			name: 'activity',
-			key: 'urn',
+			name: `activity`,
+			key: `urn`,
 			deserialize: Activity.fromJSON,
-			rest: 'activities',
+			rest: `activities`,
 			indexList: [{
-					name: 'urn-index',
-					property: 'urn',
+					name: `urn-index`,
+					property: `urn`,
 					options: {
 						unique: true
 					}}]
 		};
 
 		const NODE_STORE = {
-			name: 'node',
-			key: 'id',
+			name: `node`,
+			key: `id`,
 			deserialize: NodeModel.fromJSON,
-			rest: 'jags',
+			rest: `jags`,
 			indexList: [{
-				name: 'id-index',
-				property: 'id',
+				name: `id-index`,
+				property: `id`,
 				options: {
 					unique: true
 				}
@@ -50,13 +50,13 @@ export default class Schemas {
 		};
 
 		const ANALYSIS_STORE = {
-			name: 'analysis',
-			key: 'id',
+			name: `analysis`,
+			key: `id`,
 			deserialize: AnalysisModel.fromJSON,
-			rest: 'analyses',
+			rest: `analyses`,
 			indexList: [{
-				name: 'id-index',
-				property: 'id',
+				name: `id-index`,
+				property: `id`,
 				options: {
 					unique: true
 				}
@@ -64,13 +64,13 @@ export default class Schemas {
 		};
 
 		const AGENT_STORE = {
-			name: 'agent',
-			key: 'id',
+			name: `agent`,
+			key: `id`,
 			deserialize: Agent.fromJSON,
-			rest: 'agents',
+			rest: `agents`,
 			indexList: [{
-				name: 'id-index',
-				property: 'id',
+				name: `id-index`,
+				property: `id`,
 				options: {
 					unique: true
 				}
@@ -78,18 +78,18 @@ export default class Schemas {
 		};
 
 		const TEAM_STORE = {
-			name: 'team',
-			key: 'id',
+			name: `team`,
+			key: `id`,
 			deserialize: Team.fromJSON,
-			rest: 'teams',
+			rest: `teams`,
 			indexList: [{
-				name: 'id-index',
-				property: 'id',
+				name: `id-index`,
+				property: `id`,
 				options: {
 					unique: true
 				}
 			}]
-		}
+		};
 
 		Schemas.SCHEMA_SET = {
 			'activity': ACTIVITY_STORE,
@@ -100,35 +100,35 @@ export default class Schemas {
 		};
 	}
 
-    static all() {
+    static all () {
         return Object.values(Schemas.SCHEMA_SET);
     }
 
-    static get(schema) {
+    static get (schema) {
         if (schema in Schemas.SCHEMA_SET) {
             return Schemas.SCHEMA_SET[schema];
         }
-        throw new Error("Schema '" + schema + "' does not exist.");
+        throw new Error(`Schema '` + schema + `' does not exist.`);
     }
 
-	static getRest(schema) {
+	static getRest (schema) {
 		let restSchema =  Schemas.get(schema).rest;
-		console.log("REST VALUE USING..")
-		console.log(restSchema)
+		console.log(`REST VALUE USING..`);
+		console.log(restSchema);
 		return restSchema;
 	}
 
-	static getKeyValue(schema,obj) {
+	static getKeyValue (schema,obj) {
 		let key = Schemas.get(schema).key;
 		return(obj[key]);
 	}
 
-	static getKey(schema) {
+	static getKey (schema) {
 		return Schemas.get(schema).key;
 	}
 
-	static async deserialize(schema,description) {
-		const newObj =  await Schemas.get(schema).deserialize(description)
+	static async deserialize (schema,description) {
+		const newObj =  await Schemas.get(schema).deserialize(description);
 		return newObj;
 	}
 }

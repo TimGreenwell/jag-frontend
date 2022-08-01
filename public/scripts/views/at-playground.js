@@ -14,17 +14,17 @@ import UserPrefs from "../utils/user-prefs.js";
 
 class AtPlayground extends Popupable {
 
-    constructor() {
+    constructor () {
         super();
         const margin = 50;
-        this._edgeContainerDiv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this._edgeContainerDiv.id = "edges-container";
-        this._edgeContainerDiv.setAttribute('version', '1.1');
-        this._edgeContainerDiv.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        this._edgeContainerDiv = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
+        this._edgeContainerDiv.id = `edges-container`;
+        this._edgeContainerDiv.setAttribute(`version`, `1.1`);
+        this._edgeContainerDiv.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
         this.appendChild(this._edgeContainerDiv);
 
-        this._nodeContainerDiv = document.createElement('div');
-        this._nodeContainerDiv.id = "nodes-container";
+        this._nodeContainerDiv = document.createElement(`div`);
+        this._nodeContainerDiv.id = `nodes-container`;
         this.appendChild(this._nodeContainerDiv);
         this.setPopupBounds(this._nodeContainerDiv);
 
@@ -34,10 +34,10 @@ class AtPlayground extends Popupable {
         this._is_edge_being_created = false;
 
         this._cardinals = {
-            left: this._createCardinal("left", 1, 0),
-            right: this._createCardinal("right", -1, 0),
-            up: this._createCardinal("up", 0, 1),
-            down: this._createCardinal("down", 0, -1)
+            left: this._createCardinal(`left`, 1, 0),
+            right: this._createCardinal(`right`, -1, 0),
+            up: this._createCardinal(`up`, 0, 1),
+            down: this._createCardinal(`down`, 0, -1)
         };
 
         this._canMoveView = {
@@ -60,13 +60,13 @@ class AtPlayground extends Popupable {
 
         // Turned this off temporarily.  Most keys have no function here.  They all work when
         // a node inside is selected
-         document.addEventListener('keydown', this.onKeyDown.bind(this));
+         document.addEventListener(`keydown`, this.onKeyDown.bind(this));
 
-        this.addEventListener('mousedown', this.playgroundClicked.bind(this));
+        this.addEventListener(`mousedown`, this.playgroundClicked.bind(this));
 
-        this.addEventListener('mousemove', (e) => {
-            e.stopPropagation()
-            this._edgeContainerDiv.dispatchEvent(new MouseEvent('mousemove', {clientX: e.clientX, clientY: e.clientY}));
+        this.addEventListener(`mousemove`, (e) => {
+            e.stopPropagation();
+            this._edgeContainerDiv.dispatchEvent(new MouseEvent(`mousemove`, {clientX: e.clientX, clientY: e.clientY}));
         });
 
         // 	this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
@@ -75,23 +75,23 @@ class AtPlayground extends Popupable {
 
     }
 
-    get selectedNodes() {
+    get selectedNodes () {
         let selectedIdArray = [...this._selectedActivityNodeElementSet].map(element => {
-            return element.nodeModel
-        })
+            return element.nodeModel;
+        });
         return selectedIdArray;
     }
 
-    get viewedNodes() {             // Returns the nodeModels inside the active elements
+    get viewedNodes () {             // Returns the nodeModels inside the active elements
         let viewedIdArray = [...this._activeActivityNodeElementSet].map(element => {
-            return element.nodeModel
-        })
+            return element.nodeModel;
+        });
         return viewedIdArray;
     }
 
-    get viewedProjects() {
+    get viewedProjects () {
         let viewedRootNodes = Array.from(this._viewedProjectsMap.values());
-        return viewedRootNodes
+        return viewedRootNodes;
     }
 
 
@@ -114,7 +114,7 @@ class AtPlayground extends Popupable {
      *
      */
 
-    _handleEdgeSelected(e) {
+    _handleEdgeSelected (e) {
         if (e.detail.selected) {
             this._selectedActivityNodeElementSet.add(e.target);
         } else {
@@ -122,11 +122,11 @@ class AtPlayground extends Popupable {
         }
     }
 
-    onEdgeInitialized(e, node) {
-        this.removeEventListener('mousemove', this._boundDragView);
-        this.removeEventListener('mouseup', this._boundStopDragView);
-        this.addEventListener('mousemove', this._boundOnEdgeUpdated);
-        this.addEventListener('mouseup', this._boundOnEdgeCanceled);
+    onEdgeInitialized (e, node) {
+        this.removeEventListener(`mousemove`, this._boundDragView);
+        this.removeEventListener(`mouseup`, this._boundStopDragView);
+        this.addEventListener(`mousemove`, this._boundOnEdgeUpdated);
+        this.addEventListener(`mouseup`, this._boundOnEdgeCanceled);
 
         this._created_edge = this._createEdge(node);
         this._is_edge_being_created = true;
@@ -135,15 +135,15 @@ class AtPlayground extends Popupable {
         this._created_edge.setEnd(x, y);
     }
 
-    _createEdge(origin, id = undefined) {
+    _createEdge (origin, id = undefined) {
         const edge = new EdgeElement(this._edgeContainerDiv);
         edge.setLeadActivityNode(origin);
         if (id) edge.setChildId(id);
-        edge.addEventListener('keydown', this.onKeyDown.bind(this));                     //mmmmmmmmmmmmmmmmm
+        edge.addEventListener(`keydown`, this.onKeyDown.bind(this));                     //mmmmmmmmmmmmmmmmm
         return edge;
     }
 
-    onEdgeUpdated(e) {
+    onEdgeUpdated (e) {
         if (!this._is_edge_being_created)
             return;
 
@@ -151,17 +151,17 @@ class AtPlayground extends Popupable {
         this._created_edge.setEnd(x, y);
     }
 
-    async onEdgeFinalized(e) {
+    async onEdgeFinalized (e) {
 
         let node = e.target.offsetParent;
 
         if (!this._is_edge_being_created)
             return;
 
-        if (window.confirm("Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
+        if (window.confirm(`Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
             this._is_edge_being_created = false;
-            this._created_edge.setSubActivityNode(node)                // a whole lot happens in here
-            this._created_edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
+            this._created_edge.setSubActivityNode(node);                // a whole lot happens in here
+            this._created_edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
 
             // identical issue below
             //parentActivity.addChild(childActivity);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
@@ -178,7 +178,7 @@ class AtPlayground extends Popupable {
             //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
             //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
 
-            this.dispatchEvent(new CustomEvent('event-nodes-connected', {
+            this.dispatchEvent(new CustomEvent(`event-nodes-connected`, {
                 bubbles: true,
                 composed: true,
                 detail: {
@@ -194,19 +194,19 @@ class AtPlayground extends Popupable {
         }
     }
 
-    cancelEdge() {
+    cancelEdge () {
         if (!this._is_edge_being_created)
             return;
 
-        this.removeEventListener('mousemove', this._boundOnEdgeUpdated);
-        this.removeEventListener('mouseup', this._boundOnEdgeCanceled);
+        this.removeEventListener(`mousemove`, this._boundOnEdgeUpdated);
+        this.removeEventListener(`mouseup`, this._boundOnEdgeCanceled);
 
         this._created_edge.destroy();
         this._created_edge = undefined;
         this._is_edge_being_created = false;
     }
 
-    onEdgeCanceled(e, node) {
+    onEdgeCanceled (e, node) {
         this.cancelEdge();
     }
 
@@ -226,19 +226,19 @@ class AtPlayground extends Popupable {
      *
      */
 
-    _createCardinal(type, dx, dy) {
-        const cardinal = document.createElement("div");
-        cardinal.classList.add("cardinal");
+    _createCardinal (type, dx, dy) {
+        const cardinal = document.createElement(`div`);
+        cardinal.classList.add(`cardinal`);
         cardinal.classList.add(type);
 
         this.appendChild(cardinal);
 
-        cardinal.addEventListener('mouseenter', () => {
+        cardinal.addEventListener(`mouseenter`, () => {
             const hoverInterval = setInterval(function () {
                 this._dragView(dx * AtPlayground.DEFAULT_CARDINAL_MULTIPLIER, dy * AtPlayground.DEFAULT_CARDINAL_MULTIPLIER);
             }.bind(this), 10);
 
-            cardinal.addEventListener('mouseleave', () => {
+            cardinal.addEventListener(`mouseleave`, () => {
                 clearInterval(hoverInterval);
             });
         });
@@ -246,7 +246,7 @@ class AtPlayground extends Popupable {
         return cardinal;
     }
 
-    _checkBounds(nodes = this._activeActivityNodeElementSet) {
+    _checkBounds (nodes = this._activeActivityNodeElementSet) {
         const bounds = this.getBoundingClientRect();
         let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
         let showLeft, showRight, showUp, showDown;
@@ -279,7 +279,7 @@ class AtPlayground extends Popupable {
         });
     }
 
-    _showCardinals(toggle = {left, right, up, down}) {
+    _showCardinals (toggle = {left, right, up, down}) {
         this._canMoveView = {
             left: toggle.left != undefined ? toggle.left : this._canMoveView.left,
             right: toggle.right != undefined ? toggle.right : this._canMoveView.right,
@@ -289,14 +289,14 @@ class AtPlayground extends Popupable {
 
         for (const [key, value] of Object.entries(toggle)) {
             if (value == true || value == false) {
-                this._cardinals[key].classList.toggle("visible", value);
+                this._cardinals[key].classList.toggle(`visible`, value);
             }
         }
 
         return this._canMoveView;
     }
 
-    _zoomView(factor) {
+    _zoomView (factor) {
         this._zoomFactor = factor;
         const transform = `scale(${factor})`;
         this._edgeContainerDiv.style.transform = transform;
@@ -304,7 +304,7 @@ class AtPlayground extends Popupable {
         this._checkBounds();
     }
 
-    _dragView(dx, dy) {
+    _dragView (dx, dy) {
         for (let node of this._activeActivityNodeElementSet) {
             node.translate(dx, dy, false);
 
@@ -315,7 +315,7 @@ class AtPlayground extends Popupable {
         this._checkBounds();
     }
 
-    dragView(e) {
+    dragView (e) {
         const dx = e.clientX - this._initialMouse.x;
         const dy = e.clientY - this._initialMouse.y;
 
@@ -324,11 +324,11 @@ class AtPlayground extends Popupable {
         this._initialMouse = {x: e.clientX, y: e.clientY};
     }
 
-    stopDragView(event) {
-        this.removeEventListener('mousemove', this._boundDragView);
+    stopDragView (event) {
+        this.removeEventListener(`mousemove`, this._boundDragView);
     }
 
-    fromClientToPlaygroundCoordinates(x, y) {
+    fromClientToPlaygroundCoordinates (x, y) {
         const px = x - this.offsetLeft;
         const py = y - this.offsetTop;
         return [px, py];
@@ -341,8 +341,8 @@ class AtPlayground extends Popupable {
      * onImport
      */
 
-    handlePlaygroundSelectedNodes(e) {           // on mousedown  applied during jag-node create
-        let $node = e.target.offsetParent
+    handlePlaygroundSelectedNodes (e) {           // on mousedown  applied during jag-node create
+        let $node = e.target.offsetParent;
         if (!e.shiftKey) {
             this._selectedActivityNodeElementSet.forEach(local_node => {
                 if (local_node != $node)
@@ -363,10 +363,10 @@ class AtPlayground extends Popupable {
 
         let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
-            return jagNodeElement.nodeModel
-        })
+            return jagNodeElement.nodeModel;
+        });
 
-        this.dispatchEvent(new CustomEvent('event-nodes-selected', {
+        this.dispatchEvent(new CustomEvent(`event-nodes-selected`, {
             detail: {
                 selectedNodeArray: selectedNodeArray
             }
@@ -374,33 +374,33 @@ class AtPlayground extends Popupable {
         e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
 
-    playgroundClicked(e) {
+    playgroundClicked (e) {
         // The background clicker
 
         let unselectedNodeArray = null;
         if (!e.shiftKey) {
             let unselectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
             unselectedNodeArray = unselectedActivityNodeElementArray.map(jagNodeElement => {
-                return jagNodeElement.nodeModel
-            })
+                return jagNodeElement.nodeModel;
+            });
             this.deselectAll();
         }
 
         let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
         let selectedNodeArray = selectedActivityNodeElementArray.map(jagNodeElement => {
-            return jagNodeElement.nodeModel
-        })
-        this.dispatchEvent(new CustomEvent('event-playground-clicked', {detail: {selectedNodeArray: selectedNodeArray, unselectedNodeArray: unselectedNodeArray}}));
+            return jagNodeElement.nodeModel;
+        });
+        this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {detail: {selectedNodeArray: selectedNodeArray, unselectedNodeArray: unselectedNodeArray}}));
 
 
-        this._edgeContainerDiv.dispatchEvent(new MouseEvent('click', {
+        this._edgeContainerDiv.dispatchEvent(new MouseEvent(`click`, {
             clientX: e.clientX,
             clientY: e.clientY,
             shiftKey: e.shiftKey
         }));
         this._initialMouse = {x: e.clientX, y: e.clientY};
-        this.addEventListener('mousemove', this._boundDragView);
-        this.addEventListener('mouseup', this._boundStopDragView);
+        this.addEventListener(`mousemove`, this._boundDragView);
+        this.addEventListener(`mouseup`, this._boundStopDragView);
     }
     //
     // cancelDefault(e) {
@@ -436,40 +436,40 @@ class AtPlayground extends Popupable {
      */
 
 
-    _buildNodeViewFromNodeModel(currentNodeModel) {
+    _buildNodeViewFromNodeModel (currentNodeModel) {
         if ((!currentNodeModel.x) || (!currentNodeModel.y)) {
             currentNodeModel.x = 30 + Math.floor(Math.random() * 20);
             currentNodeModel.y = Math.floor((this.clientHeight / 2) + (Math.random() * 70));
         }
-        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
-        const $newViewNode = this.createActivityNode(currentNodeModel)
+        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y);
+        const $newViewNode = this.createActivityNode(currentNodeModel);
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
         if (currentNodeModel.isExpanded) {
         currentNodeModel.children.forEach((child) => {
 
                 let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-                let $childViewNode = this._buildNodeViewFromNodeModel(child)                          // first build child
+                let $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
                 edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-                edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-             })}
-        return $newViewNode
+                edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
+             });}
+        return $newViewNode;
     }
 
 
-    redrawSelectedNodes() {
+    redrawSelectedNodes () {
         this.selectedNodes.forEach(node => {
-            this._redrawNodes(node)
-        })
+            this._redrawNodes(node);
+        });
     }
 
-    _redrawNodes(currentNodeModel, x = null, y = null) {
-        let margin = 25
+    _redrawNodes (currentNodeModel, x = null, y = null) {
+        let margin = 25;
         if (x && y) {
             currentNodeModel.x = x;
             currentNodeModel.y = y;
         }
-        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y)
-        const $newViewNode = this.getNodeViewById(currentNodeModel.id)
+        currentNodeModel.setPosition(currentNodeModel.x, currentNodeModel.y);
+        const $newViewNode = this.getNodeViewById(currentNodeModel.id);
         //    const $newViewNode = this.createActivityNode(currentNodeModel)
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
 
@@ -481,19 +481,19 @@ class AtPlayground extends Popupable {
 
         currentNodeModel.children.forEach((child) => {
             const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
-            y_offset = y_offset + (local_preferred_size)
+            y_offset = y_offset + (local_preferred_size);
             //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
-            let $childViewNode = this._redrawNodes(child, x_offset, y_offset)                          // first build child
+            let $childViewNode = this._redrawNodes(child, x_offset, y_offset);                          // first build child
 
             //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
             //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
-        })
+        });
 
-        return $newViewNode
+        return $newViewNode;
     }
 
-    _handleNewActivityActivityPopup(e) {
-        const $initiator = document.getElementById('menu-new');
+    _handleNewActivityActivityPopup (e) {
+        const $initiator = document.getElementById(`menu-new`);
         this.popup({
             content: AtPlayground.NOTICE_CREATE_JAG,
             trackEl: this,
@@ -503,7 +503,7 @@ class AtPlayground extends Popupable {
     }
 
 
-    clearPlayground(projectId = undefined) {
+    clearPlayground (projectId = undefined) {
         for (let jagNode of this._activeActivityNodeElementSet) {
             if ((projectId == undefined) || (jagNode.nodeModel.projectId == projectId)) {
                 jagNode.removeAllEdges();
@@ -539,11 +539,11 @@ class AtPlayground extends Popupable {
     // }
 
 
-    deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
+    deleteActivity (deletedUrn) {             // Activity got updated - does it affect our projects?
         this._viewedProjectsMap.forEach((value, key) => {
             let node = value;
             if (node.isActivityInProject(deletedUrn)) {
-                this.dispatchEvent(new CustomEvent('response-activity-deleted', {
+                this.dispatchEvent(new CustomEvent(`response-activity-deleted`, {
                     detail: {
                         projectModelId: node.id,
                         activityUrn: deletedUrn
@@ -551,32 +551,32 @@ class AtPlayground extends Popupable {
                 })); // event-activity-created in playground uses node
 
             }
-        })
+        });
 
     }
 
 
-    replaceActivityNode(newActivity, deadUrn) {
+    replaceActivityNode (newActivity, deadUrn) {
         this._activeActivityNodeElementSet.forEach((node) => {
             if (node.nodeModel.activity.urn == deadUrn) {
                 node.nodeModel.activity = newActivity;
             }
-        })
+        });
     }
 
     // this is called when a new jag appears from above --- applies?
     //note: creates a view based on Activity xxx now NodeModel
-    createActivityNode(nodeModel) {
+    createActivityNode (nodeModel) {
         const $node = new ActivityNodeElement(nodeModel);
-        $node.addEventListener('mousedown', this.handlePlaygroundSelectedNodes.bind(this));
+        $node.addEventListener(`mousedown`, this.handlePlaygroundSelectedNodes.bind(this));
 
-        $node.addEventListener('keydown', this.onKeyDown.bind(this));
+        $node.addEventListener(`keydown`, this.onKeyDown.bind(this));
 
-        $node.addEventListener('drag', () => {
-            this._checkBounds()
+        $node.addEventListener(`drag`, () => {
+            this._checkBounds();
         });
 
-        $node.addEventListener('toggle-visible', (e) => {
+        $node.addEventListener(`toggle-visible`, (e) => {
             if (e.detail) {
                 this._checkBounds($node.getTree());
             } else {
@@ -585,8 +585,8 @@ class AtPlayground extends Popupable {
         });
 
         ////?? @TODO think about this.
-        $node.addEventListener('refresh', (e) => {
-            this.dispatchEvent(new CustomEvent('refresh', {detail: e.detail}));
+        $node.addEventListener(`refresh`, (e) => {
+            this.dispatchEvent(new CustomEvent(`refresh`, {detail: e.detail}));
         });
         // Are these two below not the same info.  activeNodeSet needed?
 
@@ -598,12 +598,12 @@ class AtPlayground extends Popupable {
         return $node;
     }
 
-    deleteNodeModel(deadId) {
+    deleteNodeModel (deadId) {
         // The deadId is a node marked for deletion.  Death can either be
         // annihilation or absorption into another project.  AtPlayground nodes
         // with an ancestor matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
-        this._viewedProjectsMap.delete(deadId)
+        this._viewedProjectsMap.delete(deadId);
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
             //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
             if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
@@ -616,27 +616,27 @@ class AtPlayground extends Popupable {
     }
 
 
-    getNodeViewById(id) {
+    getNodeViewById (id) {
         for (let node of this._activeActivityNodeElementSet) {           // search through active elements
             if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
-                return node
+                return node;
             }
         }
     }
 
-    addNodeModel(projectNodeModel) {
+    addNodeModel (projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
         let $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
-        return $rootNode
+        return $rootNode;
     }
 
 
 
- _filterOrphans(){
+ _filterOrphans () {
 
      for (let [key,val] of this._viewedProjectsMap) {
          if (!val.isRoot()) {
-             this._viewedProjectsMap.delete(key)
+             this._viewedProjectsMap.delete(key);
          }
      }
 
@@ -644,9 +644,9 @@ class AtPlayground extends Popupable {
      for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
          if (this._viewedProjectsMap[index].nodeModel.id == updatedNodeModel.id) {
              if (updatedNodeModel.id == updatedNodeModel.projectId) {
-                 let listItemElement = this.createListItemCollection(updatedNodeModel)
+                 let listItemElement = this.createListItemCollection(updatedNodeModel);
                  console.log(`Potential list item going to be : `);
-                 console.log(listItemElement)
+                 console.log(listItemElement);
                  this._libraryList[index] = listItemElement;
              } else {
                  this._libraryList.splice(index, 1);
@@ -655,13 +655,13 @@ class AtPlayground extends Popupable {
      }
 }
 
-    _rebuildNodeView(projectNodeModel) {
-        this.deleteNodeModel(projectNodeModel.id)
+    _rebuildNodeView (projectNodeModel) {
+        this.deleteNodeModel(projectNodeModel.id);
 
         if (projectNodeModel.isRoot()) {
-            this.addNodeModel(projectNodeModel)
+            this.addNodeModel(projectNodeModel);
         } else {
-            this._viewedProjectsMap.delete(projectNodeModel.id)
+            this._viewedProjectsMap.delete(projectNodeModel.id);
         }
     }
 
@@ -680,19 +680,19 @@ class AtPlayground extends Popupable {
      */
 
 
-    deselectAll() {
+    deselectAll () {
         this._selectedActivityNodeElementSet.forEach(n => n.setSelected(false));
         this._selectedActivityNodeElementSet.clear();
     }
 
-    onKeyDown(event) {
+    onKeyDown (event) {
         event.stopImmediatePropagation();
-        let $node = event.target
-        if (event.key == 'Delete') {
+        let $node = event.target;
+        if (event.key == `Delete`) {
             if (this._selectedActivityNodeElementSet.length > 1) {
-                alert("Can only clear/disconnect one selected item")
+                alert(`Can only clear/disconnect one selected item`);
             } else if (this._selectedActivityNodeElementSet.length < 1) {
-                alert("Must select at least one item to clear/disconnect")
+                alert(`Must select at least one item to clear/disconnect`);
             } else {
                 // if the selected node is a root - then clear the project from the tree
                 // if the selected node is a non-root node - then disconnect the jag from its parent
@@ -703,16 +703,16 @@ class AtPlayground extends Popupable {
                                 this.clearPlayground($node.nodeModel.projectId);
                 } else {
 
-                    if (window.confirm("Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)")) {
+                    if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                         const parentActivity = $node.getParent().nodeModel.activity;
-                        const childActivityChildId = $node.nodeModel.childId
+                        const childActivityChildId = $node.nodeModel.childId;
                         let remainingChildren = parentActivity._children.filter(entry => {
                             if (entry.id != childActivityChildId) {
                                 return entry;
                             }
-                        })
-                        parentActivity.children = remainingChildren
-                        this.dispatchEvent(new CustomEvent('event-activity-updated', {
+                        });
+                        parentActivity.children = remainingChildren;
+                        this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                             detail: {activity: parentActivity}
                         }));
 
@@ -720,30 +720,30 @@ class AtPlayground extends Popupable {
                 }
 
             }
-        } else if (event.key == 'ArrowLeft') {
+        } else if (event.key == `ArrowLeft`) {
             if (this._canMoveView.left) {
                 this._dragView(1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
-        } else if (event.key == 'ArrowRight') {
+        } else if (event.key == `ArrowRight`) {
             if (this._canMoveView.right) {
                 this._dragView(-1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
-        } else if (event.key == 'ArrowUp') {
+        } else if (event.key == `ArrowUp`) {
             if (this._canMoveView.up) {
                 this._dragView(0, 1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
             }
-        } else if (event.key == 'ArrowDown') {
+        } else if (event.key == `ArrowDown`) {
             if (this._canMoveView.down) {
                 this._dragView(0, -1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
             }
-        } else if (event.key == 'PageUp') {
+        } else if (event.key == `PageUp`) {
             this._zoomView(this._zoomFactor / AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
-        } else if (event.key == 'PageDown') {
+        } else if (event.key == `PageDown`) {
             this._zoomView(this._zoomFactor * AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
         }
     }
 
-    _getNodePreferredHeight(jagNode, jagNodeMap) {
+    _getNodePreferredHeight (jagNode, jagNodeMap) {
         if (!jagNode.children || jagNode.children.length === 0)
             return 1;
 
@@ -762,8 +762,8 @@ class AtPlayground extends Popupable {
     // }
 
 
-    _eventImportJagHandler(e) {
-        const $initiator = document.getElementById('menu-new');
+    _eventImportJagHandler (e) {
+        const $initiator = document.getElementById(`menu-new`);
         this.popup({
             content: AtPlayground.NOTICE_PASTE_JAG,
             trackEl: this,
@@ -783,56 +783,56 @@ class AtPlayground extends Popupable {
 
 
 AtPlayground.POPUP_TYPES = {
-    WARNING: 'popup-warning',
-    NOTICE: 'popup-notice',
-    INFO: 'popup-info'
+    WARNING: `popup-warning`,
+    NOTICE: `popup-notice`,
+    INFO: `popup-info`
 };
 
 // why cant this go inside scope.? Does anyone else need it?
 AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
     type: AtPlayground.POPUP_TYPES.NOTICE,
-    name: "Add New JAG Activity",
-    description: "Be precise.  You can always edit this later.",
+    name: `Add New JAG Activity`,
+    description: `Be precise.  You can always edit this later.`,
     properties: [
         {
-            name: 'name', label: 'Name', type: 'text', options: function () {
+            name: `name`, label: `Name`, type: `text`, options: function () {
                 let eventMap = new Map();
-                eventMap.set('input', () => {
-                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById('name').value;
-                    const convName = newName.replace(' ', '-').replace(/[^0-9a-zA-Z:-]+/g, "").toLowerCase();
-                    document.getElementById('urn').value = convName;
+                eventMap.set(`input`, () => {
+                    const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
+                    const convName = newName.replace(` `, `-`).replace(/[^0-9a-zA-Z:-]+/g, ``).toLowerCase();
+                    document.getElementById(`urn`).value = convName;
                 });
                 return eventMap;
             }
         },
         {
-            name: 'urn', label: 'URN', type: 'text', options: function () {
+            name: `urn`, label: `URN`, type: `text`, options: function () {
                 let eventMap = new Map();
                 return eventMap;
             }
         },
         {
-            name: 'description', label: 'Description', type: 'textarea',
+            name: `description`, label: `Description`, type: `textarea`,
             options: async function () {
                 let paramMap = new Map();
-                paramMap.set('cols', 24);
-                paramMap.set('rows', 4);
+                paramMap.set(`cols`, 24);
+                paramMap.set(`rows`, 4);
                 return paramMap;
             }
         },
     ],
     actions: [
         {
-            text: "Create", color: "black", bgColor: "red",
+            text: `Create`, color: `black`, bgColor: `red`,
             action: async function ({inputs: {}, outputs: activityConstruct}) {
-                this.dispatchEvent(new CustomEvent('event-activity-created', {
+                this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                     bubbles: true,
                     composed: true,
                     detail: {activityConstruct: activityConstruct}
                 }));
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"}
+        {text: `Cancel`, color: `white`, bgColor: `black`}
 
 
     ]
@@ -843,29 +843,29 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
 
 AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
     type: AtPlayground.POPUP_TYPES.NOTICE,
-    name: "Disconnect Child",
-    description: "Disconnect this child JAG from parent JAG?",
+    name: `Disconnect Child`,
+    description: `Disconnect this child JAG from parent JAG?`,
     actions: [
         {
-            text: "Yes", color: "black", bgColor: "red",
+            text: `Yes`, color: `black`, bgColor: `red`,
             action: function ({inputs: {node}}) {
                 const edge = node.getParentEdge();
                 const id = edge.getChildId();
                 const parent = node.getParent();
-                const jagUrn = parent.nodeModel.urn
-                const jagChild = {urn: node.nodeModel.urn, id: node.nodeModel.childId}
+                const jagUrn = parent.nodeModel.urn;
+                const jagChild = {urn: node.nodeModel.urn, id: node.nodeModel.childId};
                 let remainingChildren = parent.nodeModel.activity.children.filter(entry => {
                     if (entry.id != jagChild.id) {
                         return entry;
                     }
-                })
-                parent.nodeModel.activity.children = remainingChildren
-                this.dispatchEvent(new CustomEvent('event-activity-updated', {
+                });
+                parent.nodeModel.activity.children = remainingChildren;
+                this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                     detail: {activity: parent.nodeModel.activity}
                 }));
             }
         },
-        {text: "No", color: "white", bgColor: "black"}
+        {text: `No`, color: `white`, bgColor: `black`}
 
     ]
 });
@@ -873,48 +873,48 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
 // why cant this go inside scope.? Does anyone else need it?
 AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
     type: AtPlayground.POPUP_TYPES.NOTICE,
-    name: "Recreate JAG",
-    description: "Paste previously exported JAG",
+    name: `Recreate JAG`,
+    description: `Paste previously exported JAG`,
     properties: [
         {
-            name: 'description', label: 'JSON', type: 'textarea',
+            name: `description`, label: `JSON`, type: `textarea`,
             options: async function () {
                 let paramMap = new Map();
-                paramMap.set('cols', 24);
-                paramMap.set('rows', 4);
+                paramMap.set(`cols`, 24);
+                paramMap.set(`rows`, 4);
                 return paramMap;
             }
         }
     ],
     actions: [
         {
-            text: "Create", color: "black", bgColor: "red",
+            text: `Create`, color: `black`, bgColor: `red`,
             action: async function ({inputs: {}, outputs: json}) {
-                this.dispatchEvent(new CustomEvent('event-import-jag', {
+                this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                     bubbles: true,
                     composed: true,
                     detail: {result: json.description}
                 }));
             }
         },
-        {text: "Cancel", color: "white", bgColor: "black"},
+        {text: `Cancel`, color: `white`, bgColor: `black`},
         {
-            text: "Or select a file...", color: "white", bgColor: "black",
+            text: `Or select a file...`, color: `white`, bgColor: `black`,
             action: async function ({inputs: {}, outputs: {}}) {
                 let getFiles = () =>
                     new Promise(resolve => {
-                        let input = document.createElement('input');
-                        input.type = 'file';
+                        let input = document.createElement(`input`);
+                        input.type = `file`;
                         input.onchange = () => resolve([...input.files]);
                         input.click();
-                    })
+                    });
 
                 let selectedFiles = await getFiles();
 
                 let reader = new FileReader();
-                reader.addEventListener('load', function (event) {
-                    console.log("File read...... and passed to event")
-                    this.dispatchEvent(new CustomEvent('event-import-jag', {
+                reader.addEventListener(`load`, function (event) {
+                    console.log(`File read...... and passed to event`);
+                    this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                         bubbles: true,
                         composed: true,
                         detail: {result: event.target.result}
@@ -938,8 +938,8 @@ AtPlayground.DEFAULT_ARROW_MULTIPLIER = 10;
 
 AtPlayground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 
-customElements.define('jag-playground', AtPlayground);
+customElements.define(`jag-playground`, AtPlayground);
 
-export default customElements.get('jag-playground');
+export default customElements.get(`jag-playground`);
 
 

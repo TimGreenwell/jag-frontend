@@ -12,14 +12,14 @@ import SchemaManager from "./schemas.js";
 
 export default class RESTStorage {
 
-	constructor(name, version, endpoint) {
+	constructor (name, version, endpoint) {
 		this._name = name;
 		this._version = version;
 		this._endpoint = endpoint;
-		console.log("{} - Rest Storage Service initialized at (" + endpoint + ")");
+		console.log(`{} - Rest Storage Service initialized at (` + endpoint + `)`);
 	}
 
-	async init() {
+	async init () {
 		// TODO: provide init functions
 
 		// TODO: test connection to ensure availability?
@@ -28,52 +28,52 @@ export default class RESTStorage {
 		// TODO: ensure API version is compatible with endpoint?
 	}
 
-	async all(schema) {
+	async all (schema) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.all.replace("{urlHandle}", urlHandle);
+		const path = __REST_PATHS.all.replace(`{urlHandle}`, urlHandle);
 		const all = await RESTUtils.all(this._endpoint + path);
 		return all;
 	}
 
-	async get(schema, id) {
+	async get (schema, id) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.get.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		const path = __REST_PATHS.get.replace(`{urlHandle}`, urlHandle).replace(`{id}`,id);
 		const getById =  await RESTUtils.get(this._endpoint + path);
 		return getById;
 	}
 
-	async has(schema, id) {
+	async has (schema, id) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.has.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		const path = __REST_PATHS.has.replace(`{urlHandle}`, urlHandle).replace(`{id}`,id);
 		const exists = await RESTUtils.has(this._endpoint + path);
 		return exists;
 	}
 
-	async create(schema, id, jsonObj) {
+	async create (schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.create.replace("{urlHandle}", urlHandle);
+		const path = __REST_PATHS.create.replace(`{urlHandle}`, urlHandle);
 		const reply =  await RESTUtils.create(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;
 	}
 
-	async update(schema, id, jsonObj) {
+	async update (schema, id, jsonObj) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.update.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		const path = __REST_PATHS.update.replace(`{urlHandle}`, urlHandle).replace(`{id}`,id);
 
 		const reply = await RESTUtils.update(this._endpoint + path, JSON.stringify(jsonObj));
 		return reply;
 	}
 
-	async delete(schema, id) {
+	async delete (schema, id) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.delete.replace("{urlHandle}", urlHandle).replace("{id}",id);
+		const path = __REST_PATHS.delete.replace(`{urlHandle}`, urlHandle).replace(`{id}`,id);
 		const reply = await RESTUtils.delete(this._endpoint + path);
 		return reply;
 	}
 
-	async clear(schema) {
+	async clear (schema) {
 		const urlHandle = SchemaManager.getRest(schema);
-		const path = __REST_PATHS.clear.replace("{urlHandle}", urlHandle);
+		const path = __REST_PATHS.clear.replace(`{urlHandle}`, urlHandle);
 		const reply = await RESTUtils.clear(this._endpoint + path);
 		return reply;
 	}
@@ -81,12 +81,12 @@ export default class RESTStorage {
 }
 
 const __REST_PATHS = {
-	all: '/{urlHandle}',
-	get: '/{urlHandle}/{id}',
-	has: '/{urlHandle}/{id}',
-	create: '/{urlHandle}',
-	update: '/{urlHandle}/{id}',
-	delete: '/{urlHandle}/{id}',
-	clear: '/{urlHandle}'
+	all: `/{urlHandle}`,
+	get: `/{urlHandle}/{id}`,
+	has: `/{urlHandle}/{id}`,
+	create: `/{urlHandle}`,
+	update: `/{urlHandle}/{id}`,
+	delete: `/{urlHandle}/{id}`,
+	clear: `/{urlHandle}`
 };
 

@@ -6,37 +6,37 @@
  * @version 0.16
  */
 
-customElements.define('analysis-library', class extends HTMLElement {
+customElements.define(`analysis-library`, class extends HTMLElement {
 
-	constructor() {
+	constructor () {
 		super();
 		this._libraryList = [];
 		this._initUI();
 		this.clearItems();
 	}
 
-	clearItems() {
+	clearItems () {
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 		this._libraryList = [];
 	}
 
-	_initUI() {
+	_initUI () {
 		//const $header = document.createElement('header');
-		const $search = document.createElement('input');
-		const $list = document.createElement('ol');
+		const $search = document.createElement(`input`);
+		const $list = document.createElement(`ol`);
 
-		$search.classList.add('library-search');
-		$search.placeholder = "Analyses"
-		$list.classList.add('library-list');
+		$search.classList.add(`library-search`);
+		$search.placeholder = `Analyses`;
+		$list.classList.add(`library-list`);
 
 		this.appendChild($search);
 		this.appendChild($list);
 
 		this._$list = $list;
 
-		$search.addEventListener('keyup', this._filterFromSearchInput.bind(this));
+		$search.addEventListener(`keyup`, this._filterFromSearchInput.bind(this));
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -44,80 +44,80 @@ customElements.define('analysis-library', class extends HTMLElement {
 	//////////////////////////////////////////////////////////////////////////////////
 
 
-	createListItemCollection(model, idx = -1) {
-		const id = model.urn || '';
+	createListItemCollection (model, idx = -1) {
+		const id = model.urn || ``;
 		const root = model.rootUrn;
 		const name = model.name;
-		const description = model.description || '';
+		const description = model.description || ``;
 
-		const li = document.createElement('li');
-		li.className = "list-item"
+		const li = document.createElement(`li`);
+		li.className = `list-item`;
 		li.id = id;
 
 		let deleteIconClickedHandler = function (event) {
 			event.stopPropagation();
-			this.dispatchEvent(new CustomEvent('event-analysis-deleted', {
+			this.dispatchEvent(new CustomEvent(`event-analysis-deleted`, {
 				detail: {analysisId: model.id}
-			}))
-		}
+			}));
+		};
 
 		let lockIconClickedHandler = function (event) {
 			event.stopPropagation();
-			this.dispatchEvent(new CustomEvent('event-analysis-locked', {
+			this.dispatchEvent(new CustomEvent(`event-analysis-locked`, {
 				detail: {analysisId: model.id}
-			}))
-		}
+			}));
+		};
 
 
-		const $topHalfWrapper = document.createElement('div');
-		$topHalfWrapper.className = "top-half item-line"
-		const $nameEntry = document.createElement('span')
-		$nameEntry.classList.add('name-entry')
+		const $topHalfWrapper = document.createElement(`div`);
+		$topHalfWrapper.className = `top-half item-line`;
+		const $nameEntry = document.createElement(`span`);
+		$nameEntry.classList.add(`name-entry`);
 		$nameEntry.innerText = name;
 
-		const toggleLock = document.createElement('div');
-		toggleLock.classList.add('library-button', 'lock-button');
-		toggleLock.addEventListener('click', lockIconClickedHandler.bind(this))
+		const toggleLock = document.createElement(`div`);
+		toggleLock.classList.add(`library-button`, `lock-button`);
+		toggleLock.addEventListener(`click`, lockIconClickedHandler.bind(this));
 
 		$topHalfWrapper.appendChild(toggleLock);
 		$topHalfWrapper.appendChild($nameEntry);
 
-		const $bottomHalfWrapper = document.createElement('div');
-		$bottomHalfWrapper.className = "bottom-half item-line"
-		const $descriptionEntry = document.createElement('span')
-		$descriptionEntry.classList.add('description-entry')
+		const $bottomHalfWrapper = document.createElement(`div`);
+		$bottomHalfWrapper.className = `bottom-half item-line`;
+		const $descriptionEntry = document.createElement(`span`);
+		$descriptionEntry.classList.add(`description-entry`);
 		$descriptionEntry.innerText = root;
 
-		const deleteJag = document.createElement('div');
+		const deleteJag = document.createElement(`div`);
 		if (!model.isLocked) {
-			deleteJag.classList.add('library-button', 'delete-button');
-			deleteJag.addEventListener('click',  deleteIconClickedHandler.bind(this))
+			deleteJag.classList.add(`library-button`, `delete-button`);
+			deleteJag.addEventListener(`click`,  deleteIconClickedHandler.bind(this));
 		}
 
 		$bottomHalfWrapper.appendChild(deleteJag);
 		$bottomHalfWrapper.appendChild($descriptionEntry);
-		const p = document.createElement('p');
+		const p = document.createElement(`p`);
 		p.innerHTML = description;  // analysis description
 
 		li.appendChild($topHalfWrapper);
 		li.appendChild($bottomHalfWrapper);
-		li.appendChild(p)
+		li.appendChild(p);
 
     	const search_params = [];
 		search_params.push(name.toLowerCase());
 		search_params.push(root.toLowerCase());
 		search_params.push(description.toLowerCase());
 
-		$bottomHalfWrapper.addEventListener('click', (event) => {
-			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
+		$bottomHalfWrapper.addEventListener(`click`, (event) => {
+			this.dispatchEvent(new CustomEvent(`event-analysis-selected`, {
 				detail: {
 					model: model
 				}
 			}));
 		});
 
-		$topHalfWrapper.addEventListener('click', (event) => {
-			this.dispatchEvent(new CustomEvent('event-analysis-selected', {
+		$topHalfWrapper.addEventListener(`click`, (event) => {
+			this.dispatchEvent(new CustomEvent(`event-analysis-selected`, {
 				detail: {
 					model: model
 				}
@@ -126,7 +126,7 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 		let newItem = {
 			element: li,
-			search_content: search_params.join(" "),
+			search_content: search_params.join(` `),
 			model: model
 		};
 
@@ -135,28 +135,28 @@ customElements.define('analysis-library', class extends HTMLElement {
 	//?	model.addEventListener('copy', this._createItem.bind(this));
 	}
 
-	addListItem(analysisModel) {
+	addListItem (analysisModel) {
 		// handleNodeStorageCreated (@controllerAT)
-		let listItemElement = this.createListItemCollection(analysisModel)
+		let listItemElement = this.createListItemCollection(analysisModel);
 		this._libraryList.push(listItemElement);
 		this._$list.appendChild(listItemElement.element);
 	}
 
-	addListItems(analysisModelArray) {
+	addListItems (analysisModelArray) {
 		analysisModelArray.forEach(analysisModel => {
-			this.addListItem(analysisModel)
+			this.addListItem(analysisModel);
 		});
 	}
 
 
-	removeLibraryListItem(deletedAnalysisId) {
+	removeLibraryListItem (deletedAnalysisId) {
 		// handleJagStorageDeleted (@controllerAT)
 		for (let item of this._libraryList) {
 			this._$list.removeChild(item.element);
 		}
 		this._libraryList = this._libraryList.filter(entry => {
-			return entry.analysis.id != deletedAnalysisId
-		})
+			return entry.analysis.id != deletedAnalysisId;
+		});
 		for (let item of this._libraryList) {
 			this._$list.appendChild(item.element);
 		}
@@ -164,21 +164,21 @@ customElements.define('analysis-library', class extends HTMLElement {
 
 
 
-	_filterFromSearchInput(e) {
+	_filterFromSearchInput (e) {
 		const search_text = e.srcElement.value.toLowerCase();
 
 		this._libraryList.forEach((item) => {
 			if (item.element) {
-				item.element.style.display = 'block';
+				item.element.style.display = `block`;
 				if(!item.search_content.includes(search_text))
-					item.element.style.display = 'none';
+					item.element.style.display = `none`;
 			}
 		});
 	}
 
 });
 
-export default customElements.get('analysis-library');
+export default customElements.get(`analysis-library`);
 
 
 

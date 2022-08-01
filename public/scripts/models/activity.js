@@ -19,10 +19,10 @@ import Validation from "../utils/validation.js";
  */
 export default class Activity extends EventTarget {
 
-    constructor({
+    constructor ({
                     urn,
                     name,
-                    description = '',
+                    description = ``,
                     connector = {execution: Activity.EXECUTION.NONE.name,
                                       returns: Activity.RETURNS.ALL.name,
                                       operator: Activity.OPERATOR.NONE.name,
@@ -74,92 +74,92 @@ export default class Activity extends EventTarget {
     }
 
 
-    get urn() {
+    get urn () {
         return this._urn;
     }
-    set urn(urn) {
+    set urn (urn) {
         if (!ValidationUtility.isValidUrn(this._urn)) {
             this._urn = urn;
         }
     }
 
-    set name(name) {
+    set name (name) {
         this._name = name;
     }
-    get name() {
+    get name () {
         return this._name;
     }
 
-    set description(description) {
+    set description (description) {
         this._description = description;
     }
-    get description() {
+    get description () {
         return this._description;
     }
 
-    get author() {
+    get author () {
         return this._author;
     }
-    set author(value) {
+    set author (value) {
         this._author = value;
     }
 
-    get createdDate() {
+    get createdDate () {
         return this._createdDate;
     }
-    set createdDate(value) {
+    set createdDate (value) {
         this._createdDate = value;
     }
 
-    get modifiedDate() {
+    get modifiedDate () {
         return this._modifiedDate;
     }
-    set modifiedDate(value) {
+    set modifiedDate (value) {
         this._modifiedDate = value;
     }
 
-    get lockedBy() {
+    get lockedBy () {
         return this._lockedBy;
     }
-    set lockedBy(value) {
+    set lockedBy (value) {
         this._lockedBy = value;
     }
 
-    set connector(value) {
+    set connector (value) {
         this._connector = value;
     }
-    get connector() {
+    get connector () {
         return this._connector;
     }
 
-    set inputs(value) {
+    set inputs (value) {
         this._inputs = value;
     }
-    get inputs() {
+    get inputs () {
         return [...this._inputs];
     }
-    addInput(input) {
+    addInput (input) {
         this._inputs.push(input);
     }
 
-    set outputs(value) {
+    set outputs (value) {
         this._outputs = value;
     }
-    get outputs() {
+    get outputs () {
         return [...this._outputs];
     }
-    addOutput(output) {
+    addOutput (output) {
         this._outputs.push(output);
     }
 
-    set children(value) {
+    set children (value) {
         this._children = value;
         if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
             this._operator = Activity.OPERATOR.AND.name;
         }
     }
 
-    get children() {
+    get children () {
         return [...this._children];
     }
 
@@ -167,57 +167,57 @@ export default class Activity extends EventTarget {
     // urn: child.urn,
     // activity: child
 
-    hasChildren() {
-        return (this._children.length > 0)
+    hasChildren () {
+        return (this._children.length > 0);
     }
 
-    get canHaveChildren() {
+    get canHaveChildren () {
         return (Validation.isValidUrn(this.urn));
     }
 
-    set bindings(value) {
+    set bindings (value) {
         this._bindings = value;
     }
-    get bindings() {
+    get bindings () {
         return [...this._bindings];
     }
 
-    set execution(type) {
+    set execution (type) {
         this._execution = type;
     }
-    get execution() {
+    get execution () {
         return this._execution;
     }
 
-    set operator(type) {
+    set operator (type) {
         this._operator = type;
     }
-    get operator() {
+    get operator () {
         return this._operator;
     }
 
-    set returns(type) {
+    set returns (type) {
         this._returns = type;
     }
-    get returns() {
+    get returns () {
         return this._returns;
     }
 
-    set isLocked(bool) {
+    set isLocked (bool) {
         this._isLocked = bool;
     }
-    get isLocked() {
+    get isLocked () {
         return this._isLocked;
     }
 
-    get collapsed() {
+    get collapsed () {
         return this._collapsed;
     }
-    set collapsed(value) {
+    set collapsed (value) {
         this._collapsed = value;
     }
 
-    addChild(urn, id = undefined) {  // Add UUIDv4 default here
+    addChild (urn, id = undefined) {  // Add UUIDv4 default here
         /**
          * Adds the given Activity as a child to this Activity.
          * If an ID already exists, the child already exists, and this was likely called
@@ -243,7 +243,7 @@ export default class Activity extends EventTarget {
     }
 
 
-    removeChild(childId) {
+    removeChild (childId) {
         for (let index in this._children) {
             if (this._children[index].id === childId) {
                 this._children.splice(index, 1);
@@ -261,7 +261,7 @@ export default class Activity extends EventTarget {
      * @param {String} id ID of the child whose name will be set.
      * @param {String} name Name to set to.
      */
-    setChildNameXXX(id, name) {
+    setChildNameXXX (id, name) {
         for (const child of this._children) {
             if (child.id == id) {
                 if (child.name != name) {
@@ -278,7 +278,7 @@ export default class Activity extends EventTarget {
      * @param {String} id ID of the child whose description will be set.
      * @param {String} description Description to set to.
      */
-    setChildDescriptionXXX(id, description) {
+    setChildDescriptionXXX (id, description) {
         for (const child of this._children) {
             if (child.id == id) {
                 if (child.description != description) {
@@ -297,10 +297,10 @@ export default class Activity extends EventTarget {
      * @param {String} id ID of the child for which to seek inputs.
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs available to the child with the given ID.
      */
-    inputsTo(id) {
+    inputsTo (id) {
         let availableInputs = this._inputs.map((input) => {
             return {
-                id: 'this',
+                id: `this`,
                 activity: this,
                 property: input.name,
                 type: input.type
@@ -335,7 +335,7 @@ export default class Activity extends EventTarget {
      *
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
      */
-    getAvailableInputs() {
+    getAvailableInputs () {
         let availableInputs = [];
 
         for (let child of this._children) {
@@ -357,7 +357,7 @@ export default class Activity extends EventTarget {
      *
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Outputs of children of this Activity.
      */
-    getAvailableOutputs() {
+    getAvailableOutputs () {
         let availableOutputs = [];
 
         for (let child of this._children) {
@@ -383,7 +383,7 @@ export default class Activity extends EventTarget {
      *
      * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding Binding to add.
      */
-    addBinding(binding) {
+    addBinding (binding) {
         const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
 
         if (existing_binding !== undefined)
@@ -400,7 +400,7 @@ export default class Activity extends EventTarget {
      * @param {String} consumer_property The property to seek.
      * @returns {boolean} Whether or not a binding exists for the given consumer ID and property.
      */
-    hasBinding(consumer_id, consumer_property) {
+    hasBinding (consumer_id, consumer_property) {
         const binding = this.getBinding(consumer_id, consumer_property);
         return binding !== undefined;
     }
@@ -412,7 +412,7 @@ export default class Activity extends EventTarget {
      * @param {String} consumer_property Name of the consumer property for the binding to be returned.
      * @returns {{provider:{id:String,property:String},consumer:{id:String,property:String}}|undefined} Binding for the given consumer ID and property, or undefined if none exists.
      */
-    getBinding(consumer_id, consumer_property) {
+    getBinding (consumer_id, consumer_property) {
         for (let binding of this._bindings) {
             if (consumer_id === binding.consumer.id &&
                 consumer_property === binding.consumer.property)
@@ -426,7 +426,7 @@ export default class Activity extends EventTarget {
      *
      * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding The binding to remove.
      */
-    removeBinding(binding) {
+    removeBinding (binding) {
         if (this._bindings.delete(binding)) {
 
         }
@@ -439,10 +439,10 @@ export default class Activity extends EventTarget {
      * @param {String} id
      * @returns {{id:String,activity:Activity}} Child of this Activity with the given ID.
      */
-    getCanonicalNode(id) {
+    getCanonicalNode (id) {
 
-        if (id === 'this')
-            return {id: 'this', activity: this};
+        if (id === `this`)
+            return {id: `this`, activity: this};
 
         for (let child of this._children)
             if (child.id == id)
@@ -459,7 +459,7 @@ export default class Activity extends EventTarget {
      * @param {String} name Key name for the new annotation.
      * @param {String} value Value for the new annotation.
      */
-    addAnnotation(id, name, value) {
+    addAnnotation (id, name, value) {
         const child = this.getCanonicalNode(id);
 
         if (!(child == undefined || child.activity == this)) {
@@ -477,7 +477,7 @@ export default class Activity extends EventTarget {
      * @param {String} id UUID of the child from which to remove the annotation.
      * @param {String} name Key name for the annotation to delete.
      */
-    removeAnnotation(id, name) {
+    removeAnnotation (id, name) {
         const child = this.getCanonicalNode(id);
 
         if (!(child == undefined || child.activity == this)) {
@@ -495,7 +495,7 @@ export default class Activity extends EventTarget {
      * @param {String} id UUID of the child to mark.
      * @param {boolean} value True or false whether or not the child is iterable.
      */
-    setIterable(id, value) {
+    setIterable (id, value) {
         for (const child of this._children) {
             if (child.id == id) {
                 if (child.iterable == value) return;
@@ -505,7 +505,7 @@ export default class Activity extends EventTarget {
         }
     }
 
-    getOrderForId(id) {
+    getOrderForId (id) {
         if (this._execution == Activity.EXECUTION.PARALLEL.name) return 0;
 
         for (let i = 0; i < this._children.length; ++i) {
@@ -518,12 +518,12 @@ export default class Activity extends EventTarget {
     }
 
 
-    toJSON() {  //@todo -- make children in a map or something simpler
+    toJSON () {  //@todo -- make children in a map or something simpler
         const json = {
             urn: this._urn,
             name: this._name,
             description: this._description,
-            type: 'node.type.plan',
+            type: `node.type.plan`,
             connector: {
                 execution: this._execution,
                 returns: this._returns,
@@ -579,10 +579,10 @@ export default class Activity extends EventTarget {
                 }
             });
         });
-        return json
+        return json;
     }
 
-    static fromJSON(json) {
+    static fromJSON (json) {
         if (Array.isArray(json)) {
              let jagList = json.map(function (element) {
                 try {
@@ -593,7 +593,7 @@ export default class Activity extends EventTarget {
 
                 let returnValue = Activity(element);
                 return returnValue;
-            })
+            });
             return jagList;
         } else {
 
@@ -613,32 +613,32 @@ export default class Activity extends EventTarget {
 
 
 
-    static getExecutionOptions() {
-        let executionOptions = []
+    static getExecutionOptions () {
+        let executionOptions = [];
         let execution = Activity.EXECUTION;
         for (let step in execution) {
-            executionOptions.push({value: execution[step].name, text: execution[step].text})
+            executionOptions.push({value: execution[step].name, text: execution[step].text});
         }
         return executionOptions;
     }
 
-    static getReturnsOptions(executionName) {
-        let returnsOptions = []
+    static getReturnsOptions (executionName) {
+        let returnsOptions = [];
         let returns = Activity.RETURNS;
         for (let step in returns) {
             if (returns[step].condition.includes(executionName)) {
-                returnsOptions.push({value: returns[step].name, text: returns[step].text})
+                returnsOptions.push({value: returns[step].name, text: returns[step].text});
             }
         }
         return returnsOptions;
     }
 
-    static getOnFailOptions(executionName) {
-        let onfailOptions = []
+    static getOnFailOptions (executionName) {
+        let onfailOptions = [];
         let onfails = Activity.ONFAIL;
         for (let step in onfails) {
             if (onfails[step].condition.includes(executionName)) {
-                onfailOptions.push({value: onfails[step].name, text: onfails[step].text})
+                onfailOptions.push({value: onfails[step].name, text: onfails[step].text});
             }
         }
         return onfailOptions;
@@ -646,12 +646,12 @@ export default class Activity extends EventTarget {
 
 
 
-    static getOperatorOptions(returnName) {
-        let operatorOptions = []
+    static getOperatorOptions (returnName) {
+        let operatorOptions = [];
         let operators = Activity.OPERATOR;
         for (let step in operators) {
             if (operators[step].condition.includes(returnName)) {
-                operatorOptions.push({value: operators[step].name, text: operators[step].text})
+                operatorOptions.push({value: operators[step].name, text: operators[step].text});
             }
         }
         return operatorOptions;
@@ -661,95 +661,95 @@ export default class Activity extends EventTarget {
 
 Activity.EXECUTION = {
     NONE: {
-        name: 'node.execution.none',
-        text: "none",
-        description: 'No reporting sub-activities'
+        name: `node.execution.none`,
+        text: `none`,
+        description: `No reporting sub-activities`
     },
     PARALLEL: {
-        name: 'node.execution.parallel',
-        text: "parallel",
-        description: 'Sub-activities execute simultaneously'
+        name: `node.execution.parallel`,
+        text: `parallel`,
+        description: `Sub-activities execute simultaneously`
     },
     SEQUENTIAL:
         {
-            name: 'node.execution.sequential',
-            text: "sequential",
-            description: 'Sub-activities execute in order'
+            name: `node.execution.sequential`,
+            text: `sequential`,
+            description: `Sub-activities execute in order`
         },
     RETRY: {
-        name: 'node.execution.retry',
-        text: 'sequential w/retry',
-        description: 'Recover and retry all if one sub-activity fails'
+        name: `node.execution.retry`,
+        text: `sequential w/retry`,
+        description: `Recover and retry all if one sub-activity fails`
     },
     LOOP: {
-        name: 'node.execution.loop',
-        text: "sequential loop",
-        description: 'First sub-activity resumes after last finishes'
+        name: `node.execution.loop`,
+        text: `sequential loop`,
+        description: `First sub-activity resumes after last finishes`
     },
     OVERLAP: {
-        name: 'node.execution.overlap',
-        text: "sequential w/overlap",
-        description: 'Following sub-activity begins before the previous ends'
+        name: `node.execution.overlap`,
+        text: `sequential w/overlap`,
+        description: `Following sub-activity begins before the previous ends`
     },
     PARALLELX: {
-        name: 'node.execution.parallelx',
-        text: "parallel subset",
-        description: 'Some sub-activities execute simultaneously'
+        name: `node.execution.parallelx`,
+        text: `parallel subset`,
+        description: `Some sub-activities execute simultaneously`
     }
-}
+};
 
 
 Activity.ONFAIL = {
     NONE: {
-        name: 'node.onfail.none',
-        text: 'none',
-        description: 'No action on fail notice',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+        name: `node.onfail.none`,
+        text: `none`,
+        description: `No action on fail notice`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`]
     },
     RETRY: {
-        name: 'node.onfail.retry',
-        text: 'repeat this action',
-        description: 'Continue to repeat this action',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+        name: `node.onfail.retry`,
+        text: `repeat this action`,
+        description: `Continue to repeat this action`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`]
     },
     RESTART: {
-        name: 'node.onfail.restart',
-        text: 'return to beginning',
-        description: 'Start over from first step',
-        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.onfail.restart`,
+        text: `return to beginning`,
+        description: `Start over from first step`,
+        condition: [`node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`]
     },
     PREVIOUS: {
-        name: 'node.onfail.previous',
-        text: 'return to previous',
-        description: 'restart previous action',
-        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.onfail.previous`,
+        text: `return to previous`,
+        description: `restart previous action`,
+        condition: [`node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`]
     },
     SKIP: {
-        name: 'node.onfail.skip',
-        text: 'skip next',
-        description: 'Skip the next action',
-        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.onfail.skip`,
+        text: `skip next`,
+        description: `Skip the next action`,
+        condition: [`node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`]
     },
     RETURN: {
-        name: 'node.onfail.return',
-        text: 'skip remaining',
-        description: 'Skip the remaining actions',
-        condition: ['node.execution.sequential', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.onfail.return`,
+        text: `skip remaining`,
+        description: `Skip the remaining actions`,
+        condition: [`node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`]
     },
     RECOVER: {
-        name: 'node.onfail.recover',
-        text: '"Recover"',
-        description: 'Run the "Recover" function',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+        name: `node.onfail.recover`,
+        text: `"Recover"`,
+        description: `Run the "Recover" function`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`]
     },
     ABORT: {
-        name: 'node.onfail.abort',
-        text: '"Abort"',
-        description: 'Run the "Abort" function',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx']
+        name: `node.onfail.abort`,
+        text: `"Abort"`,
+        description: `Run the "Abort" function`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`]
     },
 
-}
+};
 
 
 
@@ -757,146 +757,146 @@ Activity.ONFAIL = {
 
 Activity.RETURNS = {
     NONE: {
-        name: 'node.returns.none',
-        text: 'none',
-        description: 'No data is returned',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+        name: `node.returns.none`,
+        text: `none`,
+        description: `No data is returned`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.retry`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`],
     },
     ACTIVE: {
-        name: 'node.returns.active',
-        text: 'active mode',
-        description: 'All children in an ACTIVE mode',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+        name: `node.returns.active`,
+        text: `active mode`,
+        description: `All children in an ACTIVE mode`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.retry`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`],
     },
     AVAILABLE: {
-        name: 'node.returns.available',
-        text: 'all available',
-        description: 'All children with currently available output',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap', 'node.execution.parallelx'],
+        name: `node.returns.available`,
+        text: `all available`,
+        description: `All children with currently available output`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.retry`, `node.execution.loop`, `node.execution.overlap`, `node.execution.parallelx`],
     },
     ALL: {
-        name: 'node.returns.all',
-        text: 'all (or none)',
-        description: 'All children data when all become available',
-        condition: ['node.execution.parallel', 'node.execution.parallelx']
+        name: `node.returns.all`,
+        text: `all (or none)`,
+        description: `All children data when all become available`,
+        condition: [`node.execution.parallel`, `node.execution.parallelx`]
     },
     LATEST: {
-        name: 'node.returns.latest',
-        text: 'most recent',
-        description: 'Only data from most recently reporting child',
-        condition: ['node.execution.parallel', 'node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.returns.latest`,
+        text: `most recent`,
+        description: `Only data from most recently reporting child`,
+        condition: [`node.execution.parallel`, `node.execution.sequential`, `node.execution.retry`, `node.execution.loop`, `node.execution.overlap`]
     },
     PRIORITY: {
-        name: 'node.returns.priority',
-        text: 'highest priority',
-        description: 'Child with highest priority available input',
-        condition: ['node.execution.parallel']
+        name: `node.returns.priority`,
+        text: `highest priority`,
+        description: `Child with highest priority available input`,
+        condition: [`node.execution.parallel`]
     },
     FINAL: {
-        name: 'node.returns.final',
-        text: 'final output',
-        description: 'Final result from last child in sequence',
-        condition: ['node.execution.sequential', 'node.execution.retry', 'node.execution.loop', 'node.execution.overlap']
+        name: `node.returns.final`,
+        text: `final output`,
+        description: `Final result from last child in sequence`,
+        condition: [`node.execution.sequential`, `node.execution.retry`, `node.execution.loop`, `node.execution.overlap`]
     }
-}
+};
 
 
 Activity.OPERATOR = {
     NONE: {
-        name: 'node.operator.none',                  // does not return a value    (maybe just a state?) (maybe nada)
-        text: 'none',
-        symbol: '',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all', 'node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.none`,                  // does not return a value    (maybe just a state?) (maybe nada)
+        text: `none`,
+        symbol: ``,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`, `node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     },
     AND: {
-        name: 'node.operator.and',                    // AND(boolean,boolean,...)
-        text: 'and',
-        symbol: 'and',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.and`,                    // AND(boolean,boolean,...)
+        text: `and`,
+        symbol: `and`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     OR: {
-        name: 'node.operator.or',                      // OR(boolean,boolean,...)        @TODO  XOR?!    NAND NOR
-        text: 'or',
-        symbol: 'or',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.or`,                      // OR(boolean,boolean,...)        @TODO  XOR?!    NAND NOR
+        text: `or`,
+        symbol: `or`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     FIRST: {
-        name: 'node.operator.first',
-        text: 'first reporting',
-        symbol: '1st',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.first`,
+        text: `first reporting`,
+        symbol: `1st`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     LAST: {
-        name: 'node.operator.last',
-        text: 'last reporting',
-        symbol: 'nth',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.last`,
+        text: `last reporting`,
+        symbol: `nth`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     MAX: {
-        name: 'node.operator.max',
-        text: 'largest',
-        symbol: 'max',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.max`,
+        text: `largest`,
+        symbol: `max`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     MIN: {
-        name: 'node.operator.min',
-        text: 'smallest',
-        symbol: 'min',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.min`,
+        text: `smallest`,
+        symbol: `min`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     SUM: {
-        name: 'node.operator.sum',
-        text: 'sum',
-        symbol: 'sum',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.sum`,
+        text: `sum`,
+        symbol: `sum`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     AVG: {
-        name: 'node.operator.avg',
-        text: 'average',
-        symbol: 'avg',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.avg`,
+        text: `average`,
+        symbol: `avg`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     UNION: {
-        name: 'node.operator.union',
-        text: 'union',
-        symbol: 'U',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.union`,
+        text: `union`,
+        symbol: `U`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     INT: {
-        name: 'node.operator.intersection',
-        text: 'intersection',
-        symbol: '\uD83D\uDE00',
-        condition: ['node.returns.active','node.returns.available', 'node.returns.all']
+        name: `node.operator.intersection`,
+        text: `intersection`,
+        symbol: `\uD83D\uDE00`,
+        condition: [`node.returns.active`,`node.returns.available`, `node.returns.all`]
     },
     CONVERT: {
-        name: 'node.operator.convert',
-        text: 'convert',
-        symbol: '><',
-        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.convert`,
+        text: `convert`,
+        symbol: `><`,
+        condition: [`node.returns.active`,`node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     },
     INVERSE: {
-        name: 'node.operator.inverse',
-        text: 'inverse',
-        symbol: '1/x',
-        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.inverse`,
+        text: `inverse`,
+        symbol: `1/x`,
+        condition: [`node.returns.active`,`node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     },
     NEGATE: {
-        name: 'node.operator.negate',
-        text: 'negate',
-        symbol: '-x',
-        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.negate`,
+        text: `negate`,
+        symbol: `-x`,
+        condition: [`node.returns.active`,`node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     },
     ABS: {
-        name: 'node.operator.absolute',
-        text: 'absolute',
-        symbol: '|x|',
-        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.absolute`,
+        text: `absolute`,
+        symbol: `|x|`,
+        condition: [`node.returns.active`,`node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     },
     NOT: {
-        name: 'node.operator.not',
-        text: 'not',
-        symbol: '!',
-        condition: ['node.returns.active','node.returns.latest', 'node.returns.priority', 'node.returns.final']
+        name: `node.operator.not`,
+        text: `not`,
+        symbol: `!`,
+        condition: [`node.returns.active`,`node.returns.latest`, `node.returns.priority`, `node.returns.final`]
     }
 
-}
+};

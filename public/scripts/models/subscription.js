@@ -9,7 +9,7 @@
 
 export default class Subscription extends EventTarget {
 
-	constructor({ name , lastReportTime = null, lastReportedData = null } = {}) {
+	constructor ({ name , lastReportTime = null, lastReportedData = null } = {}) {
 		super();
 		this._name = name;
 		this._lastReportTime = lastReportTime;
@@ -17,35 +17,35 @@ export default class Subscription extends EventTarget {
 	}
 
 
-	get name() {
+	get name () {
 		return this._name;
 	}
 
-	set name(value) {
+	set name (value) {
 		this._name = value;
 	}
 
-	get lastReportTime() {
+	get lastReportTime () {
 		return this._lastReportTime;
 	}
 
-	set lastReportTime(value) {
+	set lastReportTime (value) {
 		this._lastReportTime = value;
 	}
 
-	get lastReportedData() {
+	get lastReportedData () {
 		return this._lastReportedData;
 	}
 
-	set lastReportedData(value) {
+	set lastReportedData (value) {
 		this._lastReportedData = value;
 	}
 
-	static fromJSON(json) {
+	static fromJSON (json) {
 		return new Subscription(json);
 	}
 
-	toJSON() {
+	toJSON () {
 		let json = {
 			name: this._name,
 			lastReportTime: this._lastReportTime,

@@ -9,15 +9,15 @@
 
 class ContextMenu extends HTMLElement {
 
-    constructor() {
+    constructor () {
         super();
     }
 
-    addEntry(label, properties, style) {
-        const entry = document.createElement('div');
+    addEntry (label, properties, style) {
+        const entry = document.createElement(`div`);
 
         entry.innerText = label;
-        entry.addEventListener('mouseup', this._fireSelection.bind(this));
+        entry.addEventListener(`mouseup`, this._fireSelection.bind(this));
 
 
         // Propagates the enumerable properties
@@ -34,14 +34,14 @@ class ContextMenu extends HTMLElement {
         this.appendChild(entry);
     }
 
-    _fireSelection(event) {
+    _fireSelection (event) {
         this.parentNode.removeChild(this);
         this.dispatchEvent(new CustomEvent(ContextMenu.SELECT_EVENT, {detail: event.target}));
     }
 
 }
 
-ContextMenu.SELECT_EVENT = 'context-menu-selection';
+ContextMenu.SELECT_EVENT = `context-menu-selection`;
 
-customElements.define('ia-context-menu', ContextMenu);
-export default customElements.get('ia-context-menu');
+customElements.define(`ia-context-menu`, ContextMenu);
+export default customElements.get(`ia-context-menu`);

@@ -16,7 +16,7 @@ import JagCell from './ia-support/jag-cell.js';
 
 class AnalysisView extends HTMLElement {
 
-    constructor(analysisModel, table) {
+    constructor (analysisModel, table) {
         super();
         this._analysisModel = analysisModel;
         this._columnHeaderMap = new Map();
@@ -30,11 +30,11 @@ class AnalysisView extends HTMLElement {
         ////	await updatedAnalysis.buildAnalysisActivityNodes(rootCellModel);
     }
 
-    get analysisModel() {
+    get analysisModel () {
         return this._analysisModel;
     }
 
-    set analysisModel(value) {
+    set analysisModel (value) {
         this._analysisModel = value;
     }
 
@@ -48,7 +48,7 @@ class AnalysisView extends HTMLElement {
      *
      */
 
-    _initializeContextMenus() {
+    _initializeContextMenus () {
         // @todo - once understood better and working -- put the assignment and AssessmentView constants into the ContextMenu constructor and class
         this._$assessment_menu = new ContextMenu();
         for (let assessment of AnalysisView.ASSESSMENTS) {
@@ -59,17 +59,17 @@ class AnalysisView extends HTMLElement {
         }
     }
 
-    _initializeStaticHeaders() {
+    _initializeStaticHeaders () {
         // Creates JAG section header.
         // Does not need to be added to column headers -- static
-        const $jag_header = new ColumnHeader(AnalysisView.JAG_SECTION_HEADER_NAME, 0, 0, AnalysisView.JAG_SECTION_COLUMN_END)
+        const $jag_header = new ColumnHeader(AnalysisView.JAG_SECTION_HEADER_NAME, 0, 0, AnalysisView.JAG_SECTION_COLUMN_END);
         $jag_header.colSpanType = ColumnHeader.END;
         this.appendChild($jag_header);
         // Root header does not need to be updated -- static.
         this.appendChild(new ColumnHeader(AnalysisView.JAG_SECTION_ROOT_HEADER_NAME, 0, 1));
     }
 
-    _initializeTree(node, nodeParent = null) {
+    _initializeTree (node, nodeParent = null) {
         // Prefix traversal. Required.  Reference is based on last child of last child...
         this.attach({
             targetNode: node,
@@ -81,7 +81,7 @@ class AnalysisView extends HTMLElement {
         });
     }
 
-    layout() {
+    layout () {
         // @TODO: Investigate changing that so the update only happens when necessary
         // and only on branches that need it.
         // Resets the leaf set.
@@ -99,18 +99,18 @@ class AnalysisView extends HTMLElement {
         const agentCount = this._layoutHeaders(jagColumns);
 
         this._layoutAssessments(jagColumns, AnalysisView.HEADER_DEPTH);
-        this.style.setProperty('--jag-columns', jagColumns.toString());
-        this.style.setProperty('--team-columns', agentCount.toString());
-        this.style.setProperty('--rows', rows.toString());
+        this.style.setProperty(`--jag-columns`, jagColumns.toString());
+        this.style.setProperty(`--team-columns`, agentCount.toString());
+        this.style.setProperty(`--rows`, rows.toString());
     }
 
-    _removeHeaders() {
+    _removeHeaders () {
         for (let header of this._columnHeaderMap.values())
             if (this.contains(header))
                 this.removeChild(header);
     }
 
-    _layoutHeaders(level_count) {
+    _layoutHeaders (level_count) {
         const $columns = document.createDocumentFragment();
         // Starts at 1 since the root header does not need to be updated and is never removed.
         for (let i = 1; i < level_count; i++) {
@@ -121,7 +121,7 @@ class AnalysisView extends HTMLElement {
         }
 
         let offset = 0;
-        const team = this._analysisModel.team
+        const team = this._analysisModel.team;
         const agent_count = team.agentIds.length;
         const abs_offset = level_count + offset;
 
@@ -153,7 +153,7 @@ class AnalysisView extends HTMLElement {
     }
 
     // If agent exists, get related assessment.  If not, create and return empty assessment.
-    getAssessments(agent) {
+    getAssessments (agent) {
         let agent_assessment_views = this._idToTableCellMap.get(agent.id);
         if (agent_assessment_views === undefined) {
             agent_assessment_views = new Map();
@@ -162,7 +162,7 @@ class AnalysisView extends HTMLElement {
         return agent_assessment_views;
     }
 
-    getAssessmentView(agent, node, agent_assessment_views = this.getAssessments(agent)) {
+    getAssessmentView (agent, node, agent_assessment_views = this.getAssessments(agent)) {
         let view = agent_assessment_views.get(node.id);
 
         if (view === undefined) {
@@ -173,7 +173,7 @@ class AnalysisView extends HTMLElement {
     }
 
     // Get (orCreate) the JagCell from the analysis generic id-view map.  If not there, create it, map it, return it.
-    getMappedActivityCell(node, parent) {
+    getMappedActivityCell (node, parent) {
         let jagCell = this._idToTableCellMap.get(node.id);
         if (jagCell == undefined) {
             jagCell = new JagCell(node, parent);
@@ -182,7 +182,7 @@ class AnalysisView extends HTMLElement {
         return jagCell;
     }
 
-    attach({targetNode, targetNodeParent, reference = null, layout = true, select = true} = {}) {
+    attach ({targetNode, targetNodeParent, reference = null, layout = true, select = true} = {}) {
         // When would there ever be a different 'reference'
         // Ideally, layout only on last call.
         // select isnt working.. range error.
@@ -206,17 +206,17 @@ class AnalysisView extends HTMLElement {
     // 	this.attach(e.detail);
     // }
 
-    detach({target, layout = true} = {}) {
+    detach ({target, layout = true} = {}) {
         const $target = this.getMappedActivityCell(target);
         this.removeChild($target);
         if (layout) this.layout();
     }
 
-    _handleDetach(e) {
+    _handleDetach (e) {
         this.detach(e.detail);
     }
 
-    selectElementNameText(child) {              // called once by attach - and that gives an error @todo
+    selectElementNameText (child) {              // called once by attach - and that gives an error @todo
         DOMUtils.selectNodeText(child.nameElement);
     }
 
@@ -224,18 +224,18 @@ class AnalysisView extends HTMLElement {
      * Finds the activity on the bottom of the graph
      * Gets the last child's last child's lasts child...  used for a reference when building view.
      */
-    findTableBottomNode(node) {
+    findTableBottomNode (node) {
         while (node.hasChildren()) {
-            node = node.getLastChild()
+            node = node.getLastChild();
         }
         return node;
     }
 
-    _isNodeInTheLeafSet(node_id) {
+    _isNodeInTheLeafSet (node_id) {
         return this._leafArray.findIndex(leaf => leaf.id === node_id) !== -1;
     }
 
-    _layoutAssessments(col, row) {
+    _layoutAssessments (col, row) {
         const $assessments = document.createDocumentFragment();
 
         let offset = 0;
@@ -257,8 +257,8 @@ class AnalysisView extends HTMLElement {
                     $assessments.appendChild($assessment);
 
                 // Updates the layout
-                $assessment.style.setProperty('--col-start', col + offset + 1);
-                $assessment.style.setProperty('--row-start', row + i + 1);
+                $assessment.style.setProperty(`--col-start`, col + offset + 1);
+                $assessment.style.setProperty(`--row-start`, row + i + 1);
             }
             offset++;
         }
@@ -267,7 +267,7 @@ class AnalysisView extends HTMLElement {
     }
 
 
-    _layoutJAG(node, row, col) {
+    _layoutJAG (node, row, col) {
         const $view = this.getMappedActivityCell(node);
 
         if (node.hasChildren() && !node.collapsed) {
@@ -279,25 +279,25 @@ class AnalysisView extends HTMLElement {
                 local_row += child.leafCount;
             }
 
-            $view.style.setProperty('--col-end', '1 span');
+            $view.style.setProperty(`--col-end`, `1 span`);
         } else {
             this._leafArray.push(node);
             this._hideChildNodes(node);
-            $view.style.setProperty('--col-end', AnalysisView.JAG_SECTION_COLUMN_END);
+            $view.style.setProperty(`--col-end`, AnalysisView.JAG_SECTION_COLUMN_END);
             //$view.style.setProperty('--col-end', '1 span');
         }
 
         // Position the item properly
-        $view.style.setProperty('--col-start', col + 1);
-        $view.style.setProperty('--row-start', row + 1);
-        $view.style.setProperty('--row-end', `${node.leafCount} span`);
+        $view.style.setProperty(`--col-start`, col + 1);
+        $view.style.setProperty(`--row-start`, row + 1);
+        $view.style.setProperty(`--row-end`, `${node.leafCount} span`);
     }
 
-    _makeHeader(id, name, col, row, col_span, row_span) {
+    _makeHeader (id, name, col, row, col_span, row_span) {
         this._columnHeaderMap.set(id, new ColumnHeader(name, col, row, col_span, row_span));
     }
 
-    _showChildNodes(node, recurse = true) {
+    _showChildNodes (node, recurse = true) {
         for (let child of node.children) {
             const $view = this.getMappedActivityCell(child);
             $view.show();
@@ -307,7 +307,7 @@ class AnalysisView extends HTMLElement {
         }
     }
 
-    _hideChildNodes(node, recurse = true) {
+    _hideChildNodes (node, recurse = true) {
         for (let child of node.children) {
             const $view = this.getMappedActivityCell(child);
             $view.hide();
@@ -320,9 +320,9 @@ class AnalysisView extends HTMLElement {
 
 }
 
-AnalysisView.JAG_SECTION_ROOT_HEADER_NAME = 'Root';
-AnalysisView.JAG_SECTION_HEADER_NAME = 'JAG';
-AnalysisView.JAG_SECTION_COLUMN_END = 'jag-column-end';
+AnalysisView.JAG_SECTION_ROOT_HEADER_NAME = `Root`;
+AnalysisView.JAG_SECTION_HEADER_NAME = `JAG`;
+AnalysisView.JAG_SECTION_COLUMN_END = `jag-column-end`;
 
 AnalysisView.HEADER_DEPTH = 2;
 
@@ -334,6 +334,6 @@ AnalysisView.ASSESSMENTS = [
 ];
 
 
-customElements.define('ia-analysis', AnalysisView);
-export default customElements.get('ia-analysis');
+customElements.define(`ia-analysis`, AnalysisView);
+export default customElements.get(`ia-analysis`);
 

@@ -9,7 +9,7 @@
 
 export default class RESTUtils {
 
-	static async request(url, details, error_prefix = 'Error', ok_fallback = undefined, bad_fallback = undefined) {
+	static async request (url, details, error_prefix = `Error`, ok_fallback = undefined, bad_fallback = undefined) {
 
 		const response = await fetch(url, details).catch((error_message) => {
 			throw new Error(`${error_prefix}: ${error_message}`);
@@ -41,96 +41,96 @@ export default class RESTUtils {
 		throw new Error(`${error_prefix}: Unexpected response.`);
 	}
 
-	static async all(url) {
+	static async all (url) {
 		// TODO: safely join URL paths (perhaps Node package?)
 		const details = {};
-		let reply =  await RESTUtils.request(url, details, 'Error listing');
+		let reply =  await RESTUtils.request(url, details, `Error listing`);
 		return reply;
 	}
 
-	static async get(url) {
+	static async get (url) {
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = { };
-		return await RESTUtils.request(url, options, 'Error retrieving JAG');
+		return await RESTUtils.request(url, options, `Error retrieving JAG`);
 	}
 
-	static async has(url) {
+	static async has (url) {
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = {
-			'method': 'HEAD',
+			'method': `HEAD`,
 			'headers': {
-				'mode': 'cors'
+				'mode': `cors`
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error finding JAG', true, false);
+		return await RESTUtils.request(url, options, `Error finding JAG`, true, false);
 	}
 
-	static async create(url, description) {
+	static async create (url, description) {
 	//	const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		const options = {
-			'method': 'POST',
+			'method': `POST`,
 			'body': description,
 			'headers': {
 	//			'x-xsrf-token': csrfToken,
-				'Content-Type': 'application/json',
-				'mode': 'cors'
+				'Content-Type': `application/json`,
+				'mode': `cors`
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error creating');
+		return await RESTUtils.request(url, options, `Error creating`);
 	}
 
-	static async update(url, description) {
+	static async update (url, description) {
 		const options = {
-			'method': 'PUT',
+			'method': `PUT`,
 			'body': description,
 			'headers': {
 		//		'x-xsrf-token': csrfToken,
-				'Content-Type': 'application/json',
-				'mode': 'cors'
+				'Content-Type': `application/json`,
+				'mode': `cors`
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error updating');
+		return await RESTUtils.request(url, options, `Error updating`);
 	}
 
-	static async delete(url) {
-		const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+	static async delete (url) {
+		const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, `$1`);
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = {
-			'method': 'DELETE',
+			'method': `DELETE`,
 			'headers': {
 				'x-xsrf-token': csrfToken
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error deleting');
+		return await RESTUtils.request(url, options, `Error deleting`);
 	}
 
 
-	static async clear(url) {
+	static async clear (url) {
 		//const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
 		// TODO: safely join URL paths (perhaps Node package?)
 		const options = {
-			'method': 'DELETE',
+			'method': `DELETE`,
 			'headers': {
-				'mode': 'cors',
+				'mode': `cors`,
 			//	'x-xsrf-token': csrfToken
 			}
 		};
-		return await RESTUtils.request(url, options, 'Error clearing');
+		return await RESTUtils.request(url, options, `Error clearing`);
 	}
 
-	static  getCookie(name) {
+	static  getCookie (name) {
 		if (!document.cookie) {
 			return null;
 		}
 
-		const xsrfCookies = document.cookie.split(';')
+		const xsrfCookies = document.cookie.split(`;`)
 			.map(c => c.trim())
-			.filter(c => c.startsWith(name + '='));
+			.filter(c => c.startsWith(name + `=`));
 
 		if (xsrfCookies.length === 0) {
 			return null;
 		}
-		return decodeURIComponent(xsrfCookies[0].split('=')[1]);
+		return decodeURIComponent(xsrfCookies[0].split(`=`)[1]);
 	}
 
 

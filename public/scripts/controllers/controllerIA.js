@@ -18,9 +18,9 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import InputValidator from "../utils/validation.js";
 
-export default class ControllerIA extends Controller{
+export default class ControllerIA extends Controller {
 
-    constructor() {
+    constructor () {
         super();
         this._analysisLibrary = null;           // HTMLElement
         this._agentLibrary = null;
@@ -34,216 +34,216 @@ export default class ControllerIA extends Controller{
         this._teamMap = new Map();     // All analyses - should be in sync with storage
         this._currentAnalysis = undefined;      // type: AnalysisModel
 
-        StorageService.subscribe("command-activity-created", this.commandActivityCreatedHandler.bind(this));
-        StorageService.subscribe("command-activity-updated", this.commandActivityUpdatedHandler.bind(this));   // just blocking for now - troubleshooting
-        StorageService.subscribe("command-activity-deleted", this.commandActivityDeletedHandler.bind(this));
+        StorageService.subscribe(`command-activity-created`, this.commandActivityCreatedHandler.bind(this));
+        StorageService.subscribe(`command-activity-updated`, this.commandActivityUpdatedHandler.bind(this));   // just blocking for now - troubleshooting
+        StorageService.subscribe(`command-activity-deleted`, this.commandActivityDeletedHandler.bind(this));
         //StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));
         //StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this));
 
-        StorageService.subscribe("command-agent-created", this.commandAgentCreatedHandler.bind(this));
-        StorageService.subscribe("command-agent-updated", this.commandAgentUpdatedHandler.bind(this));
-        StorageService.subscribe("command-agent-deleted", this.commandAgentDeletedHandler.bind(this));
-        StorageService.subscribe("command-team-created", this.commandTeamCreatedHandler.bind(this));
-        StorageService.subscribe("command-analysis-created", this.commandAnalysisCreatedHandler.bind(this));
+        StorageService.subscribe(`command-agent-created`, this.commandAgentCreatedHandler.bind(this));
+        StorageService.subscribe(`command-agent-updated`, this.commandAgentUpdatedHandler.bind(this));
+        StorageService.subscribe(`command-agent-deleted`, this.commandAgentDeletedHandler.bind(this));
+        StorageService.subscribe(`command-team-created`, this.commandTeamCreatedHandler.bind(this));
+        StorageService.subscribe(`command-analysis-created`, this.commandAnalysisCreatedHandler.bind(this));
     }
 
-    get agentMap() {
+    get agentMap () {
         return this._agentMap;
     }
-    set agentMap(newAgentMap) {
+    set agentMap (newAgentMap) {
         this._agentMap = newAgentMap;
     }
-    uncacheAgent(agentId) {
-        this._agentMap.delete(agentId)
+    uncacheAgent (agentId) {
+        this._agentMap.delete(agentId);
     }
-    cacheAgent(agent) {
-        this._agentMap.set(agent.id, agent)
+    cacheAgent (agent) {
+        this._agentMap.set(agent.id, agent);
     }
-    fetchAgent(agentId) {
-        return this._agentMap.get(agentId)
+    fetchAgent (agentId) {
+        return this._agentMap.get(agentId);
     }
 
-    get teamMap() {
+    get teamMap () {
         return this._teamMap;
     }
-    set teamMap(newTeamMap) {
+    set teamMap (newTeamMap) {
         this._teamMap = newTeamMap;
     }
-    uncacheTeam(teamId) {
-        this._teamMap.delete(teamId)
+    uncacheTeam (teamId) {
+        this._teamMap.delete(teamId);
     }
-    cacheTeam(team) {
-        this._teamMap.set(team.id, team)
+    cacheTeam (team) {
+        this._teamMap.set(team.id, team);
     }
-    fetchTeam(teamId) {
-        return this._teamMap.get(teamId)
+    fetchTeam (teamId) {
+        return this._teamMap.get(teamId);
     }
 
 
     // Panel Setters
-    set analysisLibrary(value) {
+    set analysisLibrary (value) {
         this._analysisLibrary = value;
     }
 
-    set iaProperties(value) {
+    set iaProperties (value) {
         this._iaProperties = value;
     }
 
-    set iaTable(value) {
+    set iaTable (value) {
         this._iaTable = value;
     }
-    set iaMenu(value) {
+    set iaMenu (value) {
         this._iaMenu = value;
     }
-    set agentLibrary(value) {
+    set agentLibrary (value) {
         this._agentLibrary = value;
     }
 
-    async initialize() {
+    async initialize () {
     //    UserPrefs.setDefaultUrnPrefix("us:tim:")
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
     }
 
-    async initializeCache() {
+    async initializeCache () {
 
-        let allActivities = await StorageService.all('activity')
-        allActivities.forEach(activity => this.cacheActivity(activity))
+        let allActivities = await StorageService.all(`activity`);
+        allActivities.forEach(activity => this.cacheActivity(activity));
 
         // @TODO need this?
-        let allNodes = await StorageService.all('node')
+        let allNodes = await StorageService.all(`node`);
         allNodes.forEach(node => {
-            this.repopulateActivity(node)
-            this.repopulateParent(node)
+            this.repopulateActivity(node);
+            this.repopulateParent(node);
         });
 
-        let allAgents = await StorageService.all('agent')
-        allAgents.forEach(agent => this.cacheAgent(agent))
+        let allAgents = await StorageService.all(`agent`);
+        allAgents.forEach(agent => this.cacheAgent(agent));
 
-        let allTeams = await StorageService.all('team')
+        let allTeams = await StorageService.all(`team`);
         allTeams.forEach(team => {
             team.agentIds.forEach(agent => {
-                team.agents.push(this.fetchAgent(agent))
-            })
-            this.cacheTeam(team)
-        })
+                team.agents.push(this.fetchAgent(agent));
+            });
+            this.cacheTeam(team);
+        });
 
 
-        let allAnalyses = await StorageService.all('analysis')
-        allAnalyses.forEach(analysis => this.cacheAnalysis(analysis))
+        let allAnalyses = await StorageService.all(`analysis`);
+        allAnalyses.forEach(analysis => this.cacheAnalysis(analysis));
 
 
 
     }
 
-    initializePanels() {
-        this._analysisLibrary.addListItems([...this._analysisMap.values()])
-        this._agentLibrary.addListItems([...this._agentMap.values()])
+    initializePanels () {
+        this._analysisLibrary.addListItems([...this._analysisMap.values()]);
+        this._agentLibrary.addListItems([...this._agentMap.values()]);
     }
 
-    initializeHandlers() {
-        this._iaTable.addEventListener('event-agent-created', this.eventAgentCreatedHandler.bind(this));  // popup create
-        this._iaTable.addEventListener('event-analysis-created', this.eventAnalysisCreatedHandler.bind(this));  // popup create
-        this._iaTable.addEventListener('event-analysis-updated', this.eventAnalysisUpdatedHandler.bind(this));  // jag structure updates
+    initializeHandlers () {
+        this._iaTable.addEventListener(`event-agent-created`, this.eventAgentCreatedHandler.bind(this));  // popup create
+        this._iaTable.addEventListener(`event-analysis-created`, this.eventAnalysisCreatedHandler.bind(this));  // popup create
+        this._iaTable.addEventListener(`event-analysis-updated`, this.eventAnalysisUpdatedHandler.bind(this));  // jag structure updates
         //this._iaTable.addEventListener('event-analysis-deleted', this.eventAnalysisDeletedHandler.bind(this));  // jag structure updates
-        this._iaTable.addEventListener('event-cell-addchild', this.eventNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)         // does that really need to come up this far?
-        this._iaTable.addEventListener('event-cell-prunechild', this.eventNodePruneChildHandler.bind(this));
-        this._iaTable.addEventListener('event-collapse-toggled', this.eventCollapseToggledHandler.bind(this));
-        this._iaTable.addEventListener('event-urn-changed', this.eventUrnChangedHandler.bind(this));
-        this._iaTable.addEventListener('event-activity-created', this.eventActivityCreatedHandler.bind(this));
-        this._iaTable.addEventListener('event-activity-updated', this.eventActivityUpdatedHandler.bind(this));
+        this._iaTable.addEventListener(`event-cell-addchild`, this.eventNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)         // does that really need to come up this far?
+        this._iaTable.addEventListener(`event-cell-prunechild`, this.eventNodePruneChildHandler.bind(this));
+        this._iaTable.addEventListener(`event-collapse-toggled`, this.eventCollapseToggledHandler.bind(this));
+        this._iaTable.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));
+        this._iaTable.addEventListener(`event-activity-created`, this.eventActivityCreatedHandler.bind(this));
+        this._iaTable.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));
         // this._iaTable.addEventListener('event-activity-deleted', this.eventJagDeletedHandler.bind(this));
-        this._analysisLibrary.addEventListener('event-analysis-selected', this.eventAnalysisSelected.bind(this));
+        this._analysisLibrary.addEventListener(`event-analysis-selected`, this.eventAnalysisSelected.bind(this));
         //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
 
-        this._iaMenu.addEventListener('event-create-assessment',this.eventCreateAssessment.bind(this));
-        this._iaMenu.addEventListener('event-create-agent',this.eventCreateAgent.bind(this));
+        this._iaMenu.addEventListener(`event-create-assessment`,this.eventCreateAssessment.bind(this));
+        this._iaMenu.addEventListener(`event-create-agent`,this.eventCreateAgent.bind(this));
             //this.eventCreateAssessment);
-        this._iaMenu.addEventListener('event-import-assessment', this.eventImportAssessment.bind(this));     // bring up?
-        this._iaMenu.addEventListener('event-export-assessment', this.eventExportAssessment.bind(this));   // bring up??
+        this._iaMenu.addEventListener(`event-import-assessment`, this.eventImportAssessment.bind(this));     // bring up?
+        this._iaMenu.addEventListener(`event-export-assessment`, this.eventExportAssessment.bind(this));   // bring up??
         // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
         // $import_analysis.addEventListener('click', this._handleImportAnalysis.bind(this));
         // $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
-        this._agentLibrary.addEventListener('event-agent-selected', this.eventAgentSelectedHandler.bind(this));       // Project chosen for playground
-        this._agentLibrary.addEventListener('event-agent-locked', this.eventAgentLockedHandler.bind(this));
-        this._agentLibrary.addEventListener('event-agent-deleted', this.eventAgentDeletedHandler.bind(this));
+        this._agentLibrary.addEventListener(`event-agent-selected`, this.eventAgentSelectedHandler.bind(this));       // Project chosen for playground
+        this._agentLibrary.addEventListener(`event-agent-locked`, this.eventAgentLockedHandler.bind(this));
+        this._agentLibrary.addEventListener(`event-agent-deleted`, this.eventAgentDeletedHandler.bind(this));
 
-        this._iaProperties.addEventListener('event-agent-removed', this.eventAgentRemovedHandler.bind(this));
+        this._iaProperties.addEventListener(`event-agent-removed`, this.eventAgentRemovedHandler.bind(this));
     }
 
 
-    async eventAgentRemovedHandler(event) {
-        console.log("Local>> (agent removed from team) ")
+    async eventAgentRemovedHandler (event) {
+        console.log(`Local>> (agent removed from team) `);
         let agentId = event.detail.removedAgent;
-        let agent = this.fetchAgent(agentId)
-        this._currentAnalysis.team.removeAgent(agent)
+        let agent = this.fetchAgent(agentId);
+        this._currentAnalysis.team.removeAgent(agent);
         this._iaTable.displayAnalysis(this._currentAnalysis);
         this._iaProperties._updateProperties();
 
     }
 
-    async eventAgentSelectedHandler(event) {
-        console.log("Local>> (project line item selected) ")
+    async eventAgentSelectedHandler (event) {
+        console.log(`Local>> (project line item selected) `);
         const agentSelected = event.detail.agent;
-        this._currentAnalysis.team.addAgent(agentSelected)
-        this._iaTable.displayAnalysis(this._currentAnalysis)
+        this._currentAnalysis.team.addAgent(agentSelected);
+        this._iaTable.displayAnalysis(this._currentAnalysis);
         this._iaProperties._updateProperties();
     }
 
-    async commandAgentUpdatedHandler(updatedAgent, updatedAgentUrn) {
-        this.cacheAgent(updatedAgent)
+    async commandAgentUpdatedHandler (updatedAgent, updatedAgentUrn) {
+        this.cacheAgent(updatedAgent);
         this._agentLibrary.updateItem(updatedAgent);
     }
 
-    async commandAgentDeletedHandler(deletedAgentUrn) {
+    async commandAgentDeletedHandler (deletedAgentUrn) {
         // @TODO If the Agent is the last member of a team - do we delete the team?  Voting yes.
-        console.log("((COMMAND INCOMING)) >> Agent Deleted")
-        let deletedAgent = this.fetchAgent(deletedAgentUrn)
+        console.log(`((COMMAND INCOMING)) >> Agent Deleted`);
+        let deletedAgent = this.fetchAgent(deletedAgentUrn);
     // Remove Agent from teams
         for (let [teamId, team] of this._teamMap) {
-            if (team.agentIds.contains(deletedAgentUrn)){
+            if (team.agentIds.contains(deletedAgentUrn)) {
                 team.agentIds.removeChild(deletedAgentUrn);
                 if (team.agentIds > 0) {
-                    await StorageService.update(team, 'team');
+                    await StorageService.update(team, `team`);
                 }
                 else {
-                    await StorageService.delete(team.id, 'team');
+                    await StorageService.delete(team.id, `team`);
                 }
             }
         }
-        this.uncacheAgent(deletedAgentUrn)
-        this._agentLibrary.removeLibraryListItem(deletedAgentUrn)
+        this.uncacheAgent(deletedAgentUrn);
+        this._agentLibrary.removeLibraryListItem(deletedAgentUrn);
     }
 
-    async eventAgentDeletedHandler(event) {
-        console.log("Local>> (agent deleted) ")
+    async eventAgentDeletedHandler (event) {
+        console.log(`Local>> (agent deleted) `);
         const deadAgentUrn = event.detail.agentUrn;
-        await StorageService.delete(deadAgentUrn, 'agent');
+        await StorageService.delete(deadAgentUrn, `agent`);
     }
 
-    async eventAgentLockedHandler(event) {
-        console.log("Local>> (agent locked) ")
+    async eventAgentLockedHandler (event) {
+        console.log(`Local>> (agent locked) `);
         const lockedAgent = event.detail.agent;
         lockedAgent.isLocked = !lockedAgent.isLocked;
-        await StorageService.update(lockedAgent, 'agent');
+        await StorageService.update(lockedAgent, `agent`);
     }
 
-    eventCreateAssessment(){
-        this._iaTable._handleNewAnalysisPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+    eventCreateAssessment () {
+        this._iaTable._handleNewAnalysisPopup();                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
-    eventCreateAgent(){
-        this._iaTable._handleNewAgentPopup()                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+    eventCreateAgent () {
+        this._iaTable._handleNewAgentPopup();                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
-    eventImportAssessment(){
-        this._iaTable._handleImportAnalysis()
+    eventImportAssessment () {
+        this._iaTable._handleImportAnalysis();
     }
 
-    eventExportAssessment(){
-        this._iaTable._handleExportAnalysisPopup()
+    eventExportAssessment () {
+        this._iaTable._handleExportAnalysisPopup();
     }
 
 
@@ -279,62 +279,62 @@ export default class ControllerIA extends Controller{
      */
 
 
-    async eventAgentCreatedHandler(event) {
-        console.log("Local>> (local agent created) ")
+    async eventAgentCreatedHandler (event) {
+        console.log(`Local>> (local agent created) `);
         let agentConstruct = event.detail.agentConstruct;
         if (!this.agentMap.has(agentConstruct.urn)) {
             const newAgent = new AgentModel(event.detail.agentConstruct);
             newAgent.dateCreated = Date.now();
             if (InputValidator.isValidUrn(newAgent.urn)) {
-                await StorageService.create(newAgent, 'agent');
+                await StorageService.create(newAgent, `agent`);
             } else {
-                window.alert("Invalid URN");
+                window.alert(`Invalid URN`);
             }
         } else {
-            window.alert("That URN already exists")
+            window.alert(`That URN already exists`);
         }
     }
 
-    async eventAnalysisCreatedHandler(event) {
-        let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, "Popup")
+    async eventAnalysisCreatedHandler (event) {
+        let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, `Popup`);
         this._iaProperties.team = standardAnalysis.team;
         //zzzz
     }
 
-    async eventAnalysisUpdatedHandler(event) {
+    async eventAnalysisUpdatedHandler (event) {
         let analysis = event.detail.analysis;
-        await StorageService.update(event.detail.analysis, 'analysis');
+        await StorageService.update(event.detail.analysis, `analysis`);
     }
 
-    async eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
+    async eventNodeAddChildHandler (event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
         // This will not be permanent until a valid URN is set.  Not-persistant.
         //@todo push this back down into iaTable (from there - to there)
         let parentCell = event.detail.cell;
         this._currentAnalysis = this._iaTable._analysisModel;
         if (parentCell.canHaveChildren) {
-            const childActivity = new Activity({urn: UserPrefs.getDefaultUrnPrefix(), name: ''})
+            const childActivity = new Activity({urn: UserPrefs.getDefaultUrnPrefix(), name: ``});
             // Normally, we would pass this new Jag up for storage and distribution - however it is only temporary since it does
             // not yet have a valid URN or name.
             const childCell = new CellModel({urn: childActivity.urn});
             childCell.activity = childActivity;
-            childCell.parentUrn = parentCell.urn
-            childCell.rootUrn = parentCell.rootUrn
-            parentCell.addChild(childCell)
+            childCell.parentUrn = parentCell.urn;
+            childCell.rootUrn = parentCell.rootUrn;
+            parentCell.addChild(childCell);
             this._iaTable.displayAnalysis(this._currentAnalysis);
         } else {
-            alert("Node must first be assigned a valid URN")
+            alert(`Node must first be assigned a valid URN`);
         }
     }
 
-    async eventNodePruneChildHandler(event) {
+    async eventNodePruneChildHandler (event) {
         // A Prune (or any delete) is a potentially significant change.
         // Going to just update parent.  Actually prune node?
         // After a quick check we are not pruning the head.
 
-        let parentActivityUrn = event.detail.cell.parent.urn
-        let childActivityUrn = event.detail.cell.urn
-        let parentActivity = this._activityMap.get(parentActivityUrn)
-        let childActivity = this._activityMap.get(childActivityUrn)
+        let parentActivityUrn = event.detail.cell.parent.urn;
+        let childActivityUrn = event.detail.cell.urn;
+        let parentActivity = this._activityMap.get(parentActivityUrn);
+        let childActivity = this._activityMap.get(childActivityUrn);
         let parentActivityChildren = parentActivity.children;
         let index = 0;
         let found = false;
@@ -343,14 +343,14 @@ export default class ControllerIA extends Controller{
                 parentActivityChildren.splice(index, 1);
                 found = true;
             } else {
-                ++index
+                ++index;
             }
         }
         parentActivity.children = parentActivityChildren;
-        await StorageService.update(parentActivity, "activity")
+        await StorageService.update(parentActivity, `activity`);
     }
 
-    eventCollapseToggledHandler(event) {
+    eventCollapseToggledHandler (event) {
         let node = event.detail.node;
         node.toggleCollapse();             //  -- think this is going to be moved to an Analysis array if we want it saved.
         // just initialize tree would be nice - but think it needs to start from scratch.
@@ -358,7 +358,7 @@ export default class ControllerIA extends Controller{
         this._iaTable.analysisView.layout();
     }
 
-    async eventAnalysisSelected(event) {
+    async eventAnalysisSelected (event) {
         this._currentAnalysis = event.detail.model;
         this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
         await this.displayAnalysis(this._currentAnalysis);
@@ -380,9 +380,9 @@ export default class ControllerIA extends Controller{
      *
      */
 
-    async commandActivityCreatedHandler(createdActivity, createdActivityUrn) {
+    async commandActivityCreatedHandler (createdActivity, createdActivityUrn) {
         this.cacheActivity(createdActivity);
-        UserPrefs.setDefaultUrnPrefixFromUrn(createdActivityUrn)
+        UserPrefs.setDefaultUrnPrefixFromUrn(createdActivityUrn);
         // thought below is to surgically add it to the node tree - if its in the currentAnalysis
         // until then, just drawing the whole thing.
         if (this._currentAnalysis) {
@@ -392,33 +392,33 @@ export default class ControllerIA extends Controller{
         }
     }
 
-    async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
+    async commandActivityUpdatedHandler (updatedActivity, updatedActivityUrn) {
         // Be nicer to separate structure change (needing redraw) and property change (probably not needing redraw)
         // However - can't think of a way to infer what change was made without more effort than a redraw.
-        this.cacheActivity(updatedActivity)
+        this.cacheActivity(updatedActivity);
         this._currentAnalysis.rootCellModel = await this.buildCellTreeFromActivityUrn(this._currentAnalysis.rootUrn);
         await this.displayAnalysis(this._currentAnalysis);
     }
 
-    async commandActivityDeletedHandler(deletedActivityUrn) {
+    async commandActivityDeletedHandler (deletedActivityUrn) {
         if (this._iaTable.analysisModel) {
-            console.log("Check if deleted jag is in the analysis")
-            console.log("if so - check if it is the head")
-            console.log("   if so - delete the analysis")
-            console.log("    if not --- prune that section and redraw")
+            console.log(`Check if deleted jag is in the analysis`);
+            console.log(`if so - check if it is the head`);
+            console.log(`   if so - delete the analysis`);
+            console.log(`    if not --- prune that section and redraw`);
         }
     }
 
-    async commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
+    async commandAgentCreatedHandler (createdAgentModel, createdAgentId) {
         this.cacheAgent(createdAgentModel);
-        this._agentLibrary.addListItem(createdAgentModel)
+        this._agentLibrary.addListItem(createdAgentModel);
     }
 
-    async commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
+    async commandTeamCreatedHandler (createdTeamModel, createdTeamId) {
         //pad agents array from agentIds
         let agents = [];
         for (let agentId of createdTeamModel.agentIds) {
-            agents.push(this.fetchAgent(agentId))
+            agents.push(this.fetchAgent(agentId));
         }
         createdTeamModel.agents = agents;
         this.cacheTeam(createdTeamModel);
@@ -428,17 +428,17 @@ export default class ControllerIA extends Controller{
     }
 
 
-    async commandAnalysisCreatedHandler(createdAnalysisModel, createdAnalysisId) {
-        createdAnalysisModel.team = this.fetchTeam(createdAnalysisModel.teamId)
-        createdAnalysisModel.jag = this.fetchActivity(createdAnalysisModel.urn)
+    async commandAnalysisCreatedHandler (createdAnalysisModel, createdAnalysisId) {
+        createdAnalysisModel.team = this.fetchTeam(createdAnalysisModel.teamId);
+        createdAnalysisModel.jag = this.fetchActivity(createdAnalysisModel.urn);
         this.cacheAnalysis(createdAnalysisModel);
         // if (this._iaTable.analysisModel) {
         this._currentAnalysis = createdAnalysisModel;
         createdAnalysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
         this._iaTable.displayAnalysis(createdAnalysisModel);
         //  }
-        this._analysisLibrary.addListItem(createdAnalysisModel)
-        this._iaProperties.team = createdAnalysisModel.team
+        this._analysisLibrary.addListItem(createdAnalysisModel);
+        this._iaProperties.team = createdAnalysisModel.team;
     }
 
 
@@ -458,7 +458,7 @@ export default class ControllerIA extends Controller{
 
 
 
-    replaceNodeById(rootNode, replacementItem) {
+    replaceNodeById (rootNode, replacementItem) {
         let workStack = [];
         workStack.push(rootNode);
         while (workStack > 0) {
@@ -467,44 +467,44 @@ export default class ControllerIA extends Controller{
                 currentNode = replacementItem;
                 return rootNode;
             } else {
-                currentNode.children.forEach(child => workStack.push(child))
+                currentNode.children.forEach(child => workStack.push(child));
             }
         }
     }
 
-    async createAgent({name, urn} = {}) {
-        let newAgent = new AgentModel({name: name, urn: urn})
-        await StorageService.create(newAgent, 'agent');
+    async createAgent ({name, urn} = {}) {
+        let newAgent = new AgentModel({name: name, urn: urn});
+        await StorageService.create(newAgent, `agent`);
         return newAgent;
     }
 
-    async createTeam(name = 'unnamed' , agentIds = [], performers = []){
-        let newTeam = new TeamModel({name: name, agentIds: agentIds})
-        await StorageService.create( newTeam, 'team');
+    async createTeam (name = `unnamed` , agentIds = [], performers = []) {
+        let newTeam = new TeamModel({name: name, agentIds: agentIds});
+        await StorageService.create(newTeam, `team`);
         return newTeam;
     }
 
-    async createAnalysis({name ,description, rootUrn, teamId} = {}) {     // @todo I like the named parameter pattern - might look at standardizing on it.
-        let newAnalysis = new AnalysisModel({name: name, rootUrn: rootUrn, teamId: teamId})
-        await StorageService.create( newAnalysis, 'analysis');
+    async createAnalysis ({name ,description, rootUrn, teamId} = {}) {     // @todo I like the named parameter pattern - might look at standardizing on it.
+        let newAnalysis = new AnalysisModel({name: name, rootUrn: rootUrn, teamId: teamId});
+        await StorageService.create(newAnalysis, `analysis`);
         return newAnalysis;
     }
 
-    async createStandardAnalysis(analysisName, rootUrn, source) {
-        console.log("CREATING THE STANDARD ANALYSIS")
-        let agent1 = await this.createAgent({name: 'Agent 1', urn: 'org.example.agent1'});
-        let agent2 = await this.createAgent({name: 'Agent 2', urn: 'org.example.agent2'});
-        let newTeam = await this.createTeam("Team Blue", [agent1.id, agent2.id]);
-        let newAnalysis = await this.createAnalysis({name: analysisName, rootUrn: rootUrn, teamId: newTeam.id})// @todo I like the named parameter pattern - might look at standardizing on it.
+    async createStandardAnalysis (analysisName, rootUrn, source) {
+        console.log(`CREATING THE STANDARD ANALYSIS`);
+        let agent1 = await this.createAgent({name: `Agent 1`, urn: `org.example.agent1`});
+        let agent2 = await this.createAgent({name: `Agent 2`, urn: `org.example.agent2`});
+        let newTeam = await this.createTeam(`Team Blue`, [agent1.id, agent2.id]);
+        let newAnalysis = await this.createAnalysis({name: analysisName, rootUrn: rootUrn, teamId: newTeam.id});// @todo I like the named parameter pattern - might look at standardizing on it.
         return newAnalysis;
     }
 
-    async displayAnalysis(analysisModel) {
+    async displayAnalysis (analysisModel) {
 
       //  let analysisModel = await StorageService.get(id, 'analysis');
         analysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(analysisModel.rootUrn);
         // maybe necessary?
-        analysisModel.jag = this.fetchActivity(analysisModel.urn)
+        analysisModel.jag = this.fetchActivity(analysisModel.urn);
         analysisModel.team = this.fetchTeam(analysisModel.teamId);
         this._iaTable.displayAnalysis(analysisModel);
     }
@@ -513,75 +513,75 @@ export default class ControllerIA extends Controller{
 
            // possible common area contender
 
-    async saveCellModel(newCellModel) {
-        if (await StorageService.has(newCellModel, 'node')) {
-            await StorageService.update(newCellModel, 'node');
+    async saveCellModel (newCellModel) {
+        if (await StorageService.has(newCellModel, `node`)) {
+            await StorageService.update(newCellModel, `node`);
         } else {
             if (newCellModel.isValid()) {
-                await StorageService.create(newCellModel, 'node');
+                await StorageService.create(newCellModel, `node`);
             } else {
-                window.alert("Invalid URN");
+                window.alert(`Invalid URN`);
             }
         }
     }               // possible common area contender
 
-    async saveJag() {
-        if (await StorageService.has(this, 'activity')) {
-            await StorageService.update(this, 'activity');
+    async saveJag () {
+        if (await StorageService.has(this, `activity`)) {
+            await StorageService.update(this, `activity`);
         } else {
-            await StorageService.create(this, 'activity');
+            await StorageService.create(this, `activity`);
         }
     }
 
-    async deleteLeafNode(leaf) {
+    async deleteLeafNode (leaf) {
         if (!leaf.isRootNode()) {
             const index = leaf.parent.children.indexOf(leaf);
             leaf.parent.children.splice(index, 1);
-            await StorageService.update(leaf.parent, 'node');
+            await StorageService.update(leaf.parent, `node`);
         }
 
         if (JAGATValidation.isValidUrn(leaf.activity.urn)) {
-            await StorageService.delete(leaf.id, 'node');
+            await StorageService.delete(leaf.id, `node`);
         } else {
             // 6 dispatchers here - Only Listener in views/Jag
-            this.dispatchEvent(new CustomEvent('sync'));
+            this.dispatchEvent(new CustomEvent(`sync`));
         }
     }
 
-    deleteAllChildren(childList) {
+    deleteAllChildren (childList) {
         childList.forEach(async child => {
             this.deleteAllChildren([...child.children]);
             // 2 Dispatchers here - only listener in views/Analysis
-            this.dispatchEvent(new CustomEvent('detach', {
+            this.dispatchEvent(new CustomEvent(`detach`, {
                 detail: {
                     target: child,
                     layout: false
                 }
             }));
-            await this.deleteLeafNode(child)
+            await this.deleteLeafNode(child);
             // 6 dispatchers here - Only Listener in views/Jag
-            this.dispatchEvent(new CustomEvent('sync'));
+            this.dispatchEvent(new CustomEvent(`sync`));
         });
     }
 
-    async _createChildren() {
+    async _createChildren () {
         for (let child of this.jag.children) {
             //const jag = await JAGService.instance('idb-service').get(child.urn);
-            const jag = await StorageService.get(child.urn, 'activity');
+            const jag = await StorageService.get(child.urn, `activity`);
             const model = new Node();
-            model.urn = jag.urn
+            model.urn = jag.urn;
             //await NodeService.instance('idb-service').create(model);
-            await StorageService.create(model, 'node');
+            await StorageService.create(model, `node`);
             this.addChild(model, true);
         }
     }
 
-    addChild(child, layout = true) {
+    addChild (child, layout = true) {
         child.parent = this;
         this._children.push(child);
 
         // Only Dispatcher & Only Listener in views/Analysis      // cant we just call 'attach' in analysis view?
-        this.dispatchEvent(new CustomEvent('attach', {
+        this.dispatchEvent(new CustomEvent(`attach`, {
             detail: {
                 target: child,
                 reference: this,
@@ -590,7 +590,7 @@ export default class ControllerIA extends Controller{
         }));
 
         // 6 dispatchers here - Only Listener in views/Jag
-        this.dispatchEvent(new CustomEvent('sync'));
+        this.dispatchEvent(new CustomEvent(`sync`));
     }
 
     // addChild(node){                          // from nodemodel --originall called when the +sign is clicked.
@@ -603,19 +603,19 @@ export default class ControllerIA extends Controller{
     //     }
     // }
 
-    async _updateJAG(jag) {
+    async _updateJAG (jag) {
         this._jag = jag;
         this.save();
         this.deleteAllChildren();
         await this._createChildren();
         // 6 dispatchers here - Only Listener in views/Jag
-        this.dispatchEvent(new CustomEvent('sync'));
+        this.dispatchEvent(new CustomEvent(`sync`));
     }
 
     /// OBSOLETE but might be used later
     ///  The surgical method of deleting a node and all its children
     // Does not scour for other occurrences of other identical parent jags
-    async prune(node) {
+    async prune (node) {
         this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified
 
         if (node.isRoot()) {
@@ -627,22 +627,22 @@ export default class ControllerIA extends Controller{
         //         target: this
         //     }
         // }));
-        this._iaTable.analysisView.detach(node)
+        this._iaTable.analysisView.detach(node);
         // 6 dispatchers here - Only Listener in views/Jag
-        this.dispatchEvent(new CustomEvent('sync'));
+        this.dispatchEvent(new CustomEvent(`sync`));
     }
 
-    repopulateActivity(currentNode) {
-        currentNode.activity = this._activityMap.get(currentNode.urn)
+    repopulateActivity (currentNode) {
+        currentNode.activity = this._activityMap.get(currentNode.urn);
         for (let child of currentNode.children) {
-            this.repopulateActivity(child)
+            this.repopulateActivity(child);
         }
     }
 
-    repopulateParent(currentNode) {
+    repopulateParent (currentNode) {
         for (let child of currentNode.children) {
             child.parent = currentNode;
-            this.repopulateParent(child)
+            this.repopulateParent(child);
         }
     }
 

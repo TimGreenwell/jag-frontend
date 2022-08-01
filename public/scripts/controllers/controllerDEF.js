@@ -14,63 +14,63 @@ import Controller from "./controller.js";
 
 export default class ControllerDEF extends Controller {
 
-    constructor(startProjectId = null, startNodeId = null) {
+    constructor (startProjectId = null, startNodeId = null) {
         super();
         this._currentProjectId = startProjectId;
         this._currentNodeId = startNodeId;
         this._menu = null;
         this._definition = null;
 
-        StorageService.subscribe("command-node-updated", this.commandNodeUpdatedHandler.bind(this)); // }
-        StorageService.subscribe("command-node-deleted", this.commandNodeDeletedHandler.bind(this)); // }
+        StorageService.subscribe(`command-node-updated`, this.commandNodeUpdatedHandler.bind(this)); // }
+        StorageService.subscribe(`command-node-deleted`, this.commandNodeDeletedHandler.bind(this)); // }
     }
 
     // Panel Setters
-    set menu(value) {
+    set menu (value) {
         this._menu = value;
     }
-    set definition(value) {
+    set definition (value) {
         this._definition = value;
     }
 
-    async initialize() {
+    async initialize () {
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
     }
 
-    async initializeCache() {         //@TODO --- it might not be worth caching this -- might should just hit DB..
-        let allActivities = await StorageService.all('activity')
+    async initializeCache () {         //@TODO --- it might not be worth caching this -- might should just hit DB..
+        let allActivities = await StorageService.all(`activity`);
         allActivities.forEach(activity => {
-            this.cacheActivity(activity)
+            this.cacheActivity(activity);
         });
 
-        let allProjects = await StorageService.all('node')
+        let allProjects = await StorageService.all(`node`);
         allProjects.forEach(project => {
             if (this._currentProjectId == project.id) {
-                this.repopulateParent(project)
-                this.repopulateActivity(project)
-                this.repopulateProject(project, project.id)
-                this.cacheProject(project)
+                this.repopulateParent(project);
+                this.repopulateActivity(project);
+                this.repopulateProject(project, project.id);
+                this.cacheProject(project);
             }
         });
 
         window.onblur = function (ev) {
-            console.log("window.onblur");
+            console.log(`window.onblur`);
         };
     }
 
-    initializePanels() {
+    initializePanels () {
       let project = this.fetchProject(this._currentProjectId);
-      let node = this.searchTreeForId(project,this._currentNodeId)
-      this._definition.definingNode = node
-      this._definition.buildTestBank()
+      let node = this.searchTreeForId(project,this._currentNodeId);
+      this._definition.definingNode = node;
+      this._definition.buildTestBank();
     }
 
-    initializeHandlers() {
-        this._menu.addEventListener('event-execution-updated', this.eventExecutionUpdatedHandler.bind(this));
-        this._menu.addEventListener('event-returns-updated', this.eventReturnsUpdatedHandler.bind(this));
-        this._menu.addEventListener('event-operator-updated', this.eventOperatorUpdatedHandler.bind(this));
+    initializeHandlers () {
+        this._menu.addEventListener(`event-execution-updated`, this.eventExecutionUpdatedHandler.bind(this));
+        this._menu.addEventListener(`event-returns-updated`, this.eventReturnsUpdatedHandler.bind(this));
+        this._menu.addEventListener(`event-operator-updated`, this.eventOperatorUpdatedHandler.bind(this));
     }
 
     /**
@@ -98,16 +98,16 @@ export default class ControllerDEF extends Controller {
     /**   -- Dashboard --  */
 
     /**   -- Menu --  */
-    eventExecutionUpdatedHandler(){
+    eventExecutionUpdatedHandler () {
 
     }
-    eventReturnsUpdatedHandler(){
+    eventReturnsUpdatedHandler () {
 
     }
-    eventOperatorUpdatedHandler(event){
+    eventOperatorUpdatedHandler (event) {
         let returns = event.detail.returns;
         let operator = event.detail.operator;
-        this._definition._templateFunction(returns, operator)
+        this._definition._templateFunction(returns, operator);
     }
 
     //
@@ -134,21 +134,21 @@ export default class ControllerDEF extends Controller {
      *
      */
 
-    commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
-        console.log("((COMMAND INCOMING) >>  Node Updated")
+    commandNodeUpdatedHandler (updatedProject, updatedProjectIdId) {
+        console.log(`((COMMAND INCOMING) >>  Node Updated`);
         if (this._currentProjectId == updatedProjectIdId) {
-            this.repopulateParent(updatedProject)
-            this.repopulateActivity(updatedProject)
-            this.repopulateProject(updatedProject, updatedProjectIdId)
-            this.cacheProject(updatedProject)
-            let node = this.searchTreeForId(updatedProject,this._currentNodeId)
-            this._definition.reset(node)
+            this.repopulateParent(updatedProject);
+            this.repopulateActivity(updatedProject);
+            this.repopulateProject(updatedProject, updatedProjectIdId);
+            this.cacheProject(updatedProject);
+            let node = this.searchTreeForId(updatedProject,this._currentNodeId);
+            this._definition.reset(node);
         }
     }
 
-    commandNodeDeletedHandler(deletedNodeId) {
-        console.log("((COMMAND INCOMING) >>  Node Deleted")
-        this.uncacheProject(deletedNodeId)
+    commandNodeDeletedHandler (deletedNodeId) {
+        console.log(`((COMMAND INCOMING) >>  Node Deleted`);
+        this.uncacheProject(deletedNodeId);
     }
 
     /**
@@ -158,15 +158,15 @@ export default class ControllerDEF extends Controller {
      *
      */
 
-    searchTreeForId(treeNode,id) {
-        let workStack = []
-        workStack.push(treeNode)
-        while(workStack.length>0){
+    searchTreeForId (treeNode,id) {
+        let workStack = [];
+        workStack.push(treeNode);
+        while(workStack.length > 0) {
             let checkNode = workStack.pop();
-            if (checkNode.id == id) {return checkNode}
-            checkNode.children.forEach(child => workStack.push(child))
+            if (checkNode.id == id) {return checkNode;}
+            checkNode.children.forEach(child => workStack.push(child));
         }
-        return null
+        return null;
     }
 
     // marked for death
