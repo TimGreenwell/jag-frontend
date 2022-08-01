@@ -16,7 +16,7 @@ import Activity from "../models/activity.js";
 
 export default class ControllerAT extends Controller {
 
-    constructor () {
+    constructor() {
         super();
         this._menu = null;
         this._activityLibrary = null;
@@ -34,36 +34,40 @@ export default class ControllerAT extends Controller {
         StorageService.subscribe(`command-node-deleted`, this.commandNodeDeletedHandler.bind(this)); // }
     }
 
-    set menu (value) {
+    set menu(value) {
         this._menu = value;
     }
-    set activityLibrary (value) {
+
+    set activityLibrary(value) {
         this._activityLibrary = value;
     }
-    set projectLibrary (value) {
+
+    set projectLibrary(value) {
         this._projectLibrary = value;
     }
-    set playground (value) {
+
+    set playground(value) {
         this._playground = value;
     }
-    set properties (value) {
+
+    set properties(value) {
         this._properties = value;
     }
 
-    async initialize () {
+    async initialize() {
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
     }
 
-    async initializeCache () {
+    async initializeCache() {
         let allActivities = await StorageService.all(`activity`);
-        allActivities.forEach(activity => {
+        allActivities.forEach((activity) => {
             this.cacheActivity(activity);
         });
 
         let allNodes = await StorageService.all(`node`);
-        allNodes.forEach(node => {
+        allNodes.forEach((node) => {
             this.repopulateActivity(node);
             this.repopulateParent(node);
             this.cacheProject(node);
@@ -74,15 +78,15 @@ export default class ControllerAT extends Controller {
         };
     }
 
-    initializePanels () {
+    initializePanels() {
         this._activityLibrary.addListItems([...this._activityMap.values()]);
-        let rootOnly = [...this.projectMap.values()].filter(node => {
+        let rootOnly = [...this.projectMap.values()].filter((node) => {
             return node.isRoot();
         });
         this._projectLibrary.addListItems(rootOnly);
     }
 
-    initializeHandlers () {
+    initializeHandlers() {
         this._playground.addEventListener(`event-activity-created`, this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
         this._playground.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node isExpanded property changed
@@ -170,18 +174,16 @@ export default class ControllerAT extends Controller {
 
     // eventActivityUpdatedHandler --- hosted by common controller.
 
-    async eventNodeUpdatedHandler (event) {
+    async eventNodeUpdatedHandler(event) {
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
         console.log(`-->`);
         console.log(updatedNodeModel);
         console.log(updatedNodeModel.parentId);
-     //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
+        //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
         if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = updatedNodeModel;
         } else {
-
-
             projectNode = this.fetchProject(updatedNodeModel.projectId);
             console.log(`Starting JSON`);
             console.log(JSON.stringify(projectNode));
@@ -193,12 +195,12 @@ export default class ControllerAT extends Controller {
     }
 
 
-    eventNodesSelectedHandler (event) {
+    eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
         //ide.handleSelectionUpdate(e.detail);
     }
 
-    eventNodeRepositionedHandler (event) {
+    eventNodeRepositionedHandler(event) {
         event.stopPropagation();
         let nodeModel = event.detail.nodeModel;
         nodeModel.x = event.detail.x;
@@ -206,7 +208,7 @@ export default class ControllerAT extends Controller {
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
-    async eventNodesConnectedHandler (event) {            // only needed id's
+    async eventNodesConnectedHandler(event) {            // only needed id's
         let projectNodeId = event.detail.projectNodeId;
         let parentNodeId = event.detail.parentNodeId;
         let childNodeId = event.detail.childNodeId;
@@ -225,8 +227,7 @@ export default class ControllerAT extends Controller {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
             this._playground._rebuildNodeView(projectModel);
         } else {
-
-//conn
+            //conn
 
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
@@ -242,13 +243,11 @@ export default class ControllerAT extends Controller {
 
             event.detail.activity = parentNodeModel.activity;
             await this.eventActivityUpdatedHandler(event);
-
         }
     }
 
 
-
-    async eventPlaygroundClickedHandler (event) {
+    async eventPlaygroundClickedHandler(event) {
         if (event.detail.unselectedNodeArray) {
             for (let node of event.detail.unselectedNodeArray) {
                 await StorageService.update(node, `node`);
@@ -258,7 +257,7 @@ export default class ControllerAT extends Controller {
         this._properties.handleSelectionUnselected();
     }
 
-    async eventImportJagHandler (event) {
+    async eventImportJagHandler(event) {
         console.log(`Importing as JSON - `);
         let json = event.detail.result;
         let jsonDescriptor = JSON.parse(json);
@@ -277,17 +276,16 @@ export default class ControllerAT extends Controller {
     }
 
 
-
     /**   -- Properties --  */
 
     // eventUrnChangedHandler --- hosted by common controller.
     // eventActivityUpdatedHandler --- hosted by common controller.
     // eventNodeUpdatedHandler --- common with 'playground' handler
 
-    eventExportJagHandler (event) {
+    eventExportJagHandler(event) {
         let node = event.detail.node;
         let descendantUrns = this.gatherDescendentUrns(node);
-        let neededActivities = descendantUrns.map(urn => {
+        let neededActivities = descendantUrns.map((urn) => {
             let activityModel = this.fetchActivity(urn);
             let activityJson = JSON.stringify(activityModel.toJSON(), null, 4);
             return activityJson;
@@ -302,7 +300,7 @@ export default class ControllerAT extends Controller {
         a.click();
     }
 
-    async eventPromoteProjectHandler (event) {
+    async eventPromoteProjectHandler(event) {
         let newProject = event.detail.node;
         let newNode = new NodeModel(newProject);
         this.relocateProject(newNode, 0, 200);
@@ -313,38 +311,38 @@ export default class ControllerAT extends Controller {
 
     /**   -- Menu --  */
 
-    eventAddActivityHandler () {
+    eventAddActivityHandler() {
         this._playground._handleNewActivityActivityPopup();         //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
-    eventClearPlaygroundHandler () {
+    eventClearPlaygroundHandler() {
         this._playground.clearPlayground();
     }
 
-    eventDefineNodeHandler () {
+    eventDefineNodeHandler() {
         //  let origin = window.location.origin
-        function openInNewTab (href) {
+        function openInNewTab(href) {
             Object.assign(document.createElement(`a`), {
                 target: `_blank`,
                 rel: `noopener noreferrer`,
-                href: href,
+                href: href
             }).click();
         }
 
         let selectedNodes = this._playground.selectedNodes;
 
-        selectedNodes.forEach(selectedNode => {
+        selectedNodes.forEach((selectedNode) => {
             let projectId = selectedNode.projectId;
             let nodeId = selectedNode.id;
             openInNewTab(`./node.html?project=` + projectId + `&node=` + nodeId);
         });
     }
 
-    eventRedrawNodesHandler () {
+    eventRedrawNodesHandler() {
         this._playground.redrawSelectedNodes();
     }
 
-    eventPopupImporterHandler () {
+    eventPopupImporterHandler() {
         // This just calls the popup to get the data.  That result calls:eventImportJagHandler
         this._playground._eventImportJagHandler();
     }
@@ -352,14 +350,14 @@ export default class ControllerAT extends Controller {
     /**   -- Activity Library --  */
 
 
-    async eventActivityDeletedHandler (event) {
+    async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
         // If match found, remove that child from the parent and signal update on the parent.
         console.log(`Local>> (jag deleted) `);
         const deadActivityUrn = event.detail.activityUrn;
         for (let [activityId, activity] of this._activityMap) {
             //      if (activity.urn != deadActivityUrn) {
-            let remainingChildren = activity.children.filter(kid => {
+            let remainingChildren = activity.children.filter((kid) => {
                 if (kid.urn != deadActivityUrn) {
                     return kid;
                 }
@@ -373,7 +371,7 @@ export default class ControllerAT extends Controller {
         await StorageService.delete(deadActivityUrn, `activity`);
     }
 
-    async eventActivityLockedHandler (event) {
+    async eventActivityLockedHandler(event) {
         console.log(`Local>> (jag locked) `);
         const lockedActivity = event.detail.activity;
         lockedActivity.isLocked = !lockedActivity.isLocked;
@@ -381,7 +379,7 @@ export default class ControllerAT extends Controller {
     }
 
 
-    async eventActivitySelectedHandler (event) {
+    async eventActivitySelectedHandler(event) {
         console.log(`Local>> (Activity selected / Activity list item selected) `);
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
@@ -393,14 +391,14 @@ export default class ControllerAT extends Controller {
         newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
 
         await StorageService.create(newProjectRootNode, `node`);
-       // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
+        // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
         this._playground._rebuildNodeView(newProjectRootNode);
     }
 
 
     /**   -- Project Library --  */
 
-    async eventProjectSelectedHandler (event) {
+    async eventProjectSelectedHandler(event) {
         console.log(`Local>> (project line item selected) `);
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.isExpanded;
@@ -411,14 +409,13 @@ export default class ControllerAT extends Controller {
         //    await StorageService.create(newProjectRootNode, "node");
     }
 
-    async eventProjectDeletedHandler (event) {
+    async eventProjectDeletedHandler(event) {
         console.log(`Local>> (node deleted) `);
         const deadNodeModelId = event.detail.nodeModelId;
         await StorageService.delete(deadNodeModelId, `node`);
-
     }
 
-    async eventProjectLockedHandler (event) {
+    async eventProjectLockedHandler(event) {
         console.log(`Local>> (node locked) `);
         const lockedNodeModel = event.detail.nodeModel;
         lockedNodeModel.isLocked = !lockedNodeModel.isLocked;
@@ -442,7 +439,7 @@ export default class ControllerAT extends Controller {
      *
      */
 
-    commandActivityCreatedHandler (createdActivity, createdActivityUrn) {
+    commandActivityCreatedHandler(createdActivity, createdActivityUrn) {
         this.cacheActivity(createdActivity);
         UserPrefs.setDefaultUrnPrefixFromUrn(createdActivityUrn);
         this._activityLibrary.addListItem(createdActivity);
@@ -461,7 +458,7 @@ export default class ControllerAT extends Controller {
     //     this._activityLibrary.updateItem(updatedActivity);
     // }
 
-    async commandActivityDeletedHandler (deletedActivityUrn) {
+    async commandActivityDeletedHandler(deletedActivityUrn) {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
         console.log(`((COMMAND INCOMING)) >> Activity Deleted`);
@@ -475,18 +472,18 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn);
     }
 
-    commandActivityClonedHandler (clonedActivity, clonedActivityUrn) {
+    commandActivityClonedHandler(clonedActivity, clonedActivityUrn) {
         UserPrefs.setDefaultUrnPrefixFromUrn(clonedActivityUrn);
         this._playground._addActivityNodeTree(clonedActivity, clonedActivityUrn);
     }
 
-    commandActivityReplacedHandler (newActivity, replacedActivityUrn) {
+    commandActivityReplacedHandler(newActivity, replacedActivityUrn) {
         //  UserPrefs.setDefaultUrnPrefixFromUrn(newActivity.urn)
         this._playground.replaceActivityNode(newActivity, replacedActivityUrn);
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn);                   // Replace Activity list item in activityLibrary
     }
 
-    commandNodeCreatedHandler (createdNodeModel, createdNodeId) { /// this coming in is no good
+    commandNodeCreatedHandler(createdNodeModel, createdNodeId) { /// this coming in is no good
         console.log(`((COMMAND INCOMING) >>  Node Created`);
         this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
@@ -494,10 +491,10 @@ export default class ControllerAT extends Controller {
         createdNodeModel.leafCount = createdNodeModel.leafcounter();
         this.cacheProject(createdNodeModel);
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
-     //   this._playground.addNodeModel(createdNodeModel)
+        //   this._playground.addNodeModel(createdNodeModel)
     }
 
-    async commandActivityUpdatedHandler (updatedActivity, updatedActivityUrn) {
+    async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         this.cacheActivity(updatedActivity);
         for (let viewedProject of this._playground.viewedProjects) {
             if (viewedProject.isActivityInProject(updatedActivityUrn)) {
@@ -508,10 +505,11 @@ export default class ControllerAT extends Controller {
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
-//au
+
+    //au
 
 
-    commandNodeUpdatedHandler (updatedNodeModel, updatedNodeId) {
+    commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ` + updatedNodeModel.urn + ` / ` + updatedNodeId);
 
         this.repopulateParent(updatedNodeModel);
@@ -522,12 +520,13 @@ export default class ControllerAT extends Controller {
 
         this._playground._rebuildNodeView(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel);
-     //   this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
+        //   this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
         // update playground
     }
+
     //nu
 
-    commandNodeDeletedHandler (deletedNodeId) {
+    commandNodeDeletedHandler(deletedNodeId) {
         this.uncacheProject(deletedNodeId);
         this._playground.deleteNodeModel(deletedNodeId);
         this._projectLibrary.removeNodeLibraryListItem(deletedNodeId);
@@ -543,15 +542,15 @@ export default class ControllerAT extends Controller {
      *
      */
 
-    gatherDescendentUrns (childNodeModel, workStack = []) {   // need this in nodes
+    gatherDescendentUrns(childNodeModel, workStack = []) {   // need this in nodes
         workStack.push(childNodeModel.urn);
-        childNodeModel.children.forEach(child => {
+        childNodeModel.children.forEach((child) => {
             this.gatherDescendentUrns(child, workStack);
         });
         return workStack;
     }
 
-    gatherAncestorUrns (projectModelId, parentModelId) {
+    gatherAncestorUrns(projectModelId, parentModelId) {
         let urnStack = [];
         let projectNode = this.fetchProject(projectModelId);
         do {
@@ -562,10 +561,10 @@ export default class ControllerAT extends Controller {
         return urnStack;
     }
 
-    loopDetection (projectModel, parentNodeModel, childNodeModel) {
+    loopDetection(projectModel, parentNodeModel, childNodeModel) {
         let descendentStack = this.gatherDescendentUrns(childNodeModel);
         let ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id);
-        let intersection = descendentStack.filter(x => ancestorStack.includes(x));
+        let intersection = descendentStack.filter((x) => ancestorStack.includes(x));
         return (intersection.length > 0);
     }
 

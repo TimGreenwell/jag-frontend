@@ -7,122 +7,142 @@
 
 'use strict';
 
-import { UUIDv4 } from '../utils/uuid.js';
+import {UUIDv4} from '../utils/uuid.js';
 
 export default class AnalysisModel extends EventTarget {
 
-	// constructor : why pass in root into a new CellModel? results in same.  hrm
-	constructor ({
-					id = UUIDv4(),
-					name = AnalysisModel.DEFAULT_NAME,
-					description = AnalysisModel.DEFAULT_DESCRIPTION,
-		            rootUrn,
-					teamId,
-		            isLocked
-				} = {}) {
-		super();
-		this._id = id;
-		this._name = name;
-		this._description = description;
-		this._rootUrn = rootUrn;
-		this._teamId = teamId;
-		this._isLocked = isLocked;
+    // constructor : why pass in root into a new CellModel? results in same.  hrm
+    constructor({
+        id = UUIDv4(),
+        name = AnalysisModel.DEFAULT_NAME,
+        description = AnalysisModel.DEFAULT_DESCRIPTION,
+        rootUrn,
+        teamId,
+        isLocked
+    } = {}) {
+        super();
+        this._id = id;
+        this._name = name;
+        this._description = description;
+        this._rootUrn = rootUrn;
+        this._teamId = teamId;
+        this._isLocked = isLocked;
 
-		this._team = undefined;
-		this._rootCellModel = undefined;
-		this._teamId = teamId;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
-		                                  //  or when click in analysis library
-	};
-
-
-	// @TODO - Model is pumping out Dispatches in the setters.  Not bad idea - but convention..
-	get id () {
-		return this._id;
-	}
-
-	get name () {
-		return this._name;
-	}
-	set name (name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent(`update`, { 'detail': { 'id': this._id, 'property': `name`,'extra': { 'name': this._name }}}));
-	}
-
-	get description () {
-		return this._description;
-	}
-	set description (description) {
-		this._description = description;
-		this.dispatchEvent(new CustomEvent(`update`, { 'detail': { 'id': this._id, 'property': `description`,'extra': { 'description': this._description }}}));
-	}
-
-	get rootUrn () {
-		return this._rootUrn;
-	}
-	set rootUrn (value) {
-		this._rootUrn = value;
-	}
-	get teamId () {
-		return this._teamId;
-	}
-	set teamId (value) {
-		this._teamId = value;
-	}
-	get isLocked () {
-		return this._isLocked;
-	}
-	set isLocked (value) {
-		this._isLocked = value;
-	}
+        this._team = undefined;
+        this._rootCellModel = undefined;
+        this._teamId = teamId;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
+        //  or when click in analysis library
+    };
 
 
-	get team () {
-		return this._team;
-	}
+    // @TODO - Model is pumping out Dispatches in the setters.  Not bad idea - but convention..
+    get id() {
+        return this._id;
+    }
 
-	set team (value) {
-		this._team = value;
-	}
+    get name() {
+        return this._name;
+    }
 
-	get rootCellModel () {
-		return this._rootCellModel;
-	}
-	set rootCellModel (value) {
-		this._rootCellModel = value;
-	}
+    set name(name) {
+        this._name = name;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            'detail': {
+                'id': this._id,
+                'property': `name`,
+                'extra': {'name': this._name}
+            }
+        }));
+    }
 
-	findNode (id) {
-		const searchStack = [];
-		searchStack.push(this._rootCellModel);
-		while (searchStack.length != 0) {
-			let currentNode = searchStack.pop();
-			if (currentNode.id == id) {
-				return currentNode;
-			}
-			currentNode.children.forEach(child => searchStack.push(child));
-		}
-	}
+    get description() {
+        return this._description;
+    }
+
+    set description(description) {
+        this._description = description;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            'detail': {
+                'id': this._id,
+                'property': `description`,
+                'extra': {'description': this._description}
+            }
+        }));
+    }
+
+    get rootUrn() {
+        return this._rootUrn;
+    }
+
+    set rootUrn(value) {
+        this._rootUrn = value;
+    }
+
+    get teamId() {
+        return this._teamId;
+    }
+
+    set teamId(value) {
+        this._teamId = value;
+    }
+
+    get isLocked() {
+        return this._isLocked;
+    }
+
+    set isLocked(value) {
+        this._isLocked = value;
+    }
 
 
-	static async fromJSON (json) {
-		// const team_id = json.team;
-		// let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
-		// json.team = teamNode;                                                          // Exists only to store its data (team is in team)
-		const newAnalysis = new AnalysisModel(json);
-		return newAnalysis;
-	}
+    get team() {
+        return this._team;
+    }
 
-	toJSON () {
-		const json = {
-			id: this._id,
-			name: this._name,
-			description: this._description,
-			rootUrn: this._rootUrn,
-			teamId: this._teamId,
-			isLocked: this._isLocked
-		};
-		return json;
-	}
+    set team(value) {
+        this._team = value;
+    }
+
+    get rootCellModel() {
+        return this._rootCellModel;
+    }
+
+    set rootCellModel(value) {
+        this._rootCellModel = value;
+    }
+
+    findNode(id) {
+        const searchStack = [];
+        searchStack.push(this._rootCellModel);
+        while (searchStack.length != 0) {
+            let currentNode = searchStack.pop();
+            if (currentNode.id == id) {
+                return currentNode;
+            }
+            currentNode.children.forEach((child) => searchStack.push(child));
+        }
+    }
+
+
+    static async fromJSON(json) {
+        // const team_id = json.team;
+        // let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
+        // json.team = teamNode;                                                          // Exists only to store its data (team is in team)
+        const newAnalysis = new AnalysisModel(json);
+        return newAnalysis;
+    }
+
+    toJSON() {
+        const json = {
+            id: this._id,
+            name: this._name,
+            description: this._description,
+            rootUrn: this._rootUrn,
+            teamId: this._teamId,
+            isLocked: this._isLocked
+        };
+        return json;
+    }
 
 }
 

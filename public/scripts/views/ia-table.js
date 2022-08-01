@@ -22,10 +22,9 @@ import UserPrefs from "../utils/user-prefs.js";
 // $analysis_file.addEventListener('change', this._handleUploadAnalysis.bind(this));
 
 
-
 class IATable extends Popupable {
 
-    constructor () {
+    constructor() {
         super();
         this.setPopupBounds(this);
         this._analysisModel = null;                    // the Analysis Model holding the data
@@ -33,23 +32,25 @@ class IATable extends Popupable {
         this._domElements = {                          // _domElements : name, selector, analysis, (description), (create), (import), (export), (file)
             name: undefined,
             selector: undefined,
-            analysis: undefined,
+            analysis: undefined
         };
         this._initUI();
         this._boundRefresh = this._refresh.bind(this);
     }
 
-    get analysisModel () {
+    get analysisModel() {
         return this._analysisModel;
     }
-    set analysisModel (newAnalysisModel) {
+
+    set analysisModel(newAnalysisModel) {
         this._analysisModel = newAnalysisModel;
     }
 
-    get availableActivityUrns () {
+    get availableActivityUrns() {
         return this._availableActivityUrns;
     }
-    set availableActivityUrns (jagUrnList) {
+
+    set availableActivityUrns(jagUrnList) {
         this._availableActivityUrns = jagUrnList;
     }
 
@@ -58,7 +59,7 @@ class IATable extends Popupable {
     // }
 
 
-    displayAnalysis (analysisModel = this._analysisModel) {
+    displayAnalysis(analysisModel = this._analysisModel) {
         // Called by ControllerIA..
 
         // remove current view if it exists
@@ -82,11 +83,10 @@ class IATable extends Popupable {
         for (const agent of this._agents) {
             agent.addEventListener(`update`, this._boundRefresh);
         }
-
     }
 
 
-    _initUI () {
+    _initUI() {
         const $header = document.createElement(`header`);
         // const $new_analysis = document.createElement('button');
 
@@ -153,11 +153,11 @@ class IATable extends Popupable {
         this._domElements.file = $analysis_file;
     }
 
-    _refresh () {
+    _refresh() {
         this._domElements.analysis.layout();
     }
 
-    _handleNewAnalysisPopup () {
+    _handleNewAnalysisPopup() {
         const $initiator = document.getElementById(`assessment-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_ANALYSIS,
@@ -167,7 +167,7 @@ class IATable extends Popupable {
         });
     }
 
-    _handleNewAgentPopup () {
+    _handleNewAgentPopup() {
         const $initiator = document.getElementById(`agent-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_AGENT,
@@ -178,8 +178,7 @@ class IATable extends Popupable {
     }
 
 
-
-    _handleExportAnalysisPopup () {
+    _handleExportAnalysisPopup() {
         this.popup({
             content: IATable.NOTICE_EXPORT_STATIC,
             trackEl: this._domElements.export,
@@ -188,14 +187,22 @@ class IATable extends Popupable {
         });
     }
 
-    _handleAnalysisNameChange (event) {
+    _handleAnalysisNameChange(event) {
         this._analysisModel.name = event.target.value;
-        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {
+            bubbles: true,
+            composed: true,
+            detail: {analysis: this._analysisModel}
+        }));
     }
 
-    _handleAnalysisDescriptionChange (event) {
+    _handleAnalysisDescriptionChange(event) {
         this._analysisModel.description = event.target.value;
-        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {analysis: this._analysisModel}}));
+        this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {
+            bubbles: true,
+            composed: true,
+            detail: {analysis: this._analysisModel}
+        }));
     }
 
     /**
@@ -205,11 +212,12 @@ class IATable extends Popupable {
      *
      */
 
-    async _handleUploadAnalysis () {
+    async _handleUploadAnalysis() {
         const files = this._domElements.file.files;
 
-        if (files.length < 1)
+        if (files.length < 1) {
             return;
+        }
 
         const file = files[0];
         const content = await file.text();
@@ -267,7 +275,7 @@ class IATable extends Popupable {
     //     }
     // }
 
-    _handleImportAnalysis () {
+    _handleImportAnalysis() {
         this._domElements.file.click();
     }
 
@@ -284,7 +292,7 @@ class IATable extends Popupable {
     //     return $option;
     // }
 
-    async import (analysisModelImport) {
+    async import(analysisModelImport) {
         {
             // Sort nodes with the least number of children first.
             analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
@@ -315,7 +323,7 @@ class IATable extends Popupable {
         }
 
         //const service = AnalysisService.instance('idb-service');
-        //	const service = StorageService.getStorageInstance('idb-service');
+        //const service = StorageService.getStorageInstance('idb-service');
 
         const analysisModel = await AnalysisModel.fromJSON({
             id: analysisModel.id,
@@ -330,7 +338,7 @@ class IATable extends Popupable {
         this.dispatchEvent(new CustomEvent(`create-analysis`, {detail: {analysis: analysisModel}}));
     }
 
-    async export (static_jags) {
+    async export(static_jags) {
         const analysisModel = this._analysisModel;
         const json = analysisModel.toJSON();
 
@@ -344,7 +352,9 @@ class IATable extends Popupable {
         while (children.length > 0) {
             const child = children.splice(0, 1)[0];
 
-            if (!children) children = [];
+            if (!children) {
+                children = [];
+            }
 
             if (child.children) {
                 for (let grandchild in child.children) {
@@ -390,6 +400,7 @@ class IATable extends Popupable {
         a.download = `${analysisModel.name}.json`;
         a.click();
     }
+
 }
 
 IATable.POPUP_TYPES = {
@@ -403,9 +414,15 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
     name: `Create AnalysisModel`,
     description: `Provide a name and root node to create a new analysis.`,
     properties: [
-        {name: `name`, label: `Name`, type: `text`},
         {
-            name: `root`, label: `Root JAG`, type: `select`,
+            name: `name`,
+            label: `Name`,
+            type: `text`
+        },
+        {
+            name: `root`,
+            label: `Root JAG`,
+            type: `select`,
             options: async function () {
                 const options = [];
 
@@ -424,13 +441,24 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
     ],
     actions: [
         {
-            text: `Create`, color: `white`, bgColor: `green`,
+            text: `Create`,
+            color: `white`,
+            bgColor: `green`,
             action: async function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
                 // let id = await this._controller.createAnalysis(name,root);
-                this.dispatchEvent(new CustomEvent(`event-analysis-created`, {detail: {name: name, rootUrn: root}}));
+                this.dispatchEvent(new CustomEvent(`event-analysis-created`, {
+                    detail: {
+                        name: name,
+                        rootUrn: root
+                    }
+                }));
             }
         },
-        {text: `Cancel`, color: `black`, bgColor: `white`}
+        {
+            text: `Cancel`,
+            color: `black`,
+            bgColor: `white`
+        }
     ]
 });
 
@@ -440,13 +468,17 @@ IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
     description: `Export this IA table with a static copy of current JAGs?`,
     actions: [
         {
-            text: `Yes`, color: `black`, bgColor: `red`,
+            text: `Yes`,
+            color: `black`,
+            bgColor: `red`,
             action: function ({inputs: {table}}) {
                 table.export(true);
             }
         },
         {
-            text: `No`, color: `white`, bgColor: `black`,
+            text: `No`,
+            color: `white`,
+            bgColor: `black`,
             action: function ({inputs: {table}}) {
                 table.export(false);
             }
@@ -460,12 +492,18 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
     description: `Data already exists for this analysis. Overwrite existing data?`,
     actions: [
         {
-            text: `Overwrite`, color: `black`, bgColor: `red`,
+            text: `Overwrite`,
+            color: `black`,
+            bgColor: `red`,
             action: function ({inputs: {table, analysis}}) {
                 table.import(analysisModel);
             }
         },
-        {text: `Cancel`, color: `white`, bgColor: `black`}
+        {
+            text: `Cancel`,
+            color: `white`,
+            bgColor: `black`
+        }
     ],
     fallback: 0,
     skip: ({inputs: {conflict}}) => !conflict
@@ -477,15 +515,25 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
     description: ({inputs: {jag}}) => `The uploaded analysisModel contains a activity at (${jag.urn}), which you already have. Replace it?`,
     actions: [
         {
-            text: `Overwrite`, color: `black`, bgColor: `red`,
+            text: `Overwrite`,
+            color: `black`,
+            bgColor: `red`,
             action: async function ({inputs: {jag}}) {
                 const newActivity = ActivityModel.fromJSON(jag);
-                this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {bubbles: true, composed: true, detail: {activity: newActivity}}));
+                this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {activity: newActivity}
+                }));
                 // seems like a create - but really an update --- an upstream check for 'isLocked' should be made.
-             //   await StorageService.create(newActivity, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
+                //   await StorageService.create(newActivity, 'activity');              /////  really not sure ... was an undefinced 'service.' (no schema)
             }
         },
-        {text: `Cancel`, color: `white`, bgColor: `black`}
+        {
+            text: `Cancel`,
+            color: `white`,
+            bgColor: `black`
+        }
     ]
 });
 
@@ -496,7 +544,10 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
     description: `Be precise.  You can always edit this later.`,
     properties: [
         {
-            name: `name`, label: `Name`, type: `text`, options: function () {
+            name: `name`,
+            label: `Name`,
+            type: `text`,
+            options: function () {
                 let eventMap = new Map();
                 eventMap.set(`input`, () => {
                     const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
@@ -507,24 +558,31 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             }
         },
         {
-            name: `urn`, label: `URN`, type: `text`, options: function () {
+            name: `urn`,
+            label: `URN`,
+            type: `text`,
+            options: function () {
                 let eventMap = new Map();
                 return eventMap;
             }
         },
         {
-            name: `description`, label: `Description`, type: `textarea`,
+            name: `description`,
+            label: `Description`,
+            type: `textarea`,
             options: async function () {
                 let paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
                 return paramMap;
             }
-        },
+        }
     ],
     actions: [
         {
-            text: `Create`, color: `black`, bgColor: `red`,
+            text: `Create`,
+            color: `black`,
+            bgColor: `red`,
             action: async function ({inputs: {}, outputs: agentConstruct}) {
                 this.dispatchEvent(new CustomEvent(`event-agent-created`, {
                     bubbles: true,
@@ -533,7 +591,11 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
                 }));
             }
         },
-        {text: `Cancel`, color: `white`, bgColor: `black`}
+        {
+            text: `Cancel`,
+            color: `white`,
+            bgColor: `black`
+        }
 
 
     ]
@@ -541,8 +603,6 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
     // fallback: ?
     // skip: ?
 });
-
-
 
 
 //IATable.defaultUrn = "us:ihmc:";

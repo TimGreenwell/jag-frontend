@@ -12,7 +12,7 @@ onconnect = function (e) {
     browserInstances.push(port);
 
     port.onmessage = function (event) {
-        browserInstances.forEach(instance => {
+        browserInstances.forEach((instance) => {
             instance.postMessage(event.data);
         });
     };

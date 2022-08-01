@@ -11,7 +11,6 @@ import RESTStorage from './storages/rest.js';
 import UserPrefs from "./utils/user-prefs.js";
 
 document.addEventListener(`DOMContentLoaded`, async () => {
-
     // Args
     const QueryString = window.location.search;
     const urlParams = new URLSearchParams(QueryString);
@@ -39,11 +38,11 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector(`body`);
     const mainPanels = document.createElement(`div`);
-    mainPanels.setAttribute(`id`,`main-panels`);
+    mainPanels.setAttribute(`id`, `main-panels`);
     const leftPanel = document.createElement(`div`);
-    leftPanel.setAttribute(`id`,`left-panel`);
+    leftPanel.setAttribute(`id`, `left-panel`);
     const rightPanel = document.createElement(`div`);
-    rightPanel.setAttribute(`id`,`right-panel`);
+    rightPanel.setAttribute(`id`, `right-panel`);
     const menu = new Menu();
     const definition = new Definition();
 
@@ -60,5 +59,4 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     // playground.addEventListener('refresh', (e) => {
     //     library.refreshItem(e.detail.activity, e.detail.refreshed);
     // });
-
 });

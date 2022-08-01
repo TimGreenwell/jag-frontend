@@ -121,50 +121,50 @@ Random - also from playground.. look through and wipe.
  * Apparently UNUSED???
  *
  // _generateActivityGraphFromJSON(json) {
-  	// 	let root_goal = json.rootGoal;
-  	// 	let root_node = this.addRootGoal(root_goal.name, root_goal.description);
-  	// 	root_node.getConnector().setType(root_goal.connectorType);
-  	// 	root_node.setTranslation(50, 50);
-  	// 	this._generateSubGoals(root_node, root_goal);
-  	// }
+      //     let root_goal = json.rootGoal;
+      //     let root_node = this.addRootGoal(root_goal.name, root_goal.description);
+      //     root_node.getConnector().setType(root_goal.connectorType);
+      //     root_node.setTranslation(50, 50);
+      //     this._generateSubGoals(root_node, root_goal);
+      // }
  //
  // _generateSubGoals(root_node, root) {
-  	// 	let x_start = root_node._translation.x,
-  	// 		y_offset = root_node._translation.y + 150;
-  	//
-  	// 	if(!root.subgoals)
-  	// 		return;
-  	//
-  	// 	root.subgoals.forEach(subgoal => {
-  	// 		let node;
-  	// 		if(subgoal.type == 'GOAL') {
-  	// 			node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
-  	// 			node.getConnector().setType(subgoal.item.connectorType);
-  	// 		} else {
-  	// 			node = this.addActivity(subgoal.item.name, subgoal.item.description);
-  	// 		}
-  	//
-  	// 		node.setTranslation(x_start, y_offset);
-  	// 		let edge = this._createEdge(root_node);
-  	// 		edge.setSubActivityNode(node);
-  	// 		this._generateSubGoals(node, subgoal.item);
-  	// 		x_start += 175;
-  	// 	});
-  	// }
+      //     let x_start = root_node._translation.x,
+      //         y_offset = root_node._translation.y + 150;
+      //
+      //     if(!root.subgoals)
+      //         return;
+      //
+      //     root.subgoals.forEach(subgoal => {
+      //         let node;
+      //         if(subgoal.type == 'GOAL') {
+      //             node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
+      //             node.getConnector().setType(subgoal.item.connectorType);
+      //         } else {
+      //             node = this.addActivity(subgoal.item.name, subgoal.item.description);
+      //         }
+      //
+      //         node.setTranslation(x_start, y_offset);
+      //         let edge = this._createEdge(root_node);
+      //         edge.setSubActivityNode(node);
+      //         this._generateSubGoals(node, subgoal.item);
+      //         x_start += 175;
+      //     });
+      // }
  *
  *
  *    // getSelectedAsJSON() {
- *     // 	if(this._selectedNodeElementSet.size == 0)
- *     // 		return undefined;
+ *     //     if(this._selectedNodeElementSet.size == 0)
+ *     //         return undefined;
  *     //
- *     // 	return this._selectedNodeElementSet.values().next().value.activity.toJSON();
+ *     //     return this._selectedNodeElementSet.values().next().value.activity.toJSON();
  *     // }
  *
  *     // getSelectedURN() {
- *     // 	if(this._selectedNodeElementSet.size == 0)
- *     // 		return undefined;
+ *     //     if(this._selectedNodeElementSet.size == 0)
+ *     //         return undefined;
  *     //
- *     // 	return this._selectedNodeElementSet.values().next().value.activity.urn;
+ *     //     return this._selectedNodeElementSet.values().next().value.activity.urn;
  *     // }
  *
  *

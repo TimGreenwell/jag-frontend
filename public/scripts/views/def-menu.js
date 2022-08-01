@@ -11,14 +11,14 @@ import Activity from "../models/activity.js";
 
 customElements.define(`def-menu`, class extends HTMLElement {
 
-    constructor () {
+    constructor() {
         super();
         this.$leftLiDiv = null;
         this.$rightLiDiv = null;
         this._initUI();
     }
 
-    _createMenuItem (id, img, text) {
+    _createMenuItem(id, img, text) {
         const $el = document.createElement(`span`);
         $el.id = `def-menu-${id}`;
         $el.classList.add(`menu-item`);
@@ -39,7 +39,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
     }
 
 
-    _initUI () {
+    _initUI() {
         const $ul = document.createElement(`ul`);                                //  The horizontal list of menu areas (Title, <options>, logo)
         //
         //    The left section containing the application name "JAG Authoring Tool"
@@ -91,7 +91,6 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild(return_el);
 
 
-
         let onFailOptions = Activity.getOnFailOptions(this._executionSelect.value);
 
         const onfail_el = FormUtils.createPropertyElement(`onfail-property`, `OnFail`);
@@ -104,13 +103,14 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild(onfail_el);
 
 
-
-
         let operatorOptions = [];
         let operator = Activity.OPERATOR;
-         for (let step in operator) {
-             operatorOptions.push({value: operator[step].name, text: operator[step].text});
-         }
+        for (let step in operator) {
+            operatorOptions.push({
+                value: operator[step].name,
+                text: operator[step].text
+            });
+        }
 
         const operator_el = FormUtils.createPropertyElement(`operator-property`, `Operator`);
         operator_el.className = `menu-select`;
@@ -150,7 +150,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
     }
 
 
-    _executionSelectChange (event) {
+    _executionSelectChange(event) {
         this.dispatchEvent(new CustomEvent(`event-execution-updated`, {
             bubbles: true,
             composed: true,
@@ -161,7 +161,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
             while (this._onfailSelect.options.length > 0) {
                 this._onfailSelect.remove(0);
             }
-            onfailOptions.forEach(option => {
+            onfailOptions.forEach((option) => {
                 let opt = document.createElement(`option`);
                 opt.value = option.value;
                 opt.text = option.text;
@@ -170,12 +170,11 @@ customElements.define(`def-menu`, class extends HTMLElement {
             this._onfailSelect.disabled = false;
 
 
-
             let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value);
             while (this._returnSelect.options.length > 0) {
                 this._returnSelect.remove(0);
             }
-            returnsOptions.forEach(option => {
+            returnsOptions.forEach((option) => {
                 let opt = document.createElement(`option`);
                 opt.value = option.value;
                 opt.text = option.text;
@@ -185,16 +184,19 @@ customElements.define(`def-menu`, class extends HTMLElement {
         }
     }
 
-    _onfailSelectChange (event) {
+    _onfailSelectChange(event) {
         this.dispatchEvent(new CustomEvent(`event-onfail-updated`, {
             bubbles: true,
             composed: true,
-            detail: {returns: this._returnSelect.value, operator: this._operatorSelect.value}
+            detail: {
+                returns: this._returnSelect.value,
+                operator: this._operatorSelect.value
+            }
         }));
     }
 
 
-    _returnsSelectChange (event) {
+    _returnsSelectChange(event) {
         this.dispatchEvent(new CustomEvent(`event-returns-updated`, {
             bubbles: true,
             composed: true,
@@ -204,7 +206,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
         while (this._operatorSelect.options.length > 0) {
             this._operatorSelect.remove(0);
         }
-        operatorOptions.forEach(option => {
+        operatorOptions.forEach((option) => {
             let opt = document.createElement(`option`);
             opt.value = option.value;
             opt.text = option.text;
@@ -213,15 +215,16 @@ customElements.define(`def-menu`, class extends HTMLElement {
         this._operatorSelect.disabled = false;
     }
 
-    _operatorSelectChange (event) {
+    _operatorSelectChange(event) {
         this.dispatchEvent(new CustomEvent(`event-operator-updated`, {
             bubbles: true,
             composed: true,
-            detail: {returns: this._returnSelect.value, operator: this._operatorSelect.value}
+            detail: {
+                returns: this._returnSelect.value,
+                operator: this._operatorSelect.value
+            }
         }));
     }
-
-
 
 
 });

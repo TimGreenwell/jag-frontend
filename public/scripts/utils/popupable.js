@@ -1,5 +1,6 @@
 export default class Popupable extends HTMLElement {
-    constructor () {
+
+    constructor() {
         super();
 
         this._popupContent = document.createElement(`div`);
@@ -17,7 +18,7 @@ export default class Popupable extends HTMLElement {
     // type provides an extra css classlist (besides popup-context)
     // properties, actions, fallback, skip are simply passed back out
     // Also passes back are type and _p.
-    static _createPopup ({type, name, description, properties, actions, fallback, skip}) {
+    static _createPopup({type, name, description, properties, actions, fallback, skip}) {
         const _p = document.createElement(`p`);
         _p.classList.add(`popup-content`);
         _p.classList.add(type);
@@ -25,24 +26,37 @@ export default class Popupable extends HTMLElement {
         const _name = document.createElement(`span`);
         _name.className = `popup-name`;
 
-        if (typeof name === `string`) _name.innerText = name;
-        else _p.$name = (inputs) => _name.innerText = name(inputs);
+        if (typeof name === `string`) {
+            _name.innerText = name;
+        } else {
+            _p.$name = (inputs) => _name.innerText = name(inputs);
+        }
 
         const _description = document.createElement(`span`);
         _description.className = `popup-description`;
 
-        if (typeof description === `string`) _description.innerText = description;
-        else _p.$description = (inputs) => _description.innerText = description(inputs);
+        if (typeof description === `string`) {
+            _description.innerText = description;
+        } else {
+            _p.$description = (inputs) => _description.innerText = description(inputs);
+        }
 
         _p.append(_name, _description);
 
         _p.setAttributeNS(null, `popup-type`, type);
 
-        return {type: type, display: _p, properties: properties, actions: actions, fallback: fallback, skip: skip};
+        return {
+            type: type,
+            display: _p,
+            properties: properties,
+            actions: actions,
+            fallback: fallback,
+            skip: skip
+        };
     }
 
 
-    async _displayNextPopup () {
+    async _displayNextPopup() {
         this._suggestedHeight = 140;
         if (this._popupCallback) {
             await this._popupCallback({outputs: this._popupOutputs});
@@ -59,7 +73,9 @@ export default class Popupable extends HTMLElement {
         if (this._popups.length > 0) {
             this._activePopup = this._popups.splice(0, 1)[0];
 
-            if (!this._popups) this._popups = [];
+            if (!this._popups) {
+                this._popups = [];
+            }
 
             const {content, trackEl, callback, properties, inputs, highlights} = this._activePopup;
             const loc = trackEl.getBoundingClientRect();
@@ -67,13 +83,17 @@ export default class Popupable extends HTMLElement {
 
             this._popupContent.innerHTML = ``;
 
-            const data = {inputs: inputs, outputs: this._popupOutputs};
+            const data = {
+                inputs: inputs,
+                outputs: this._popupOutputs
+            };
 
             if (content.skip) {
                 if (content.skip(data)) {
                     if (properties) {
-                        for (const property in properties)
+                        for (const property in properties) {
                             this._popupOutputs[property] = properties[property].value;
+                        }
 
                         data.outputs = this._popupOutputs;
                     }
@@ -105,8 +125,12 @@ export default class Popupable extends HTMLElement {
             if (displayThis) {
                 displayNext = false;
 
-                if (content.display.$name) content.display.$name({inputs: inputs}); //??
-                if (content.display.$description) content.display.$description({inputs: inputs}); //??
+                if (content.display.$name) {
+                    content.display.$name({inputs: inputs});
+                } //??
+                if (content.display.$description) {
+                    content.display.$description({inputs: inputs});
+                } //??
 
                 this._popupContent.appendChild(content.display);
 
@@ -120,7 +144,6 @@ export default class Popupable extends HTMLElement {
                     const nx = newLoc.x, ny = newLoc.y;
                     this._popupContent.style.left = (nx - x + (width / 2) - 100) + `px`;
                     this._popupContent.style.top = (ny - y - 160) + `px`;
-
                 });
 
                 this._popupHighlights = highlights;
@@ -147,7 +170,9 @@ export default class Popupable extends HTMLElement {
 
 
                         let input_el = `input`;
-                        if (type === `select`) input_el = `select`;
+                        if (type === `select`) {
+                            input_el = `select`;
+                        }
                         if (type === `textarea`) {
                             input_el = `textarea`;
                             this._suggestedHeight = this._suggestedHeight + 45;
@@ -157,15 +182,17 @@ export default class Popupable extends HTMLElement {
                         $input.setAttribute(`name`, name);
                         $input.setAttribute(`id`, name);
 
-                        if (input_el === `input`)
+                        if (input_el === `input`) {
                             $input.setAttribute(`type`, type);
+                        }
 
                         if (options) {
                             let roptions = options;
 
                             //  throws error - options is not a function.    --purpose?
-                            if (typeof options !== `array`)
+                            if (typeof options !== `array`) {
                                 roptions = await options(data);
+                            }
 
                             if (type === `textarea`) {
                                 for (let [key, value] of roptions.entries()) {
@@ -210,8 +237,12 @@ export default class Popupable extends HTMLElement {
                         actionBtn.className = `popup-action`;
                         actionBtn.innerText = text;
 
-                        if (color) actionBtn.style.color = color;
-                        if (bgColor) actionBtn.style.backgroundColor = bgColor;
+                        if (color) {
+                            actionBtn.style.color = color;
+                        }
+                        if (bgColor) {
+                            actionBtn.style.backgroundColor = bgColor;
+                        }
 
                         actionBtn.onclick = async function () {
                             let result;
@@ -224,8 +255,9 @@ export default class Popupable extends HTMLElement {
                                 data.outputs = this._popupOutputs;
                             }
 
-                            if (boundAction)
+                            if (boundAction) {
                                 result = await boundAction(data);
+                            }
 
                             if (result) {
                                 for (const output in result) {
@@ -260,11 +292,11 @@ export default class Popupable extends HTMLElement {
         }
     }
 
-    setPopupBounds (bounds) {
+    setPopupBounds(bounds) {
         this._popupBounds = bounds;
     }
 
-    popup ({content, trackEl, callback, inputs = {}, highlights = []}) {
+    popup({content, trackEl, callback, inputs = {}, highlights = []}) {
         this._popups.push({
             content: content,
             trackEl: trackEl,
@@ -277,5 +309,6 @@ export default class Popupable extends HTMLElement {
             this._displayNextPopup();
         }
     }
+
 }
 

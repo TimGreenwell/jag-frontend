@@ -7,36 +7,47 @@
 
 'use strict';
 
+import {functionFactory} from "../utils/function-factory";
+
 class LibraryControls extends HTMLElement {
 
-	constructor (activity) {
-		super();
-		this._activity = activity;
+    constructor(activity) {
+        super();
 
-		this._initUI();
-		this._initListeners();
-	}
+        this._activity = activity;
 
-	_initUI () {
-		this._toggleLock = document.createElement(`div`);
-		this._deleteJag = document.createElement(`div`);
+        this._initUI();
+        this._initListeners();
+    }
 
-		this._toggleLock.classList.add(`jag-button`, `lock-button`);
-		this._deleteJag.classList.add(`jag-button`, `delete-button`);
+    _initUI() {
+        this._toggleLock = document.createElement(`div`);
+        this._deleteJag = document.createElement(`div`);
 
-		this.appendChild(this._toggleLock);
-		this.appendChild(this._deleteJag);
-	}
+        this._toggleLock.classList.add(`jag-button`, `lock-button`);
+        this._deleteJag.classList.add(`jag-button`, `delete-button`);
 
-	_initListeners () {
-		this._toggleLock.addEventListener(`click`, () => {
-			this.dispatchEvent(new CustomEvent(`local-lock-toggle`, {bubbles: true, composed: true, detail: {node: this._activity}}));
-		});
+        this.appendChild(this._toggleLock);
+        this.appendChild(this._deleteJag);
+    }
 
-		this._deleteJag.addEventListener(`click`, () => {
-			this.dispatchEvent(new CustomEvent(`local-jag-delete`, {bubbles: true, composed: true, detail: {node: this._activity}}));
-		});
-	}
+    _initListeners() {
+        this._toggleLock.addEventListener(`click`, () => {
+            this.dispatchEvent(new CustomEvent(`local-lock-toggle`, {
+                bubbles: true,
+                composed: true,
+                detail: {node: this._activity}
+            }));
+        });
+
+        this._deleteJag.addEventListener(`click`, () => {
+            this.dispatchEvent(new CustomEvent(`local-jag-delete`, {
+                bubbles: true,
+                composed: true,
+                detail: {node: this._activity}
+            }));
+        });
+    }
 
 }
 

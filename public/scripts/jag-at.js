@@ -23,73 +23,72 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 
 
 document.addEventListener(`DOMContentLoaded`, async () => {
+    // Initializes local storage
+    const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
+    await idb_storage.init();
+    StorageService.addStorageInstance(`idb-service`, idb_storage);
 
-	// Initializes local storage
-	const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
-	await idb_storage.init();
-	StorageService.addStorageInstance(`idb-service`, idb_storage);
+    // Initializes a rest storage
+    const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8080/api/v1`);
+    await rest_storage.init();
+    StorageService.addStorageInstance(`local-rest-service`, rest_storage);
 
-	// Initializes a rest storage
-	const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8080/api/v1`);
-	await rest_storage.init();
-	StorageService.addStorageInstance(`local-rest-service`, rest_storage);
+    // storage choices
+    StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
+    StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+    StorageService.senderId = `jag-at`;                         // Cross-tab identifier
 
-	// storage choices
-	StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
-	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
-	StorageService.senderId = `jag-at`;                         // Cross-tab identifier
+    let controller = new ControllerAT();
 
-	let controller = new ControllerAT();
+    // @TODO - I need to better understand these two
+    // const ide = new IDE();
+    // const graph_service = new GraphService();
 
-	// @TODO - I need to better understand these two
-	// const ide = new IDE();
-	// const graph_service = new GraphService();
+    // Load DOM outer skeleton for Authoring Tool
+    const body = document.querySelector(`body`);
+    const mainPanels = document.createElement(`div`);
+    mainPanels.setAttribute(`id`, `main-panels`);
+    const leftPanel = document.createElement(`div`);
+    leftPanel.setAttribute(`id`, `left-panel`);
+    const rightPanel = document.createElement(`div`);
+    rightPanel.setAttribute(`id`, `right-panel`);
 
-	// Load DOM outer skeleton for Authoring Tool
-	const body = document.querySelector(`body`);
-	const mainPanels = document.createElement(`div`);
-	mainPanels.setAttribute(`id`,`main-panels`);
-	const leftPanel = document.createElement(`div`);
-	leftPanel.setAttribute(`id`,`left-panel`);
-	const rightPanel = document.createElement(`div`);
-	rightPanel.setAttribute(`id`,`right-panel`);
+    const library = new Library();
+    const projectLibrary = new ProjectLibrary();
+    const menu = new Menu();
+    const playground = new Playground();
+    const properties = new Properties();
+    body.appendChild(menu);
+    body.appendChild(mainPanels);
+    mainPanels.appendChild(leftPanel);
+    mainPanels.appendChild(playground);
+    mainPanels.appendChild(rightPanel);
+    leftPanel.appendChild(projectLibrary);
+    leftPanel.appendChild(library);
+    rightPanel.appendChild(properties);
 
-	const library = new Library();
-	const projectLibrary = new ProjectLibrary();
-	const menu = new Menu();
-	const playground = new Playground();
-	const properties = new Properties();
-	body.appendChild(menu);
-	body.appendChild(mainPanels);
-	mainPanels.appendChild(leftPanel);
-	mainPanels.appendChild(playground);
-	mainPanels.appendChild(rightPanel);
-	leftPanel.appendChild(projectLibrary);
-	leftPanel.appendChild(library);
-	rightPanel.appendChild(properties);
+    controller.menu = menu;
+    controller.activityLibrary = library;
+    controller.projectLibrary = projectLibrary;
+    controller.playground = playground;
+    controller.properties = properties;
+    await controller.initialize();
 
-	controller.menu = menu;
-	controller.activityLibrary = library;
-	controller.projectLibrary = projectLibrary;
-	controller.playground = playground;
-	controller.properties = properties;
-	await controller.initialize();
+    // The below really belong in the AT Controller - but I need to understand them better
 
-	// The below really belong in the AT Controller - but I need to understand them better
-
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'refresh' (storage-sync-requested)(?)
-	playground.addEventListener(`refresh`, (e) => {
-		library.refreshItem(e.detail.activity, e.detail.refreshed);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'resources' (???)
-	// graph_service.addEventListener('resources', (e) => {
-	// 	library.handleResourceUpdate(e.detail);
-	// });
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'refresh' (storage-sync-requested)(?)
-	library.addEventListener(`refresh`, (e) => {
-		playground.handleRefresh(e.detail);
-	});
+    //////////////////////////////////////////////////////////////////////
+    // Event: 'refresh' (storage-sync-requested)(?)
+    playground.addEventListener(`refresh`, (e) => {
+        library.refreshItem(e.detail.activity, e.detail.refreshed);
+    });
+    //////////////////////////////////////////////////////////////////////
+    // Event: 'resources' (???)
+    // graph_service.addEventListener('resources', (e) => {
+    //     library.handleResourceUpdate(e.detail);
+    // });
+    //////////////////////////////////////////////////////////////////////
+    // Event: 'refresh' (storage-sync-requested)(?)
+    library.addEventListener(`refresh`, (e) => {
+        playground.handleRefresh(e.detail);
+    });
 });

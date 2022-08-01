@@ -1,56 +1,56 @@
 .popup-box {
-	background-color: rgba(0, 0, 0, 0.75);
-	border: 3px solid black;
-	border-radius: 6px;
-	position: absolute;
-	width: 200px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 3px solid black;
+    border-radius: 6px;
+    position: absolute;
+    width: 200px;
     color: white;
     font-size: 12px;
-	z-index: 10;
-	padding: 1em;
+    z-index: 10;
+    padding: 1em;
 }
 
 .popup-content {
-	padding: 10px;
+    padding: 10px;
 }
 
 .popup-warning:before {
-	content: "Warning: ";
+    content: "Warning: ";
 }
 
 .popup-notice:before {
-	content: "Notice: ";
+    content: "Notice: ";
 }
 
 div.popup-box span {
-	display: inline-block;
+    display: inline-block;
 }
 
 .popup-name {
-	font-weight: bold;
-	margin: 10px 0 10px 0;
+    font-weight: bold;
+    margin: 10px 0 10px 0;
 }
 
 .popup-warning span.popup-name {
-	color: red;
+    color: red;
 }
 
 .popup-notice span.popup-name {
-	color: orange;
+    color: orange;
 }
 
 .popup-description {
-	color: white;
+    color: white;
 }
 
 .popup-warning-highlight {
-	box-shadow: 0 3px 20px rgba(255, 0, 0, 0.33);
+    box-shadow: 0 3px 20px rgba(255, 0, 0, 0.33);
 }
 
 .popup-notice-highlight {
-	box-shadow: 0 3px 20px rgba(255, 150, 0, 0.33);
+    box-shadow: 0 3px 20px rgba(255, 150, 0, 0.33);
 }
 
 .popup-action {
-	margin: 10px;
+    margin: 10px;
 }

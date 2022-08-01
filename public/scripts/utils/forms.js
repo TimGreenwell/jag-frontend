@@ -1,11 +1,12 @@
 class FormUtils {
-    static createEmptyInputContainer (id) {
+
+    static createEmptyInputContainer(id) {
         const container = document.createElement(`div`);
         container.setAttribute(`id`, id);
         return container;
     }
 
-    static createPropertyElement (id, name) {
+    static createPropertyElement(id, name) {
         const element = document.createElement(`div`);
         const label = document.createElement(`label`);
         label.setAttribute(`for`, id);
@@ -14,23 +15,23 @@ class FormUtils {
         return element;
     }
 
-    static createTextInput (id) {
+    static createTextInput(id) {
         const input = document.createElement(`input`);
         input.setAttribute(`type`, `text`);
         input.setAttribute(`id`, id);
         return input;
     }
 
-    static createSelect (id, options, selected = undefined) {
+    static createSelect(id, options, selected = undefined) {
         const input = document.createElement(`select`);
         input.setAttribute(`id`, id);
 
-        options.forEach(item => {
+        options.forEach((item) => {
             if (item.label) {
                 const opgr_el = document.createElement(`optgroup`);
                 opgr_el.setAttribute(`label`, item.label);
 
-                item.options.forEach(option => {
+                item.options.forEach((option) => {
                     const opt_el = document.createElement(`option`);
                     opt_el.value = option.value;
                     opt_el.text = option.text;
@@ -55,7 +56,7 @@ class FormUtils {
         return input;
     }
 
-    static toggleSelectValues (select_el, valid_values) {
+    static toggleSelectValues(select_el, valid_values) {
         const selected_option = select_el.selectedOptions[0];
 
         for (let option of select_el.options) {
@@ -66,6 +67,7 @@ class FormUtils {
             select_el.value = selected_option.value;
         }
     }
+
 }
 
 export default FormUtils;

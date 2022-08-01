@@ -12,34 +12,34 @@ import IndexedDBStorage from '/src-scripts/storages/indexed-db.js';
 import BasicMapStorage from '/scripts/utils/map-storage.js';
 
 const test_jag_a = new JAG({
-	urn: 'urn:ihmc:web-tools:tests:test-jag-alpha',
-	name: 'Alpha test JAG',
-	description: 'Alpha test JAG description',
+    urn: 'urn:ihmc:web-tools:tests:test-jag-alpha',
+    name: 'Alpha test JAG',
+    description: 'Alpha test JAG description',
 });
 
 const test_jag_b = new JAG({
-	urn: 'urn:ihmc:web-tools:tests:test-jag-beta',
-	name: 'Beta test JAG',
-	description: 'Beta test JAG description',
+    urn: 'urn:ihmc:web-tools:tests:test-jag-beta',
+    name: 'Beta test JAG',
+    description: 'Beta test JAG description',
 });
 
 const unknown_urn = 'urn:ihmc:web-tools:tests:test-jag-gamma';
 
 const storages = [
-	{
-		'id': 'map',
-		'name': 'BasicMapStorage',
-		'instance': new BasicMapStorage()
-	},
-	{
-		'id': 'idb',
-		'name': 'IndexedDBStorage',
-		'instance': new IndexedDBStorage('joint-activity-graphs-test', 1)
-	}
+    {
+        'id': 'map',
+        'name': 'BasicMapStorage',
+        'instance': new BasicMapStorage()
+    },
+    {
+        'id': 'idb',
+        'name': 'IndexedDBStorage',
+        'instance': new IndexedDBStorage('joint-activity-graphs-test', 1)
+    }
 ];
 
 storages.forEach(
-	(storage) => suite(`Test storage ${storage.name}`, () => {
+    (storage) => suite(`Test storage ${storage.name}`, () => {
         let service;
 
         suiteSetup(async () => {
@@ -47,43 +47,43 @@ storages.forEach(
             service = JAGService.createInstance(`${storage.id}-service`, storage.instance);
         });
 
-		suite(`Create JAG in ${storage.name}`, () => {
+        suite(`Create JAG in ${storage.name}`, () => {
 
-			test('should create a new JAG', async () => {
-				try {
-					await service.create(test_jag_a);
-					await service.create(test_jag_b);
-				} catch (e) {
-					throw new Error(`Failed to create JAG ${e.message}.`);
-				}
-			});
+            test('should create a new JAG', async () => {
+                try {
+                    await service.create(test_jag_a);
+                    await service.create(test_jag_b);
+                } catch (e) {
+                    throw new Error(`Failed to create JAG ${e.message}.`);
+                }
+            });
 
-			test('should fail to create an existing JAG', async () => {
-				try {
-					await service.create(test_jag_a);
+            test('should fail to create an existing JAG', async () => {
+                try {
+                    await service.create(test_jag_a);
 
-					throw new Error(`Should not have created JAG with already defined URN.`);
-				} catch {
-					// Success; should have thrown an error
-				}
-			});
+                    throw new Error(`Should not have created JAG with already defined URN.`);
+                } catch {
+                    // Success; should have thrown an error
+                }
+            });
 
-		});
+        });
 
-		suite(`Retrieve JAG from ${storage.name}`, () => {
+        suite(`Retrieve JAG from ${storage.name}`, () => {
 
-			test('should return JAG with the specified URN.', async () => {
-				try {
-					await service.get(test_jag_a.urn);
-				} catch (e) {
-					throw new Error(`Failed to retrieve JAG: ${e.message}.`);
-				}
+            test('should return JAG with the specified URN.', async () => {
+                try {
+                    await service.get(test_jag_a.urn);
+                } catch (e) {
+                    throw new Error(`Failed to retrieve JAG: ${e.message}.`);
+                }
 
-				// TODO: deep equality check of returned JAG
-			});
+                // TODO: deep equality check of returned JAG
+            });
 
-			test('should return null for a JAG that does not exist.', async () => {
-				try {
+            test('should return null for a JAG that does not exist.', async () => {
+                try {
 					await service.get(unknown_urn);
 
 					throw new Error(`Should not have retrieved JAG with unknown URN.`);

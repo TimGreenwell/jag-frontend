@@ -9,11 +9,11 @@
 
 class ContextMenu extends HTMLElement {
 
-    constructor () {
+    constructor() {
         super();
     }
 
-    addEntry (label, properties, style) {
+    addEntry(label, properties, style) {
         const entry = document.createElement(`div`);
 
         entry.innerText = label;
@@ -21,20 +21,23 @@ class ContextMenu extends HTMLElement {
 
 
         // Propagates the enumerable properties
-        for(let property in properties)
+        for (let property in properties) {
             entry[property] = properties[property];
+        }
 
         // Propagates symbols
-        for(let symbol of Object.getOwnPropertySymbols(properties))
+        for (let symbol of Object.getOwnPropertySymbols(properties)) {
             entry[symbol] = properties[symbol];
+        }
 
-        for(let property in style)
+        for (let property in style) {
             entry.style.setProperty(property, style[property]);
+        }
 
         this.appendChild(entry);
     }
 
-    _fireSelection (event) {
+    _fireSelection(event) {
         this.parentNode.removeChild(this);
         this.dispatchEvent(new CustomEvent(ContextMenu.SELECT_EVENT, {detail: event.target}));
     }

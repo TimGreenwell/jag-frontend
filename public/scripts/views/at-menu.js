@@ -8,14 +8,14 @@
 
 customElements.define(`jag-menu`, class extends HTMLElement {
 
-    constructor () {
+    constructor() {
         super();
         this.$leftLiDiv = null;
         this.$rightLiDiv = null;
         this._initUI();
     }
 
-    _createMenuItem (id, img, text) {
+    _createMenuItem(id, img, text) {
         const $el = document.createElement(`span`);
         $el.id = `menu-${id}`;
         $el.classList.add(`menu-item`);
@@ -36,7 +36,7 @@ customElements.define(`jag-menu`, class extends HTMLElement {
     }
 
 
-    _initUI () {
+    _initUI() {
         const $ul = document.createElement(`ul`);
         //
         //    The left section containing the application name "JAG Authoring Tool"
@@ -69,8 +69,7 @@ customElements.define(`jag-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild($new);
 
         $new.addEventListener(`click`, function (e) {
-            this.dispatchEvent(new CustomEvent(`event-add-activity`, {}
-            ));
+            this.dispatchEvent(new CustomEvent(`event-add-activity`, {}));
         }.bind(this));
 
         const $clear = document.createElement(`span`);
@@ -130,8 +129,8 @@ customElements.define(`jag-menu`, class extends HTMLElement {
         this.$leftLiDiv = $leftLiDiv;
         this.$centerLiDiv = $centerLiDiv;
         this.$rightLiDiv = $rightLiDiv;
-
     }
+
 });
 
 export default customElements.get(`jag-menu`);

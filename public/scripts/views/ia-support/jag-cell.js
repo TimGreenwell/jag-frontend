@@ -22,7 +22,7 @@ import Validator from "../../utils/validation.js";
 // A Cell based off (model/Node)
 class JagCell extends AnalysisCell {
 
-    constructor (cellModel, parent) {
+    constructor(cellModel, parent) {
         super();
         this._cellModel = cellModel;
         this._parent = parent;
@@ -37,63 +37,62 @@ class JagCell extends AnalysisCell {
     }
 
 
-    get cellModel () {
+    get cellModel() {
         return this._cellModel;
     }
 
-    set cellModel (value) {
+    set cellModel(value) {
         this._cellModel = value;
     }
 
-//////  Elements and Element Values
-    get urnElementEntry () {
+    //////  Elements and Element Values
+    get urnElementEntry() {
         return this._htmlElements.urnEntry.innerText;
     }
 
-    set urnElementEntry (urn) {
+    set urnElementEntry(urn) {
         this._htmlElements.urnEntry.innerText = urn;
     }
 
-    get urnElement () {
+    get urnElement() {
         return this._htmlElements.urnEntry;
     }
 
-    get nameElementEntry () {
+    get nameElementEntry() {
         return this._htmlElements.nameEntry.innerText.trim();
     }
 
-    set nameElementEntry (name) {
+    set nameElementEntry(name) {
         this._htmlElements.nameEntry.innerText = name;
     }
 
-    get nameElement () {
+    get nameElement() {
         return this._htmlElements.nameEntry;
     }
 
 
-    get parent () {
+    get parent() {
         return this._parent;
     }
 
-    set parent (value) {
+    set parent(value) {
         this._parent = value;
     }
 
-//////  classList Properties
-    set valid (valid) {
+    //////  classList Properties
+    set valid(valid) {
         this.classList.toggle(`unsaved`, !valid);
     }
 
-    hide () {
+    hide() {
         this.classList.add(`hidden`);
     }
 
-    show () {
+    show() {
         this.classList.remove(`hidden`);
     }
 
-    async _initHandlers () {
-
+    async _initHandlers() {
         // note: the icon controls in the JagCell are defined by JagCellControls
 
         this._htmlElements.nameEntry.addEventListener(`blur`, this._handleNameChange.bind(this));  // pass name and 'auto-urn' up to ControllerIA for Jag updating.
@@ -108,7 +107,7 @@ class JagCell extends AnalysisCell {
 
     // Handlers
 
-    async _handleNameChange (event) {
+    async _handleNameChange(event) {
         // This runs when the Name field of the IATABLE Jag node area loses focus - blurs
         if (this.nameElementEntry !== this.cellModel.activity.name) {
             this.nameElementEntry = this.nameElementEntry.split(`:`).slice(-1);
@@ -140,42 +139,44 @@ class JagCell extends AnalysisCell {
         }
     }
 
-    async _handleNameEdit (e) {
+    async _handleNameEdit(e) {
         switch (e.key) {
-            case `Enter`:
-                // Enter adds a new sibling
-                // Shift+Enter adds a new child
-                e.preventDefault();
-                this._htmlElements.nameEntry.blur();
+        case `Enter`:
+            // Enter adds a new sibling
+            // Shift+Enter adds a new child
+            e.preventDefault();
+            this._htmlElements.nameEntry.blur();
 
-                if (e.shiftKey)
-                    this.nodeModel.addChild(new Node());   // shift to controller (ControllerIA.addNewNode(cellModel))
-                if (e.ctrlKey) {
-                    if (this.nodeModel.parent !== undefined)
-                        this.nodeModel.parent.addChild(new Node());  // shift to controller (ControllerIA.addNewNode(cellModel.parent))
-                    else
-                        console.log(`Can not add siblings to root`);
+            if (e.shiftKey) {
+                this.nodeModel.addChild(new Node());
+            }   // shift to controller (ControllerIA.addNewNode(cellModel))
+            if (e.ctrlKey) {
+                if (this.nodeModel.parent !== undefined) {
+                    this.nodeModel.parent.addChild(new Node());
+                    // shift to controller (ControllerIA.addNewNode(cellModel.parent))
+                } else {
+                    console.log(`Can not add siblings to root`);
                 }
-                break;
-            case `Escape`:
-                this._htmlElements.nameEntry.blur();
-                break;
+            }
+            break;
+        case `Escape`:
+            this._htmlElements.nameEntry.blur();
+            break;
         }
         const validCharacters = new RegExp(`[A-Za-z0-9-:]`);
         if ((!Validator.isValidUrn(this.cellModel.activity.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
             this.urnElementEntry = this.urnElementEntry + e.key.toLowerCase();
-
         }
     }
 
-    _handleNameInput (e) {
+    _handleNameInput(e) {
         // This updates as the user type in the names field of the IATABLE jag node area.
         // No idea what this is doing.  (But looks internal to view).
         const name = e.target.innerText;
     }
 
 
-    _handleURNChange (e) {
+    _handleURNChange(e) {
         if (this.urnElementEntry !== this.cellModel.activity.urn) {           // if urn was changed
             if (Validator.isValidUrn(this.urnElementEntry)) {        // && entered urn is valid...
                 this._htmlElements.suggestions.hide();
@@ -184,11 +185,17 @@ class JagCell extends AnalysisCell {
                     this.dispatchEvent(new CustomEvent(`event-urn-changed`, {
                         bubbles: true,
                         composed: true,
-                        detail: {originalUrn: this.cellModel.activity.urn, newUrn: this.urnElementEntry}
+                        detail: {
+                            originalUrn: this.cellModel.activity.urn,
+                            newUrn: this.urnElementEntry
+                        }
                     }));
                     //ControllerIA.updateURN(this.urn, this.cellModel.activity.urn);  // orig, new
                 } else {
-                    let activityConstruct = {urn: this.urnElementEntry, name: this.nameElementEntry};
+                    let activityConstruct = {
+                        urn: this.urnElementEntry,
+                        name: this.nameElementEntry
+                    };
                     this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                         bubbles: true,
                         composed: true,
@@ -201,34 +208,35 @@ class JagCell extends AnalysisCell {
                         composed: true,
                         detail: {activity: parent.activity}
                     }));
-                  }
+                }
             }
             //this.activity.urn = this.urnElementEntry
         }
     }
 
-    _handleURNEdit (e) {
+    _handleURNEdit(e) {
         switch (e.key) {
-            case `Enter`:
-                e.preventDefault();
-                const selected = this._htmlElements.suggestions.selected;
-                if (selected !== undefined)
-                    this.urnElementEntry = selected;
-                this._htmlElements.urnEntry.blur();
-                this._htmlElements.suggestions.hide();
-                break;
-            case `Escape`:
-                this.urnElementEntry = this.cellModel.activity.urn;
-                this._htmlElements.urnEntry.blur();
-                break;
-            case `ArrowDown`:
-                e.preventDefault();
-                this._htmlElements.suggestions.select(1);
-                break;
-            case `ArrowUp`:
-                e.preventDefault();
-                this._htmlElements.suggestions.select(-1);
-                break;
+        case `Enter`:
+            e.preventDefault();
+            const selected = this._htmlElements.suggestions.selected;
+            if (selected !== undefined) {
+                this.urnElementEntry = selected;
+            }
+            this._htmlElements.urnEntry.blur();
+            this._htmlElements.suggestions.hide();
+            break;
+        case `Escape`:
+            this.urnElementEntry = this.cellModel.activity.urn;
+            this._htmlElements.urnEntry.blur();
+            break;
+        case `ArrowDown`:
+            e.preventDefault();
+            this._htmlElements.suggestions.select(1);
+            break;
+        case `ArrowUp`:
+            e.preventDefault();
+            this._htmlElements.suggestions.select(-1);
+            break;
         }
         const validCharacters = /^[A-Za-z0-9\-\:]+/;
         if ((this.cellModel.activity.name == ``) && (e.key.match(validCharacters))) {
@@ -237,13 +245,13 @@ class JagCell extends AnalysisCell {
     }
 
 
-    _handleURNInput (e) {
+    _handleURNInput(e) {
         const $suggestions = this._htmlElements.suggestions;
         $suggestions.filter(this.urnElementEntry);
     }
 
 
-    async deleteActivity (deadActivity) {
+    async deleteActivity(deadActivity) {
         this._cellModel = undefined;
         await StorageService.get(deadActivity.urn, `activity`);
 
@@ -253,7 +261,7 @@ class JagCell extends AnalysisCell {
         this._clearProperties();
     }
 
-    async cloneActivity (sourceActivity, newURN) {
+    async cloneActivity(sourceActivity, newURN) {
         const description = sourceActivity.toJSON();
         description.urn = newURN;
         const newActivity = JAG.fromJSON(description);
@@ -274,11 +282,12 @@ class JagCell extends AnalysisCell {
      * @returns {Promise<void>}
      */
 
-    async commitNameChange (view) {
-        if (this.linkStatus)
+    async commitNameChange(view) {
+        if (this.linkStatus) {
             await this.syncJAG(view, false);
-        else
+        } else {
             this.activity.name = view.name;
+        }
         await StorageService.update(this, `node`);
     }
 
@@ -287,7 +296,7 @@ class JagCell extends AnalysisCell {
      * Actions could be, load a new jag model, create a new jag model or change the name of the current jag.
      * tlg - if nodes are instances of a jag, why should their change affect the jag itself?
      */
-    async syncJAG (view, replace = true) {
+    async syncJAG(view, replace = true) {
         const urn = view.urn;
         const name = view.name;
 
@@ -331,7 +340,7 @@ class JagCell extends AnalysisCell {
     }
 
 
-    async _initUI () {
+    async _initUI() {
         this.cellModel.addEventListener(`sync`, this._syncViewToModel.bind(this));
         //@TODO should view listen to model (new way) or controller (older way)
 
@@ -355,20 +364,20 @@ class JagCell extends AnalysisCell {
         $urnEntry.setAttribute(`spellcheck`, `false`);
         $urnEntry.setAttribute(`tabindex`, `-1`);
 
-        if (this._cellModel !== undefined)  // && this._cellModel.hasValidURN) {
-        {
+        if (this._cellModel !== undefined) { // && this._cellModel.hasValidURN) {
             $urnEntry.innerText = this.cellModel.activity.urn;
             $nameEntry.innerText = this.cellModel.activity.name;
         } else {
             this.classList.add(`unsaved`);
         }
 
-        $fold.addEventListener(`click`, () =>
+        $fold.addEventListener(`click`, () => {
             this.dispatchEvent(new CustomEvent(`event-collapse-toggled`, {
                 bubbles: true,
                 composed: true,
                 detail: {node: this._cellModel}
-            })));
+            }));
+        });
         $fold.classList.add(`fold-button`);
 
         // $nameEntry.appendChild($nameEntryInput)
@@ -386,18 +395,18 @@ class JagCell extends AnalysisCell {
 
         //    tg - Both functions are equivalent but neither seem to be of any use.  this._htmlElements is set to auto-complete.
         //    tg - possibly the '.suggestions.suggestions' is a mistake.
-        await StorageService.all(`activity`).then(jags => this._htmlElements.suggestions.suggestions = jags.map(jag => jag.urn));
-        //	allActivitys.forEach(() => this._htmlElements.suggestions.suggestions = allActivitys.map(cellModel => cellModel.activity.urn));
+        await StorageService.all(`activity`).then((jags) => this._htmlElements.suggestions.suggestions = jags.map((jag) => jag.urn));
+        //   allActivitys.forEach(() => this._htmlElements.suggestions.suggestions = allActivitys.map(cellModel => cellModel.activity.urn));
     }
 
 
-    updateSuggestions (cellModelList) {
+    updateSuggestions(cellModelList) {
         //cellModelList.forEach(() => this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.activity.urn));
-        this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.activity.urn);
+        this._htmlElements.suggestions.suggestions = cellModelList.map((cellModel) => cellModel.activity.urn);
     }
 
     // Sync view to existing model values.  --- Triggered on 'sync' event which is linked to cellModel.
-    _syncViewToModel () {
+    _syncViewToModel() {
         console.log(`SYNC HAS BEEN ACTIVATED.................................(surgical treatment of jag/model change)........................   (thought it was disabled) ..........`);
         this.urnElementEntry = this.cellModel.activity.urn;
         this.nameElementEntry = this.cellModel.activity.name;

@@ -1,13 +1,13 @@
 /* Team editor */
 ia-properties {
-	width: 100%;
-	height: 100%;
-	overflow-y: scroll;
-	z-index: 100;
-	background: var(--main-bg-lighter);
-	color: var(--main-fg);
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    z-index: 100;
+    background: var(--main-bg-lighter);
+    color: var(--main-fg);
 }
 
 ia-properties div {
-	padding: 0.75em;
+    padding: 0.75em;
 }

@@ -10,28 +10,29 @@
 export default class DOMUtils {
 
 
-	static create (description) {
-		const element = document.createElement(description.type);
-		for(let attribute in description.attributes)
-			element.setAttribute(attribute, description.attributes[attribute]);
+    static create(description) {
+        const element = document.createElement(description.type);
+        for (let attribute in description.attributes) {
+            element.setAttribute(attribute, description.attributes[attribute]);
+        }
 
-		if(description.children) {
-			for(let child of description.children) {
-				const child_element = DOMUtils.create(child);
-				element.appendChild(child_element);
-			}
-		}
+        if (description.children) {
+            for (let child of description.children) {
+                const child_element = DOMUtils.create(child);
+                element.appendChild(child_element);
+            }
+        }
 
-		return element;
-	}
+        return element;
+    }
 
-	// Select the text in $node
-	static selectNodeText ($node) {
-		const selection = window.getSelection();
-		const range = document.createRange();
-		selection.removeAllRanges();
-		range.selectNodeContents($node);
-		selection.addRange(range);      // <    dom.js:41 addRange(): The given range isn't in document.
-	}
+    // Select the text in $node
+    static selectNodeText($node) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        selection.removeAllRanges();
+        range.selectNodeContents($node);
+        selection.addRange(range);      // <    dom.js:41 addRange(): The given range isn't in document.
+    }
 
 }

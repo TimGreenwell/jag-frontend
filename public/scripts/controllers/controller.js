@@ -18,7 +18,7 @@ import CellModel from "../models/cell.js";
 
 export default class Controller extends EventTarget {
 
-    constructor () {
+    constructor() {
         super();
         this._activityMap = new Map();       // Activity cache
         this._projectMap = new Map();        // Node cache
@@ -26,46 +26,46 @@ export default class Controller extends EventTarget {
         this._currentAnalysis = undefined;   // type: AnalysisModel
     }
 
-    get activityMap () {
+    get activityMap() {
         return this._activityMap;
     }
 
-    set activityMap (newActivityMap) {
+    set activityMap(newActivityMap) {
         this._activityMap = newActivityMap;
     }
 
-    uncacheActivity (activityId) {
+    uncacheActivity(activityId) {
         this._activityMap.delete(activityId);
     }
 
-    cacheActivity (activity) {
+    cacheActivity(activity) {
         this._activityMap.set(activity.urn, activity);
     }
 
-    fetchActivity (activityId) {
+    fetchActivity(activityId) {
         return this._activityMap.get(activityId);
     }
 
-    get projectMap () {
+    get projectMap() {
         return this._projectMap;
     }
 
-    set projectMap (newProjectMap) {
+    set projectMap(newProjectMap) {
         this._projectMap = newProjectMap;
     }
 
-    uncacheProject (projectId) {
+    uncacheProject(projectId) {
         this._projectMap.delete(projectId);
     }
 
-    cacheProject (project) {
+    cacheProject(project) {
         this._projectMap.set(project.id, project);
-        project.children.forEach(child => {
+        project.children.forEach((child) => {
             this.cacheProject(child);
         });
     }
 
-    fetchProject (projectId) {
+    fetchProject(projectId) {
         let cachedProject = this._projectMap.get(projectId);
         if (!cachedProject) {
             console.log(`Could not find the node ${projectId}. Expect some issues.  We should be going to DB at this point`);
@@ -74,31 +74,31 @@ export default class Controller extends EventTarget {
     }
 
 
-    get analysisMap () {
+    get analysisMap() {
         return this._analysisMap;
     }
 
-    set analysisMap (newAnalysisMap) {
+    set analysisMap(newAnalysisMap) {
         this._analysisMap = newAnalysisMap;
     }
 
-    uncacheAnalysis (analysisId) {
+    uncacheAnalysis(analysisId) {
         this._analysisMap.delete(analysisId);
     }
 
-    cacheAnalysis (analysis) {
+    cacheAnalysis(analysis) {
         this._analysisMap.set(analysis.id, analysis);
     }
 
-    fetchAnalysis (analysisId) {
+    fetchAnalysis(analysisId) {
         return this._analysisMap(analysisId);
     }
 
-    get currentAnalysis () {
+    get currentAnalysis() {
         return this._currentAnalysis;
     }
 
-    set currentAnalysis (value) {
+    set currentAnalysis(value) {
         this._currentAnalysis = value;
     }
 
@@ -119,7 +119,7 @@ export default class Controller extends EventTarget {
      */
 
 
-    async eventActivityCreatedHandler (event) {
+    async eventActivityCreatedHandler(event) {
         let activityConstruct = event.detail.activityConstruct;
         console.log(`\nLocal>> (Activity ${activityConstruct.urn} creating) `);
         if (!this.activityMap.has(activityConstruct.urn)) {
@@ -135,14 +135,14 @@ export default class Controller extends EventTarget {
         }
     }
 
-    async eventActivityUpdatedHandler (event) {                                       // Store and notify 'Updated JAG'
+    async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
         console.log(`\nLocal>> (Activity ${updatedActivity.urn} updating) `);
         updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, `activity`);
     }
 
-    async eventUrnChangedHandler (event) {
+    async eventUrnChangedHandler(event) {
         const originalUrn = event.detail.originalUrn;
         const newUrn = event.detail.newUrn;
 
@@ -167,9 +167,8 @@ export default class Controller extends EventTarget {
                     // is the target Activity locked?
                     if (newActivity.isLocked) {
                         // FAIL  - CANT OVERWRITE LOCKED Activity
-                    } else // target Activity is NOT locked
-
-                    { // is the original Activity locked?
+                    } else { // target Activity is NOT locked
+                        // is the original Activity locked?
                         if (originalActivity.isLocked) {
                             await StorageService.clone(originalUrn, newUrn, `activity`);
                         } else { /// the original Activity is not locked
@@ -183,7 +182,7 @@ export default class Controller extends EventTarget {
                 // is the original Activity locked?
                 if (originalActivity.isLocked) {
                     await this.cloneActivity(originalActivity, newUrn);
-                } else {/// the original Activity is not locked
+                } else { /// the original Activity is not locked
                     await StorageService.replace(originalUrn, newUrn, `activity`);
                 }
             }
@@ -211,7 +210,7 @@ export default class Controller extends EventTarget {
      */
 
 
-    updateTreeWithActivityChange (changedActivity, projectNode) {
+    updateTreeWithActivityChange(changedActivity, projectNode) {
         const nodeStack = [];
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
@@ -221,8 +220,11 @@ export default class Controller extends EventTarget {
                 if (changedActivity.urn == undefined) {
                     console.log(`Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull`);
                 }
-                let existingNodeChildren = currentNode.children.map(child => {
-                    return {urn: child.urn, id: child.childId};
+                let existingNodeChildren = currentNode.children.map((child) => {
+                    return {
+                        urn: child.urn,
+                        id: child.childId
+                    };
                 });
                 let validNodeChildren = changedActivity.children;
                 let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
@@ -230,7 +232,7 @@ export default class Controller extends EventTarget {
                 let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
                 console.log(`Kids to remove: ${kidsToRemove.length}`);
 
-                kidsToAdd.forEach(child => {
+                kidsToAdd.forEach((child) => {
                     // 1) get newly created activity from map. 2) Create Node
                     const childActivity = this.fetchActivity(child.urn);
                     const childNodeModel = new NodeModel();
@@ -242,14 +244,11 @@ export default class Controller extends EventTarget {
                     currentNode.addChild(childNodeModel);
                 });
 
-                kidsToRemove.forEach(child => {
+                kidsToRemove.forEach((child) => {
                     let childNodeModel = this.searchTreeForChildId(projectNode, child.id);    //currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
                     orphanedRootStack.push(childNodeModel);
-
-
                 });
-
             }
             for (const child of currentNode.children) {
                 nodeStack.push(child);
@@ -263,14 +262,17 @@ export default class Controller extends EventTarget {
             this.repopulateProject(orphanedRootNode, orphanedRootNode.id);
         }
         return projectNode;
-
     }
 
-    buildCellTreeFromActivityUrn (newRootActivityUrn) {
+    buildCellTreeFromActivityUrn(newRootActivityUrn) {
         const nodeStack = [];
         const resultStack = [];
         const rootActivity = this.fetchActivity(newRootActivityUrn);
-        const rootCellModel = new CellModel({urn: rootActivity.urn, jag: rootActivity, is_root: true});
+        const rootCellModel = new CellModel({
+            urn: rootActivity.urn,
+            jag: rootActivity,
+            is_root: true
+        });
         rootCellModel.activity = rootActivity;
         rootCellModel.parentUrn = null;
         rootCellModel.rootUrn = newRootActivityUrn;
@@ -280,7 +282,11 @@ export default class Controller extends EventTarget {
             for (const child of currentNode.activity.children) {
                 let childActivity = this.fetchActivity(child.urn);
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
-                const childCellModel = new CellModel({urn: childActivity.urn, jag: childActivity, is_root: false});
+                const childCellModel = new CellModel({
+                    urn: childActivity.urn,
+                    jag: childActivity,
+                    is_root: false
+                });
                 childCellModel.activity = childActivity;
                 childCellModel.childId = child.id;
                 childCellModel.parentUrn = currentNode.urn;
@@ -294,8 +300,7 @@ export default class Controller extends EventTarget {
         return returnNode;
     }
 
-    buildNodeTreeFromActivity (rootActivity, isExpanded) {
-
+    buildNodeTreeFromActivity(rootActivity, isExpanded) {
         const nodeStack = [];
         const resultStack = [];
         //  const rootActivity = this.fetchActivity(newRootActivityUrn); /// I could have just passed in the Model...instead of switching to urn and back.
@@ -328,17 +333,17 @@ export default class Controller extends EventTarget {
         return returnNode;
     }
 
-    getChildrenToAdd (existingKids, validKids) {                               //originalActivity, updatedActivity) {
-        const returnValue = validKids.filter(validKid => !existingKids.find(existingKid => JSON.stringify(validKid) === JSON.stringify(existingKid)));
+    getChildrenToAdd(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+        const returnValue = validKids.filter((validKid) => !existingKids.find((existingKid) => JSON.stringify(validKid) === JSON.stringify(existingKid)));
         return returnValue;
     }
 
-    getChildrenToRemove (existingKids, validKids) {                               //originalActivity, updatedActivity) {
-        const returnValue = existingKids.filter(existingKid => !validKids.find(validKid => JSON.stringify(existingKid) === JSON.stringify(validKid)));
+    getChildrenToRemove(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+        const returnValue = existingKids.filter((existingKid) => !validKids.find((validKid) => JSON.stringify(existingKid) === JSON.stringify(validKid)));
         return returnValue;
     }
 
-    searchTreeForId (treeNode, id) {
+    searchTreeForId(treeNode, id) {
         let workStack = [];
         workStack.push(treeNode);
         while (workStack.length > 0) {
@@ -346,12 +351,12 @@ export default class Controller extends EventTarget {
             if (checkNode.id == id) {
                 return checkNode;
             }
-            checkNode.children.forEach(child => workStack.push(child));
+            checkNode.children.forEach((child) => workStack.push(child));
         }
         return null;
     }
 
-    searchTreeForChildId (treeNode, childId) {
+    searchTreeForChildId(treeNode, childId) {
         let workStack = [];
         workStack.push(treeNode);
         while (workStack.length > 0) {
@@ -359,25 +364,25 @@ export default class Controller extends EventTarget {
             if (checkNode.childId == childId) {
                 return checkNode;
             }
-            checkNode.children.forEach(child => workStack.push(child));
+            checkNode.children.forEach((child) => workStack.push(child));
         }
         return null;
     }
 
-    removeAllChildNodes (parent) {
+    removeAllChildNodes(parent) {
         while (parent.firstChild) {
             parent.removeChild(parent.firstChild);
         }
     }
 
-    repopulateActivity (currentNode) {
+    repopulateActivity(currentNode) {
         currentNode.activity = this.fetchActivity(currentNode.urn);
         for (let child of currentNode.children) {
             this.repopulateActivity(child);
         }
     }
 
-    repopulateParent (currentNode) {
+    repopulateParent(currentNode) {
         for (let child of currentNode.children) {
             child.parent = currentNode;
             child.parentId = currentNode.id;
@@ -385,8 +390,7 @@ export default class Controller extends EventTarget {
         }
     }
 
-    repopulateProject (currentNode, projectId) {
-
+    repopulateProject(currentNode, projectId) {
         console.log(`setting ${currentNode.urn} from  ${currentNode.projectId} to ${projectId}`);
         currentNode.projectId = projectId;
         for (let child of currentNode.children) {
@@ -394,7 +398,7 @@ export default class Controller extends EventTarget {
         }
     }
 
-    relocateProject (currentNode, deltaX, deltaY) {
+    relocateProject(currentNode, deltaX, deltaY) {
         currentNode.x = currentNode.x + deltaX;
         currentNode.y = currentNode.y + deltaY;
         for (let child of currentNode.children) {

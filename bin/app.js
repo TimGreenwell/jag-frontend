@@ -22,12 +22,12 @@ const server = app.listen(port);
 server.on('listening', () => console.log(`HTTP server started on ${port}`));
 
 process.on('SIGTERM', () => {
-	console.error("\nTerminating server.");
-	server.close();
+    console.error("\nTerminating server.");
+    server.close();
 });
 
 process.on('SIGINT', () => {
-	console.error("\nInterrupting server.");
-	server.close();
+    console.error("\nInterrupting server.");
+    server.close();
 });
 

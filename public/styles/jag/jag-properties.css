@@ -1,100 +1,100 @@
 /* Properties panel */
 jag-properties {
-	width: 100%;
-	height: 100%;   /* was 95% */
-	overflow-y: scroll;
-	z-index: 100;       /* new */
-	background: var(--main-bg-lighter);
-	color: var(--main-fg);   /* new */
+    width: 100%;
+    height: 100%;   /* was 95% */
+    overflow-y: scroll;
+    z-index: 100;       /* new */
+    background: var(--main-bg-lighter);
+    color: var(--main-fg);   /* new */
 }
 
 jag-properties textarea {
-	width: 100%;
+    width: 100%;
 }
 
 jag-properties div {
-	padding: 0.75em;
+    padding: 0.75em;
 }
 
 jag-properties .special {
-	font-weight: bold;
-	border-radius: 0.5em;
-	padding: 0.5em;
+    font-weight: bold;
+    border-radius: 0.5em;
+    padding: 0.5em;
 }
 
 jag-properties #childOf {
-	background-color: blue;
-	color: white;
+    background-color: blue;
+    color: white;
 }
 
 jag-properties  #undefined-jag{  /* was #undefinedJAG */
-	background-color: red;
-	color: white;
+    background-color: red;
+    color: white;
 }
 
 jag-properties #leaf-node {
-	background-color: green;
-	color: white;
+    background-color: green;
+    color: white;
 }
 
 jag-properties:not(.defined-model) .direct-property {
-	box-shadow: 0px 0px 5px red;
+    box-shadow: 0px 0px 5px red;
 }
 
 jag-properties:not(.root-node) input.contextual {
-	box-shadow: 0px 3px 5px blue;
+    box-shadow: 0px 3px 5px blue;
 }
 
 jag-properties.root-node .child-of-notice {
-	display: none;
+    display: none;
 }
 
 jag-properties.defined-model .undefined-jag-notice {
-	display: none;
+    display: none;
 }
 
 jag-properties.non-leaf-node .leaf-node-notice {
-	display: none;
+    display: none;
 }
 
 jag-properties div label {
-	width: 8em;
+    width: 8em;
 }
 
 jag-properties input.edited {
-	box-shadow: 0px 3px 5px orange;
+    box-shadow: 0px 3px 5px orange;
 }
 
 jag-properties div > span.io-add {
-	cursor: pointer;
-	float: right;
-	width: 1em;
-	text-align: center;
+    cursor: pointer;
+    float: right;
+    width: 1em;
+    text-align: center;
 }
 
 jag-properties div > span {
-	font-size: 12pt;
+    font-size: 12pt;
 }
 
 jag-properties div > span.remove {
-	cursor: pointer;
-	float: right;
+    cursor: pointer;
+    float: right;
 }
 
 jag-properties div > span.binding.arrow, jag-properties div > span.annotation.equals {
-	display: inline-block;
-	width: 10%;
-	text-align: center;
+    display: inline-block;
+    width: 10%;
+    text-align: center;
 }
 
 jag-properties div > input.binding, jag-properties .annotation.descriptor input {
-	width: 40%;
+    width: 40%;
 }
 
 jag-properties #bindings-property select, jag-properties div:not(.descriptor) > input.annotation {
-	width: 45%;
+    width: 45%;
 }
 
 jag-properties #annotations-property input[type="checkbox"] {
-	margin-right: 10px;
+    margin-right: 10px;
 }

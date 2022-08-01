@@ -9,53 +9,61 @@
 
 class JagCellControls extends HTMLElement {
 
-	constructor (cell) {
-		super();
-		this._cell = cell;
+    constructor(cell) {
+        super();
+        this._cell = cell;
 
-		this._initUI();
-		this._initListeners();
-	}
+        this._initUI();
+        this._initListeners();
+    }
 
-	_initUI () {
-		this._addButton = document.createElement(`div`);
-		this._removeButton = document.createElement(`div`);
+    _initUI() {
+        this._addButton = document.createElement(`div`);
+        this._removeButton = document.createElement(`div`);
 
-		this._addButton.classList.add(`jag-button`, `add-child-button`);
-		this._removeButton.classList.add(`jag-button`, `remove-button`);
+        this._addButton.classList.add(`jag-button`, `add-child-button`);
+        this._removeButton.classList.add(`jag-button`, `remove-button`);
 
 
+        this.appendChild(this._addButton);
 
-		this.appendChild(this._addButton);
+        // Only show the remove icon if not root.
+        if (!this._cell.isRoot()) {
+            this.appendChild(this._removeButton);
+        }
+    }
 
-		// Only show the remove icon if not root.
-		if(!this._cell.isRoot())
-			this.appendChild(this._removeButton);
-	}
+    _initListeners() {
+        this._addButton.addEventListener(`click`, () => {
+            this.dispatchEvent(new CustomEvent(
+                `event-cell-addchild`,
+                {
+                    bubbles: true,
+                    composed: true,
+                    detail: {cell: this._cell}
+                }
+            ));
+        });
 
-	_initListeners () {
-		this._addButton.addEventListener(`click`, () => {
-			this.dispatchEvent(new CustomEvent(`event-cell-addchild`,
-				{bubbles: true,
-				composed: true,
-				detail: {cell: this._cell}}));
-		});
+        this._removeButton.addEventListener(`click`, () => {
+            let parentCellActivity = this._cell.parent.activity;
+            let childChildId = this._cell.childId;
+            parentCellActivity.removeChild(childChildId);
+            this.dispatchEvent(new CustomEvent(
+                `event-activity-updated`,
+                {
+                    bubbles: true,
+                    composed: true,
+                    detail: {activity: parentCellActivity}
+                }
+            ));
 
-		this._removeButton.addEventListener(`click`, () => {
-			let parentCellActivity = this._cell.parent.activity;
-			let childChildId = this._cell.childId;
-			parentCellActivity.removeChild(childChildId);
-			this.dispatchEvent(new CustomEvent(`event-activity-updated`,
-			{ bubbles: true,
-				composed: true,
-				detail: {activity: parentCellActivity}}));
-
-			// this.dispatchEvent(new CustomEvent('event-cell-prunechild',
-			// 	{ bubbles: true,
-			// 	composed: true,
-			// 	detail: {cell: this._cell}}));
-		});
-	}
+            // this.dispatchEvent(new CustomEvent('event-cell-prunechild',
+            //     { bubbles: true,
+            //     composed: true,
+            //     detail: {cell: this._cell}}));
+        });
+    }
 
 }
 

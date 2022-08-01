@@ -300,7 +300,7 @@ suite('Create a new JAG model', () => {
         });
     });
 
-	suite('Fail to create a JAG with improper URN', () => {
+    suite('Fail to create a JAG with improper URN', () => {
         const jag = validJAG();
 
         test('Create a JAG with no URN', () => {
