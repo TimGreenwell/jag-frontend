@@ -77,11 +77,11 @@ class Definition extends HTMLElement {
     buildSubscriptionBank(subscriptionNode = this._definingNode) {
         this.removeAllChildNodes(this._$subscriptionEntryDiv);
         if (this.definingNode.subscriptions.length > 0) {
-            /////////////  SUBSCRIPTIONS - Title Line - Title
+            // ///////////  SUBSCRIPTIONS - Title Line - Title
             let $subscriptionSubtitle = document.createElement(`H2`);
             $subscriptionSubtitle.innerText = `Subscribed To:  `;
             this._$subscriptionEntryDiv.appendChild($subscriptionSubtitle);
-            /////////////  SUBSCRIPTIONS - Header Line
+            // ///////////  SUBSCRIPTIONS - Header Line
             let $subscriptionHeaderLine = document.createElement(`div`);
             $subscriptionHeaderLine.className = `header-line`;
             let $spacer = document.createElement(`H2`);
@@ -191,57 +191,57 @@ class Definition extends HTMLElement {
 
 
     _initUI() {
-        ////////////// DATA VALUES - Div
+        // //////////// DATA VALUES - Div
         this.$testerDiv = document.createElement(`div`);                   // TEST BLOCK Div - Mock input
         this.$testerDiv.className = `tester definition-block`;
-        /////////////  DATA VALUES - Div - Title Line
+        // ///////////  DATA VALUES - Div - Title Line
         let $testDivTitleLine = document.createElement(`div`);
         $testDivTitleLine.className = `title-line`;
         this.$testerDiv.appendChild($testDivTitleLine);
-        /////////////  DATA VALUES - Div - Title Line - Title
+        // ///////////  DATA VALUES - Div - Title Line - Title
         this.$testerTitle = document.createElement(`H1`);
         this.$testerTitle.innerText = `TEST DATA`;
         this.$testerTitle.className = `block-title`;
         $testDivTitleLine.appendChild(this.$testerTitle);
-        /////////////  SUBSCRIPTIONS - Div Title Line - Add Button
+        // ///////////  SUBSCRIPTIONS - Div Title Line - Add Button
         this._$swapButton = document.createElement(`button`);
         this._$swapButton.innerText = (this.dataMode == `live`) ? `>Test` : `>Live`;
         this._$swapButton.setAttribute(`id`, `subscription-add-button`);
         $testDivTitleLine.appendChild(this._$swapButton);
-        /////////////  SUBSCRIPTIONS - Entry Field  (buildTestBank)
+        // ///////////  SUBSCRIPTIONS - Entry Field  (buildTestBank)
         this.$testerEntryDiv = document.createElement(`div`);
         this.$testerEntryDiv.className = `tester-entry-field`;
         this.$testerDiv.appendChild(this.$testerEntryDiv);
         this.appendChild(this.$testerDiv);
 
-        /////////////  SUBSCRIPTIONS - Div
+        // ///////////  SUBSCRIPTIONS - Div
         const $subscriptionsDiv = document.createElement(`div`);             // CONDITIONS BLOCK Div - Abort,Fail,Success conditions
         $subscriptionsDiv.className = `subscription definition-block`;
-        /////////////  SUBSCRIPTIONS - Div Title Line
+        // ///////////  SUBSCRIPTIONS - Div Title Line
         let $subscriptionDivTitleLine = document.createElement(`div`);
         $subscriptionDivTitleLine.className = `title-line`;
         $subscriptionsDiv.appendChild($subscriptionDivTitleLine);
-        /////////////  SUBSCRIPTIONS - Div Title Line - Title
+        // ///////////  SUBSCRIPTIONS - Div Title Line - Title
         this.$subscriptionsDivTitle = document.createElement(`H1`);
         this.$subscriptionsDivTitle.innerText = `SUBSCRIPTIONS`;
         this.$subscriptionsDivTitle.className = `block-title`;
         $subscriptionDivTitleLine.appendChild(this.$subscriptionsDivTitle);
-        /////////////  SUBSCRIPTIONS - Div Title Line - Add Button
+        // ///////////  SUBSCRIPTIONS - Div Title Line - Add Button
         let $subscriptionAddButton = document.createElement(`button`);
         $subscriptionAddButton.innerText = `+`;
         $subscriptionAddButton.setAttribute(`id`, `subscription-add-button`);
         $subscriptionDivTitleLine.appendChild($subscriptionAddButton);
 
-        /////////////  SUBSCRIPTIONS - Data Line (createSubscriptionElement)
+        // ///////////  SUBSCRIPTIONS - Data Line (createSubscriptionElement)
         this._$subscriptionEntryDiv = document.createElement(`div`);
         this._$subscriptionEntryDiv.className = `subscription-container`;
         $subscriptionsDiv.appendChild(this._$subscriptionEntryDiv);
         this.appendChild($subscriptionsDiv);
 
-        /////////////  FUNCTION
+        // ///////////  FUNCTION
         const $functionDiv = document.createElement(`div`);               // Synthensis / logic between input and output
         $functionDiv.className = `function definition-block`;
-        /////////////  SUBSCRIPTIONS - Div Title Line - Title
+        // ///////////  SUBSCRIPTIONS - Div Title Line - Title
         this.$functionDivTitle = document.createElement(`H1`);
         this.$functionDivTitle.innerText = `FUNCTION`;
         this.$functionDivTitle.className = `block-title`;

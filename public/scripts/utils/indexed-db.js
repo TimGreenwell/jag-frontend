@@ -49,7 +49,7 @@ export default class IndexedDBUtils {
             if (key) {
                 //    request = object_store.put(value, key);
                 request = object_store.put(value);
-                //worked good as add(value) with rest
+                // worked good as add(value) with rest
             } else {
                 request = object_store.add(value);
             }
@@ -92,7 +92,7 @@ export default class IndexedDBUtils {
         };
     }
 
-    //tlg
+    // tlg
     static clear(db, store, key) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(store, `readwrite`);
@@ -110,7 +110,7 @@ export default class IndexedDBUtils {
     };
 
 
-    //tlg
+    // tlg
     static delete(db, store, key) {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(store, `readwrite`);

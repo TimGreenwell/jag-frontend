@@ -26,13 +26,15 @@ export default class Schemas {
             key: `urn`,
             deserialize: Activity.fromJSON,
             rest: `activities`,
-            indexList: [{
-                name: `urn-index`,
-                property: `urn`,
-                options: {
-                    unique: true
+            indexList: [
+                {
+                    name: `urn-index`,
+                    property: `urn`,
+                    options: {
+                        unique: true
+                    }
                 }
-            }]
+            ]
         };
 
         const NODE_STORE = {
@@ -40,13 +42,15 @@ export default class Schemas {
             key: `id`,
             deserialize: NodeModel.fromJSON,
             rest: `jags`,
-            indexList: [{
-                name: `id-index`,
-                property: `id`,
-                options: {
-                    unique: true
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
                 }
-            }]
+            ]
         };
 
         const ANALYSIS_STORE = {
@@ -54,13 +58,15 @@ export default class Schemas {
             key: `id`,
             deserialize: AnalysisModel.fromJSON,
             rest: `analyses`,
-            indexList: [{
-                name: `id-index`,
-                property: `id`,
-                options: {
-                    unique: true
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
                 }
-            }]
+            ]
         };
 
         const AGENT_STORE = {
@@ -68,13 +74,15 @@ export default class Schemas {
             key: `id`,
             deserialize: Agent.fromJSON,
             rest: `agents`,
-            indexList: [{
-                name: `id-index`,
-                property: `id`,
-                options: {
-                    unique: true
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
                 }
-            }]
+            ]
         };
 
         const TEAM_STORE = {
@@ -82,21 +90,23 @@ export default class Schemas {
             key: `id`,
             deserialize: Team.fromJSON,
             rest: `teams`,
-            indexList: [{
-                name: `id-index`,
-                property: `id`,
-                options: {
-                    unique: true
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
                 }
-            }]
+            ]
         };
 
         Schemas.SCHEMA_SET = {
-            'activity': ACTIVITY_STORE,
-            'node': NODE_STORE,
-            'analysis': ANALYSIS_STORE,
-            'agent': AGENT_STORE,
-            'team': TEAM_STORE
+            activity: ACTIVITY_STORE,
+            node: NODE_STORE,
+            analysis: ANALYSIS_STORE,
+            agent: AGENT_STORE,
+            team: TEAM_STORE
         };
     }
 

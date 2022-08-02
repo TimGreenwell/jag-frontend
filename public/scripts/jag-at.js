@@ -76,17 +76,17 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     // The below really belong in the AT Controller - but I need to understand them better
 
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
     // Event: 'refresh' (storage-sync-requested)(?)
     playground.addEventListener(`refresh`, (e) => {
         library.refreshItem(e.detail.activity, e.detail.refreshed);
     });
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
     // Event: 'resources' (???)
     // graph_service.addEventListener('resources', (e) => {
     //     library.handleResourceUpdate(e.detail);
     // });
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
     // Event: 'refresh' (storage-sync-requested)(?)
     library.addEventListener(`refresh`, (e) => {
         playground.handleRefresh(e.detail);

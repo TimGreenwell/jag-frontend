@@ -118,7 +118,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             });
         }
 
-        const operator_el = FormUtils.createPropertyElement(`operator-property`, `Operator`);             //@TODO Map this from original structure
+        const operator_el = FormUtils.createPropertyElement(`operator-property`, `Operator`);             // @TODO Map this from original structure
         this._$operatorSelect = FormUtils.createSelect(`operator-property`, operatorOptions);
         this._$operatorSelect.className = `direct-property`;
         operator_el.appendChild(this._$operatorSelect);
@@ -265,7 +265,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             e.preventDefault();
             let inputs = this.querySelectorAll(`input:enabled, textarea`);
             this._$urnInput.classList.toggle(`edited`, this._$urnInput.value != this._nodeModel.activity.urn);
-            //current position in 'form'
+            // current position in 'form'
             const currentPosition = this._$urnInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
@@ -413,8 +413,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
 
-    //@TODO Add a button to properties to delete the Jag. --
-    //@TODO Same for 'publish'/'lock'
+    // @TODO Add a button to properties to delete the Jag. --
+    // @TODO Same for 'publish'/'lock'
     deleteActivity(deadActivity) {
         this._nodeModel.activity = undefined;
         this._$urnInput.classList.toggle(`edited`, false);
@@ -424,19 +424,19 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
     }
 
-    async cloneActivity(sourceActivity, newURN) {
+    cloneActivity(sourceActivity, newURN) {
         const description = sourceActivity.toJSON();
         description.urn = newURN;
         const newActivity = Activity.fromJSON(description);
         // Update activity references.
-        this._node.activity = newActivity; //?
+        this._node.activity = newActivity; // ?
         this._nodeModel.activity = newActivity;
         this.dispatchEvent(new CustomEvent(`event-activity-created`, {
             bubbles: true,
             composed: true,
             detail: {activityConstruct: newActivity}
         }));    // event-activity-created in playground uses components
-        //await StorageService.create(newActivity, 'activity');
+        // await StorageService.create(newActivity, 'activity');
         // Remove unsaved box shadow on URN property input.
         this._$urnInput.classList.toggle(`edited`, false);
 
@@ -687,7 +687,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _addInput(e) {
-        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
+        if (this._nodeModel) { // } && !(this._nodeModel instanceof UndefinedJAG)) {
             const name = window.prompt(`Input name`);
             if (name === null) {
                 return;
@@ -708,7 +708,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _addOutput(e) {
-        if (this._nodeModel) { //} && !(this._nodeModel instanceof UndefinedJAG)) {
+        if (this._nodeModel) { // } && !(this._nodeModel instanceof UndefinedJAG)) {
             const name = window.prompt(`Output name`);
             if (name === null) {
                 return;
@@ -751,15 +751,17 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 }
             }
 
-            return [{
-                label: label,
-                options: node.inputs.map((input) => {
-                    return {
-                        text: input.name,
-                        value: `${node.id}:${input.name}`
-                    };
-                })
-            }];
+            return [
+                {
+                    label: label,
+                    options: node.inputs.map((input) => {
+                        return {
+                            text: input.name,
+                            value: `${node.id}:${input.name}`
+                        };
+                    })
+                }
+            ];
         }).reduce((c, n) => c.concat(n)));
 
         select_el.onfocus = function (e) {
@@ -780,15 +782,17 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 }
             }
 
-            return [{
-                label: label,
-                options: node.outputs.map((output) => {
-                    return {
-                        text: output.name,
-                        value: `${node.id}:${output.name}`
-                    };
-                })
-            }];
+            return [
+                {
+                    label: label,
+                    options: node.outputs.map((output) => {
+                        return {
+                            text: output.name,
+                            value: `${node.id}:${output.name}`
+                        };
+                    })
+                }
+            ];
         }).reduce((c, n) => c.concat(n)));
 
         select_el.onfocus = function (e) {
@@ -985,7 +989,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             if (value.match(/^(\+|\-)?[0-9]+$/)) {
                 const integer_type = window.confirm(`Treat this value as an integer?`);
                 if (integer_type) {
-                    value = parseInt(value);
+                    value = parseInt(value, 10);
                 }
                 parsed = integer_type;
             }

@@ -63,7 +63,7 @@ export default class IndexedDBStorage {
     async delete(schema, keyValue) {
         let storeName = SchemaManager.get(schema).name;
         return await IndexedDBUtils.delete(this._db, storeName, keyValue);
-        //return await IndexedDBUtils.delete2(this._db, storeName, keyValue);
+        // return await IndexedDBUtils.delete2(this._db, storeName, keyValue);
     }
 
 }

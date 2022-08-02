@@ -143,7 +143,7 @@ class AtPlayground extends Popupable {
         if (id) {
             edge.setChildId(id);
         }
-        edge.addEventListener(`keydown`, this.onKeyDown.bind(this));                     //mmmmmmmmmmmmmmmmm
+        edge.addEventListener(`keydown`, this.onKeyDown.bind(this));                     // mmmmmmmmmmmmmmmmm
         return edge;
     }
 
@@ -156,7 +156,7 @@ class AtPlayground extends Popupable {
         this._created_edge.setEnd(x, y);
     }
 
-    async onEdgeFinalized(e) {
+    onEdgeFinalized(e) {
         let node = e.target.offsetParent;
 
         if (!this._is_edge_being_created) {
@@ -169,7 +169,7 @@ class AtPlayground extends Popupable {
             this._created_edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
 
             // identical issue below
-            //parentActivity.addChild(childActivity);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
+            // parentActivity.addChild(childActivity);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
             // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
             // @TODO consider bringing it up here (separation of functionality)
 
@@ -449,9 +449,9 @@ class AtPlayground extends Popupable {
     //     reader.readAsText(files[0]);
     // }
 
-    ////////////////////////////////////////////////////////////////////////
-    /////////////  Called from ControllerAT  ///////////////////////////////
-    ////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////
+    // ///////////  Called from ControllerAT  ///////////////////////////////
+    // //////////////////////////////////////////////////////////////////////
     /**
      *
      * Handlers for ControllerAT
@@ -530,7 +530,7 @@ class AtPlayground extends Popupable {
         this.popup({
             content: AtPlayground.NOTICE_CREATE_JAG,
             trackEl: this,
-            inputs: {}, //event: e},
+            inputs: {}, // event: e},
             highlights: [$initiator]
         });
     }
@@ -596,7 +596,7 @@ class AtPlayground extends Popupable {
     }
 
     // this is called when a new jag appears from above --- applies?
-    //note: creates a view based on Activity xxx now NodeModel
+    // note: creates a view based on Activity xxx now NodeModel
     createActivityNode(nodeModel) {
         const $node = new ActivityNodeElement(nodeModel);
         $node.addEventListener(`mousedown`, this.handlePlaygroundSelectedNodes.bind(this));
@@ -615,7 +615,7 @@ class AtPlayground extends Popupable {
             }
         });
 
-        ////?? @TODO think about this.
+        // //?? @TODO think about this.
         $node.addEventListener(`refresh`, (e) => {
             this.dispatchEvent(new CustomEvent(`refresh`, {detail: e.detail}));
         });
@@ -694,9 +694,9 @@ class AtPlayground extends Popupable {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////
-    /////////////  Support Functions  //////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////
+    // ///////////  Support Functions  //////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////////
     /**
      *
      * Support Functions
@@ -794,7 +794,7 @@ class AtPlayground extends Popupable {
         this.popup({
             content: AtPlayground.NOTICE_PASTE_JAG,
             trackEl: this,
-            inputs: {}, //event: e},
+            inputs: {}, // event: e},
             highlights: [$initiator]
         });
     }
@@ -848,7 +848,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             name: `description`,
             label: `Description`,
             type: `textarea`,
-            options: async function () {
+            options: function () {
                 let paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -861,7 +861,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: async function ({inputs: {}, outputs: activityConstruct}) {
+            action: function ({inputs: {}, outputs: activityConstruct}) {
                 this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                     bubbles: true,
                     composed: true,
@@ -930,7 +930,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             name: `description`,
             label: `JSON`,
             type: `textarea`,
-            options: async function () {
+            options: function () {
                 let paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -943,7 +943,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: async function ({inputs: {}, outputs: json}) {
+            action: function ({inputs: {}, outputs: json}) {
                 this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                     bubbles: true,
                     composed: true,

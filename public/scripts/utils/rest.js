@@ -63,9 +63,9 @@ export default class RESTUtils {
     static async has(url) {
         // TODO: safely join URL paths (perhaps Node package?)
         const options = {
-            'method': `HEAD`,
-            'headers': {
-                'mode': `cors`
+            method: `HEAD`,
+            headers: {
+                mode: `cors`
             }
         };
         return await RESTUtils.request(url, options, `Error finding JAG`, true, false);
@@ -74,12 +74,12 @@ export default class RESTUtils {
     static async create(url, description) {
         //    const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
         const options = {
-            'method': `POST`,
-            'body': description,
-            'headers': {
+            method: `POST`,
+            body: description,
+            headers: {
                 //            'x-xsrf-token': csrfToken,
                 'Content-Type': `application/json`,
-                'mode': `cors`
+                mode: `cors`
             }
         };
         return await RESTUtils.request(url, options, `Error creating`);
@@ -87,12 +87,12 @@ export default class RESTUtils {
 
     static async update(url, description) {
         const options = {
-            'method': `PUT`,
-            'body': description,
-            'headers': {
+            method: `PUT`,
+            body: description,
+            headers: {
                 //        'x-xsrf-token': csrfToken,
                 'Content-Type': `application/json`,
-                'mode': `cors`
+                mode: `cors`
             }
         };
         return await RESTUtils.request(url, options, `Error updating`);
@@ -102,8 +102,8 @@ export default class RESTUtils {
         const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, `$1`);
         // TODO: safely join URL paths (perhaps Node package?)
         const options = {
-            'method': `DELETE`,
-            'headers': {
+            method: `DELETE`,
+            headers: {
                 'x-xsrf-token': csrfToken
             }
         };
@@ -112,12 +112,12 @@ export default class RESTUtils {
 
 
     static async clear(url) {
-        //const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+        // const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
         // TODO: safely join URL paths (perhaps Node package?)
         const options = {
-            'method': `DELETE`,
-            'headers': {
-                'mode': `cors`
+            method: `DELETE`,
+            headers: {
+                mode: `cors`
                 //    'x-xsrf-token': csrfToken
             }
         };

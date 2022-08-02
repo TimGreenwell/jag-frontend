@@ -171,7 +171,7 @@ export default class Controller extends EventTarget {
                         // is the original Activity locked?
                         if (originalActivity.isLocked) {
                             await StorageService.clone(originalUrn, newUrn, `activity`);
-                        } else { /// the original Activity is not locked
+                        } else { // / the original Activity is not locked
                             await StorageService.replace(originalUrn, newUrn, `activity`);
                         }
                     }
@@ -182,7 +182,7 @@ export default class Controller extends EventTarget {
                 // is the original Activity locked?
                 if (originalActivity.isLocked) {
                     await this.cloneActivity(originalActivity, newUrn);
-                } else { /// the original Activity is not locked
+                } else { // / the original Activity is not locked
                     await StorageService.replace(originalUrn, newUrn, `activity`);
                 }
             }
@@ -245,7 +245,7 @@ export default class Controller extends EventTarget {
                 });
 
                 kidsToRemove.forEach((child) => {
-                    let childNodeModel = this.searchTreeForChildId(projectNode, child.id);    //currentNode.getChildById(child.id)
+                    let childNodeModel = this.searchTreeForChildId(projectNode, child.id);    // currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
                     orphanedRootStack.push(childNodeModel);
                 });
@@ -333,12 +333,12 @@ export default class Controller extends EventTarget {
         return returnNode;
     }
 
-    getChildrenToAdd(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+    getChildrenToAdd(existingKids, validKids) {                               // originalActivity, updatedActivity) {
         const returnValue = validKids.filter((validKid) => !existingKids.find((existingKid) => JSON.stringify(validKid) === JSON.stringify(existingKid)));
         return returnValue;
     }
 
-    getChildrenToRemove(existingKids, validKids) {                               //originalActivity, updatedActivity) {
+    getChildrenToRemove(existingKids, validKids) {                               // originalActivity, updatedActivity) {
         const returnValue = existingKids.filter((existingKid) => !validKids.find((validKid) => JSON.stringify(existingKid) === JSON.stringify(validKid)));
         return returnValue;
     }

@@ -27,7 +27,7 @@ class AnalysisView extends HTMLElement {
         this._initializeStaticHeaders();
         this._initializeTree(this._analysisModel.rootCellModel);
         this.layout();
-        ////    await updatedAnalysis.buildAnalysisActivityNodes(rootCellModel);
+        // //    await updatedAnalysis.buildAnalysisActivityNodes(rootCellModel);
     }
 
     get analysisModel() {
@@ -90,7 +90,7 @@ class AnalysisView extends HTMLElement {
         let rows = 0;                    // why
 
         this._layoutJAG(this._analysisModel.rootCellModel, AnalysisView.HEADER_DEPTH, 0);
-        this._removeHeaders(); //?
+        this._removeHeaders(); // ?
 
         height = this._analysisModel.rootCellModel.treeDepth;
         rows = this._analysisModel.rootCellModel.leafCount;
@@ -191,7 +191,7 @@ class AnalysisView extends HTMLElement {
         // When would there ever be a different 'reference'
         // Ideally, layout only on last call.
         // select isnt working.. range error.
-        //@todo looks unlikely we need reference and select as parameters.. noone uses it.  Layout looks suspect too.
+        // @todo looks unlikely we need reference and select as parameters.. noone uses it.  Layout looks suspect too.
 
         // Finds the element representing the table's bottom row (succession of youngest children)
         if (reference == null) {
@@ -296,7 +296,7 @@ class AnalysisView extends HTMLElement {
             this._leafArray.push(node);
             this._hideChildNodes(node);
             $view.style.setProperty(`--col-end`, AnalysisView.JAG_SECTION_COLUMN_END);
-            //$view.style.setProperty('--col-end', '1 span');
+            // $view.style.setProperty('--col-end', '1 span');
         }
 
         // Position the item properly

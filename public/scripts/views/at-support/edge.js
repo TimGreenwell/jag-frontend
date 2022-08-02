@@ -91,11 +91,11 @@ export default class Edge extends EventTarget {
 
         origin_nodeModel.addEventListener(`update`, this._updateHandler.bind(this));
 
-        //this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:  @TODO Fix this
+        // this._childId = this._leadActivityNode.completeOutEdge(this, this._childId); // Note: this does multiple things:  @TODO Fix this
         this._leadActivityNode.completeOutEdge(this, this._childId);  // now it does very little
 
         // Not sure of the point of the second (id) parameter
-        //@TODO First thing - remove child adding inside the abouve completeOutEdge
+        // @TODO First thing - remove child adding inside the abouve completeOutEdge
         // - Adds edge to graphical node's 'outs'
         // - Invokes _leadActivityNode#addChild(_subActivityNode), which:
         //   - Adds _subActivityNode activity to _leadActivityNode activity's children
@@ -151,7 +151,7 @@ export default class Edge extends EventTarget {
 
     setChildName(name) {
         this._childName = name;
-        this._leadActivityNode.setChildName(name, this._childId);                  ///////////// I swapped these
+        this._leadActivityNode.setChildName(name, this._childId);                  // /////////// I swapped these
     }
 
     getChildDescription() {
@@ -204,9 +204,9 @@ export default class Edge extends EventTarget {
         }
     }
 
-    /////////////////////////////////////////////
-    ///////////  Handlers  //////////////////////
-    /////////////////////////////////////////////
+    // ///////////////////////////////////////////
+    // /////////  Handlers  //////////////////////
+    // ///////////////////////////////////////////
 
 
     _updateHandler(e) {
@@ -247,9 +247,9 @@ export default class Edge extends EventTarget {
     }
 
 
-    /////////////////////////////////////////////
-    ///////////  Support  //////////////////////
-    /////////////////////////////////////////////
+    // ///////////////////////////////////////////
+    // /////////  Support  //////////////////////
+    // ///////////////////////////////////////////
 
     _updateParticipation(type) {
         let icon = ``;

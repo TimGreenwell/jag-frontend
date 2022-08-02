@@ -37,8 +37,8 @@ export default class ControllerIA extends Controller {
         StorageService.subscribe(`command-activity-created`, this.commandActivityCreatedHandler.bind(this));
         StorageService.subscribe(`command-activity-updated`, this.commandActivityUpdatedHandler.bind(this));   // just blocking for now - troubleshooting
         StorageService.subscribe(`command-activity-deleted`, this.commandActivityDeletedHandler.bind(this));
-        //StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));
-        //StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this));
+        // StorageService.subscribe("command-activity-cloned", this.commandActivityClonedHandler.bind(this));
+        // StorageService.subscribe("command-activity-replaced", this.commandActivityReplacedHandler.bind(this));
 
         StorageService.subscribe(`command-agent-created`, this.commandAgentCreatedHandler.bind(this));
         StorageService.subscribe(`command-agent-updated`, this.commandAgentUpdatedHandler.bind(this));
@@ -152,7 +152,7 @@ export default class ControllerIA extends Controller {
         this._iaTable.addEventListener(`event-agent-created`, this.eventAgentCreatedHandler.bind(this));  // popup create
         this._iaTable.addEventListener(`event-analysis-created`, this.eventAnalysisCreatedHandler.bind(this));  // popup create
         this._iaTable.addEventListener(`event-analysis-updated`, this.eventAnalysisUpdatedHandler.bind(this));  // jag structure updates
-        //this._iaTable.addEventListener('event-analysis-deleted', this.eventAnalysisDeletedHandler.bind(this));  // jag structure updates
+        // this._iaTable.addEventListener('event-analysis-deleted', this.eventAnalysisDeletedHandler.bind(this));  // jag structure updates
         this._iaTable.addEventListener(`event-cell-addchild`, this.eventNodeAddChildHandler.bind(this));  // '+' clicked on jag cell (technically undefined jag)         // does that really need to come up this far?
         this._iaTable.addEventListener(`event-cell-prunechild`, this.eventNodePruneChildHandler.bind(this));
         this._iaTable.addEventListener(`event-collapse-toggled`, this.eventCollapseToggledHandler.bind(this));
@@ -161,11 +161,11 @@ export default class ControllerIA extends Controller {
         this._iaTable.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));
         // this._iaTable.addEventListener('event-activity-deleted', this.eventJagDeletedHandler.bind(this));
         this._analysisLibrary.addEventListener(`event-analysis-selected`, this.eventAnalysisSelected.bind(this));
-        //this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
+        // this.nodeModel.addEventListener('sync', this._syncViewToModel.bind(this));
 
         this._iaMenu.addEventListener(`event-create-assessment`, this.eventCreateAssessment.bind(this));
         this._iaMenu.addEventListener(`event-create-agent`, this.eventCreateAgent.bind(this));
-        //this.eventCreateAssessment);
+        // this.eventCreateAssessment);
         this._iaMenu.addEventListener(`event-import-assessment`, this.eventImportAssessment.bind(this));     // bring up?
         this._iaMenu.addEventListener(`event-export-assessment`, this.eventExportAssessment.bind(this));   // bring up??
         // $export_analysis.addEventListener('click', this._handleExportAnalysisPopup.bind(this));
@@ -180,7 +180,7 @@ export default class ControllerIA extends Controller {
     }
 
 
-    async eventAgentRemovedHandler(event) {
+    eventAgentRemovedHandler(event) {
         console.log(`Local>> (agent removed from team) `);
         let agentId = event.detail.removedAgent;
         let agent = this.fetchAgent(agentId);
@@ -189,7 +189,7 @@ export default class ControllerIA extends Controller {
         this._iaProperties._updateProperties();
     }
 
-    async eventAgentSelectedHandler(event) {
+    eventAgentSelectedHandler(event) {
         console.log(`Local>> (project line item selected) `);
         const agentSelected = event.detail.agent;
         this._currentAnalysis.team.addAgent(agentSelected);
@@ -197,7 +197,7 @@ export default class ControllerIA extends Controller {
         this._iaProperties._updateProperties();
     }
 
-    async commandAgentUpdatedHandler(updatedAgent, updatedAgentUrn) {
+    commandAgentUpdatedHandler(updatedAgent, updatedAgentUrn) {
         this.cacheAgent(updatedAgent);
         this._agentLibrary.updateItem(updatedAgent);
     }
@@ -235,11 +235,11 @@ export default class ControllerIA extends Controller {
     }
 
     eventCreateAssessment() {
-        this._iaTable._handleNewAnalysisPopup();                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+        this._iaTable._handleNewAnalysisPopup();                // @todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventCreateAgent() {
-        this._iaTable._handleNewAgentPopup();                //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+        this._iaTable._handleNewAgentPopup();                // @todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventImportAssessment() {
@@ -251,9 +251,9 @@ export default class ControllerIA extends Controller {
     }
 
 
-    //////////////////////////////////////////////////////////////////////////////////
-    //////////  controllerIA - UPWARD Control  ///////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
+    // ////////  controllerIA - UPWARD Control  ///////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
     /**
      *
      *                                     Upward Event Handlers
@@ -301,7 +301,7 @@ export default class ControllerIA extends Controller {
     async eventAnalysisCreatedHandler(event) {
         let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, `Popup`);
         this._iaProperties.team = standardAnalysis.team;
-        //zzzz
+        // zzzz
     }
 
     async eventAnalysisUpdatedHandler(event) {
@@ -309,9 +309,9 @@ export default class ControllerIA extends Controller {
         await StorageService.update(event.detail.analysis, `analysis`);
     }
 
-    async eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
+    eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
         // This will not be permanent until a valid URN is set.  Not-persistant.
-        //@todo push this back down into iaTable (from there - to there)
+        // @todo push this back down into iaTable (from there - to there)
         let parentCell = event.detail.cell;
         this._currentAnalysis = this._iaTable._analysisModel;
         if (parentCell.canHaveChildren) {
@@ -406,7 +406,7 @@ export default class ControllerIA extends Controller {
         await this.displayAnalysis(this._currentAnalysis);
     }
 
-    async commandActivityDeletedHandler(deletedActivityUrn) {
+    commandActivityDeletedHandler(deletedActivityUrn) {
         if (this._iaTable.analysisModel) {
             console.log(`Check if deleted jag is in the analysis`);
             console.log(`if so - check if it is the head`);
@@ -415,13 +415,13 @@ export default class ControllerIA extends Controller {
         }
     }
 
-    async commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
+    commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
         this.cacheAgent(createdAgentModel);
         this._agentLibrary.addListItem(createdAgentModel);
     }
 
-    async commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
-        //pad agents array from agentIds
+    commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
+        // pad agents array from agentIds
         let agents = [];
         for (let agentId of createdTeamModel.agentIds) {
             agents.push(this.fetchAgent(agentId));
@@ -590,11 +590,11 @@ export default class ControllerIA extends Controller {
 
     async _createChildren() {
         for (let child of this.jag.children) {
-            //const jag = await JAGService.instance('idb-service').get(child.urn);
+            // const jag = await JAGService.instance('idb-service').get(child.urn);
             const jag = await StorageService.get(child.urn, `activity`);
             const model = new Node();
             model.urn = jag.urn;
-            //await NodeService.instance('idb-service').create(model);
+            // await NodeService.instance('idb-service').create(model);
             await StorageService.create(model, `node`);
             this.addChild(model, true);
         }
@@ -636,8 +636,8 @@ export default class ControllerIA extends Controller {
         this.dispatchEvent(new CustomEvent(`sync`));
     }
 
-    /// OBSOLETE but might be used later
-    ///  The surgical method of deleting a node and all its children
+    // / OBSOLETE but might be used later
+    // /  The surgical method of deleting a node and all its children
     // Does not scour for other occurrences of other identical parent jags
     async prune(node) {
         this.deleteAllChildren([...node.children]);  // passing a copy because the node.children is going to be modified

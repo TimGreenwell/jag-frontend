@@ -45,7 +45,7 @@ class JagCell extends AnalysisCell {
         this._cellModel = value;
     }
 
-    //////  Elements and Element Values
+    // ////  Elements and Element Values
     get urnElementEntry() {
         return this._htmlElements.urnEntry.innerText;
     }
@@ -79,7 +79,7 @@ class JagCell extends AnalysisCell {
         this._parent = value;
     }
 
-    //////  classList Properties
+    // ////  classList Properties
     set valid(valid) {
         this.classList.toggle(`unsaved`, !valid);
     }
@@ -92,7 +92,7 @@ class JagCell extends AnalysisCell {
         this.classList.remove(`hidden`);
     }
 
-    async _initHandlers() {
+    _initHandlers() {
         // note: the icon controls in the JagCell are defined by JagCellControls
 
         this._htmlElements.nameEntry.addEventListener(`blur`, this._handleNameChange.bind(this));  // pass name and 'auto-urn' up to ControllerIA for Jag updating.
@@ -107,7 +107,7 @@ class JagCell extends AnalysisCell {
 
     // Handlers
 
-    async _handleNameChange(event) {
+    _handleNameChange(event) {
         // This runs when the Name field of the IATABLE Jag node area loses focus - blurs
         if (this.nameElementEntry !== this.cellModel.activity.name) {
             this.nameElementEntry = this.nameElementEntry.split(`:`).slice(-1);
@@ -118,7 +118,7 @@ class JagCell extends AnalysisCell {
                     bubbles: true,
                     composed: true,
                     detail: {activity: this._cellModel.activity}
-                }));  //tlg changed from node to cellModel  - looks bad
+                }));  // tlg changed from node to cellModel  - looks bad
             } else {
                 this._cellModel.activity.urn = this.urnElementEntry;
                 this.dispatchEvent(new CustomEvent(`event-activity-created`, {
@@ -134,12 +134,12 @@ class JagCell extends AnalysisCell {
                     composed: true,
                     detail: {activity: parentActivity}
                 }));
-                //this._htmlElements.urnEntry.focus();   // @TODO -- started getting an error on this.. distraction.
+                // this._htmlElements.urnEntry.focus();   // @TODO -- started getting an error on this.. distraction.
             }
         }
     }
 
-    async _handleNameEdit(e) {
+    _handleNameEdit(e) {
         switch (e.key) {
         case `Enter`:
             // Enter adds a new sibling
@@ -190,7 +190,7 @@ class JagCell extends AnalysisCell {
                             newUrn: this.urnElementEntry
                         }
                     }));
-                    //ControllerIA.updateURN(this.urn, this.cellModel.activity.urn);  // orig, new
+                    // ControllerIA.updateURN(this.urn, this.cellModel.activity.urn);  // orig, new
                 } else {
                     let activityConstruct = {
                         urn: this.urnElementEntry,
@@ -210,7 +210,7 @@ class JagCell extends AnalysisCell {
                     }));
                 }
             }
-            //this.activity.urn = this.urnElementEntry
+            // this.activity.urn = this.urnElementEntry
         }
     }
 
@@ -266,7 +266,7 @@ class JagCell extends AnalysisCell {
         description.urn = newURN;
         const newActivity = JAG.fromJSON(description);
         // Update model references.
-        this._node.model = newActivity; //?
+        this._node.model = newActivity; // ?
         this._cellModel = newActivity;
         await StorageService.create(newActivity, `activity`);
         // Remove unsaved box shadow on URN property input.
@@ -310,7 +310,7 @@ class JagCell extends AnalysisCell {
             return;
         }
 
-        //let jag = await JAGService.instance('idb-service').get(urn);
+        // let jag = await JAGService.instance('idb-service').get(urn);
         let jag = await StorageService.get(urn, `activity`);
 
         // If the model does not exists create one from the view values.
@@ -321,11 +321,11 @@ class JagCell extends AnalysisCell {
                 name: name
             });
 
-            //await JAGService.instance('idb-service').create(jag);
+            // await JAGService.instance('idb-service').create(jag);
             await StorageService.create(jag, `activity`);
         } else if (!replace) {
             // If the jag already exists we want to abort unless replace is set to true.
-            //@TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
+            // @TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
             // Potentially we could ask the user if s/he wants to load the existing jag.
             // 6 dispatchers here - Only Listener in views/Jag
             this.dispatchEvent(new CustomEvent(`sync`));
@@ -333,7 +333,7 @@ class JagCell extends AnalysisCell {
         }
 
         this._updateJAG(jag);
-        const valid = true;//this.activity.hasValidURN;
+        const valid = true;// this.activity.hasValidURN;
         view.valid = valid;
         // 2 dispatches here - 1 listener in views/Analysis
         this.dispatchEvent(new CustomEvent(`layout`));
@@ -342,7 +342,7 @@ class JagCell extends AnalysisCell {
 
     async _initUI() {
         this.cellModel.addEventListener(`sync`, this._syncViewToModel.bind(this));
-        //@TODO should view listen to model (new way) or controller (older way)
+        // @TODO should view listen to model (new way) or controller (older way)
 
         const $controls = new JagCellControls(this.cellModel);
         const $header = document.createElement(`header`);
@@ -401,7 +401,7 @@ class JagCell extends AnalysisCell {
 
 
     updateSuggestions(cellModelList) {
-        //cellModelList.forEach(() => this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.activity.urn));
+        // cellModelList.forEach(() => this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.activity.urn));
         this._htmlElements.suggestions.suggestions = cellModelList.map((cellModel) => cellModel.activity.urn);
     }
 

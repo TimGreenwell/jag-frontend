@@ -98,8 +98,8 @@ class ColumnHeader extends AnalysisCell {
 }
 
 ColumnHeader.SENSITIVITY = 10;
-ColumnHeader.SPAN = Symbol();
-ColumnHeader.END = Symbol();
+ColumnHeader.SPAN = Symbol(`Span`);
+ColumnHeader.END = Symbol(`End`);
 
 function handleMouseWheel(event) {
     event.preventDefault();

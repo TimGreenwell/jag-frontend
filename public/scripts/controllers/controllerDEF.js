@@ -40,7 +40,7 @@ export default class ControllerDEF extends Controller {
         this.initializeHandlers();
     }
 
-    async initializeCache() {         //@TODO --- it might not be worth caching this -- might should just hit DB..
+    async initializeCache() {         // @TODO --- it might not be worth caching this -- might should just hit DB..
         let allActivities = await StorageService.all(`activity`);
         allActivities.forEach((activity) => {
             this.cacheActivity(activity);

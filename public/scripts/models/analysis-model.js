@@ -47,10 +47,10 @@ export default class AnalysisModel extends EventTarget {
     set name(name) {
         this._name = name;
         this.dispatchEvent(new CustomEvent(`update`, {
-            'detail': {
-                'id': this._id,
-                'property': `name`,
-                'extra': {'name': this._name}
+            detail: {
+                id: this._id,
+                property: `name`,
+                extra: {name: this._name}
             }
         }));
     }
@@ -62,10 +62,10 @@ export default class AnalysisModel extends EventTarget {
     set description(description) {
         this._description = description;
         this.dispatchEvent(new CustomEvent(`update`, {
-            'detail': {
-                'id': this._id,
-                'property': `description`,
-                'extra': {'description': this._description}
+            detail: {
+                id: this._id,
+                property: `description`,
+                extra: {description: this._description}
             }
         }));
     }
@@ -124,7 +124,7 @@ export default class AnalysisModel extends EventTarget {
     }
 
 
-    static async fromJSON(json) {
+    fromJSON(json) {
         // const team_id = json.team;
         // let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
         // json.team = teamNode;                                                          // Exists only to store its data (team is in team)

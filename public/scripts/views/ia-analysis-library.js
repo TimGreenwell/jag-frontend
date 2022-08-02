@@ -23,7 +23,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
     }
 
     _initUI() {
-        //const $header = document.createElement('header');
+        // const $header = document.createElement('header');
         const $search = document.createElement(`input`);
         const $list = document.createElement(`ol`);
 
@@ -39,9 +39,9 @@ customElements.define(`analysis-library`, class extends HTMLElement {
         $search.addEventListener(`keyup`, this._filterFromSearchInput.bind(this));
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    //////////  Supporting controllerAT //////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
+    // ////////  Supporting controllerAT //////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
 
 
     createListItemCollection(model, idx = -1) {
@@ -132,7 +132,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
 
         return newItem;
 
-        //?    model.addEventListener('copy', this._createItem.bind(this));
+        // ?    model.addEventListener('copy', this._createItem.bind(this));
     }
 
     addListItem(analysisModel) {
@@ -191,7 +191,7 @@ export default customElements.get(`analysis-library`);
 //     }
 //     return map;
 // }
-/////////////////////////////////////////////////
+// ///////////////////////////////////////////////
 // updateListItem(updatedAnalysisModel, idx = -1) {
 //     console.log("Analysis Library (updateListItem) received NOTIFICATION for analysis-storage-updated")
 //

@@ -555,7 +555,7 @@ export default class Activity extends EventTarget {
     }
 
 
-    toJSON() {  //@todo -- make children in a map or something simpler
+    toJSON() {  // @todo -- make children in a map or something simpler
         const json = {
             urn: this._urn,
             name: this._name,
@@ -646,7 +646,7 @@ export default class Activity extends EventTarget {
             let returnValue = new Activity(json);
             return returnValue;
             // @TODO: explode the json definition to use the constructor below
-            //return new Activity(urn, name, connector, inputs, outputs, children, bindings);
+            // return new Activity(urn, name, connector, inputs, outputs, children, bindings);
         }
     }
 

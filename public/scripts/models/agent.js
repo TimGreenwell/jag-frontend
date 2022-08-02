@@ -43,9 +43,9 @@ export default class AgentModel extends EventTarget {
         this._name = name;
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
-                "id": this._id,
-                "property": `name`,
-                "extra": {"name": name}
+                id: this._id,
+                property: `name`,
+                extra: {name: name}
             }
         }));
     }
@@ -86,11 +86,11 @@ export default class AgentModel extends EventTarget {
         this._assessments.set(urn, assessment);
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
-                "id": this._id,
-                "property": `assessment`,
-                "extra": {
-                    "urn": urn,
-                    "assessment": assessment
+                id: this._id,
+                property: `assessment`,
+                extra: {
+                    urn: urn,
+                    assessment: assessment
                 }
             }
         }));
@@ -160,8 +160,8 @@ export default class AgentModel extends EventTarget {
 
 }
 
-AgentModel.CAN_DO_PERFECTLY = Symbol();
-AgentModel.CAN_DO = Symbol();
-AgentModel.CAN_HELP = Symbol();
-AgentModel.CANNOT_DO = Symbol();
+AgentModel.CAN_DO_PERFECTLY = Symbol(`Can Do Perfectly`);
+AgentModel.CAN_DO = Symbol(`Can Do`);
+AgentModel.CAN_HELP = Symbol(`Can Help`);
+AgentModel.CANNOT_DO = Symbol(`Cannot Do`);
 AgentModel.DEFAULT_NAME = `Agent`;

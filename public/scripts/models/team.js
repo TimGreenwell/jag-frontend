@@ -35,8 +35,8 @@ export default class TeamModel extends EventTarget {
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
                 id: this._id,
-                "property": `name`,
-                "extra": {"name": this._name}
+                property: `name`,
+                extra: {name: this._name}
             }
         }));
     }
@@ -64,8 +64,8 @@ export default class TeamModel extends EventTarget {
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
                 id: this._id,
-                "property": `agents`,
-                "extra": {"agents": this._agents}
+                property: `agents`,
+                extra: {agents: this._agents}
             }
         }));
     }
@@ -76,8 +76,8 @@ export default class TeamModel extends EventTarget {
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
                 id: this._id,
-                "property": `agents`,
-                "extra": {"agents": this._agents}
+                property: `agents`,
+                extra: {agents: this._agents}
             }
         }));
     }
@@ -94,8 +94,8 @@ export default class TeamModel extends EventTarget {
         this.dispatchEvent(new CustomEvent(`update`, {
             detail: {
                 id: this._id,
-                "property": `performers`,
-                "extra": {"performers": this._performerIds}
+                property: `performers`,
+                extra: {performers: this._performerIds}
             }
         }));
     }
@@ -111,7 +111,7 @@ export default class TeamModel extends EventTarget {
     }
 
     save() {
-        //TeamService.store(this);
+        // TeamService.store(this);
     }
 
     toJSON() {
@@ -124,7 +124,7 @@ export default class TeamModel extends EventTarget {
         return json;
     }
 
-    static async fromJSON(json) {
+    fromJSON(json) {
         // const agents = [];
         // for (const agent_id of json.agents) {
         //     let agent = await StorageService.get(agent_id,'agent');
@@ -138,7 +138,7 @@ export default class TeamModel extends EventTarget {
         // }
         // json.agents = agents;
 
-        //json.performers = new Set(json.performers);
+        // json.performers = new Set(json.performers);
         let returnValue = new TeamModel(json);
         return returnValue;
     }

@@ -127,10 +127,10 @@ export default class Popupable extends HTMLElement {
 
                 if (content.display.$name) {
                     content.display.$name({inputs: inputs});
-                } //??
+                } // ??
                 if (content.display.$description) {
                     content.display.$description({inputs: inputs});
-                } //??
+                } // ??
 
                 this._popupContent.appendChild(content.display);
 

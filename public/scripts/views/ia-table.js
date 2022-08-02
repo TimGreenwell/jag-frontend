@@ -161,7 +161,7 @@ class IATable extends Popupable {
         const $initiator = document.getElementById(`assessment-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_ANALYSIS,
-            trackEl: this,                                        //this._domElements.create,
+            trackEl: this,                                        // this._domElements.create,
             inputs: {table: this},
             highlights: [$initiator]                                     // [this._domElements.create]
         });
@@ -171,7 +171,7 @@ class IATable extends Popupable {
         const $initiator = document.getElementById(`agent-new`);
         this.popup({
             content: IATable.NOTICE_CREATE_AGENT,
-            trackEl: this,                                        //this._domElements.create,
+            trackEl: this,                                        // this._domElements.create,
             inputs: {table: this},
             highlights: [$initiator]                                     // [this._domElements.create]
         });
@@ -298,18 +298,18 @@ class IATable extends Popupable {
             analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
 
             for (const node of analysisModelImport.nodes) {
-                //const nodeModel = await NodeModel.fromJSON(node);
-                ////await service.create(nodeModel,'node');
-                //await StorageService.create(nodeModel, 'node');
+                // const nodeModel = await NodeModel.fromJSON(node);
+                // //await service.create(nodeModel,'node');
+                // await StorageService.create(nodeModel, 'node');
             }
         }
 
         {
-            //const team_service = TeamService.instance('idb-service');
-            //const team_service = StorageService.getStorageInstance('idb-service');
+            // const team_service = TeamService.instance('idb-service');
+            // const team_service = StorageService.getStorageInstance('idb-service');
 
-            //const agent_service = AgentService.instance('idb-service');
-            //const agent_service = StorageService.getStorageInstance('idb-service');
+            // const agent_service = AgentService.instance('idb-service');
+            // const agent_service = StorageService.getStorageInstance('idb-service');
 
             for (const team of analysisModelImport.teams) {
                 for (const agent of team.agents) {
@@ -322,8 +322,8 @@ class IATable extends Popupable {
             }
         }
 
-        //const service = AnalysisService.instance('idb-service');
-        //const service = StorageService.getStorageInstance('idb-service');
+        // const service = AnalysisService.instance('idb-service');
+        // const service = StorageService.getStorageInstance('idb-service');
 
         const analysisModel = await AnalysisModel.fromJSON({
             id: analysisModel.id,
@@ -371,8 +371,8 @@ class IATable extends Popupable {
 
         if (static_jags === true) {
             json.jags = [];
-            //const service = JAGService.instance('idb-service');
-            //const service = StorageService.getStorageInstance('idb-service');
+            // const service = JAGService.instance('idb-service');
+            // const service = StorageService.getStorageInstance('idb-service');
 
             for (let jag of jags) {
                 const activity = await StorageService.get(jag, `activity`);
@@ -430,8 +430,8 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
 
                 for (const jag of jags) {
                     options.push({
-                        'text': jag.urn,
-                        'value': jag.urn           //  think maybe this should only be jag.   kkkk
+                        text: jag.urn,
+                        value: jag.urn           //  think maybe this should only be jag.   kkkk
                     });
                 }
 
@@ -444,7 +444,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
             text: `Create`,
             color: `white`,
             bgColor: `green`,
-            action: async function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
+            action: function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
                 // let id = await this._controller.createAnalysis(name,root);
                 this.dispatchEvent(new CustomEvent(`event-analysis-created`, {
                     detail: {
@@ -518,7 +518,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
             text: `Overwrite`,
             color: `black`,
             bgColor: `red`,
-            action: async function ({inputs: {jag}}) {
+            action: function ({inputs: {jag}}) {
                 const newActivity = ActivityModel.fromJSON(jag);
                 this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {
                     bubbles: true,
@@ -570,7 +570,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             name: `description`,
             label: `Description`,
             type: `textarea`,
-            options: async function () {
+            options: function () {
                 let paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -583,7 +583,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: async function ({inputs: {}, outputs: agentConstruct}) {
+            action: function ({inputs: {}, outputs: agentConstruct}) {
                 this.dispatchEvent(new CustomEvent(`event-agent-created`, {
                     bubbles: true,
                     composed: true,
@@ -605,7 +605,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
 });
 
 
-//IATable.defaultUrn = "us:ihmc:";
+// IATable.defaultUrn = "us:ihmc:";
 IATable.FALLBACK_ANALYSIS_NAME = `AnalysisModel w/o name`;
 IATable.ANALYSIS_SELECTOR_TITLE = `Select an analysis`;
 

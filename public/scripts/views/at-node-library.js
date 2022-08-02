@@ -42,9 +42,9 @@ customElements.define(`node-library`, class extends HTMLElement {
         this._libraryList = [];
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    //////////  Supporting controllerAT //////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
+    // ////////  Supporting controllerAT //////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
 
     createListItemCollection(newNodeModel) {
         if (newNodeModel instanceof NodeModel) {
@@ -70,7 +70,7 @@ customElements.define(`node-library`, class extends HTMLElement {
             };
 
 
-            //const $header = document.createElement('header');
+            // const $header = document.createElement('header');
             const $topHalfWrapper = document.createElement(`div`);
             $topHalfWrapper.className = `top-half item-line`;
             const $nameEntry = document.createElement(`span`);
@@ -142,7 +142,7 @@ customElements.define(`node-library`, class extends HTMLElement {
     }
 
 
-    addListItem(newNodeModel) {                                 ///// WHEN NODE CREATED
+    addListItem(newNodeModel) {                                 // /// WHEN NODE CREATED
         // handleNodeStorageCreated (@controllerAT)
         if (newNodeModel.isRoot()) {
             let listItemCollection = this.createListItemCollection(newNodeModel);
@@ -159,8 +159,8 @@ customElements.define(`node-library`, class extends HTMLElement {
     }
 
 
-    updateItem(updatedNodeModel) {                                 ///// WHEN NODE UPDATED
-        //@TODO high priority to rethink
+    updateItem(updatedNodeModel) {                                 // /// WHEN NODE UPDATED
+        // @TODO high priority to rethink
         // Way too much spinning for something this simple
         for (let item of this._libraryList) {
             this._$list.removeChild(item.element);
@@ -185,7 +185,7 @@ customElements.define(`node-library`, class extends HTMLElement {
     }
 
 
-    removeNodeLibraryListItem(id) {                                             //// WHEN NODE DELETED
+    removeNodeLibraryListItem(id) {                                             // // WHEN NODE DELETED
         // handleNodeStorageDeleted (@controllerAT)
         for (let item of this._libraryList) {
             this._$list.removeChild(item.element);

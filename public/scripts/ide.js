@@ -11,10 +11,10 @@ customElements.define(`jag-ide`, class extends HTMLElement {
     constructor() {
         super();
         this._variables = new Map();
-        //this._inputs = this._container.querySelector('#behavior-inputs');
-        //this._actor = this._container.querySelector('#behavior-actor');
+        // this._inputs = this._container.querySelector('#behavior-inputs');
+        // this._actor = this._container.querySelector('#behavior-actor');
         this._instance_inputs = new Map();
-        //this._init();
+        // this._init();
     }
 
     handleConnection(event) {
@@ -103,7 +103,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             select.add(opt_el);
         });
 
-        //select.addEventListener('change', e => {});
+        // select.addEventListener('change', e => {});
 
         this._instance_inputs.set(name, select);
 
@@ -165,8 +165,8 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             const provider = this._createInstanceProvider();
             const actor = this._getInstanceActor();
             const instance_data = {
-                'inputs': provider,
-                'actor': actor
+                inputs: provider,
+                actor: actor
             };
 
             this.dispatchEvent(new CustomEvent(`run`, {detail: instance_data}));

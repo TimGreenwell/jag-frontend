@@ -38,10 +38,10 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._initUI();
         this.setTranslation(100, 100);       //  Looks like this sets the  translation values and sets the view style
         this._initHandlers();
-        this._nodeModel = nodeModel;               ///  this is bad --- calling the complex set --- its confusing  - cost 1/2 day
+        this._nodeModel = nodeModel;               // /  this is bad --- calling the complex set --- its confusing  - cost 1/2 day
         //    this.isExpanded = isExpanded;
         this.becomeVisible();
-        /////////////////////////////////////////////////////////
+        // ///////////////////////////////////////////////////////
         if (this._nodeModel) {
             this._nodeModel.removeEventListener(`update`, this._boundUpdateHandler);
         }
@@ -92,7 +92,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         return this._nodeModel.isExpanded;
     }
 
-    //complex set visible
+    // complex set visible
     set visible(visible) {                       // complex...leave it
         this._visible = visible;
 
@@ -192,7 +192,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
         //    return this._nodeModel.activity.addChild(edge.getSubActivityNode().nodeModel.urn, id);              ////// sorry
 
-        //@todo - wondering if node and jag models need to be modded  < hate this
+        // @todo - wondering if node and jag models need to be modded  < hate this
     }  // returns the ID of the jag child (urn,id) -- for main to refer to subactivity
 
     removeOutEdge(edge, id) {

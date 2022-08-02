@@ -54,7 +54,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     controller.definition = definition;
     await controller.initialize();
 
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
     // Event: 'refresh' (storage-sync-requested)(?)
     // playground.addEventListener('refresh', (e) => {
     //     library.refreshItem(e.detail.activity, e.detail.refreshed);

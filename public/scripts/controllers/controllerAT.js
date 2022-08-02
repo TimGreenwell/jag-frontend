@@ -197,7 +197,7 @@ export default class ControllerAT extends Controller {
 
     eventNodesSelectedHandler(event) {
         this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
-        //ide.handleSelectionUpdate(e.detail);
+        // ide.handleSelectionUpdate(e.detail);
     }
 
     eventNodeRepositionedHandler(event) {
@@ -227,12 +227,12 @@ export default class ControllerAT extends Controller {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
             this._playground._rebuildNodeView(projectModel);
         } else {
-            //conn
+            // conn
 
             let childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
             childNodeModel.parent = null;
-            childNodeModel.parentId = null;  ///         This changed because of the extra revesre step in AddChild. Change that then fix this.
+            childNodeModel.parentId = null;  // /         This changed because of the extra revesre step in AddChild. Change that then fix this.
 
             this.repopulateProject(parentNodeModel, projectNodeId);
             childNodeModel.childId = childId;  // this could also be done later.. ok here
@@ -312,7 +312,7 @@ export default class ControllerAT extends Controller {
     /**   -- Menu --  */
 
     eventAddActivityHandler() {
-        this._playground._handleNewActivityActivityPopup();         //@todo consider moving popupable to menu as well  ( double agree) iaMenu as well
+        this._playground._handleNewActivityActivityPopup();         // @todo consider moving popupable to menu as well  ( double agree) iaMenu as well
     }
 
     eventClearPlaygroundHandler() {
@@ -398,7 +398,7 @@ export default class ControllerAT extends Controller {
 
     /**   -- Project Library --  */
 
-    async eventProjectSelectedHandler(event) {
+    eventProjectSelectedHandler(event) {
         console.log(`Local>> (project line item selected) `);
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.isExpanded;
@@ -483,7 +483,7 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn);                   // Replace Activity list item in activityLibrary
     }
 
-    commandNodeCreatedHandler(createdNodeModel, createdNodeId) { /// this coming in is no good
+    commandNodeCreatedHandler(createdNodeModel, createdNodeId) { // / this coming in is no good
         console.log(`((COMMAND INCOMING) >>  Node Created`);
         this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
@@ -506,7 +506,7 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.updateItem(updatedActivity);
     }
 
-    //au
+    // au
 
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
@@ -524,7 +524,7 @@ export default class ControllerAT extends Controller {
         // update playground
     }
 
-    //nu
+    // nu
 
     commandNodeDeletedHandler(deletedNodeId) {
         this.uncacheProject(deletedNodeId);
