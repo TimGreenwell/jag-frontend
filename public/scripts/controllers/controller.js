@@ -66,7 +66,7 @@ export default class Controller extends EventTarget {
     }
 
     fetchProject(projectId) {
-        let cachedProject = this._projectMap.get(projectId);
+        const cachedProject = this._projectMap.get(projectId);
         if (!cachedProject) {
             console.log(`Could not find the node ${projectId}. Expect some issues.  We should be going to DB at this point`);
         }
@@ -120,7 +120,7 @@ export default class Controller extends EventTarget {
 
 
     async eventActivityCreatedHandler(event) {
-        let activityConstruct = event.detail.activityConstruct;
+        const activityConstruct = event.detail.activityConstruct;
         console.log(`\nLocal>> (Activity ${activityConstruct.urn} creating) `);
         if (!this.activityMap.has(activityConstruct.urn)) {
             const newActivity = new Activity(event.detail.activityConstruct);
@@ -146,23 +146,23 @@ export default class Controller extends EventTarget {
         const originalUrn = event.detail.originalUrn;
         const newUrn = event.detail.newUrn;
 
-        const URL_CHANGED_WARNING_POPUP = `The URN has changed. Would you like to save this model to the new URN (` + newUrn + `)? (URN cannot be modified except to create a new model.)`;
-        const URL_RENAME_WARNING_POPUP = `The new URN (` + newUrn + `) is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)`;
+        const URL_CHANGED_WARNING_POPUP = `The URN has changed. Would you like to save this model to the new URN (${newUrn})? (URN cannot be modified except to create a new model.)`;
+        const URL_RENAME_WARNING_POPUP = `The new URN (${newUrn}) is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)`;
         // Changing a URN is either a rename/move or a copy or just not allowed.
         // Proposing we have a 'isLocked' tag.
         // URN changes are renames until the Activity is marked as 'isLocked'.
         // After 'isLocked', URN changes are copies.
 
         //  Is it a valid URN?
-        let isValid = InputValidator.isValidUrn(newUrn);
+        const isValid = InputValidator.isValidUrn(newUrn);
         if (isValid) {
-            let originalActivity = await StorageService.get(originalUrn, `activity`);  // needed to check if 'isLocked'
-            let urnAlreadyBeingUsed = await StorageService.has(newUrn, `activity`);
+            const originalActivity = await StorageService.get(originalUrn, `activity`);  // needed to check if 'isLocked'
+            const urnAlreadyBeingUsed = await StorageService.has(newUrn, `activity`);
             // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
                 // Does user confirm an over-write??
                 if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
-                    let newActivity = await StorageService.get(originalUrn, `activity`);
+                    const newActivity = await StorageService.get(originalUrn, `activity`);
 
                     // is the target Activity locked?
                     if (newActivity.isLocked) {
@@ -215,21 +215,21 @@ export default class Controller extends EventTarget {
         const orphanedRootStack = [];
         nodeStack.push(projectNode);
         while (nodeStack.length > 0) {
-            let currentNode = nodeStack.pop();
+            const currentNode = nodeStack.pop();
             if ((changedActivity.urn == undefined) || (currentNode.urn == changedActivity.urn)) {
                 if (changedActivity.urn == undefined) {
                     console.log(`Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull`);
                 }
-                let existingNodeChildren = currentNode.children.map((child) => {
+                const existingNodeChildren = currentNode.children.map((child) => {
                     return {
                         urn: child.urn,
                         id: child.childId
                     };
                 });
-                let validNodeChildren = changedActivity.children;
-                let kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
+                const validNodeChildren = changedActivity.children;
+                const kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
                 console.log(`Kids to add: ${kidsToAdd.length}`);
-                let kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
+                const kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
                 console.log(`Kids to remove: ${kidsToRemove.length}`);
 
                 kidsToAdd.forEach((child) => {
@@ -245,7 +245,7 @@ export default class Controller extends EventTarget {
                 });
 
                 kidsToRemove.forEach((child) => {
-                    let childNodeModel = this.searchTreeForChildId(projectNode, child.id);    // currentNode.getChildById(child.id)
+                    const childNodeModel = this.searchTreeForChildId(projectNode, child.id);    // currentNode.getChildById(child.id)
                     currentNode.removeChild(childNodeModel);
                     orphanedRootStack.push(childNodeModel);
                 });
@@ -254,7 +254,7 @@ export default class Controller extends EventTarget {
                 nodeStack.push(child);
             }
         }
-        for (let orphanedRootNode of orphanedRootStack) {
+        for (const orphanedRootNode of orphanedRootStack) {
             // Assigning orphans to a separate tree.
             // Save the tree to keep it, or don't to have it disappear.
             orphanedRootNode.parent = orphanedRootNode.id;
@@ -278,9 +278,9 @@ export default class Controller extends EventTarget {
         rootCellModel.rootUrn = newRootActivityUrn;
         nodeStack.push(rootCellModel);
         while (nodeStack.length > 0) {
-            let currentNode = nodeStack.pop();
+            const currentNode = nodeStack.pop();
             for (const child of currentNode.activity.children) {
-                let childActivity = this.fetchActivity(child.urn);
+                const childActivity = this.fetchActivity(child.urn);
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
                 const childCellModel = new CellModel({
                     urn: childActivity.urn,
@@ -312,9 +312,9 @@ export default class Controller extends EventTarget {
         rootNodeModel.isExpanded = isExpanded;
         nodeStack.push(rootNodeModel);
         while (nodeStack.length > 0) {
-            let currentNode = nodeStack.pop();
+            const currentNode = nodeStack.pop();
             for (const child of currentNode.activity.children) {
-                let childActivity = this.fetchActivity(child.urn);
+                const childActivity = this.fetchActivity(child.urn);
                 // @TODO - add try/catch in case not in cache/storage (new Activity)
                 const childNodeModel = new NodeModel();
 
@@ -344,10 +344,10 @@ export default class Controller extends EventTarget {
     }
 
     searchTreeForId(treeNode, id) {
-        let workStack = [];
+        const workStack = [];
         workStack.push(treeNode);
         while (workStack.length > 0) {
-            let checkNode = workStack.pop();
+            const checkNode = workStack.pop();
             if (checkNode.id == id) {
                 return checkNode;
             }
@@ -357,10 +357,10 @@ export default class Controller extends EventTarget {
     }
 
     searchTreeForChildId(treeNode, childId) {
-        let workStack = [];
+        const workStack = [];
         workStack.push(treeNode);
         while (workStack.length > 0) {
-            let checkNode = workStack.pop();
+            const checkNode = workStack.pop();
             if (checkNode.childId == childId) {
                 return checkNode;
             }
@@ -377,13 +377,13 @@ export default class Controller extends EventTarget {
 
     repopulateActivity(currentNode) {
         currentNode.activity = this.fetchActivity(currentNode.urn);
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             this.repopulateActivity(child);
         }
     }
 
     repopulateParent(currentNode) {
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             child.parent = currentNode;
             child.parentId = currentNode.id;
             this.repopulateParent(child);
@@ -393,7 +393,7 @@ export default class Controller extends EventTarget {
     repopulateProject(currentNode, projectId) {
         console.log(`setting ${currentNode.urn} from  ${currentNode.projectId} to ${projectId}`);
         currentNode.projectId = projectId;
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             this.repopulateProject(child, projectId);
         }
     }
@@ -401,7 +401,7 @@ export default class Controller extends EventTarget {
     relocateProject(currentNode, deltaX, deltaY) {
         currentNode.x = currentNode.x + deltaX;
         currentNode.y = currentNode.y + deltaY;
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             this.relocateProject(child, deltaX, deltaY);
         }
     }

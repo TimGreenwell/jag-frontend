@@ -11,8 +11,9 @@ export function UUIDv4() {
     //     const r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
     //     return v.toString(16);
     // });
-    return `xxxxxxxx`.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0, v = c === `x` ? r : (r & 0x3 | 0x8);
+    return `xxxxxxxx`.replace(/[xy]/gu, function (c) {
+        const r = Math.random() * 16 | 0,
+            v = c === `x` ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }

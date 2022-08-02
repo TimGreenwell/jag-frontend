@@ -18,7 +18,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
     };
 
     clearLibraryList() {
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = [];
@@ -47,16 +47,16 @@ customElements.define(`jag-library`, class extends HTMLElement {
     // ////////////////////////////////////////////////////////////////////////////////
 
     updateItem(updatedActivity) {
-        let listItemElement = this.createListItemCollection(updatedActivity);
-        for (let item of this._libraryList) {
+        const listItemElement = this.createListItemCollection(updatedActivity);
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
-        for (let idx in this._libraryList) {
+        for (const idx in this._libraryList) {
             if (this._libraryList[idx].activity.urn == updatedActivity.urn) {
                 this._libraryList[idx] = listItemElement;
             }
         }
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }
@@ -64,7 +64,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     createListItemCollection(newActivity) {
         // handleJagStorageCreated (@controllerAT)
-        let existingUrns = this._libraryList.filter((entry) => {
+        const existingUrns = this._libraryList.filter((entry) => {
             return entry.urn;
         });
         if (!existingUrns.includes(newActivity.urn)) {
@@ -76,14 +76,14 @@ customElements.define(`jag-library`, class extends HTMLElement {
                 const li = document.createElement(`li`);
                 li.className = `list-item`;
 
-                let deleteIconClickedHandler = function (event) {
+                const deleteIconClickedHandler = function (event) {
                     event.stopPropagation();
                     this.dispatchEvent(new CustomEvent(`event-activity-deleted`, {
                         detail: {activityUrn: newActivity.urn}
                     }));
                 };
 
-                let lockIconClickedHandler = function (event) {
+                const lockIconClickedHandler = function (event) {
                     event.stopPropagation();
                     this.dispatchEvent(new CustomEvent(`event-activity-locked`, {
                         detail: {activity: newActivity}
@@ -121,7 +121,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
                 li.appendChild($topHalfWrapper);
                 li.appendChild($bottomHalfWrapper);
 
-                let search_params = [];
+                const search_params = [];
                 search_params.push(urn.toLowerCase());
                 search_params.push(name.toLowerCase());
                 search_params.push(description.toLowerCase());
@@ -145,7 +145,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
                     }));
                 });
 
-                let newItem = {
+                const newItem = {
                     element: li,
                     search_content: search_params.join(` `),
                     activity: newActivity
@@ -164,7 +164,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     addListItem(newActivity) {
         // handleNodeStorageCreated (@controllerAT)
-        let listItemElement = this.createListItemCollection(newActivity);
+        const listItemElement = this.createListItemCollection(newActivity);
         this._libraryList.push(listItemElement);
         this._$list.appendChild(listItemElement.element);
     }
@@ -187,13 +187,13 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     removeLibraryListItem(deletedUrn) {
         // handleJagStorageDeleted (@controllerAT)
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
             return entry.activity.urn != deletedUrn;
         });
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }

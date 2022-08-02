@@ -20,7 +20,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
     };
 
     clearLibraryList() {
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = [];
@@ -49,16 +49,16 @@ customElements.define(`agent-library`, class extends HTMLElement {
     // ////////////////////////////////////////////////////////////////////////////////
 
     updateItem(updatedAgent) {
-        let listItemElement = this.createListItemCollection(updatedAgent);
-        for (let item of this._libraryList) {
+        const listItemElement = this.createListItemCollection(updatedAgent);
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
-        for (let idx in this._libraryList) {
+        for (const idx in this._libraryList) {
             if (this._libraryList[idx].agent.urn == updatedAgent.urn) {
                 this._libraryList[idx] = listItemElement;
             }
         }
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }
@@ -66,7 +66,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
 
     createListItemCollection(newAgent) {
         // handleAgentStorageCreated (@controllerAT)
-        let existingUrns = this._libraryList.filter((entry) => {
+        const existingUrns = this._libraryList.filter((entry) => {
             return entry.urn;
         });
         if (!existingUrns.includes(newAgent.urn)) {
@@ -78,14 +78,14 @@ customElements.define(`agent-library`, class extends HTMLElement {
                 const li = document.createElement(`li`);
                 li.className = `list-item`;
 
-                let deleteIconClickedHandler = function (event) {
+                const deleteIconClickedHandler = function (event) {
                     event.stopPropagation();
                     this.dispatchEvent(new CustomEvent(`event-agent-deleted`, {
                         detail: {agentUrn: newAgent.urn}
                     }));
                 };
 
-                let lockIconClickedHandler = function (event) {
+                const lockIconClickedHandler = function (event) {
                     event.stopPropagation();
                     this.dispatchEvent(new CustomEvent(`event-agent-locked`, {
                         detail: {agent: newAgent}
@@ -123,7 +123,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
                 li.appendChild($topHalfWrapper);
                 li.appendChild($bottomHalfWrapper);
 
-                let search_params = [];
+                const search_params = [];
                 search_params.push(urn.toLowerCase());
                 search_params.push(name.toLowerCase());
                 search_params.push(description.toLowerCase());
@@ -145,7 +145,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
                     }));
                 });
 
-                let newItem = {
+                const newItem = {
                     element: li,
                     search_content: search_params.join(` `),
                     agent: newAgent
@@ -164,7 +164,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
 
     addListItem(newAgent) {
         // handleNodeStorageCreated (@controllerAT)
-        let listItemElement = this.createListItemCollection(newAgent);
+        const listItemElement = this.createListItemCollection(newAgent);
         this._libraryList.push(listItemElement);
         this._$list.appendChild(listItemElement.element);
     }
@@ -187,13 +187,13 @@ customElements.define(`agent-library`, class extends HTMLElement {
 
     removeLibraryListItem(deletedUrn) {
         // handleAgentStorageDeleted (@controllerAT)
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
             return entry.agent.urn != deletedUrn;
         });
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }

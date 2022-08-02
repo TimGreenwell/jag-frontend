@@ -279,7 +279,7 @@ export default class Edge extends EventTarget {
         _tspan_key.innerHTML = `${key}`;
         this._list_el.appendChild(_tspan_key);
 
-        let value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+        const value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
 
         const _tspan_value = document.createElementNS(XMLNS, `tspan`);
         _tspan_value.setAttribute(`class`, `annotation-value`);
@@ -368,7 +368,7 @@ export default class Edge extends EventTarget {
     }
 
     _containsPoint(x, y) {
-        let rect = this._group.getBoundingClientRect();
+        const rect = this._group.getBoundingClientRect();
 
         return (x > rect.left && x < rect.right) &&
             (y > rect.top && y < rect.bottom);
@@ -423,7 +423,7 @@ export default class Edge extends EventTarget {
         this._part_el.setAttributeNS(null, `x`, ex - 25);
         this._part_el.setAttributeNS(null, `y`, ey + 5);
 
-        for (let key in this._list_el.children) {
+        for (const key in this._list_el.children) {
             if (key % 2 == 0) {
                 this._list_el.children[key].setAttributeNS(null, `x`, mx + 20);
             }

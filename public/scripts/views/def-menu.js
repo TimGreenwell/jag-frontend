@@ -68,7 +68,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLi.appendChild($centerLiDiv);
 
 
-        let executionOptions = Activity.getExecutionOptions();
+        const executionOptions = Activity.getExecutionOptions();
 
         const execution_el = FormUtils.createPropertyElement(`execution-property`, `Execution`);
         execution_el.className = `menu-select`;
@@ -79,7 +79,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild(execution_el);
 
 
-        let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value);
+        const returnsOptions = Activity.getReturnsOptions(this._executionSelect.value);
 
         const return_el = FormUtils.createPropertyElement(`returns-property`, `Return`);
         return_el.className = `menu-select`;
@@ -91,7 +91,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild(return_el);
 
 
-        let onFailOptions = Activity.getOnFailOptions(this._executionSelect.value);
+        const onFailOptions = Activity.getOnFailOptions(this._executionSelect.value);
 
         const onfail_el = FormUtils.createPropertyElement(`onfail-property`, `OnFail`);
         onfail_el.className = `menu-select`;
@@ -103,9 +103,9 @@ customElements.define(`def-menu`, class extends HTMLElement {
         $centerLiDiv.appendChild(onfail_el);
 
 
-        let operatorOptions = [];
-        let operator = Activity.OPERATOR;
-        for (let step in operator) {
+        const operatorOptions = [];
+        const operator = Activity.OPERATOR;
+        for (const step in operator) {
             operatorOptions.push({
                 value: operator[step].name,
                 text: operator[step].text
@@ -157,12 +157,12 @@ customElements.define(`def-menu`, class extends HTMLElement {
             detail: {execution: event.value}
         }));
         if (this._executionSelect.value != `node.execution.none`) {
-            let onfailOptions = Activity.getOnFailOptions(this._executionSelect.value);
+            const onfailOptions = Activity.getOnFailOptions(this._executionSelect.value);
             while (this._onfailSelect.options.length > 0) {
                 this._onfailSelect.remove(0);
             }
             onfailOptions.forEach((option) => {
-                let opt = document.createElement(`option`);
+                const opt = document.createElement(`option`);
                 opt.value = option.value;
                 opt.text = option.text;
                 this._onfailSelect.options.add(opt);
@@ -170,12 +170,12 @@ customElements.define(`def-menu`, class extends HTMLElement {
             this._onfailSelect.disabled = false;
 
 
-            let returnsOptions = Activity.getReturnsOptions(this._executionSelect.value);
+            const returnsOptions = Activity.getReturnsOptions(this._executionSelect.value);
             while (this._returnSelect.options.length > 0) {
                 this._returnSelect.remove(0);
             }
             returnsOptions.forEach((option) => {
-                let opt = document.createElement(`option`);
+                const opt = document.createElement(`option`);
                 opt.value = option.value;
                 opt.text = option.text;
                 this._returnSelect.options.add(opt);
@@ -202,12 +202,12 @@ customElements.define(`def-menu`, class extends HTMLElement {
             composed: true,
             detail: {returns: event.value}
         }));
-        let operatorOptions = Activity.getOperatorOptions(this._returnSelect.value);
+        const operatorOptions = Activity.getOperatorOptions(this._returnSelect.value);
         while (this._operatorSelect.options.length > 0) {
             this._operatorSelect.remove(0);
         }
         operatorOptions.forEach((option) => {
-            let opt = document.createElement(`option`);
+            const opt = document.createElement(`option`);
             opt.value = option.value;
             opt.text = option.text;
             this._operatorSelect.options.add(opt);

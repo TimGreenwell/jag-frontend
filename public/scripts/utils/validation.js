@@ -31,7 +31,7 @@ export default class JAGATValidation {
 
 
     isValid() {
-        let regex = new RegExp(`^[a-zA-Z0-9-:]+([a-zA-Z0-9])$`);
+        const regex = new RegExp(`^[a-zA-Z0-9-:]+([a-zA-Z0-9])$`, `u`);
         return !!this._urn.match(regex);
     };
 
@@ -44,7 +44,8 @@ export default class JAGATValidation {
             if (typeof urn !== `string`) {
                 throw new Error(`URN must be a string of valid format.`);
             }
-            if (urn.match(/^[a-z0-9:-]*[a-z0-9]$/) == null) {
+            const validUrnChars = new RegExp(`^[a-z0-9:-]*[a-z0-9]$`, `u`);
+            if (urn.match(validUrnChars) == null) {
                 throw new Error(`URN must be a valid format.`);
             }
         } catch (e) {
@@ -64,8 +65,8 @@ export default class JAGATValidation {
         if (typeof urn !== `string`) {
             throw new Error(`URN must be a string of valid format.`);
         }
-
-        if (urn.match(/^[a-z0-9:-]*[a-z0-9]$/) == null) {
+        const validUrnChars = new RegExp(`^[a-z0-9:-]*[a-z0-9]$`, `u`);
+        if (urn.match(validUrnChars) == null) {
             throw new Error(`URN must be a valid format.`);
         }
     }

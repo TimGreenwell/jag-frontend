@@ -128,7 +128,7 @@ export default class AgentModel extends EventTarget {
     }
 
     toJSON() {
-        let json = {
+        const json = {
             id: this._id,
             name: this._name,
             urn: this._urn,
@@ -138,7 +138,7 @@ export default class AgentModel extends EventTarget {
             assessments: {}
         };
 
-        for (let assessment of this._assessments.keys()) {
+        for (const assessment of this._assessments.keys()) {
             const symbol = this._assessments.get(assessment);
             let value = 0;
 

@@ -59,7 +59,7 @@ class FormUtils {
     static toggleSelectValues(select_el, valid_values) {
         const selected_option = select_el.selectedOptions[0];
 
-        for (let option of select_el.options) {
+        for (const option of select_el.options) {
             option.disabled = !valid_values.has(option.value);
         }
 

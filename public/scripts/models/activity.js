@@ -64,10 +64,10 @@ export default class Activity extends EventTarget {
         this._operator = connector.operator;
 
         // The below has not been looked at.
-        for (let child of this._children) {
+        for (const child of this._children) {
             if (child.annotations) {
                 const annotations = new Map();
-                for (let annotation in child.annotations) {
+                for (const annotation in child.annotations) {
                     annotations.set(annotation, child.annotations[annotation]);
                 }
                 child.annotations = annotations;
@@ -264,13 +264,13 @@ export default class Activity extends EventTarget {
 
 
     removeChild(childId) {
-        for (let index in this._children) {
+        for (const index in this._children) {
             if (this._children[index].id === childId) {
                 this._children.splice(index, 1);
                 break;
             }
         }
-        for (let binding of this._bindings) {
+        for (const binding of this._bindings) {
             if (binding.provider.id == childId || binding.consumer.id == childId) {
                 this.removeBinding(binding);
             }
@@ -320,7 +320,7 @@ export default class Activity extends EventTarget {
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs available to the child with the given ID.
      */
     inputsTo(id) {
-        let availableInputs = this._inputs.map((input) => {
+        const availableInputs = this._inputs.map((input) => {
             return {
                 id: `this`,
                 activity: this,
@@ -330,15 +330,15 @@ export default class Activity extends EventTarget {
         });
 
         if (this._execution == Activity.EXECUTION.SEQUENTIAL.name) {
-            for (let child of this._children) {
+            for (const child of this._children) {
                 if (child.id == id) {
                     break;
                 }
 
                 if (child.activity) {
-                    let child_outputs = child.activity.outputs;
+                    const child_outputs = child.activity.outputs;
 
-                    for (let child_output of child_outputs) {
+                    for (const child_output of child_outputs) {
                         availableInputs.push({
                             id: child.id,
                             activity: child.activity,
@@ -359,9 +359,9 @@ export default class Activity extends EventTarget {
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
      */
     getAvailableInputs() {
-        let availableInputs = [];
+        const availableInputs = [];
 
-        for (let child of this._children) {
+        for (const child of this._children) {
             if (child.activity) {
                 if (child.activity.inputs.length > 0) {
                     availableInputs.push({
@@ -381,9 +381,9 @@ export default class Activity extends EventTarget {
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Outputs of children of this Activity.
      */
     getAvailableOutputs() {
-        let availableOutputs = [];
+        const availableOutputs = [];
 
-        for (let child of this._children) {
+        for (const child of this._children) {
             if (child.activity) {
                 if (child.activity.outputs.length > 0) {
                     availableOutputs.push({
@@ -436,7 +436,7 @@ export default class Activity extends EventTarget {
      * @returns {{provider:{id:String,property:String},consumer:{id:String,property:String}}|undefined} Binding for the given consumer ID and property, or undefined if none exists.
      */
     getBinding(consumer_id, consumer_property) {
-        for (let binding of this._bindings) {
+        for (const binding of this._bindings) {
             if (consumer_id === binding.consumer.id &&
                 consumer_property === binding.consumer.property) {
                 return binding;
@@ -471,7 +471,7 @@ export default class Activity extends EventTarget {
             };
         }
 
-        for (let child of this._children) {
+        for (const child of this._children) {
             if (child.id == id) {
                 return child;
             }
@@ -576,7 +576,7 @@ export default class Activity extends EventTarget {
 
 
         this._children.forEach((child) => {
-            let descriptor = {
+            const descriptor = {
                 urn: child.urn,
                 id: child.id
             };
@@ -590,7 +590,7 @@ export default class Activity extends EventTarget {
             if (child.annotations && child.annotations.size > 0) {
                 descriptor.annotations = {};
 
-                for (let annotation of child.annotations) {
+                for (const annotation of child.annotations) {
                     descriptor.annotations[annotation[0]] = annotation[1];
                 }
             }
@@ -624,14 +624,14 @@ export default class Activity extends EventTarget {
 
     static fromJSON(json) {
         if (Array.isArray(json)) {
-            let jagList = json.map(function (element) {
+            const jagList = json.map(function (element) {
                 try {
                     ValidationUtility.validateJAG(element);
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
 
-                let returnValue = Activity(element);
+                const returnValue = Activity(element);
                 return returnValue;
             });
             return jagList;
@@ -643,7 +643,7 @@ export default class Activity extends EventTarget {
             }
 
 
-            let returnValue = new Activity(json);
+            const returnValue = new Activity(json);
             return returnValue;
             // @TODO: explode the json definition to use the constructor below
             // return new Activity(urn, name, connector, inputs, outputs, children, bindings);
@@ -652,9 +652,9 @@ export default class Activity extends EventTarget {
 
 
     static getExecutionOptions() {
-        let executionOptions = [];
-        let execution = Activity.EXECUTION;
-        for (let step in execution) {
+        const executionOptions = [];
+        const execution = Activity.EXECUTION;
+        for (const step in execution) {
             executionOptions.push({
                 value: execution[step].name,
                 text: execution[step].text
@@ -664,9 +664,9 @@ export default class Activity extends EventTarget {
     }
 
     static getReturnsOptions(executionName) {
-        let returnsOptions = [];
-        let returns = Activity.RETURNS;
-        for (let step in returns) {
+        const returnsOptions = [];
+        const returns = Activity.RETURNS;
+        for (const step in returns) {
             if (returns[step].condition.includes(executionName)) {
                 returnsOptions.push({
                     value: returns[step].name,
@@ -678,9 +678,9 @@ export default class Activity extends EventTarget {
     }
 
     static getOnFailOptions(executionName) {
-        let onfailOptions = [];
-        let onfails = Activity.ONFAIL;
-        for (let step in onfails) {
+        const onfailOptions = [];
+        const onfails = Activity.ONFAIL;
+        for (const step in onfails) {
             if (onfails[step].condition.includes(executionName)) {
                 onfailOptions.push({
                     value: onfails[step].name,
@@ -693,9 +693,9 @@ export default class Activity extends EventTarget {
 
 
     static getOperatorOptions(returnName) {
-        let operatorOptions = [];
-        let operators = Activity.OPERATOR;
-        for (let step in operators) {
+        const operatorOptions = [];
+        const operators = Activity.OPERATOR;
+        for (const step in operators) {
             if (operators[step].condition.includes(returnName)) {
                 operatorOptions.push({
                     value: operators[step].name,

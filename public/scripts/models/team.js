@@ -139,7 +139,7 @@ export default class TeamModel extends EventTarget {
         // json.agents = agents;
 
         // json.performers = new Set(json.performers);
-        let returnValue = new TeamModel(json);
+        const returnValue = new TeamModel(json);
         return returnValue;
     }
 

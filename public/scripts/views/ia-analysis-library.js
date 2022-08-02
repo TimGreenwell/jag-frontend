@@ -16,7 +16,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
     }
 
     clearItems() {
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = [];
@@ -54,14 +54,14 @@ customElements.define(`analysis-library`, class extends HTMLElement {
         li.className = `list-item`;
         li.id = id;
 
-        let deleteIconClickedHandler = function (event) {
+        const deleteIconClickedHandler = function (event) {
             event.stopPropagation();
             this.dispatchEvent(new CustomEvent(`event-analysis-deleted`, {
                 detail: {analysisId: model.id}
             }));
         };
 
-        let lockIconClickedHandler = function (event) {
+        const lockIconClickedHandler = function (event) {
             event.stopPropagation();
             this.dispatchEvent(new CustomEvent(`event-analysis-locked`, {
                 detail: {analysisId: model.id}
@@ -124,7 +124,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
             }));
         });
 
-        let newItem = {
+        const newItem = {
             element: li,
             search_content: search_params.join(` `),
             model: model
@@ -137,7 +137,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
 
     addListItem(analysisModel) {
         // handleNodeStorageCreated (@controllerAT)
-        let listItemElement = this.createListItemCollection(analysisModel);
+        const listItemElement = this.createListItemCollection(analysisModel);
         this._libraryList.push(listItemElement);
         this._$list.appendChild(listItemElement.element);
     }
@@ -151,13 +151,13 @@ customElements.define(`analysis-library`, class extends HTMLElement {
 
     removeLibraryListItem(deletedAnalysisId) {
         // handleJagStorageDeleted (@controllerAT)
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
             return entry.analysis.id != deletedAnalysisId;
         });
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }

@@ -51,11 +51,11 @@ export default class SharedObservable extends SharedService {
      */
     static async handleReceiveMessage(message) {
         console.log(`{@} Message received from web worker -- posting to all subscribers`);
-        console.log(`{@} (` + message.data.id + `) / (` + message.data.topic + `)\n`);
-        let schema = message.data.schema;
-        let topic = message.data.topic;
-        let description = message.data.description;
-        let id = message.data.id;
+        console.log(`{@} (${message.data.id}) / (${message.data.topic})\n`);
+        const schema = message.data.schema;
+        const topic = message.data.topic;
+        const description = message.data.description;
+        const id = message.data.id;
         let dataModel = null;
         // let descriptorObj = JSON.parse(description);                 // only for rest :(
         if (description) {
@@ -68,7 +68,7 @@ export default class SharedObservable extends SharedService {
      * Local action to be propagated across SharedWorker for remote listeners.
      */
     static confirmStorageChange({topic, schema, id, description}) {
-        console.log(` {SHARING>} - - Database change confirmed, (` + id + `/` + topic + `) -- posting message across shared web worker`);
+        console.log(` {SHARING>} - - Database change confirmed, (${id}/${topic}) -- posting message across shared web worker`);
         this.sharedWorker.port.postMessage({
             topic: topic,
             schema: schema,
@@ -82,7 +82,7 @@ export default class SharedObservable extends SharedService {
      * Callback functions were provided at initial subscription.js.
      */
     static notifySubscribers(topic, dataModel, id) {
-        console.log(`\n {COMMANDED} (` + topic + `) : (` + id + `)`);
+        console.log(`\n {COMMANDED} (${topic}) : (${id})`);
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {
@@ -94,7 +94,7 @@ export default class SharedObservable extends SharedService {
                 }
             });
         } else {
-            console.log(`{No subscribers to : ` + topic);
+            console.log(`{No subscribers to : ${topic}`);
         }
     }
 

@@ -28,7 +28,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
     }
 
     handleInfo(message) {
-        let info = message.data;
+        const info = message.data;
         this._setFeedback(info);
     }
 

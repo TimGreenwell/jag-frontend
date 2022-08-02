@@ -10,9 +10,8 @@
 
 export default class UserPrefs {
 
-    static defaultStorageService = `idb-service`;
-
-    // static defaultStorageService = 'local-rest-service'
+    //static defaultStorageService = `idb-service`;
+    static defaultStorageService = 'local-rest-service'
 
     static getDefaultStorageService() {
         return this.defaultStorageService;
@@ -34,7 +33,7 @@ export default class UserPrefs {
     }
 
     static setDefaultUrnPrefixFromUrn(urn) {
-        this.defaultUrnPrefix = urn.split(`:`).slice(0, -1).join(`:`) + `:`;
+        this.defaultUrnPrefix = `${urn.split(`:`).slice(0, -1).join(`:`)}:`;
     }
 
 }

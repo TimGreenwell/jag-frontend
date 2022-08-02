@@ -46,7 +46,7 @@ export default class Subscription extends EventTarget {
     }
 
     toJSON() {
-        let json = {
+        const json = {
             name: this._name,
             lastReportTime: this._lastReportTime,
             lastReportedData: this._lastReportedData

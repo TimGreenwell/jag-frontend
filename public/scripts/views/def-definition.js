@@ -78,25 +78,25 @@ class Definition extends HTMLElement {
         this.removeAllChildNodes(this._$subscriptionEntryDiv);
         if (this.definingNode.subscriptions.length > 0) {
             // ///////////  SUBSCRIPTIONS - Title Line - Title
-            let $subscriptionSubtitle = document.createElement(`H2`);
+            const $subscriptionSubtitle = document.createElement(`H2`);
             $subscriptionSubtitle.innerText = `Subscribed To:  `;
             this._$subscriptionEntryDiv.appendChild($subscriptionSubtitle);
             // ///////////  SUBSCRIPTIONS - Header Line
-            let $subscriptionHeaderLine = document.createElement(`div`);
+            const $subscriptionHeaderLine = document.createElement(`div`);
             $subscriptionHeaderLine.className = `header-line`;
-            let $spacer = document.createElement(`H2`);
+            const $spacer = document.createElement(`H2`);
             $spacer.innerText = ``;
             $spacer.className = `sub-property`;
-            let $channelName = document.createElement(`H2`);
+            const $channelName = document.createElement(`H2`);
             $channelName.innerText = `channel`;
             $channelName.className = `sub-property`;
-            let $lastUpdate = document.createElement(`H2`);
+            const $lastUpdate = document.createElement(`H2`);
             $lastUpdate.innerText = `lastUpdate`;
             $lastUpdate.className = `sub-property`;
-            let $conditionCode = document.createElement(`H2`);
+            const $conditionCode = document.createElement(`H2`);
             $conditionCode.innerText = `conditionCode`;
             $conditionCode.className = `sub-property`;
-            let $variableName = document.createElement(`H2`);
+            const $variableName = document.createElement(`H2`);
             $variableName.innerText = `variableName`;
             $variableName.className = `sub-property`;
             $subscriptionHeaderLine.appendChild($spacer);
@@ -106,33 +106,33 @@ class Definition extends HTMLElement {
             $subscriptionHeaderLine.appendChild($variableName);
             this._$subscriptionEntryDiv.appendChild($subscriptionHeaderLine);
             subscriptionNode.subscriptions.forEach((subscription) => {
-                let childSubscription = this.createSubscriptionEntryLine(subscription);
+                const childSubscription = this.createSubscriptionEntryLine(subscription);
                 this._$subscriptionEntryDiv.appendChild(childSubscription);
             });
         }
     }
 
     createSubscriptionEntryLine(subscription) {
-        let $subscriptionEntryLine = document.createElement(`div`);
+        const $subscriptionEntryLine = document.createElement(`div`);
         $subscriptionEntryLine.className = `subscription-line`;
         $subscriptionEntryLine.setAttribute(`id`, subscription.name);
-        let $subscriptionRemoveButton = document.createElement(`button`);
+        const $subscriptionRemoveButton = document.createElement(`button`);
         $subscriptionRemoveButton.innerText = `-`;
         $subscriptionRemoveButton.setAttribute(`id`, `subscription-remove-button`);
         $subscriptionRemoveButton.addEventListener(`click`, this._removeSubscription.bind(this));
         $subscriptionEntryLine.appendChild($subscriptionRemoveButton);
 
-        let $channelName = document.createElement(`span`);
+        const $channelName = document.createElement(`span`);
         $channelName.innerText = subscription.name;
         $channelName.className = `sub-property`;
-        let $lastUpdate = document.createElement(`span`);
+        const $lastUpdate = document.createElement(`span`);
         $lastUpdate.innerText = subscription.lastReportTime;
         $lastUpdate.className = `sub-property`;
-        let $conditionCode = document.createElement(`span`);
+        const $conditionCode = document.createElement(`span`);
         $conditionCode.innerText = subscription.lastReportedCode;
         $conditionCode.className = `sub-property`;
-        let $variableName = document.createElement(`span`);
-        $variableName.innerText = `\${` + subscription.name + `}`;
+        const $variableName = document.createElement(`span`);
+        $variableName.innerText = `\${${subscription.name}}`;
         $variableName.className = `sub-property`;
         $subscriptionEntryLine.appendChild($channelName);
         $subscriptionEntryLine.appendChild($lastUpdate);
@@ -146,18 +146,18 @@ class Definition extends HTMLElement {
         this.removeAllChildNodes(this.$testerEntryDiv);
 
         testNode.children.forEach((child) => {
-            let childTester = this.createTestElement(child);
+            const childTester = this.createTestElement(child);
             this.$testerEntryDiv.appendChild(childTester);
         });
     }
 
 
     createTestElement(node) {
-        let stateOptions = [];
-        let label = node.urn + ` / ` + node.contextualName;
-        const test_el = FormUtils.createPropertyElement(`test-` + node.id, label);
+        const stateOptions = [];
+        const label = `${node.urn} / ${node.contextualName}`;
+        const test_el = FormUtils.createPropertyElement(`test-${node.id}`, label);
         test_el.className = `test-collection`;
-        this._valueInput = FormUtils.createTextInput(`test-value-` + node.id);
+        this._valueInput = FormUtils.createTextInput(`test-value-${node.id}`);
         this._valueInput.setAttribute(`placeholder`, `test return value`);
         this._valueInput.setAttribute(`node`, node.id);
         this._valueInput.className = `test-property`;
@@ -166,14 +166,14 @@ class Definition extends HTMLElement {
             this._buildFunction(node);
         });
 
-        let stateDefinition = Definition.STATE;
-        for (let state in stateDefinition) {
+        const stateDefinition = Definition.STATE;
+        for (const state in stateDefinition) {
             stateOptions.push({
                 value: stateDefinition[state].name,
                 text: stateDefinition[state].text
             });
         }
-        this._stateInput = FormUtils.createSelect(`test-state-` + node.id, stateOptions, Definition.STATE.ACTIVE.name);
+        this._stateInput = FormUtils.createSelect(`test-state-${node.id}`, stateOptions, Definition.STATE.ACTIVE.name);
         this._stateInput.className = `test-property`;
         this._stateInput.addEventListener(`change`, this._updateTestStateMap.bind(this));
         test_el.appendChild(this._valueInput);
@@ -195,7 +195,7 @@ class Definition extends HTMLElement {
         this.$testerDiv = document.createElement(`div`);                   // TEST BLOCK Div - Mock input
         this.$testerDiv.className = `tester definition-block`;
         // ///////////  DATA VALUES - Div - Title Line
-        let $testDivTitleLine = document.createElement(`div`);
+        const $testDivTitleLine = document.createElement(`div`);
         $testDivTitleLine.className = `title-line`;
         this.$testerDiv.appendChild($testDivTitleLine);
         // ///////////  DATA VALUES - Div - Title Line - Title
@@ -218,7 +218,7 @@ class Definition extends HTMLElement {
         const $subscriptionsDiv = document.createElement(`div`);             // CONDITIONS BLOCK Div - Abort,Fail,Success conditions
         $subscriptionsDiv.className = `subscription definition-block`;
         // ///////////  SUBSCRIPTIONS - Div Title Line
-        let $subscriptionDivTitleLine = document.createElement(`div`);
+        const $subscriptionDivTitleLine = document.createElement(`div`);
         $subscriptionDivTitleLine.className = `title-line`;
         $subscriptionsDiv.appendChild($subscriptionDivTitleLine);
         // ///////////  SUBSCRIPTIONS - Div Title Line - Title
@@ -227,7 +227,7 @@ class Definition extends HTMLElement {
         this.$subscriptionsDivTitle.className = `block-title`;
         $subscriptionDivTitleLine.appendChild(this.$subscriptionsDivTitle);
         // ///////////  SUBSCRIPTIONS - Div Title Line - Add Button
-        let $subscriptionAddButton = document.createElement(`button`);
+        const $subscriptionAddButton = document.createElement(`button`);
         $subscriptionAddButton.innerText = `+`;
         $subscriptionAddButton.setAttribute(`id`, `subscription-add-button`);
         $subscriptionDivTitleLine.appendChild($subscriptionAddButton);
@@ -247,7 +247,7 @@ class Definition extends HTMLElement {
         this.$functionDivTitle.className = `block-title`;
         $functionDiv.appendChild(this.$functionDivTitle);
 
-        let $textAreaWrap = document.createElement(`div`);
+        const $textAreaWrap = document.createElement(`div`);
         $textAreaWrap.className = `textAreaWrap`;
         this._$textArea = document.createElement(`textarea`);
         this._$textArea.className = `textArea`;
@@ -266,20 +266,20 @@ class Definition extends HTMLElement {
     }
 
     _templateFunction(returns, operator) {
-        let templateFunction = functionFactory(returns, operator);
+        const templateFunction = functionFactory(returns, operator);
         this._$textArea.value = templateFunction;
     }
 
     _buildFunction(node) {
         this.removeAllChildNodes(this._$infoWrap);
-        let availableChildren = this.getAvailableChildrenReturnValues(node);
-        let $availableChildrenSpan = document.createElement(`span`);
-        $availableChildrenSpan.innerText = `\${AvailableChildren} = [` + availableChildren + `]              `;
+        const availableChildren = this.getAvailableChildrenReturnValues(node);
+        const $availableChildrenSpan = document.createElement(`span`);
+        $availableChildrenSpan.innerText = `\${AvailableChildren} = [${availableChildren}]              `;
         this._$infoWrap.appendChild($availableChildrenSpan);
 
-        let allChildren = this.getAllChildrenReturnValues(node);
-        let $allChildrenSpan = document.createElement(`span`);
-        $allChildrenSpan.innerText = `\${AllChildren} = [` + allChildren + `]`;
+        const allChildren = this.getAllChildrenReturnValues(node);
+        const $allChildrenSpan = document.createElement(`span`);
+        $allChildrenSpan.innerText = `\${AllChildren} = [${allChildren}]`;
         this._$infoWrap.appendChild($allChildrenSpan);
     }
 
@@ -295,7 +295,7 @@ class Definition extends HTMLElement {
             });
         } else {
             values = this.definingNode.children.map((child) => {
-                let values = this._testBankMap.get(child.id);
+                const values = this._testBankMap.get(child.id);
                 if (values) {
                     return values;
                 } else {
@@ -339,8 +339,8 @@ class Definition extends HTMLElement {
     }
 
     _addSubscription(event) {
-        let subscriptionChannelName = prompt(`Please enter your channel`, ``);
-        let subscription = new Subscription({
+        const subscriptionChannelName = prompt(`Please enter your channel`, ``);
+        const subscription = new Subscription({
             name: subscriptionChannelName,
             lastReportTime: null,
             lastReportedCode: null
@@ -350,7 +350,7 @@ class Definition extends HTMLElement {
     }
 
     _removeSubscription(event) {
-        let deadSubscription = event.target.parentElement.id;
+        const deadSubscription = event.target.parentElement.id;
         this._definingNode.removeSubscription(deadSubscription);
         this.buildSubscriptionBank();
     }

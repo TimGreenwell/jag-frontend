@@ -9,10 +9,6 @@
 
 class ContextMenu extends HTMLElement {
 
-    constructor() {
-        super();
-    }
-
     addEntry(label, properties, style) {
         const entry = document.createElement(`div`);
 
@@ -21,16 +17,16 @@ class ContextMenu extends HTMLElement {
 
 
         // Propagates the enumerable properties
-        for (let property in properties) {
+        for (const property in properties) {
             entry[property] = properties[property];
         }
 
         // Propagates symbols
-        for (let symbol of Object.getOwnPropertySymbols(properties)) {
+        for (const symbol of Object.getOwnPropertySymbols(properties)) {
             entry[symbol] = properties[symbol];
         }
 
-        for (let property in style) {
+        for (const property in style) {
             entry.style.setProperty(property, style[property]);
         }
 

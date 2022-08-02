@@ -62,13 +62,14 @@ export default class Popupable extends HTMLElement {
             await this._popupCallback({outputs: this._popupOutputs});
         }
 
-        for (let highlight of this._popupHighlights) {
+        for (const highlight of this._popupHighlights) {
             highlight.classList.remove(`${this._activePopup.content.type}-highlight`);
         }
 
         this._popupHighlights = [];
 
-        let displayNext = true, displayThis = true;
+        let displayNext = true,
+            displayThis = true;
 
         if (this._popups.length > 0) {
             this._activePopup = this._popups.splice(0, 1)[0];
@@ -79,7 +80,9 @@ export default class Popupable extends HTMLElement {
 
             const {content, trackEl, callback, properties, inputs, highlights} = this._activePopup;
             const loc = trackEl.getBoundingClientRect();
-            const ix = loc.x, iy = loc.y, width = loc.width;
+            const ix = loc.x,
+                iy = loc.y,
+                width = loc.width;
 
             this._popupContent.innerHTML = ``;
 
@@ -135,20 +138,21 @@ export default class Popupable extends HTMLElement {
                 this._popupContent.appendChild(content.display);
 
                 const {x, y} = this._popupBounds.getBoundingClientRect();
-                this._popupContent.style.left = (ix - x + (width / 2) - 100) + `px`;
-                this._popupContent.style.top = (iy - y + 10) + `px`;
+                this._popupContent.style.left = `${ix - x + (width / 2) - 100}px`;
+                this._popupContent.style.top = `${iy - y + 10}px`;
                 this._popupContent.style.height = `10px`;
 
                 trackEl.addEventListener(`change-position`, (e) => {
                     const newLoc = trackEl.getBoundingClientRect();
-                    const nx = newLoc.x, ny = newLoc.y;
-                    this._popupContent.style.left = (nx - x + (width / 2) - 100) + `px`;
-                    this._popupContent.style.top = (ny - y - 160) + `px`;
+                    const nx = newLoc.x,
+                        ny = newLoc.y;
+                    this._popupContent.style.left = `${nx - x + (width / 2) - 100}px`;
+                    this._popupContent.style.top = `${ny - y - 160}px`;
                 });
 
                 this._popupHighlights = highlights;
 
-                for (let highlight of highlights) {
+                for (const highlight of highlights) {
                     highlight.classList.add(`${content.type}-highlight`);
                 }
 
@@ -195,13 +199,13 @@ export default class Popupable extends HTMLElement {
                             }
 
                             if (type === `textarea`) {
-                                for (let [key, value] of roptions.entries()) {
+                                for (const [key, value] of roptions.entries()) {
                                     $input.setAttribute(key, value);
                                 }
                             }
 
                             if (type === `text`) {
-                                for (let [key, value] of roptions.entries()) {
+                                for (const [key, value] of roptions.entries()) {
                                     $input.addEventListener(key, value);
                                 }
                             }
@@ -273,7 +277,7 @@ export default class Popupable extends HTMLElement {
                 } else if (callback) {
                     this._popupCallback = callback;
                 }
-                this._popupContent.style.height = this._suggestedHeight + `px`;
+                this._popupContent.style.height = `${this._suggestedHeight}px`;
                 this._popupContent.style.visibility = `visible`;
             }
         }

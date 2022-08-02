@@ -78,21 +78,21 @@ class AtPlayground extends Popupable {
     }
 
     get selectedNodes() {
-        let selectedIdArray = [...this._selectedActivityNodeElementSet].map((element) => {
+        const selectedIdArray = [...this._selectedActivityNodeElementSet].map((element) => {
             return element.nodeModel;
         });
         return selectedIdArray;
     }
 
     get viewedNodes() {             // Returns the nodeModels inside the active elements
-        let viewedIdArray = [...this._activeActivityNodeElementSet].map((element) => {
+        const viewedIdArray = [...this._activeActivityNodeElementSet].map((element) => {
             return element.nodeModel;
         });
         return viewedIdArray;
     }
 
     get viewedProjects() {
-        let viewedRootNodes = Array.from(this._viewedProjectsMap.values());
+        const viewedRootNodes = Array.from(this._viewedProjectsMap.values());
         return viewedRootNodes;
     }
 
@@ -157,7 +157,7 @@ class AtPlayground extends Popupable {
     }
 
     onEdgeFinalized(e) {
-        let node = e.target.offsetParent;
+        const node = e.target.offsetParent;
 
         if (!this._is_edge_being_created) {
             return;
@@ -254,8 +254,11 @@ class AtPlayground extends Popupable {
 
     _checkBounds(nodes = this._activeActivityNodeElementSet) {
         const bounds = this.getBoundingClientRect();
-        let [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
-        let showLeft, showRight, showUp, showDown;
+        const [minX, minY, maxX, maxY] = [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height];
+        let showLeft,
+            showRight,
+            showUp,
+            showDown;
 
         for (const node of nodes) {
             if (node.visible) {
@@ -324,7 +327,7 @@ class AtPlayground extends Popupable {
     }
 
     _dragView(dx, dy) {
-        for (let node of this._activeActivityNodeElementSet) {
+        for (const node of this._activeActivityNodeElementSet) {
             node.translate(dx, dy, false);
 
             node.nodeModel.x = Math.round(node.nodeModel.x + dx);
@@ -364,7 +367,7 @@ class AtPlayground extends Popupable {
      */
 
     handlePlaygroundSelectedNodes(e) {           // on mousedown  applied during jag-node create
-        let $node = e.target.offsetParent;
+        const $node = e.target.offsetParent;
         if (!e.shiftKey) {
             this._selectedActivityNodeElementSet.forEach((local_node) => {
                 if (local_node != $node) {
@@ -385,8 +388,8 @@ class AtPlayground extends Popupable {
             $node.setSelected(true);
         }
 
-        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
-        let selectedNodeArray = selectedActivityNodeElementArray.map((jagNodeElement) => {
+        const selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        const selectedNodeArray = selectedActivityNodeElementArray.map((jagNodeElement) => {
             return jagNodeElement.nodeModel;
         });
 
@@ -403,15 +406,15 @@ class AtPlayground extends Popupable {
 
         let unselectedNodeArray = null;
         if (!e.shiftKey) {
-            let unselectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+            const unselectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
             unselectedNodeArray = unselectedActivityNodeElementArray.map((jagNodeElement) => {
                 return jagNodeElement.nodeModel;
             });
             this.deselectAll();
         }
 
-        let selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
-        let selectedNodeArray = selectedActivityNodeElementArray.map((jagNodeElement) => {
+        const selectedActivityNodeElementArray = [...this._selectedActivityNodeElementSet];
+        const selectedNodeArray = selectedActivityNodeElementArray.map((jagNodeElement) => {
             return jagNodeElement.nodeModel;
         });
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
@@ -479,8 +482,8 @@ class AtPlayground extends Popupable {
         $newViewNode.setTranslation(currentNodeModel.x, currentNodeModel.y);
         if (currentNodeModel.isExpanded) {
             currentNodeModel.children.forEach((child) => {
-                let edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-                let $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
+                const edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+                const $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
                 edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
                 edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
             });
@@ -496,7 +499,7 @@ class AtPlayground extends Popupable {
     }
 
     _redrawNodes(currentNodeModel, x = null, y = null) {
-        let margin = 25;
+        const margin = 25;
         if (x && y) {
             currentNodeModel.x = x;
             currentNodeModel.y = y;
@@ -516,7 +519,7 @@ class AtPlayground extends Popupable {
             const local_preferred_size = child.leafCount * ($newViewNode.clientHeight + margin);
             y_offset = y_offset + (local_preferred_size);
             //     let edge = this._createEdge($newViewNode, child.id);                                       // this wants a jag-node - not a nodeModel
-            let $childViewNode = this._redrawNodes(child, x_offset, y_offset);                          // first build child
+            const $childViewNode = this._redrawNodes(child, x_offset, y_offset);                          // first build child
 
             //     edge.setSubActivityNode($childViewNode);                                                   // then connect tail of edge to it.
             //     edge.addEventListener('event-nodes-selected', this._boundHandleEdgeSelected);
@@ -537,7 +540,7 @@ class AtPlayground extends Popupable {
 
 
     clearPlayground(projectId = undefined) {
-        for (let jagNode of this._activeActivityNodeElementSet) {
+        for (const jagNode of this._activeActivityNodeElementSet) {
             if ((projectId == undefined) || (jagNode.nodeModel.projectId == projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
@@ -574,7 +577,7 @@ class AtPlayground extends Popupable {
 
     deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
         this._viewedProjectsMap.forEach((value, key) => {
-            let node = value;
+            const node = value;
             if (node.isActivityInProject(deletedUrn)) {
                 this.dispatchEvent(new CustomEvent(`response-activity-deleted`, {
                     detail: {
@@ -635,7 +638,7 @@ class AtPlayground extends Popupable {
         // with an ancestor matching deadId are removed.
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId);
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+        for (const node of this._activeActivityNodeElementSet) {           // search through active elements
             //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
             if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
                 node.removeAllEdges();
@@ -648,7 +651,7 @@ class AtPlayground extends Popupable {
 
 
     getNodeViewById(id) {
-        for (let node of this._activeActivityNodeElementSet) {           // search through active elements
+        for (const node of this._activeActivityNodeElementSet) {           // search through active elements
             if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
                 return node;
             }
@@ -657,13 +660,13 @@ class AtPlayground extends Popupable {
 
     addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
-        let $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+        const $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
         return $rootNode;
     }
 
 
     _filterOrphans() {
-        for (let [key, val] of this._viewedProjectsMap) {
+        for (const [key, val] of this._viewedProjectsMap) {
             if (!val.isRoot()) {
                 this._viewedProjectsMap.delete(key);
             }
@@ -673,7 +676,7 @@ class AtPlayground extends Popupable {
         for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
             if (this._viewedProjectsMap[index].nodeModel.id == updatedNodeModel.id) {
                 if (updatedNodeModel.id == updatedNodeModel.projectId) {
-                    let listItemElement = this.createListItemCollection(updatedNodeModel);
+                    const listItemElement = this.createListItemCollection(updatedNodeModel);
                     console.log(`Potential list item going to be : `);
                     console.log(listItemElement);
                     this._libraryList[index] = listItemElement;
@@ -716,7 +719,7 @@ class AtPlayground extends Popupable {
 
     onKeyDown(event) {
         event.stopImmediatePropagation();
-        let $node = event.target;
+        const $node = event.target;
         if (event.key == `Delete`) {
             if (this._selectedActivityNodeElementSet.length > 1) {
                 alert(`Can only clear/disconnect one selected item`);
@@ -734,7 +737,7 @@ class AtPlayground extends Popupable {
                     if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId = $node.nodeModel.childId;
-                        let remainingChildren = parentActivity._children.filter((entry) => {
+                        const remainingChildren = parentActivity._children.filter((entry) => {
                             if (entry.id != childActivityChildId) {
                                 return entry;
                             }
@@ -826,10 +829,11 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             label: `Name`,
             type: `text`,
             options: function () {
-                let eventMap = new Map();
+                const eventMap = new Map();
                 eventMap.set(`input`, () => {
                     const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
-                    const convName = newName.replace(` `, `-`).replace(/[^0-9a-zA-Z:-]+/g, ``).toLowerCase();
+                    const validUrnChars = new RegExp(`[^0-9a-zA-Z:-]+`, `gu`);
+                    const convName = newName.replace(` `, `-`).replace(validUrnChars, ``).toLowerCase();
                     document.getElementById(`urn`).value = convName;
                 });
                 return eventMap;
@@ -840,7 +844,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             label: `URN`,
             type: `text`,
             options: function () {
-                let eventMap = new Map();
+                const eventMap = new Map();
                 return eventMap;
             }
         },
@@ -849,7 +853,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             label: `Description`,
             type: `textarea`,
             options: function () {
-                let paramMap = new Map();
+                const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
                 return paramMap;
@@ -900,7 +904,7 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
                     urn: node.nodeModel.urn,
                     id: node.nodeModel.childId
                 };
-                let remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
+                const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
                     if (entry.id != jagChild.id) {
                         return entry;
                     }
@@ -931,7 +935,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             label: `JSON`,
             type: `textarea`,
             options: function () {
-                let paramMap = new Map();
+                const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
                 return paramMap;
@@ -961,18 +965,18 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             color: `white`,
             bgColor: `black`,
             action: async function ({inputs: {}, outputs: {}}) {
-                let getFiles = () => {
+                const getFiles = () => {
                     new Promise((resolve) => {
-                        let input = document.createElement(`input`);
+                        const input = document.createElement(`input`);
                         input.type = `file`;
                         input.onchange = () => resolve([...input.files]);
                         input.click();
                     });
                 };
 
-                let selectedFiles = await getFiles();
+                const selectedFiles = await getFiles();
 
-                let reader = new FileReader();
+                const reader = new FileReader();
                 reader.addEventListener(`load`, function (event) {
                     console.log(`File read...... and passed to event`);
                     this.dispatchEvent(new CustomEvent(`event-import-jag`, {

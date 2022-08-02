@@ -37,7 +37,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.setStoragesSynced(false);                                           // write to all storages or just preferred
     SharedService.senderId = `jag-ia`;
 
-    let controller = new ControllerIA();
+    const controller = new ControllerIA();
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector(`body`);

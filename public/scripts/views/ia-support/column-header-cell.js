@@ -84,13 +84,13 @@ class ColumnHeader extends AnalysisCell {
 
         let col_end = this._end.col;
         if (this._span_type.col === ColumnHeader.SPAN) {
-            col_end += ` span`;
+            col_end = `${col_end} span`;
         }
         this.style.setProperty(`--col-end`, col_end);
 
         let row_end = this._end.row;
         if (this._span_type.row === ColumnHeader.SPAN) {
-            row_end += ` span`;
+            row_end = `${row_end} span`;
         }
         this.style.setProperty(`--row-end`, row_end);
     }
@@ -105,7 +105,7 @@ function handleMouseWheel(event) {
     event.preventDefault();
 
     const target = event.target;
-    target.size += Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY;
+    target.size = target.size + Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY;
 }
 
 customElements.define(`ia-column-header`, ColumnHeader);

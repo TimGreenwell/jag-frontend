@@ -126,8 +126,8 @@ class JagCell extends AnalysisCell {
                     composed: true,
                     detail: {activityConstruct: this._cellModel.activity}
                 }));
-                let parentActivity = this._cellModel.parent.activity;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
-                let id = parentActivity.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+                const parentActivity = this._cellModel.parent.activity;// ## Need to find the parent a different way.  Saying" this guy has a new kid"
+                const id = parentActivity.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
 
                 this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                     bubbles: true,
@@ -163,7 +163,7 @@ class JagCell extends AnalysisCell {
             this._htmlElements.nameEntry.blur();
             break;
         }
-        const validCharacters = new RegExp(`[A-Za-z0-9-:]`);
+        const validCharacters = new RegExp(`[A-Za-z0-9-:]`, `u`);
         if ((!Validator.isValidUrn(this.cellModel.activity.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
             this.urnElementEntry = this.urnElementEntry + e.key.toLowerCase();
         }
@@ -192,7 +192,7 @@ class JagCell extends AnalysisCell {
                     }));
                     // ControllerIA.updateURN(this.urn, this.cellModel.activity.urn);  // orig, new
                 } else {
-                    let activityConstruct = {
+                    const activityConstruct = {
                         urn: this.urnElementEntry,
                         name: this.nameElementEntry
                     };
@@ -202,7 +202,7 @@ class JagCell extends AnalysisCell {
                         detail: {activityConstruct: activityConstruct}
                     }));
                     parent = this.nodeModel.parent.activity;
-                    let id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+                    const id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
                     this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                         bubbles: true,
                         composed: true,
@@ -238,7 +238,7 @@ class JagCell extends AnalysisCell {
             this._htmlElements.suggestions.select(-1);
             break;
         }
-        const validCharacters = /^[A-Za-z0-9\-\:]+/;
+        const validCharacters = new RegExp(`^[A-Za-z0-9\-\:]+`, `u`);
         if ((this.cellModel.activity.name == ``) && (e.key.match(validCharacters))) {
             this.nameElementEntry = (this.nameElementEntry + e.key).split(`:`).slice(-1);
         }

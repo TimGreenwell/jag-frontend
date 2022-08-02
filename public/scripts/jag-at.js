@@ -38,7 +38,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = `jag-at`;                         // Cross-tab identifier
 
-    let controller = new ControllerAT();
+    const controller = new ControllerAT();
 
     // @TODO - I need to better understand these two
     // const ide = new IDE();

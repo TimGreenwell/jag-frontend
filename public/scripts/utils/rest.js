@@ -19,7 +19,7 @@ export default class RESTUtils {
             }
 
             try {
-                let gg = await response.json();
+                const gg = await response.json();
                 return gg;
             } catch {
                 throw new Error(`${error_prefix}: Response was not a valid JSON object.`);
@@ -50,7 +50,7 @@ export default class RESTUtils {
     static async all(url) {
         // TODO: safely join URL paths (perhaps Node package?)
         const details = {};
-        let reply = await RESTUtils.request(url, details, `Error listing`);
+        const reply = await RESTUtils.request(url, details, `Error listing`);
         return reply;
     }
 
@@ -99,7 +99,8 @@ export default class RESTUtils {
     }
 
     static async delete(url) {
-        const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, `$1`);
+        const xsrfToken = new RegExp(`(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$`, `u`);
+        const csrfToken = document.cookie.replace(xsrfToken, `$1`);
         // TODO: safely join URL paths (perhaps Node package?)
         const options = {
             method: `DELETE`,
@@ -129,7 +130,7 @@ export default class RESTUtils {
             return null;
         }
 
-        const xsrfCookies = document.cookie.split(`;`).map((c) => c.trim()).filter((c) => c.startsWith(name + `=`));
+        const xsrfCookies = document.cookie.split(`;`).map((c) => c.trim()).filter((c) => c.startsWith(`${name}=`));
 
         if (xsrfCookies.length === 0) {
             return null;

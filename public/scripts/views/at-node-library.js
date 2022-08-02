@@ -36,7 +36,7 @@ customElements.define(`node-library`, class extends HTMLElement {
 
 
     clearLibraryList() {  // clearing the views
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = [];
@@ -55,14 +55,14 @@ customElements.define(`node-library`, class extends HTMLElement {
             const li = document.createElement(`li`);
             li.className = `list-item`;
 
-            let deleteIconClickedHandler = function (event) {
+            const deleteIconClickedHandler = function (event) {
                 event.stopPropagation();
                 this.dispatchEvent(new CustomEvent(`event-project-deleted`, {
                     detail: {nodeModelId: newNodeModel.id}
                 }));
             };
 
-            let lockIconClickedHandler = function (event) {
+            const lockIconClickedHandler = function (event) {
                 event.stopPropagation();
                 this.dispatchEvent(new CustomEvent(`event-project-locked`, {
                     detail: {nodeModel: newNodeModel}
@@ -103,7 +103,7 @@ customElements.define(`node-library`, class extends HTMLElement {
             li.appendChild($topHalfWrapper);
             li.appendChild($bottomHalfWrapper);
 
-            let search_params = [];
+            const search_params = [];
             search_params.push(urn.toLowerCase());
             search_params.push(name.toLowerCase());
             search_params.push(description.toLowerCase());
@@ -127,7 +127,7 @@ customElements.define(`node-library`, class extends HTMLElement {
                 }));
             });
 
-            let newItem = {
+            const newItem = {
                 element: li,
                 search_content: search_params.join(` `),
                 nodeModel: newNodeModel
@@ -145,7 +145,7 @@ customElements.define(`node-library`, class extends HTMLElement {
     addListItem(newNodeModel) {                                 // /// WHEN NODE CREATED
         // handleNodeStorageCreated (@controllerAT)
         if (newNodeModel.isRoot()) {
-            let listItemCollection = this.createListItemCollection(newNodeModel);
+            const listItemCollection = this.createListItemCollection(newNodeModel);
             this._libraryList.push(listItemCollection);
             this._$list.appendChild(listItemCollection.element);
         }
@@ -162,7 +162,7 @@ customElements.define(`node-library`, class extends HTMLElement {
     updateItem(updatedNodeModel) {                                 // /// WHEN NODE UPDATED
         // @TODO high priority to rethink
         // Way too much spinning for something this simple
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
@@ -173,13 +173,13 @@ customElements.define(`node-library`, class extends HTMLElement {
 
         this._libraryList.forEach((libraryItem) => {
             if (libraryItem.nodeModel.id == updatedNodeModel.id) {
-                let listItemCollection = this.createListItemCollection(updatedNodeModel);
+                const listItemCollection = this.createListItemCollection(updatedNodeModel);
                 libraryItem.element = listItemCollection.element;
                 libraryItem.search_content = listItemCollection.search_content;
                 libraryItem.nodeModel = listItemCollection.nodeModel;
             }
         });
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }
@@ -187,26 +187,26 @@ customElements.define(`node-library`, class extends HTMLElement {
 
     removeNodeLibraryListItem(id) {                                             // // WHEN NODE DELETED
         // handleNodeStorageDeleted (@controllerAT)
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
             return entry.nodeModel.id != id;
         });
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }
 
 
     updateStructureChange(projectNodes) {
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
 
         projectNodes.forEach((project) => this.createListItemCollection(project));
 
-        for (let item of this._libraryList) {
+        for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
         }
     }

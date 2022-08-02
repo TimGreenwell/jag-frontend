@@ -69,7 +69,7 @@ class IATable extends Popupable {
 
         this._analysisModel = analysisModel;
         // Create and append a new Analysis View to this structure
-        let analysisView = new AnalysisView(this._analysisModel);
+        const analysisView = new AnalysisView(this._analysisModel);
         this.appendChild(analysisView);
         this._domElements.analysis = analysisView;
         // Enable name and description (@TODO - this might make more sense in a separate panel (like AT Properties)
@@ -357,7 +357,7 @@ class IATable extends Popupable {
             }
 
             if (child.children) {
-                for (let grandchild in child.children) {
+                for (const grandchild in child.children) {
                     children.push(child.children[grandchild]);
                 }
             }
@@ -374,18 +374,18 @@ class IATable extends Popupable {
             // const service = JAGService.instance('idb-service');
             // const service = StorageService.getStorageInstance('idb-service');
 
-            for (let jag of jags) {
+            for (const jag of jags) {
                 const activity = await StorageService.get(jag, `activity`);
                 json.jags.push(activity.toJSON());
             }
         }
 
         const teams = [];
-        for (let team of analysisModel.teams) {
+        for (const team of analysisModel.teams) {
             const jteam = team.toJSON();
 
             const agents = [];
-            for (let agent of team.agents) {
+            for (const agent of team.agents) {
                 agents.push(agent.toJSON());
             }
             jteam.agents = agents;
@@ -548,10 +548,11 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             label: `Name`,
             type: `text`,
             options: function () {
-                let eventMap = new Map();
+                const eventMap = new Map();
                 eventMap.set(`input`, () => {
                     const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
-                    const convName = newName.replace(` `, `-`).replace(/[^0-9a-zA-Z:-]+/g, ``).toLowerCase();
+                    const urnCharacters = new RegExp(`[^0-9a-zA-Z:-]+`, `gu`);
+                    const convName = newName.replace(` `, `-`).replace(urnCharacters, ``).toLowerCase();
                     document.getElementById(`urn`).value = convName;
                 });
                 return eventMap;
@@ -562,7 +563,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             label: `URN`,
             type: `text`,
             options: function () {
-                let eventMap = new Map();
+                const eventMap = new Map();
                 return eventMap;
             }
         },
@@ -571,7 +572,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             label: `Description`,
             type: `textarea`,
             options: function () {
-                let paramMap = new Map();
+                const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
                 return paramMap;

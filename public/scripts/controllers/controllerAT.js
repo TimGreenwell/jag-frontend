@@ -61,12 +61,12 @@ export default class ControllerAT extends Controller {
     }
 
     async initializeCache() {
-        let allActivities = await StorageService.all(`activity`);
+        const allActivities = await StorageService.all(`activity`);
         allActivities.forEach((activity) => {
             this.cacheActivity(activity);
         });
 
-        let allNodes = await StorageService.all(`node`);
+        const allNodes = await StorageService.all(`node`);
         allNodes.forEach((node) => {
             this.repopulateActivity(node);
             this.repopulateParent(node);
@@ -80,7 +80,7 @@ export default class ControllerAT extends Controller {
 
     initializePanels() {
         this._activityLibrary.addListItems([...this._activityMap.values()]);
-        let rootOnly = [...this.projectMap.values()].filter((node) => {
+        const rootOnly = [...this.projectMap.values()].filter((node) => {
             return node.isRoot();
         });
         this._projectLibrary.addListItems(rootOnly);
@@ -202,26 +202,26 @@ export default class ControllerAT extends Controller {
 
     eventNodeRepositionedHandler(event) {
         event.stopPropagation();
-        let nodeModel = event.detail.nodeModel;
+        const nodeModel = event.detail.nodeModel;
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
     async eventNodesConnectedHandler(event) {            // only needed id's
-        let projectNodeId = event.detail.projectNodeId;
-        let parentNodeId = event.detail.parentNodeId;
-        let childNodeId = event.detail.childNodeId;
+        const projectNodeId = event.detail.projectNodeId;
+        const parentNodeId = event.detail.parentNodeId;
+        const childNodeId = event.detail.childNodeId;
 
-        let projectModel = this.fetchProject(projectNodeId);
-        let parentNodeModel = this.searchTreeForId(projectModel, parentNodeId);
+        const projectModel = this.fetchProject(projectNodeId);
+        const parentNodeModel = this.searchTreeForId(projectModel, parentNodeId);
         parentNodeModel.isExpanded = true;
 
         console.log(`{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{`);
         console.log(parentNodeId);
         console.log(parentNodeModel);
 
-        let childNodeModel = this.fetchProject(childNodeId);
+        const childNodeModel = this.fetchProject(childNodeId);
         console.log(`Local>> (Adopting - Project ${projectModel.name} assimilating node ${childNodeModel.name}) `);
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
@@ -229,7 +229,7 @@ export default class ControllerAT extends Controller {
         } else {
             // conn
 
-            let childId = parentNodeModel.activity.addChild(childNodeModel.urn);
+            const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
             childNodeModel.parent = null;
             childNodeModel.parentId = null;  // /         This changed because of the extra revesre step in AddChild. Change that then fix this.
@@ -238,7 +238,7 @@ export default class ControllerAT extends Controller {
             childNodeModel.childId = childId;  // this could also be done later.. ok here
 
             event.detail.nodeModel = childNodeModel;      // update the child - this will set up this node as a non-root.
-            console.log(childNodeModel + `--`);
+            console.log(`${childNodeModel}--`);
             await this.eventNodeUpdatedHandler(event);
 
             event.detail.activity = parentNodeModel.activity;
@@ -249,7 +249,7 @@ export default class ControllerAT extends Controller {
 
     async eventPlaygroundClickedHandler(event) {
         if (event.detail.unselectedNodeArray) {
-            for (let node of event.detail.unselectedNodeArray) {
+            for (const node of event.detail.unselectedNodeArray) {
                 await StorageService.update(node, `node`);
             }
         }
@@ -259,18 +259,18 @@ export default class ControllerAT extends Controller {
 
     async eventImportJagHandler(event) {
         console.log(`Importing as JSON - `);
-        let json = event.detail.result;
-        let jsonDescriptor = JSON.parse(json);
-        let activities = jsonDescriptor.activities;
-        let jags = jsonDescriptor.jags;
-        for (let activity of activities) {
-            let activityModel = Activity.fromJSON(activity);
-            let fullActivityModel = new Activity(activityModel);
+        const json = event.detail.result;
+        const jsonDescriptor = JSON.parse(json);
+        const activities = jsonDescriptor.activities;
+        const jags = jsonDescriptor.jags;
+        for (const activity of activities) {
+            const activityModel = Activity.fromJSON(activity);
+            const fullActivityModel = new Activity(activityModel);
             await StorageService.create(fullActivityModel, `activity`);
         }
-        for (let jag of jags) {
-            let jagModel = await NodeModel.fromJSON(jag);
-            let fullJagModel = new NodeModel(jagModel);
+        for (const jag of jags) {
+            const jagModel = await NodeModel.fromJSON(jag);
+            const fullJagModel = new NodeModel(jagModel);
             await StorageService.create(fullJagModel, `node`);
         }
     }
@@ -283,15 +283,15 @@ export default class ControllerAT extends Controller {
     // eventNodeUpdatedHandler --- common with 'playground' handler
 
     eventExportJagHandler(event) {
-        let node = event.detail.node;
-        let descendantUrns = this.gatherDescendentUrns(node);
-        let neededActivities = descendantUrns.map((urn) => {
-            let activityModel = this.fetchActivity(urn);
-            let activityJson = JSON.stringify(activityModel.toJSON(), null, 4);
+        const node = event.detail.node;
+        const descendantUrns = this.gatherDescendentUrns(node);
+        const neededActivities = descendantUrns.map((urn) => {
+            const activityModel = this.fetchActivity(urn);
+            const activityJson = JSON.stringify(activityModel.toJSON(), null, 4);
             return activityJson;
         });
         const jagJson = JSON.stringify(node.toJSON(), null, 4);
-        let fileData = `{"activities" : [${neededActivities}], "jags" : [${jagJson}]}`;
+        const fileData = `{"activities" : [${neededActivities}], "jags" : [${jagJson}]}`;
 
         const a = document.createElement(`a`);
         const data = `data:application/json,${encodeURI(fileData)}`;
@@ -301,8 +301,8 @@ export default class ControllerAT extends Controller {
     }
 
     async eventPromoteProjectHandler(event) {
-        let newProject = event.detail.node;
-        let newNode = new NodeModel(newProject);
+        const newProject = event.detail.node;
+        const newNode = new NodeModel(newProject);
         this.relocateProject(newNode, 0, 200);
         this.repopulateProject(newNode, newProject.id);
         this.repopulateParent(newNode);
@@ -329,12 +329,12 @@ export default class ControllerAT extends Controller {
             }).click();
         }
 
-        let selectedNodes = this._playground.selectedNodes;
+        const selectedNodes = this._playground.selectedNodes;
 
         selectedNodes.forEach((selectedNode) => {
-            let projectId = selectedNode.projectId;
-            let nodeId = selectedNode.id;
-            openInNewTab(`./node.html?project=` + projectId + `&node=` + nodeId);
+            const projectId = selectedNode.projectId;
+            const nodeId = selectedNode.id;
+            openInNewTab(`./node.html?project=${projectId}&node=${nodeId}`);
         });
     }
 
@@ -355,9 +355,9 @@ export default class ControllerAT extends Controller {
         // If match found, remove that child from the parent and signal update on the parent.
         console.log(`Local>> (jag deleted) `);
         const deadActivityUrn = event.detail.activityUrn;
-        for (let [activityId, activity] of this._activityMap) {
+        for (const [activityId, activity] of this._activityMap) {
             //      if (activity.urn != deadActivityUrn) {
-            let remainingChildren = activity.children.filter((kid) => {
+            const remainingChildren = activity.children.filter((kid) => {
                 if (kid.urn != deadActivityUrn) {
                     return kid;
                 }
@@ -383,7 +383,7 @@ export default class ControllerAT extends Controller {
         console.log(`Local>> (Activity selected / Activity list item selected) `);
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
-        let newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
+        const newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
 
         this.repopulateParent(newProjectRootNode);
         this.repopulateActivity(newProjectRootNode);
@@ -462,9 +462,9 @@ export default class ControllerAT extends Controller {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
         console.log(`((COMMAND INCOMING)) >> Activity Deleted`);
-        let deletedActivity = this.fetchActivity(deletedActivityUrn);
+        const deletedActivity = this.fetchActivity(deletedActivityUrn);
         this.uncacheActivity(deletedActivityUrn);
-        for (let viewedProject of this._playground.viewedProjects) {
+        for (const viewedProject of this._playground.viewedProjects) {
             if (viewedProject.id == deletedActivityUrn) {
                 await StorageService.delete(viewedProject, `node`);
             }
@@ -496,9 +496,9 @@ export default class ControllerAT extends Controller {
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         this.cacheActivity(updatedActivity);
-        for (let viewedProject of this._playground.viewedProjects) {
+        for (const viewedProject of this._playground.viewedProjects) {
             if (viewedProject.isActivityInProject(updatedActivityUrn)) {
-                let updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
+                const updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
                 await StorageService.update(updatedProject, `node`);
             }
         }
@@ -510,7 +510,7 @@ export default class ControllerAT extends Controller {
 
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
-        console.log(`((COMMAND INCOMING) >>  Node Updated ` + updatedNodeModel.urn + ` / ` + updatedNodeId);
+        console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
 
         this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
@@ -551,10 +551,10 @@ export default class ControllerAT extends Controller {
     }
 
     gatherAncestorUrns(projectModelId, parentModelId) {
-        let urnStack = [];
-        let projectNode = this.fetchProject(projectModelId);
+        const urnStack = [];
+        const projectNode = this.fetchProject(projectModelId);
         do {
-            let checkNode = projectNode.findChildById(parentModelId);
+            const checkNode = projectNode.findChildById(parentModelId);
             urnStack.push(checkNode.urn);
             parentModelId = checkNode.parentId;
         } while (parentModelId != undefined);
@@ -562,9 +562,9 @@ export default class ControllerAT extends Controller {
     }
 
     loopDetection(projectModel, parentNodeModel, childNodeModel) {
-        let descendentStack = this.gatherDescendentUrns(childNodeModel);
-        let ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id);
-        let intersection = descendentStack.filter((x) => ancestorStack.includes(x));
+        const descendentStack = this.gatherDescendentUrns(childNodeModel);
+        const ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id);
+        const intersection = descendentStack.filter((x) => ancestorStack.includes(x));
         return (intersection.length > 0);
     }
 

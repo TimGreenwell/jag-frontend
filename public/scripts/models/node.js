@@ -132,7 +132,7 @@ export default class Node extends EventTarget {
     }
 
     removeSubscription(subscriptionName) {
-        for (let index in this._subscriptions) {
+        for (const index in this._subscriptions) {
             if (this._subscriptions[index].name === subscriptionName) {
                 this._subscriptions.splice(index, 1);
                 break;
@@ -290,12 +290,12 @@ export default class Node extends EventTarget {
     }
 
     activitiesInProject(urn) {    // return array of nodes matching urn
-        let matchStack = [];
-        let workStack = [];
+        const matchStack = [];
+        const workStack = [];
 
         workStack.push(this);
         while (workStack.length > 0) {
-            let nodeModel = workStack.pop();
+            const nodeModel = workStack.pop();
 
             if (nodeModel.activity.urn == urn) {
                 matchStack.push(nodeModel);
@@ -364,7 +364,7 @@ export default class Node extends EventTarget {
 
 
     removeChild(child) {
-        let filtered = this.children.filter((entry) => {
+        const filtered = this.children.filter((entry) => {
             if (entry.id != child.id) {
                 return entry;
             }
@@ -374,13 +374,13 @@ export default class Node extends EventTarget {
 
 
     replaceChild(newChild) {
-        let workStack = [];
+        const workStack = [];
         if (this.id == newChild.id) {
             return newChild;
         } else {
             workStack.push(this);
             while (workStack.length > 0) {
-                let workingNode = workStack.pop();
+                const workingNode = workStack.pop();
                 workingNode.children.forEach((child) => {
                     if (child.id == newChild.id) {
                         workingNode.removeChild(child);
@@ -403,10 +403,10 @@ export default class Node extends EventTarget {
     }
 
     findChildById(id) {
-        let workStack = [];
+        const workStack = [];
         workStack.push(this);
         while (workStack.length > 0) {
-            let checkNode = workStack.pop();
+            const checkNode = workStack.pop();
             if (checkNode.id == id) {
                 return checkNode;
             } else {
@@ -475,8 +475,8 @@ export default class Node extends EventTarget {
             testReturnState: this._testReturnState
 
         };
-        let childStack = [];
-        for (let child of this._children) {
+        const childStack = [];
+        for (const child of this._children) {
             childStack.push(child.toJSON());
         }
         json.children = childStack;
@@ -485,8 +485,8 @@ export default class Node extends EventTarget {
 
 
     static async fromJSON(json) {
-        let childStack = [];
-        for (let child of json.children) {
+        const childStack = [];
+        for (const child of json.children) {
             childStack.push(await Node.fromJSON(child));
         }
         json.children = childStack;

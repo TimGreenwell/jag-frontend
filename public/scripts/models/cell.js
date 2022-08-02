@@ -123,12 +123,12 @@ export default class Cell extends EventTarget {
 
 
     activitiesInProject(urn) {    // return array of nodes matching urn
-        let matchStack = [];
-        let workStack = [];
+        const matchStack = [];
+        const workStack = [];
 
         workStack.push(this);
         while (workStack.length > 0) {
-            let nodeModel = workStack.pop();
+            const nodeModel = workStack.pop();
             if (nodeModel._urn == urn) {
                 matchStack.push(nodeModel);
             }
@@ -198,7 +198,7 @@ export default class Cell extends EventTarget {
     }
 
     removeChild(child) {
-        let filtered = this.children.filter((entry) => {
+        const filtered = this.children.filter((entry) => {
             if (entry.id != child.id) {
                 return entry;
             }
@@ -255,8 +255,8 @@ export default class Cell extends EventTarget {
             rootUrn: this._rootUrn,
             children: this._children
         };
-        let childStack = [];
-        for (let child of this._children) {
+        const childStack = [];
+        for (const child of this._children) {
             childStack.push(child.toJSON());
         }
         json.children = childStack;

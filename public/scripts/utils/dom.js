@@ -12,12 +12,12 @@ export default class DOMUtils {
 
     static create(description) {
         const element = document.createElement(description.type);
-        for (let attribute in description.attributes) {
+        for (const attribute in description.attributes) {
             element.setAttribute(attribute, description.attributes[attribute]);
         }
 
         if (description.children) {
-            for (let child of description.children) {
+            for (const child of description.children) {
                 const child_element = DOMUtils.create(child);
                 element.appendChild(child_element);
             }

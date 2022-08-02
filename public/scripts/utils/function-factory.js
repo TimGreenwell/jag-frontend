@@ -53,6 +53,6 @@ export function functionFactory(returns, operator) {
     } else if (operator == `node.operator.not`) {
         returnFunction = `not(${parameters})`;
     }
-    returnFunction = `ASSIGN( \${returnValue} , ` + returnFunction + ` )`;
+    returnFunction = `ASSIGN( \${returnValue} , ${returnFunction} )`;
     return returnFunction;
 }

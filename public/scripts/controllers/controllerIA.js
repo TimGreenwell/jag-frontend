@@ -117,20 +117,20 @@ export default class ControllerIA extends Controller {
     }
 
     async initializeCache() {
-        let allActivities = await StorageService.all(`activity`);
+        const allActivities = await StorageService.all(`activity`);
         allActivities.forEach((activity) => this.cacheActivity(activity));
 
         // @TODO need this?
-        let allNodes = await StorageService.all(`node`);
+        const allNodes = await StorageService.all(`node`);
         allNodes.forEach((node) => {
             this.repopulateActivity(node);
             this.repopulateParent(node);
         });
 
-        let allAgents = await StorageService.all(`agent`);
+        const allAgents = await StorageService.all(`agent`);
         allAgents.forEach((agent) => this.cacheAgent(agent));
 
-        let allTeams = await StorageService.all(`team`);
+        const allTeams = await StorageService.all(`team`);
         allTeams.forEach((team) => {
             team.agentIds.forEach((agent) => {
                 team.agents.push(this.fetchAgent(agent));
@@ -139,7 +139,7 @@ export default class ControllerIA extends Controller {
         });
 
 
-        let allAnalyses = await StorageService.all(`analysis`);
+        const allAnalyses = await StorageService.all(`analysis`);
         allAnalyses.forEach((analysis) => this.cacheAnalysis(analysis));
     }
 
@@ -182,8 +182,8 @@ export default class ControllerIA extends Controller {
 
     eventAgentRemovedHandler(event) {
         console.log(`Local>> (agent removed from team) `);
-        let agentId = event.detail.removedAgent;
-        let agent = this.fetchAgent(agentId);
+        const agentId = event.detail.removedAgent;
+        const agent = this.fetchAgent(agentId);
         this._currentAnalysis.team.removeAgent(agent);
         this._iaTable.displayAnalysis(this._currentAnalysis);
         this._iaProperties._updateProperties();
@@ -205,9 +205,9 @@ export default class ControllerIA extends Controller {
     async commandAgentDeletedHandler(deletedAgentUrn) {
         // @TODO If the Agent is the last member of a team - do we delete the team?  Voting yes.
         console.log(`((COMMAND INCOMING)) >> Agent Deleted`);
-        let deletedAgent = this.fetchAgent(deletedAgentUrn);
+        const deletedAgent = this.fetchAgent(deletedAgentUrn);
         // Remove Agent from teams
-        for (let [teamId, team] of this._teamMap) {
+        for (const [teamId, team] of this._teamMap) {
             if (team.agentIds.contains(deletedAgentUrn)) {
                 team.agentIds.removeChild(deletedAgentUrn);
                 if (team.agentIds > 0) {
@@ -284,7 +284,7 @@ export default class ControllerIA extends Controller {
 
     async eventAgentCreatedHandler(event) {
         console.log(`Local>> (local agent created) `);
-        let agentConstruct = event.detail.agentConstruct;
+        const agentConstruct = event.detail.agentConstruct;
         if (!this.agentMap.has(agentConstruct.urn)) {
             const newAgent = new AgentModel(event.detail.agentConstruct);
             newAgent.dateCreated = Date.now();
@@ -299,20 +299,20 @@ export default class ControllerIA extends Controller {
     }
 
     async eventAnalysisCreatedHandler(event) {
-        let standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, `Popup`);
+        const standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, `Popup`);
         this._iaProperties.team = standardAnalysis.team;
         // zzzz
     }
 
     async eventAnalysisUpdatedHandler(event) {
-        let analysis = event.detail.analysis;
+        const analysis = event.detail.analysis;
         await StorageService.update(event.detail.analysis, `analysis`);
     }
 
     eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
         // This will not be permanent until a valid URN is set.  Not-persistant.
         // @todo push this back down into iaTable (from there - to there)
-        let parentCell = event.detail.cell;
+        const parentCell = event.detail.cell;
         this._currentAnalysis = this._iaTable._analysisModel;
         if (parentCell.canHaveChildren) {
             const childActivity = new Activity({
@@ -337,11 +337,11 @@ export default class ControllerIA extends Controller {
         // Going to just update parent.  Actually prune node?
         // After a quick check we are not pruning the head.
 
-        let parentActivityUrn = event.detail.cell.parent.urn;
-        let childActivityUrn = event.detail.cell.urn;
-        let parentActivity = this._activityMap.get(parentActivityUrn);
-        let childActivity = this._activityMap.get(childActivityUrn);
-        let parentActivityChildren = parentActivity.children;
+        const parentActivityUrn = event.detail.cell.parent.urn;
+        const childActivityUrn = event.detail.cell.urn;
+        const parentActivity = this._activityMap.get(parentActivityUrn);
+        const childActivity = this._activityMap.get(childActivityUrn);
+        const parentActivityChildren = parentActivity.children;
         let index = 0;
         let found = false;
         while ((index < parentActivityChildren.length) && (!found)) {
@@ -357,7 +357,7 @@ export default class ControllerIA extends Controller {
     }
 
     eventCollapseToggledHandler(event) {
-        let node = event.detail.node;
+        const node = event.detail.node;
         node.toggleCollapse();             //  -- think this is going to be moved to an Analysis array if we want it saved.
         // just initialize tree would be nice - but think it needs to start from scratch.
         // earlier version of this just call a 'layout'event - whats that?
@@ -422,8 +422,8 @@ export default class ControllerIA extends Controller {
 
     commandTeamCreatedHandler(createdTeamModel, createdTeamId) {
         // pad agents array from agentIds
-        let agents = [];
-        for (let agentId of createdTeamModel.agentIds) {
+        const agents = [];
+        for (const agentId of createdTeamModel.agentIds) {
             agents.push(this.fetchAgent(agentId));
         }
         createdTeamModel.agents = agents;
@@ -464,7 +464,7 @@ export default class ControllerIA extends Controller {
 
 
     replaceNodeById(rootNode, replacementItem) {
-        let workStack = [];
+        const workStack = [];
         workStack.push(rootNode);
         while (workStack > 0) {
             let currentNode = workStack.pop();
@@ -478,7 +478,7 @@ export default class ControllerIA extends Controller {
     }
 
     async createAgent({name, urn} = {}) {
-        let newAgent = new AgentModel({
+        const newAgent = new AgentModel({
             name: name,
             urn: urn
         });
@@ -487,7 +487,7 @@ export default class ControllerIA extends Controller {
     }
 
     async createTeam(name = `unnamed`, agentIds = [], performers = []) {
-        let newTeam = new TeamModel({
+        const newTeam = new TeamModel({
             name: name,
             agentIds: agentIds
         });
@@ -496,7 +496,7 @@ export default class ControllerIA extends Controller {
     }
 
     async createAnalysis({name, description, rootUrn, teamId} = {}) {     // @todo I like the named parameter pattern - might look at standardizing on it.
-        let newAnalysis = new AnalysisModel({
+        const newAnalysis = new AnalysisModel({
             name: name,
             rootUrn: rootUrn,
             teamId: teamId
@@ -507,16 +507,16 @@ export default class ControllerIA extends Controller {
 
     async createStandardAnalysis(analysisName, rootUrn, source) {
         console.log(`CREATING THE STANDARD ANALYSIS`);
-        let agent1 = await this.createAgent({
+        const agent1 = await this.createAgent({
             name: `Agent 1`,
             urn: `org.example.agent1`
         });
-        let agent2 = await this.createAgent({
+        const agent2 = await this.createAgent({
             name: `Agent 2`,
             urn: `org.example.agent2`
         });
-        let newTeam = await this.createTeam(`Team Blue`, [agent1.id, agent2.id]);
-        let newAnalysis = await this.createAnalysis({
+        const newTeam = await this.createTeam(`Team Blue`, [agent1.id, agent2.id]);
+        const newAnalysis = await this.createAnalysis({
             name: analysisName,
             rootUrn: rootUrn,
             teamId: newTeam.id
@@ -589,7 +589,7 @@ export default class ControllerIA extends Controller {
     }
 
     async _createChildren() {
-        for (let child of this.jag.children) {
+        for (const child of this.jag.children) {
             // const jag = await JAGService.instance('idb-service').get(child.urn);
             const jag = await StorageService.get(child.urn, `activity`);
             const model = new Node();
@@ -658,13 +658,13 @@ export default class ControllerIA extends Controller {
 
     repopulateActivity(currentNode) {
         currentNode.activity = this._activityMap.get(currentNode.urn);
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             this.repopulateActivity(child);
         }
     }
 
     repopulateParent(currentNode) {
-        for (let child of currentNode.children) {
+        for (const child of currentNode.children) {
             child.parent = currentNode;
             this.repopulateParent(child);
         }

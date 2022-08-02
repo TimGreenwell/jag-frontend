@@ -41,12 +41,12 @@ export default class ControllerDEF extends Controller {
     }
 
     async initializeCache() {         // @TODO --- it might not be worth caching this -- might should just hit DB..
-        let allActivities = await StorageService.all(`activity`);
+        const allActivities = await StorageService.all(`activity`);
         allActivities.forEach((activity) => {
             this.cacheActivity(activity);
         });
 
-        let allProjects = await StorageService.all(`node`);
+        const allProjects = await StorageService.all(`node`);
         allProjects.forEach((project) => {
             if (this._currentProjectId == project.id) {
                 this.repopulateParent(project);
@@ -62,8 +62,8 @@ export default class ControllerDEF extends Controller {
     }
 
     initializePanels() {
-        let project = this.fetchProject(this._currentProjectId);
-        let node = this.searchTreeForId(project, this._currentNodeId);
+        const project = this.fetchProject(this._currentProjectId);
+        const node = this.searchTreeForId(project, this._currentNodeId);
         this._definition.definingNode = node;
         this._definition.buildTestBank();
     }
@@ -108,8 +108,8 @@ export default class ControllerDEF extends Controller {
     }
 
     eventOperatorUpdatedHandler(event) {
-        let returns = event.detail.returns;
-        let operator = event.detail.operator;
+        const returns = event.detail.returns;
+        const operator = event.detail.operator;
         this._definition._templateFunction(returns, operator);
     }
 
@@ -144,7 +144,7 @@ export default class ControllerDEF extends Controller {
             this.repopulateActivity(updatedProject);
             this.repopulateProject(updatedProject, updatedProjectIdId);
             this.cacheProject(updatedProject);
-            let node = this.searchTreeForId(updatedProject, this._currentNodeId);
+            const node = this.searchTreeForId(updatedProject, this._currentNodeId);
             this._definition.reset(node);
         }
     }
@@ -162,10 +162,10 @@ export default class ControllerDEF extends Controller {
      */
 
     searchTreeForId(treeNode, id) {
-        let workStack = [];
+        const workStack = [];
         workStack.push(treeNode);
         while (workStack.length > 0) {
-            let checkNode = workStack.pop();
+            const checkNode = workStack.pop();
             if (checkNode.id == id) {
                 return checkNode;
             }

@@ -51,7 +51,7 @@ class AnalysisView extends HTMLElement {
     _initializeContextMenus() {
         // @todo - once understood better and working -- put the assignment and AssessmentView constants into the ContextMenu constructor and class
         this._$assessment_menu = new ContextMenu();
-        for (let assessment of AnalysisView.ASSESSMENTS) {
+        for (const assessment of AnalysisView.ASSESSMENTS) {
             const {color: rgb, label} = AssessmentView.ASSESSMENT_DESCRIPTIONS[assessment];
             const properties = {[AssessmentView.ASSESSMENT_SYMBOL]: assessment};
             const style = {'background-color': `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`};
@@ -105,7 +105,7 @@ class AnalysisView extends HTMLElement {
     }
 
     _removeHeaders() {
-        for (let header of this._columnHeaderMap.values()) {
+        for (const header of this._columnHeaderMap.values()) {
             if (this.contains(header)) {
                 this.removeChild(header);
             }
@@ -152,7 +152,7 @@ class AnalysisView extends HTMLElement {
             $column.colStart = i;
             $columns.appendChild($column);
         }
-        offset += agent_count;
+        offset = offset + agent_count;
         this.appendChild($columns);
         return offset;
     }
@@ -249,11 +249,11 @@ class AnalysisView extends HTMLElement {
 
         let offset = 0;
         const team = this._analysisModel.team;
-        for (let agent of team.agents) {
+        for (const agent of team.agents) {
             const assessments = this.getAssessments(agent);
 
             // Removes all assessment views that are not part of the current leaf set.
-            for (let [node_id, $assessment] of assessments) {
+            for (const [node_id, $assessment] of assessments) {
                 if (!this._isNodeInTheLeafSet(node_id) && this.contains($assessment)) {
                     this.removeChild($assessment);
                 }
@@ -286,9 +286,9 @@ class AnalysisView extends HTMLElement {
             let local_row = row;
             this._showChildNodes(node, false);
 
-            for (let child of node._children) {
+            for (const child of node._children) {
                 this._layoutJAG(child, local_row, col + 1);
-                local_row += child.leafCount;
+                local_row = local_row + child.leafCount;
             }
 
             $view.style.setProperty(`--col-end`, `1 span`);
@@ -310,7 +310,7 @@ class AnalysisView extends HTMLElement {
     }
 
     _showChildNodes(node, recurse = true) {
-        for (let child of node.children) {
+        for (const child of node.children) {
             const $view = this.getMappedActivityCell(child);
             $view.show();
 
@@ -321,7 +321,7 @@ class AnalysisView extends HTMLElement {
     }
 
     _hideChildNodes(node, recurse = true) {
-        for (let child of node.children) {
+        for (const child of node.children) {
             const $view = this.getMappedActivityCell(child);
             $view.hide();
 

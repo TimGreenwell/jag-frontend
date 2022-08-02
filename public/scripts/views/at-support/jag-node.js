@@ -145,7 +145,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
     addInEdge(edge) {
         if (this._in == undefined) {
-            let [h_center_x, h_center_y] = this._computeNodeInputAttachment();
+            const [h_center_x, h_center_y] = this._computeNodeInputAttachment();
             edge.setEnd(h_center_x, h_center_y);
             this._in = edge;
         } else {
@@ -182,7 +182,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
     }
 
     prepareOutEdge(edge) {
-        let [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
+        const [c_center_x, c_center_y] = this._computeNodeOutputAttachment();
         edge.setOrigin(c_center_x, c_center_y);
     }
 
@@ -402,7 +402,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._$expand.addEventListener(`click`, () => {
             //    this._nodeModel.isExpanded = !this._nodeModel.isExpanded;
             this.isExpanded = !this.isExpanded;
-            let updateNode = (this._nodeModel.isRoot()) ? this._nodeModel : this._nodeModel.parent;
+            const updateNode = (this._nodeModel.isRoot()) ? this._nodeModel : this._nodeModel.parent;
             this.dispatchEvent(new CustomEvent(`event-node-updated`, {
                 bubbles: true,
                 composed: true,
@@ -520,8 +520,8 @@ customElements.define(`jag-node`, class extends HTMLElement {
     _applyOperator() {
         let op = ``;
 
-        let operator = Activity.OPERATOR;
-        for (let step in operator) {
+        const operator = Activity.OPERATOR;
+        for (const step in operator) {
             if (operator[step].name == this._nodeModel.activity.operator) {
                 op = operator[step].symbol;
             }

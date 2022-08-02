@@ -118,18 +118,18 @@ export default class Schemas {
         if (schema in Schemas.SCHEMA_SET) {
             return Schemas.SCHEMA_SET[schema];
         }
-        throw new Error(`Schema '` + schema + `' does not exist.`);
+        throw new Error(`Schema '${schema}' does not exist.`);
     }
 
     static getRest(schema) {
-        let restSchema = Schemas.get(schema).rest;
+        const restSchema = Schemas.get(schema).rest;
         console.log(`REST VALUE USING..`);
         console.log(restSchema);
         return restSchema;
     }
 
     static getKeyValue(schema, obj) {
-        let key = Schemas.get(schema).key;
+        const key = Schemas.get(schema).key;
         return (obj[key]);
     }
 

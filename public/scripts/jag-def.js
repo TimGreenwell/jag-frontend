@@ -14,8 +14,8 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     // Args
     const QueryString = window.location.search;
     const urlParams = new URLSearchParams(QueryString);
-    let startProjectId = urlParams.get(`project`);
-    let startNodeId = urlParams.get(`node`);
+    const startProjectId = urlParams.get(`project`);
+    const startNodeId = urlParams.get(`node`);
 
 
     // Initializes local storage
@@ -33,7 +33,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = `jag-def`;
 
-    let controller = new ControllerDEF(startProjectId, startNodeId);
+    const controller = new ControllerDEF(startProjectId, startNodeId);
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector(`body`);

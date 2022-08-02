@@ -9,57 +9,57 @@
         "sourceType": "module"
     },
     "rules": {
-
+//
 //        "array-callback-return": "error",
 ////        Enforce return statements in callbacks of array methods
-//
-//        "constructor-super": "error",
-////        Require `super()` calls in constructors
-//
-//
-//        "for-direction": "error",
-////        Enforce "for" loop update clause moving the counter in the right direction.
-//
-//
-//        "getter-return": "error",
-////        Enforce `return` statements in getters
-//
-//
-//        "no-async-promise-executor": "error",
-////        Disallow using an async function as a Promise executor
-//
-//
+
+        "constructor-super": "error",
+//        Require `super()` calls in constructors
+
+
+        "for-direction": "error",
+//        Enforce "for" loop update clause moving the counter in the right direction.
+
+
+        "getter-return": "error",
+//        Enforce `return` statements in getters
+
+
+        "no-async-promise-executor": "error",
+//        Disallow using an async function as a Promise executor
+
+
 //        "no-await-in-loop": "error",
 ////        Disallow `await` inside of loops
-//
-//
-//        "no-class-assign": "error",
-////        Disallow reassigning class members
-//
-//
-//        "no-compare-neg-zero": "error",
-////        Disallow comparing against -0
-//
-//
-//        "no-cond-assign": "error",
-////        Disallow assignment operators in conditional expressions
-//
-//
-//        "no-const-assign": "error",
-////        Disallow reassigning `const` variables
-//
+
+
+        "no-class-assign": "error",
+//        Disallow reassigning class members
+
+
+        "no-compare-neg-zero": "error",
+//        Disallow comparing against -0
+
+
+        "no-cond-assign": "error",
+//        Disallow assignment operators in conditional expressions
+
+
+        "no-const-assign": "error",
+//        Disallow reassigning `const` variables
+
 //
 //        "no-constant-binary-expression": "error",
 ////        Disallow expressions where the operation doesn't affect the value
 //
-//
-//        "no-constant-condition": "error",
-////        Disallow constant expressions in conditions
-//
-//
-//        "no-constructor-return": "error",
-////        Disallow returning value from constructor
-//
+
+        "no-constant-condition": "error",
+//        Disallow constant expressions in conditions
+
+
+        "no-constructor-return": "error",
+//        Disallow returning value from constructor
+
 //
 //        "no-control-regex": "error",
 ////        Disallow control characters in regular expressions
@@ -666,40 +666,40 @@
 //
 //        "no-useless-concat": "warn",
 //        //    Disallow unnecessary concatenation of literals or template literals
-//
-//
-//        "no-useless-constructor": "warn",
-//        //    Disallow unnecessary constructors
-//
-//
+
+
+        "no-useless-constructor": "warn",
+        //    Disallow unnecessary constructors
+
+
 //        "no-useless-escape": "warn",
 //        //    Disallow unnecessary escape characters
-//
-//
-//        "no-useless-rename": "warn",
-//        //    Disallow renaming import, export, and destructured assignments to the same name
-//
-//
-//        "no-useless-return": "warn",
-//        //    Disallow redundant return statements
-//
-//
-//        "no-var": "warn",
-//        //    Require `let` or `const` instead of `var`
-//
-//
-//        "no-void": "warn",
-//        //    Disallow `void` operators
-//
-//
-//        "no-warning-comments": "warn",
-//        //    Disallow specified warning terms in comments
-//
-//
-//        "no-with": "warn",
-//        //    Disallow `with` statements
-//
-//
+
+
+        "no-useless-rename": "warn",
+        //    Disallow renaming import, export, and destructured assignments to the same name
+
+
+        "no-useless-return": "warn",
+        //    Disallow redundant return statements
+
+
+        "no-var": "warn",
+        //    Require `let` or `const` instead of `var`
+
+
+        "no-void": "warn",
+        //    Disallow `void` operators
+
+
+        "no-warning-comments": "off",
+        //    Disallow specified warning terms in comments (OFF - for now)
+
+
+        "no-with": "warn",
+        //    Disallow `with` statements
+
+
 //        "object-shorthand": "warn",
 //        //    Require or disallow method and property shorthand syntax for object literals
 //
@@ -707,67 +707,64 @@
 //        "one-var": "warn",
 //        //   Enforce variables to be declared either together or separately in functions
 //
-//
-//        "one-var-declaration-per-line": "warn",
-//        //    Require or disallow newlines around variable declarations
-//
-//
-//        "operator-assignment": "warn",
-//        //    Require or disallow assignment operator shorthand where possible
-//
-//
+
+        "one-var-declaration-per-line": ["warn","always"],
+        //    Require or disallow newlines around variable declarations
+
+
+        "operator-assignment": ["warn","never"],
+        //    Require or disallow assignment operator shorthand where possible
+
+
 //        "prefer-arrow-callback": "warn",
 //        //    Require using arrow functions for callbacks
 //
-//
-//        "prefer-const": "warn",
-//        //    Require `const` declarations for variables that are never reassigned after declared
-//
+
+        "prefer-const": "warn",
+        //    Require `const` declarations for variables that are never reassigned after declared
+
 //
 //        "prefer-destructuring": "warn",
 //        //    Require destructuring from arrays and/or objects
-//
-//
-//        "prefer-exponentiation-operator": "warn",
-//        //    Disallow the use of `Math.pow` in favor of the `**` operator
-//
+
+
+        "prefer-exponentiation-operator": "warn",
+        //    Disallow the use of `Math.pow` in favor of the `**` operator
+
 //
 //        "prefer-named-capture-group": "warn",
 //        //   Enforce using named capture group in regular expression
-//
-//
-//        "prefer-numeric-literals": "warn",
-//        //    Disallow `parseInt()` and `Number.parseInt()` in favor of binary, octal, and hexadecimal literals
-//
-//
-//        "prefer-object-has-own": "warn",
-//        //    Disallow use of `Object.prototype.hasOwnProperty.call()` and prefer use of `Object.hasOwn()`
-//
-//
-//        "prefer-object-spread": "warn",
-//        //    Disallow using Object.assign with an object literal as the first argument and prefer the use of object spread instead.
-//
+
+
+        "prefer-numeric-literals": "warn",
+        //    Disallow `parseInt()` and `Number.parseInt()` in favor of binary, octal, and hexadecimal literals
+
+
+        "prefer-object-has-own": "warn",
+        //    Disallow use of `Object.prototype.hasOwnProperty.call()` and prefer use of `Object.hasOwn()`
+
+
+        "prefer-object-spread": "warn",
+        //    Disallow using Object.assign with an object literal as the first argument and prefer the use of object spread instead.
+
 //
 //        "prefer-promise-reject-errors": "warn",
 //        //    Require using Error objects as Promise rejection reasons
-//
-//
-//        "prefer-regex-literals": "warn",
-//        //    Disallow use of the `RegExp` constructor in favor of regular expression literals
-//
-//
-//        "prefer-rest-params": "warn",
-//        //    Require rest parameters instead of `arguments`
-//
-//
-//        "prefer-spread": "warn",
-//        //    Require spread operators instead of `.apply()`
-//
-//
-//        "prefer-template": "warn",
-//        //    Require template literals instead of string concatenation
-//
-//
+
+
+        "prefer-regex-literals": "off",
+        //    Disallow use of the `RegExp` constructor in favor of regular expression literals (OFF)
+
+
+        "prefer-rest-params": "warn",
+        //    Require rest parameters instead of `arguments`
+
+
+
+        "prefer-template": "warn",
+        //    Require template literals instead of string concatenation
+
+
         "quote-props":["warn", "as-needed", { "unnecessary": true }],
         //    Require quotes around object literal property names
 
@@ -780,9 +777,9 @@
         //    Disallow async functions which have no `await` expression
 
 
-//        "require-unicode-regexp": "warn",
-//        //   Enforce the use of `u` flag on RegExp
-//
+        "require-unicode-regexp": "warn",
+        //   Enforce the use of `u` flag on RegExp
+
 
         "require-yield": "warn",
         //    Require generator functions to contain `yield`

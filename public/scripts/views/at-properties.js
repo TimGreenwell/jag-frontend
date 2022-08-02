@@ -94,9 +94,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._$desc_ctxInput.className = `contextual`;
         desc_ctx_el.appendChild(this._$desc_ctxInput);
 
-        let executionOptions = [];
-        let execution = Activity.EXECUTION;
-        for (let step in execution) {
+        const executionOptions = [];
+        const execution = Activity.EXECUTION;
+        for (const step in execution) {
             executionOptions.push({
                 value: execution[step].name,
                 text: execution[step].text
@@ -109,9 +109,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         execution_el.appendChild(this._$executionSelect);
 
 
-        let operatorOptions = [];
-        let operator = Activity.OPERATOR;
-        for (let step in operator) {
+        const operatorOptions = [];
+        const operator = Activity.OPERATOR;
+        for (const step in operator) {
             operatorOptions.push({
                 value: operator[step].name,
                 text: operator[step].text
@@ -233,7 +233,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleNameEdit(e) {
         if (e.key == `Enter`) {
             e.preventDefault();
-            let inputs = this.querySelectorAll(`input:enabled, textarea`);
+            const inputs = this.querySelectorAll(`input:enabled, textarea`);
             const currentPosition = this._$nameInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
@@ -241,7 +241,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._nodeModel.activity.name = `[` + this._$nameInput.value + `]`;
+            this._nodeModel.activity.name = `[${this._$nameInput.value}]`;
         }
     }
 
@@ -263,7 +263,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleUrnEdit(e) {
         if (e.key == `Enter`) {
             e.preventDefault();
-            let inputs = this.querySelectorAll(`input:enabled, textarea`);
+            const inputs = this.querySelectorAll(`input:enabled, textarea`);
             this._$urnInput.classList.toggle(`edited`, this._$urnInput.value != this._nodeModel.activity.urn);
             // current position in 'form'
             const currentPosition = this._$urnInput.tabIndex;
@@ -291,7 +291,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleDescriptionEdit(e) {
         if (e.key == `Enter`) {
             e.preventDefault();
-            let inputs = this.querySelectorAll(`input:enabled, textarea`);
+            const inputs = this.querySelectorAll(`input:enabled, textarea`);
             const currentPosition = this._$descInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
@@ -299,7 +299,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._nodeModel.activity.description = `[` + this._$descInput.value + `]`;
+            this._nodeModel.activity.description = `[${this._$descInput.value}]`;
         }
     }
 
@@ -317,7 +317,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleContextualDescriptionChange(e) {
         e.stopImmediatePropagation();
-        console.log(`_handleContextualDescriptionChange +++++++++++++++++++++++++++++++++++++++++++++++`);
+        console.log(`_handleContextualDescriptionChange ++++++++++++++`);
         console.log(JSON.stringify(this._nodeModel));
         if (this._nodeModel) {
             this._nodeModel.contextualDescription = this._$desc_ctxInput.value;
@@ -462,30 +462,30 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._clearIO();
 
         // Create node input panel
-        for (let input of this._nodeModel.activity.inputs) {
+        for (const input of this._nodeModel.activity.inputs) {
             const input_id = `${input.name}-inputs-property`;
             this._addInputElement(input_id, input.name);
         }
 
         // Create node output panel
-        for (let output of this._nodeModel.activity.outputs) {
+        for (const output of this._nodeModel.activity.outputs) {
             const output_id = `${output.name}-outputs-property`;
             this._addOutputElement(output_id, output.name);
         }
 
         // Create binding panel
-        let output_options = this._findOutputOptions();
-        let input_options = this._findInputOptions();
+        const output_options = this._findOutputOptions();
+        const input_options = this._findInputOptions();
 
         if (output_options.length > 0 && input_options.length > 0) {
             // Create input and output select elements
-            let output_select_el = this._createBindingOutputs(output_options);
-            let input_select_el = this._createBindingInputs(input_options);
+            const output_select_el = this._createBindingOutputs(output_options);
+            const input_select_el = this._createBindingInputs(input_options);
 
             // Create new binding panel
-            let newBindingPanel = document.createElement(`div`);
+            const newBindingPanel = document.createElement(`div`);
 
-            let arrow_el = document.createElement(`span`);
+            const arrow_el = document.createElement(`span`);
             arrow_el.innerHTML = `&#x2192;`;
             arrow_el.className = `binding arrow`;
 
@@ -493,7 +493,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             newBindingPanel.appendChild(arrow_el);
             newBindingPanel.appendChild(input_select_el);
 
-            let newButton = document.createElement(`button`);
+            const newButton = document.createElement(`button`);
             newButton.id = `new-binding`;
             newButton.innerHTML = `Bind`;
             newButton.addEventListener(`click`, function (e) {
@@ -528,7 +528,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             output_select_el.addEventListener(`change`, function (e) {
                 const output_option = e.target.selectedOptions[0];
 
-                let valid_input_values_for_output = new Set();
+                const valid_input_values_for_output = new Set();
 
                 if (output_option) {
                     const provider = output_option.value.split(`:`);
@@ -538,7 +538,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
                     // TODO: Check if type matches selected output type (probably need to get output type first)
                     if (provider[0] == `this`) {
-                        for (let option of input_select_el.options) {
+                        for (const option of input_select_el.options) {
                             valid_input_values_for_output.add(option.value);
                         }
                     } else {
@@ -596,16 +596,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     const consumer = input_option.value.split(`:`);
 
                     // TODO: Check if types match selected output type (probably as a .filter before .map)
-                    let valid_for_input = new Set(this._nodeModel.activity.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
+                    const valid_for_input = new Set(this._nodeModel.activity.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
                     FormUtils.toggleSelectValues(output_select_el, valid_for_input);
                 }
             }.bind(this));
         }
 
-        for (let binding of this._nodeModel.activity.bindings) {
-            let binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
+        for (const binding of this._nodeModel.activity.bindings) {
+            const binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
 
-            let output_label = document.createElement(`input`);
+            const output_label = document.createElement(`input`);
             output_label.disabled = true;
 
             if (binding.provider.id == `this` || binding.provider.id == `any`) {
@@ -628,12 +628,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             binding_box.appendChild(output_label);
 
-            let arrow = document.createElement(`span`);
+            const arrow = document.createElement(`span`);
             arrow.innerHTML = `&#x2192;`;
             arrow.className = `binding arrow`;
             binding_box.appendChild(arrow);
 
-            let input_label = document.createElement(`input`);
+            const input_label = document.createElement(`input`);
             input_label.disabled = true;
 
             if (binding.consumer.id == `this` || binding.consumer.id == `any`) {
@@ -747,7 +747,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 label = node.nodeModel.activity.name;
                 const order = this._nodeModel.activity.getOrderForId(node.id);
                 if (order != 0) {
-                    label += ` (${order})`;
+                    label = `${label} (${order})`;
                 }
             }
 
@@ -778,7 +778,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 label = node.nodeModel.activity.name;
                 const order = this._nodeModel.activity.getOrderForId(node.id);
                 if (order != 0) {
-                    label += ` (${order})`;
+                    label = `${label} (${order})`;
                 }
             }
 
@@ -882,7 +882,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     child_name = child.activity.name;
                 }
 
-                let child_annotations = FormUtils.createPropertyElement(`annotations-${child.id}`, child_name);
+                const child_annotations = FormUtils.createPropertyElement(`annotations-${child.id}`, child_name);
                 child_annotations.className = `annotation node`;
 
                 const annotation_add = document.createElement(`span`);
@@ -919,11 +919,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 child_annotations.appendChild(iterable_box);
 
                 if (child.annotations) {
-                    for (let annotation of child.annotations) {
-                        let annotation_box = FormUtils.createEmptyInputContainer(`annotation-${child.id}-${annotation[0]}`);
+                    for (const annotation of child.annotations) {
+                        const annotation_box = FormUtils.createEmptyInputContainer(`annotation-${child.id}-${annotation[0]}`);
                         annotation_box.className = `annotation descriptor`;
 
-                        let annotation_name = document.createElement(`input`);
+                        const annotation_name = document.createElement(`input`);
                         annotation_name.disabled = true;
                         annotation_name.value = annotation[0];
 
@@ -931,16 +931,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
                         annotation_box.appendChild(annotation_name);
 
-                        let equals = document.createElement(`span`);
+                        const equals = document.createElement(`span`);
                         equals.innerHTML = `=`;
                         equals.className = `annotation equals`;
                         annotation_box.appendChild(equals);
 
-                        let annotation_value = document.createElement(`input`);
+                        const annotation_value = document.createElement(`input`);
                         annotation_value.disabled = true;
 
                         const value = annotation[1];
-                        let value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+                        const value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
                         annotation_value.value = value_text;
 
                         annotation_value.className = `annotation value`;
@@ -985,21 +985,25 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 value = (value == `true`);
             }
             parsed = boolean_type;
-        } else if (value.match(/^(\+|\-)?[0-9]+(\.[0-9]+)?$/)) {
-            if (value.match(/^(\+|\-)?[0-9]+$/)) {
-                const integer_type = window.confirm(`Treat this value as an integer?`);
-                if (integer_type) {
-                    value = parseInt(value, 10);
+        } else {
+            const entry = new RegExp(`^(\\+|\\-)?[0-9]+(\\.[0-9]+)?$`, `u`);
+            if (value.match(entry)) {
+                const parseNum = new RegExp(`^(\\+|\\-)?[0-9]+$`, `u`);
+                if (value.match(parseNum)) {
+                    const integer_type = window.confirm(`Treat this value as an integer?`);
+                    if (integer_type) {
+                        value = parseInt(value, 10);
+                    }
+                    parsed = integer_type;
                 }
-                parsed = integer_type;
-            }
 
-            if (!parsed) {
-                const float_type = window.confirm(`Treat this value as a floating-point number?`);
-                if (float_type) {
-                    value = parseFloat(value);
+                if (!parsed) {
+                    const float_type = window.confirm(`Treat this value as a floating-point number?`);
+                    if (float_type) {
+                        value = parseFloat(value);
+                    }
+                    parsed = float_type;
                 }
-                parsed = float_type;
             }
         }
 

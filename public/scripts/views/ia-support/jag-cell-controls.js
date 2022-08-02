@@ -46,8 +46,8 @@ class JagCellControls extends HTMLElement {
         });
 
         this._removeButton.addEventListener(`click`, () => {
-            let parentCellActivity = this._cell.parent.activity;
-            let childChildId = this._cell.childId;
+            const parentCellActivity = this._cell.parent.activity;
+            const childChildId = this._cell.childId;
             parentCellActivity.removeChild(childChildId);
             this.dispatchEvent(new CustomEvent(
                 `event-activity-updated`,
