@@ -295,7 +295,9 @@ class IATable extends Popupable {
     async import(analysisModelImport) {
         {
             // Sort nodes with the least number of children first.
-            analysisModelImport.nodes.sort((a, b) => a.children.length - b.children.length);
+            analysisModelImport.nodes.sort((a, b) => {
+                return a.children.length - b.children.length;
+            });
 
             for (const node of analysisModelImport.nodes) {
                 // const nodeModel = await NodeModel.fromJSON(node);
@@ -316,7 +318,9 @@ class IATable extends Popupable {
                     await StorageService.create(AgentModel.fromJSON(agent), `agent`);
                 }
 
-                team.agents = team.agents.map((agent) => agent.id);
+                team.agents = team.agents.map((agent) => {
+                    return agent.id;
+                });
                 const agentModel = await TeamModel.fromJSON(team);
                 await StorageService.create(agentModel, `team`);
             }
@@ -326,11 +330,13 @@ class IATable extends Popupable {
         // const service = StorageService.getStorageInstance('idb-service');
 
         const analysisModel = await AnalysisModel.fromJSON({
-            id: analysisModel.id,
-            name: analysisModel.name,
-            root: analysisModel.root,
-            description: analysisModel.description || ``,
-            teams: analysisModel.teams.map((team) => team.id)
+            id: analysisModelImport.id,
+            name: analysisModelImport.name,
+            root: analysisModelImport.root,
+            description: analysisModelImport.description || ``,
+            teams: analysisModelImport.teams.map((team) => {
+                return team.id;
+            })
         });
 
         await StorageService.create(analysisModel, `analysis`);
@@ -506,13 +512,17 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
         }
     ],
     fallback: 0,
-    skip: ({inputs: {conflict}}) => !conflict
+    skip: ({inputs: {conflict}}) => {
+        return !conflict;
+    }
 });
 
 IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
     type: IATable.POPUP_TYPES.NOTICE,
     name: `Overwrite JAGs`,
-    description: ({inputs: {jag}}) => `The uploaded analysisModel contains a activity at (${jag.urn}), which you already have. Replace it?`,
+    description: ({inputs: {jag}}) => {
+        return `The uploaded analysisModel contains a activity at (${jag.urn}), which you already have. Replace it?`;
+    },
     actions: [
         {
             text: `Overwrite`,
@@ -584,7 +594,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {}, outputs: agentConstruct}) {
+            action: function ({outputs: agentConstruct}) {
                 this.dispatchEvent(new CustomEvent(`event-agent-created`, {
                     bubbles: true,
                     composed: true,

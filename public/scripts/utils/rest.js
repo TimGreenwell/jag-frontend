@@ -130,7 +130,11 @@ export default class RESTUtils {
             return null;
         }
 
-        const xsrfCookies = document.cookie.split(`;`).map((c) => c.trim()).filter((c) => c.startsWith(`${name}=`));
+        const xsrfCookies = document.cookie.split(`;`).map((c) => {
+            return c.trim();
+        }).filter((c) => {
+            return c.startsWith(`${name}=`);
+        });
 
         if (xsrfCookies.length === 0) {
             return null;

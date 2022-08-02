@@ -7,12 +7,12 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class AgentModel extends EventTarget {
 
     constructor({
-        id = UUIDv4(),
+        id = uuidV4(),
         name = AgentModel.DEFAULT_NAME,
         urn,
         description,

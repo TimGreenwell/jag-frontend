@@ -564,7 +564,9 @@ export default class ControllerAT extends Controller {
     loopDetection(projectModel, parentNodeModel, childNodeModel) {
         const descendentStack = this.gatherDescendentUrns(childNodeModel);
         const ancestorStack = this.gatherAncestorUrns(projectModel.id, parentNodeModel.id);
-        const intersection = descendentStack.filter((x) => ancestorStack.includes(x));
+        const intersection = descendentStack.filter((x) => {
+            return ancestorStack.includes(x);
+        });
         return (intersection.length > 0);
     }
 

@@ -7,13 +7,13 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class AnalysisModel extends EventTarget {
 
     // constructor : why pass in root into a new CellModel? results in same.  hrm
     constructor({
-        id = UUIDv4(),
+        id = uuidV4(),
         name = AnalysisModel.DEFAULT_NAME,
         description = AnalysisModel.DEFAULT_DESCRIPTION,
         rootUrn,
@@ -32,7 +32,7 @@ export default class AnalysisModel extends EventTarget {
         this._rootCellModel = undefined;
         this._teamId = teamId;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
         //  or when click in analysis library
-    };
+    }
 
 
     // @TODO - Model is pumping out Dispatches in the setters.  Not bad idea - but convention..
@@ -119,7 +119,9 @@ export default class AnalysisModel extends EventTarget {
             if (currentNode.id == id) {
                 return currentNode;
             }
-            currentNode.children.forEach((child) => searchStack.push(child));
+            currentNode.children.forEach((child) => {
+                return searchStack.push(child);
+            });
         }
     }
 

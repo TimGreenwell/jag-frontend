@@ -20,7 +20,7 @@ class AnalysisView extends HTMLElement {
         super();
         this._analysisModel = analysisModel;
         this._columnHeaderMap = new Map();
-        this._leafArray = new Array();
+        this._leafArray = []();
         this._$assessment_menu = undefined;
         this._idToTableCellMap = new Map();  // id to viewCell... looks like ids can be agents or nodes(activities)
         this._initializeContextMenus();
@@ -241,7 +241,9 @@ class AnalysisView extends HTMLElement {
     }
 
     _isNodeInTheLeafSet(node_id) {
-        return this._leafArray.findIndex((leaf) => leaf.id === node_id) !== -1;
+        return this._leafArray.findIndex((leaf) => {
+            return leaf.id === node_id;
+        }) !== -1;
     }
 
     _layoutAssessments(col, row) {

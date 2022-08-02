@@ -74,7 +74,7 @@ class ColumnHeader extends AnalysisCell {
         this.innerText = this._name;
 
         this._update();
-        this.addEventListener(`wheel`, handleMouseWheel, {passive: true});
+        this.addEventListener(`wheel`, this.handleMouseWheel, {passive: true});
     }
 
     _update() {
@@ -95,18 +95,19 @@ class ColumnHeader extends AnalysisCell {
         this.style.setProperty(`--row-end`, row_end);
     }
 
+    handleMouseWheel(event) {
+        event.preventDefault();
+
+        const target = event.target;
+        target.size = target.size + Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY;
+    }
+
 }
 
 ColumnHeader.SENSITIVITY = 10;
 ColumnHeader.SPAN = Symbol(`Span`);
 ColumnHeader.END = Symbol(`End`);
 
-function handleMouseWheel(event) {
-    event.preventDefault();
-
-    const target = event.target;
-    target.size = target.size + Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY;
-}
 
 customElements.define(`ia-column-header`, ColumnHeader);
 export default customElements.get(`ia-column-header`);

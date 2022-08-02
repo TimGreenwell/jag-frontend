@@ -713,7 +713,9 @@ class AtPlayground extends Popupable {
 
 
     deselectAll() {
-        this._selectedActivityNodeElementSet.forEach((n) => n.setSelected(false));
+        this._selectedActivityNodeElementSet.forEach((n) => {
+            return n.setSelected(false);
+        });
         this._selectedActivityNodeElementSet.clear();
     }
 
@@ -865,7 +867,8 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {}, outputs: activityConstruct}) {
+            //         action: function ({inputs: {}, outputs: activityConstruct}) {
+            action: function ({outputs: activityConstruct}) {                             // or maybe {inputs = {}, outputs: activityConstruct}
                 this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                     bubbles: true,
                     composed: true,
@@ -947,7 +950,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {}, outputs: json}) {
+            action: function ({outputs: json}) {
                 this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                     bubbles: true,
                     composed: true,
@@ -964,12 +967,14 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             text: `Or select a file...`,
             color: `white`,
             bgColor: `black`,
-            action: async function ({inputs: {}, outputs: {}}) {
+            action: async function () {                          //  input:{}, output:{}
                 const getFiles = () => {
                     new Promise((resolve) => {
                         const input = document.createElement(`input`);
                         input.type = `file`;
-                        input.onchange = () => resolve([...input.files]);
+                        input.onchange = () => {
+                            return resolve([...input.files]);
+                        };
                         input.click();
                     });
                 };
@@ -985,9 +990,13 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
                         detail: {result: event.target.result}
                     }));
                 }.bind(this));
-                for (const file of selectedFiles) {
-                    reader.readAsText(file);
-                }
+
+                const selectedFile = selectedFiles[0];
+                reader.readAsText(selectedFile);
+
+                // for (let file of selectedFiles) {
+                //     reader.readAsText(file);
+                // }
             }
         }
     ]

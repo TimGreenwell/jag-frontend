@@ -22,7 +22,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             this._handleNewConnection();
         } else if (event.type == `error`) {
             const progress = this._container.querySelector(`#connect .button-progress`);
-            this._setFeedback(`Connection failed ! Try accepting the certificate at this address <a href="https://localhost:8887">localhost</a>.`, true);
+            this._setFeedback(`Connection failed ! Try accepting the certificate at this address <a href="https://10.100.4.240:8887">    10.100.4.240</a>.`, true);
             this._resetButtonProgress(progress);
         }
     }
@@ -124,7 +124,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
 
     _getInputArrayForVariableType(type) {
         if (!this._variables.has(type)) {
-            this._variables.set(type, new Array());
+            this._variables.set(type, []);
         }
 
         return this._variables.get(type);

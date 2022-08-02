@@ -334,12 +334,20 @@ export default class Controller extends EventTarget {
     }
 
     getChildrenToAdd(existingKids, validKids) {                               // originalActivity, updatedActivity) {
-        const returnValue = validKids.filter((validKid) => !existingKids.find((existingKid) => JSON.stringify(validKid) === JSON.stringify(existingKid)));
+        const returnValue = validKids.filter((validKid) => {
+            return !existingKids.find((existingKid) => {
+                return JSON.stringify(validKid) === JSON.stringify(existingKid);
+            });
+        });
         return returnValue;
     }
 
     getChildrenToRemove(existingKids, validKids) {                               // originalActivity, updatedActivity) {
-        const returnValue = existingKids.filter((existingKid) => !validKids.find((validKid) => JSON.stringify(existingKid) === JSON.stringify(validKid)));
+        const returnValue = existingKids.filter((existingKid) => {
+            return !validKids.find((validKid) => {
+                return JSON.stringify(existingKid) === JSON.stringify(validKid);
+            });
+        });
         return returnValue;
     }
 
@@ -351,7 +359,9 @@ export default class Controller extends EventTarget {
             if (checkNode.id == id) {
                 return checkNode;
             }
-            checkNode.children.forEach((child) => workStack.push(child));
+            checkNode.children.forEach((child) => {
+                return workStack.push(child);
+            });
         }
         return null;
     }
@@ -364,7 +374,9 @@ export default class Controller extends EventTarget {
             if (checkNode.childId == childId) {
                 return checkNode;
             }
-            checkNode.children.forEach((child) => workStack.push(child));
+            checkNode.children.forEach((child) => {
+                return workStack.push(child);
+            });
         }
         return null;
     }

@@ -434,7 +434,9 @@ export default class Edge extends EventTarget {
         let order = 0;
 
         if (execution == Activity.EXECUTION.SEQUENTIAL.name) {
-            const ordered = children.map((child) => child.id);
+            const ordered = children.map((child) => {
+                return child.id;
+            });
             order = ordered.indexOf(this._childId) + 1;
         }
 

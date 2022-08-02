@@ -99,13 +99,13 @@ export default class ControllerDEF extends Controller {
     /**   -- Dashboard --  */
 
     /**   -- Menu --  */
-    eventExecutionUpdatedHandler() {
-
-    }
-
-    eventReturnsUpdatedHandler() {
-
-    }
+    // eventExecutionUpdatedHandler() {
+    //
+    // }
+    //
+    // eventReturnsUpdatedHandler() {
+    //
+    // }
 
     eventOperatorUpdatedHandler(event) {
         const returns = event.detail.returns;
@@ -169,7 +169,9 @@ export default class ControllerDEF extends Controller {
             if (checkNode.id == id) {
                 return checkNode;
             }
-            checkNode.children.forEach((child) => workStack.push(child));
+            checkNode.children.forEach((child) => {
+                return workStack.push(child);
+            });
         }
         return null;
     }

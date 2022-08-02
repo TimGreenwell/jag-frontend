@@ -8,7 +8,6 @@
 'use strict';
 
 import StorageService from "../services/storage-service.js";
-import JAGATValidation from "../utils/validation.js";
 import CellModel from "../models/cell.js";
 import Activity from "../models/activity.js";
 import AnalysisModel from "../models/analysis-model.js";
@@ -118,7 +117,9 @@ export default class ControllerIA extends Controller {
 
     async initializeCache() {
         const allActivities = await StorageService.all(`activity`);
-        allActivities.forEach((activity) => this.cacheActivity(activity));
+        allActivities.forEach((activity) => {
+            return this.cacheActivity(activity);
+        });
 
         // @TODO need this?
         const allNodes = await StorageService.all(`node`);
@@ -128,7 +129,9 @@ export default class ControllerIA extends Controller {
         });
 
         const allAgents = await StorageService.all(`agent`);
-        allAgents.forEach((agent) => this.cacheAgent(agent));
+        allAgents.forEach((agent) => {
+            return this.cacheAgent(agent);
+        });
 
         const allTeams = await StorageService.all(`team`);
         allTeams.forEach((team) => {
@@ -140,7 +143,9 @@ export default class ControllerIA extends Controller {
 
 
         const allAnalyses = await StorageService.all(`analysis`);
-        allAnalyses.forEach((analysis) => this.cacheAnalysis(analysis));
+        allAnalyses.forEach((analysis) => {
+            return this.cacheAnalysis(analysis);
+        });
     }
 
     initializePanels() {
@@ -440,7 +445,8 @@ export default class ControllerIA extends Controller {
         this.cacheAnalysis(createdAnalysisModel);
         // if (this._iaTable.analysisModel) {
         this._currentAnalysis = createdAnalysisModel;
-        createdAnalysisModel.rootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
+        const newRootCellModel = await this.buildCellTreeFromActivityUrn(createdAnalysisModel.rootUrn);
+        createdAnalysisModel.rootCellModel = newRootCellModel;
         this._iaTable.displayAnalysis(createdAnalysisModel);
         //  }
         this._analysisLibrary.addListItem(createdAnalysisModel);
@@ -463,19 +469,19 @@ export default class ControllerIA extends Controller {
      */
 
 
-    replaceNodeById(rootNode, replacementItem) {
-        const workStack = [];
-        workStack.push(rootNode);
-        while (workStack > 0) {
-            let currentNode = workStack.pop();
-            if (currentNode.id == replacementItem.id) {
-                currentNode = replacementItem;
-                return rootNode;
-            } else {
-                currentNode.children.forEach((child) => workStack.push(child));
-            }
-        }
-    }
+    // replaceNodeById(rootNode, replacementItem) {
+    //     const workStack = [];
+    //     workStack.push(rootNode);
+    //     while (workStack > 0) {
+    //         let currentNode = workStack.pop();
+    //         if (currentNode.id == replacementItem.id) {
+    //             currentNode = replacementItem;
+    //             return rootNode;
+    //         } else {
+    //             currentNode.children.forEach((child) => workStack.push(child));
+    //         }
+    //     }
+    // }
 
     async createAgent({name, urn} = {}) {
         const newAgent = new AgentModel({
@@ -564,7 +570,7 @@ export default class ControllerIA extends Controller {
             await StorageService.update(leaf.parent, `node`);
         }
 
-        if (JAGATValidation.isValidUrn(leaf.activity.urn)) {
+        if (InputValidator.isValidUrn(leaf.activity.urn)) {
             await StorageService.delete(leaf.id, `node`);
         } else {
             // 6 dispatchers here - Only Listener in views/Jag

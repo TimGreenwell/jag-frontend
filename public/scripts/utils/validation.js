@@ -33,7 +33,7 @@ export default class JAGATValidation {
     isValid() {
         const regex = new RegExp(`^[a-zA-Z0-9-:]+([a-zA-Z0-9])$`, `u`);
         return !!this._urn.match(regex);
-    };
+    }
 
     static isValidUrn(urn) {
         let isValid = true;
@@ -401,4 +401,4 @@ export default class JAGATValidation {
         }
     }
 
-};
+}

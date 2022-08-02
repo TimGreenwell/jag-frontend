@@ -7,7 +7,7 @@
 
 'use strict';
 
-import {UUIDv4} from '../../utils/uuid.js';
+import {uuidV4} from '../../utils/uuid.js';
 
 import AgentModel from '../../models/agent.js';
 import ContextMenu from './context-menu.js';
@@ -17,7 +17,7 @@ class AssessmentView extends AnalysisCell {
 
     constructor(agent, node, context_menu) {
         super(context_menu);
-        this._id = UUIDv4();
+        this._id = uuidV4();
         this._agent = agent;
         this._node = node;
 

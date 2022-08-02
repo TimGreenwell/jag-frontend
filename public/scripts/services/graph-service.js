@@ -3,7 +3,7 @@
 export default class GraphService extends EventTarget {
 
     connect() {
-        const host = `localhost`;
+        const host = `10.100.4.240`;
         this._ch = new WebSocket(`wss://${host}:8887`);
         this._ch.addEventListener(`open`, this._handleConnection.bind(this));
         this._ch.addEventListener(`message`, this._handleMessage.bind(this));

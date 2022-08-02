@@ -24,7 +24,9 @@ export default class IndexedDBUtils {
             request.addEventListener(`upgradeneeded`, (event) => {
                 const db = event.target.result;
                 // After extensive testing, it seems that success waits for all store creation to be completed
-                storesConfig.forEach((storeConfig) => IndexedDBUtils.createStore(db, storeConfig));
+                storesConfig.forEach((storeConfig) => {
+                    return IndexedDBUtils.createStore(db, storeConfig);
+                });
             });
         });
     }
@@ -107,7 +109,7 @@ export default class IndexedDBUtils {
                 reject(new Error(`Error while clearing store ${store}\nError: ${event.target.error}`));
             });
         });
-    };
+    }
 
 
     // tlg
@@ -125,7 +127,7 @@ export default class IndexedDBUtils {
                 reject(new Error(`Error while deleting key from store ${store}\nKey: ${key}\nError: ${event.target.error}`));
             });
         });
-    };
+    }
 
     static getKey(db, store, key) {
         return new Promise((resolve, reject) => {

@@ -1,8 +1,6 @@
 // What is this.parentNode.    Used but not defined.
 
 
-import Activity from "../../models/activity.js";
-
 /**
  * @file Graphical node representation of a JAG.
  *
@@ -14,7 +12,7 @@ import Activity from "../../models/activity.js";
 
 //  This is the playground Jag Node -
 
-const SNAP_SIZE = 10.0;
+
 import JAG from '../../models/activity.js';
 
 customElements.define(`jag-node`, class extends HTMLElement {
@@ -34,7 +32,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
             e.stopPropagation();
             this._drag(e);
         });
-
+        this.SNAP_SIZE = 10.0;
         this._initUI();
         this.setTranslation(100, 100);       //  Looks like this sets the  translation values and sets the view style
         this._initHandlers();
@@ -166,7 +164,9 @@ customElements.define(`jag-node`, class extends HTMLElement {
             this._in.destroy();
         }
 
-        this._outs.forEach((edge) => edge.destroy());
+        this._outs.forEach((edge) => {
+            return edge.destroy();
+        });
     }
 
     addOnEdgeInitializedListener(listener) {
@@ -571,8 +571,8 @@ customElements.define(`jag-node`, class extends HTMLElement {
     }
 
     _snap() {
-        this._translation.z = Math.round(this._translation.x / SNAP_SIZE) * SNAP_SIZE;
-        this._translation.y = Math.round(this._translation.y / SNAP_SIZE) * SNAP_SIZE;
+        this._translation.z = Math.round(this._translation.x / this.SNAP_SIZE) * this.SNAP_SIZE;
+        this._translation.y = Math.round(this._translation.y / this.SNAP_SIZE) * this.SNAP_SIZE;
         this._resetLocation();
         // return [adj_x, adj_y];
     }

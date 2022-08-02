@@ -364,7 +364,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             composed: true,
             detail: {node: this._nodeModel}
         }));
-    };
+    }
 
     _handleProjectButtonClick(e) {
         e.stopImmediatePropagation();
@@ -534,7 +534,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     const provider = output_option.value.split(`:`);
 
                     const this_inputs_names = new Set();
-                    this._nodeModel.activity.inputs.forEach((input) => this_inputs_names.add(input.name));
+                    this._nodeModel.activity.inputs.forEach((input) => {
+                        return this_inputs_names.add(input.name);
+                    });
 
                     // TODO: Check if type matches selected output type (probably need to get output type first)
                     if (provider[0] == `this`) {
@@ -543,19 +545,25 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         }
                     } else {
                         // TODO: Check if type matches selected output type (probably need to get output type first)
-                        this._nodeModel.activity.outputs.forEach((output) => valid_input_values_for_output.add(`this:${output.name}`));
+                        this._nodeModel.activity.outputs.forEach((output) => {
+                            return valid_input_values_for_output.add(`this:${output.name}`);
+                        });
 
                         if (this._nodeModel.activity.execution == Activity.EXECUTION.SEQUENTIAL.name) {
                             if (provider[0] == `any`) {
                                 const all_cumulative_outputs = new Set();
 
-                                this._nodeModel.activity.inputs.forEach((input) => all_cumulative_outputs.add(input.name));
+                                this._nodeModel.activity.inputs.forEach((input) => {
+                                    return all_cumulative_outputs.add(input.name);
+                                });
 
                                 const valid_any_outputs_from_children = new Set();
 
                                 for (const child of this._nodeModel.activity.children) {
                                     if (valid_any_outputs_from_children.has(provider[1])) {
-                                        child.nodeModel.activity.inputs.forEach((input) => valid_input_values_for_output.add(`${child.id}:${input.name}`));
+                                        child.nodeModel.activity.inputs.forEach((input) => {
+                                            return valid_input_values_for_output.add(`${child.id}:${input.name}`);
+                                        });
                                     }
 
                                     child.nodeModel.activity.outputs.forEach((output) => {
@@ -596,7 +604,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     const consumer = input_option.value.split(`:`);
 
                     // TODO: Check if types match selected output type (probably as a .filter before .map)
-                    const valid_for_input = new Set(this._nodeModel.activity.inputsTo(consumer[0]).map((output) => `${output.id}:${output.property}`));
+                    const valid_for_input = new Set(this._nodeModel.activity.inputsTo(consumer[0]).map((output) => {
+                        return `${output.id}:${output.property}`;
+                    }));
                     FormUtils.toggleSelectValues(output_select_el, valid_for_input);
                 }
             }.bind(this));
@@ -762,7 +772,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     })
                 }
             ];
-        }).reduce((c, n) => c.concat(n)));
+        }).reduce((c, n) => {
+            return c.concat(n);
+        }));
 
         select_el.onfocus = function (e) {
             this._previous_value = this.value;
@@ -793,7 +805,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     })
                 }
             ];
-        }).reduce((c, n) => c.concat(n)));
+        }).reduce((c, n) => {
+            return c.concat(n);
+        }));
 
         select_el.onfocus = function (e) {
             this._previous_value = this.value;
@@ -831,7 +845,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
 
         // We can also "output" a value from this node's children's outputs.
-        this._nodeModel.activity.getAvailableOutputs().forEach((node) => options.push(node));
+        this._nodeModel.activity.getAvailableOutputs().forEach((node) => {
+            return options.push(node);
+        });
 
         // We can also opt to accept any output with a matching name based on all available outputs.
         if (this._nodeModel.activity.inputs.length > 0 && this._nodeModel.activity.children.length > 0) {
@@ -1049,7 +1065,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._updateAnnotations();
         for (const input of this.querySelectorAll(`input`)) {
             input.title = input.value;
-            input.onchange = () => input.title = input.value;
+            input.onchange = () => {
+                return input.title = input.value;
+            };
         }
     }
 

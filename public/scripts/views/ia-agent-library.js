@@ -17,7 +17,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
         this._libraryList = [];                         // <li> elements holding agent.name & description + (search context) + agent
         this._initUI();
         this.clearLibraryList();
-    };
+    }
 
     clearLibraryList() {
         for (const item of this._libraryList) {

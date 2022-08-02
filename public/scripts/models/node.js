@@ -7,13 +7,13 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 
 export default class Node extends EventTarget {
 
     constructor({
-        id = UUIDv4(),
+        id = uuidV4(),
         urn,
         childId,
         parentId,
@@ -28,7 +28,7 @@ export default class Node extends EventTarget {
         returnState = null,
         testReturnValue = null,
         testReturnState = null,
-        children = new Array()
+        children = []()
     } = {}) {
         super();
         this._id = id;                       // An assigned unique ID given at construction
@@ -342,7 +342,7 @@ export default class Node extends EventTarget {
     }
 
     reId() {
-        this.id = UUIDv4();
+        this.id = uuidV4();
         return this;
     }
 

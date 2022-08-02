@@ -15,7 +15,7 @@ customElements.define(`node-library`, class extends HTMLElement {
         this._libraryList = [];                         // <li> elements holding nodeModel's head Node name & description + (search context) + nodeModel
         this._initUI();
         this.clearLibraryList();
-    };
+    }
 
     _initUI() {
         const $header = document.createElement(`header`);
@@ -204,7 +204,9 @@ customElements.define(`node-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
 
-        projectNodes.forEach((project) => this.createListItemCollection(project));
+        projectNodes.forEach((project) => {
+            return this.createListItemCollection(project);
+        });
 
         for (const item of this._libraryList) {
             this._$list.appendChild(item.element);

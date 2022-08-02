@@ -15,7 +15,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
         this._libraryList = [];                         // <li> elements holding activity.name & description + (search context) + activity
         this._initUI();
         this.clearLibraryList();
-    };
+    }
 
     clearLibraryList() {
         for (const item of this._libraryList) {

@@ -7,7 +7,7 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 
 
@@ -15,7 +15,7 @@ import Validation from '../utils/validation.js';
 export default class Cell extends EventTarget {
 
     constructor({
-        id = UUIDv4(),
+        id = uuidV4(),
         jag,
         urn,
         childId,

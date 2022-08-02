@@ -162,6 +162,8 @@ class JagCell extends AnalysisCell {
         case `Escape`:
             this._htmlElements.nameEntry.blur();
             break;
+        default:
+            console.log(`The key: ${e.key} is not handled`);
         }
         const validCharacters = new RegExp(`[A-Za-z0-9-:]`, `u`);
         if ((!Validator.isValidUrn(this.cellModel.activity.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
@@ -215,10 +217,10 @@ class JagCell extends AnalysisCell {
     }
 
     _handleURNEdit(e) {
+        const selected = this._htmlElements.suggestions.selected;
         switch (e.key) {
         case `Enter`:
             e.preventDefault();
-            const selected = this._htmlElements.suggestions.selected;
             if (selected !== undefined) {
                 this.urnElementEntry = selected;
             }
@@ -237,6 +239,8 @@ class JagCell extends AnalysisCell {
             e.preventDefault();
             this._htmlElements.suggestions.select(-1);
             break;
+        default:
+            console.log(`The key: ${e.key} is not handled`);
         }
         const validCharacters = new RegExp(`^[A-Za-z0-9\-\:]+`, `u`);
         if ((this.cellModel.activity.name == ``) && (e.key.match(validCharacters))) {
@@ -395,14 +399,20 @@ class JagCell extends AnalysisCell {
 
         //    tg - Both functions are equivalent but neither seem to be of any use.  this._htmlElements is set to auto-complete.
         //    tg - possibly the '.suggestions.suggestions' is a mistake.
-        await StorageService.all(`activity`).then((jags) => this._htmlElements.suggestions.suggestions = jags.map((jag) => jag.urn));
+        await StorageService.all(`activity`).then((jags) => {
+            return this._htmlElements.suggestions.suggestions = jags.map((jag) => {
+                return jag.urn;
+            });
+        });
         //   allActivitys.forEach(() => this._htmlElements.suggestions.suggestions = allActivitys.map(cellModel => cellModel.activity.urn));
     }
 
 
     updateSuggestions(cellModelList) {
         // cellModelList.forEach(() => this._htmlElements.suggestions.suggestions = cellModelList.map(cellModel => cellModel.activity.urn));
-        this._htmlElements.suggestions.suggestions = cellModelList.map((cellModel) => cellModel.activity.urn);
+        this._htmlElements.suggestions.suggestions = cellModelList.map((cellModel) => {
+            return cellModel.activity.urn;
+        });
     }
 
     // Sync view to existing model values.  --- Triggered on 'sync' event which is linked to cellModel.

@@ -15,7 +15,7 @@ export function functionFactory(returns, operator) {
         parameters = `\${latestChild}`;
     } else if (returns == `node.returns.priority`) {
         parameters = `\${priorityChild}`;
-    } else if (returns == `node.returns.available`) {
+    } else if (returns == `node.returns.final`) {
         parameters = `\${finalChild}`;
     }
 

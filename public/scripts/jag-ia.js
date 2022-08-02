@@ -27,7 +27,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.addStorageInstance(`idb-service`, idb_storage);
 
     // Initializes a rest storage
-    const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8080/api/v1`);
+    const rest_storage = new RESTStorage(`10.100.4.240`, 1, `http://10.100.4.240:8080/api/v1`);
     await rest_storage.init();
     StorageService.addStorageInstance(`local-rest-service`, rest_storage);
 
@@ -70,5 +70,6 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     // Event: 'create-analysis' -
     iaTable.addEventListener(`create-analysis`, () => {
+        console.log(`Obsolete?`);
     });
 });

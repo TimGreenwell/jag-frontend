@@ -50,7 +50,7 @@
 
 //
 //        "no-constant-binary-expression": "error",
-////        Disallow expressions where the operation doesn't affect the value
+////        Disallow expressions where the operation doesn't affect the valueHunt Target
 //
 
         "no-constant-condition": "error",
@@ -60,214 +60,214 @@
         "no-constructor-return": "error",
 //        Disallow returning value from constructor
 
-//
-//        "no-control-regex": "error",
-////        Disallow control characters in regular expressions
-//
-//
+
+        "no-control-regex": "error",
+//        Disallow control characters in regular expressions
+
+
 //        "no-debugger": "error",
 ////        Disallow the use of `debugger`
-//
-//
-//        "no-dupe-args": "error",
-////        Disallow duplicate arguments in `function` definitions
-//
-//
-//        "no-dupe-class-members": "error",
-////        Disallow duplicate class members
-//
-//
-//        "no-dupe-else-if": "error",
-////        Disallow duplicate conditions in if-else-if chains
-//
-//
-//        "no-dupe-keys": "error",
-////        Disallow duplicate keys in object literals
-//
-//
-//        "no-duplicate-case": "error",
-////        Disallow duplicate case labels
-//
-//
-//        "no-duplicate-imports": "error",
-////        Disallow duplicate module imports
-//
-//
-//        "no-empty-character-class": "error",
-////        Disallow empty character classes in regular expressions
-//
-//
-//        "no-empty-pattern": "error",
-////        Disallow empty destructuring patterns
-//
-//
-//        "no-ex-assign": "error",
-////        Disallow reassigning exceptions in `catch` clauses
-//
-//
-//        "no-fallthrough": "error",
-////        Disallow fallthrough of `case` statements
-//
-//
-//        "no-func-assign": "error",
-////        Disallow reassigning `function` declarations
-//
-//
-//        "no-import-assign": "error",
-////        Disallow assigning to imported bindings
-//
-//
-//        "no-inner-declarations": "error",
-////        Disallow variable or `function` declarations in nested blocks
-//
-//
-//        "no-invalid-regexp": "error",
-////        Disallow invalid regular expression strings in `RegExp` constructors
-//
-//
-//        "no-irregular-whitespace": "error",
-////        Disallow irregular whitespace
-//
-//
-//        "no-loss-of-precision": "error",
-////        Disallow literal numbers that lose precision
-//
-//
-//        "no-misleading-character-class": "error",
-////        Disallow characters which are made with multiple code points in character class syntax
-//
-//
-//        "no-new-symbol": "error",
-////        Disallow `new` operators with the `Symbol` object
-//
-//
-//        "no-obj-calls": "error",
-////        Disallow calling global object properties as functions
-//
-//
-//        "no-promise-executor-return": "error",
-////        Disallow returning values from Promise executor functions
-//
-//
-//        "no-prototype-builtins": "error",
-////        Disallow calling some `Object.prototype` methods directly on objects
-//
-//
+
+
+        "no-dupe-args": "error",
+//        Disallow duplicate arguments in `function` definitions
+
+
+        "no-dupe-class-members": "error",
+//        Disallow duplicate class members
+
+
+        "no-dupe-else-if": "error",
+//        Disallow duplicate conditions in if-else-if chains
+
+
+        "no-dupe-keys": "error",
+//        Disallow duplicate keys in object literals
+
+
+        "no-duplicate-case": "error",
+//        Disallow duplicate case labels
+
+
+        "no-duplicate-imports": "error",
+//        Disallow duplicate module imports
+
+
+        "no-empty-character-class": "error",
+//        Disallow empty character classes in regular expressions
+
+
+        "no-empty-pattern": "error",
+//        Disallow empty destructuring patterns
+
+
+        "no-ex-assign": "error",
+//        Disallow reassigning exceptions in `catch` clauses
+
+
+        "no-fallthrough": "error",
+//        Disallow fallthrough of `case` statements
+
+
+        "no-func-assign": "error",
+//        Disallow reassigning `function` declarations
+
+
+        "no-import-assign": "error",
+//        Disallow assigning to imported bindings
+
+
+        "no-inner-declarations": "error",
+//        Disallow variable or `function` declarations in nested blocks
+
+
+        "no-invalid-regexp": "error",
+//        Disallow invalid regular expression strings in `RegExp` constructors
+
+
+        "no-irregular-whitespace": "error",
+//        Disallow irregular whitespace
+
+
+        "no-loss-of-precision": "error",
+//        Disallow literal numbers that lose precision
+
+
+        "no-misleading-character-class": "error",
+//        Disallow characters which are made with multiple code points in character class syntax
+
+
+        "no-new-symbol": "error",
+//        Disallow `new` operators with the `Symbol` object
+
+
+        "no-obj-calls": "error",
+//        Disallow calling global object properties as functions
+
+
+        "no-promise-executor-return": "error",
+//        Disallow returning values from Promise executor functions
+
+
+        "no-prototype-builtins": "error",
+//        Disallow calling some `Object.prototype` methods directly on objects
+
+
 //        "no-self-assign": "error",
-////        Disallow assignments where both sides are exactly the same
+////        Disallow assignments where both sides are exactly the same         (stupid code uses setter to run code)
 //
-//
-//        "no-self-compare": "error",
-////        Disallow comparisons where both sides are exactly the same
-//
-//
-//        "no-setter-return": "error",
-////        Disallow returning values from setters
-//
-//
-//        "no-sparse-arrays": "error",
-////        Disallow sparse arrays
-//
-//
-//        "no-template-curly-in-string": "error",
-////        Disallow template literal placeholder syntax in regular strings
-//
-//
-//        "no-this-before-super": "error",
-////        Disallow `this`/`super` before calling `super()` in constructors
-//
-//
+
+        "no-self-compare": "error",
+//        Disallow comparisons where both sides are exactly the same
+
+
+        "no-setter-return": "error",
+//        Disallow returning values from setters
+
+
+        "no-sparse-arrays": "error",
+//        Disallow sparse arrays
+
+
+        "no-template-curly-in-string": "error",
+//        Disallow template literal placeholder syntax in regular strings
+
+
+        "no-this-before-super": "error",
+//        Disallow `this`/`super` before calling `super()` in constructors
+
+
 //        "no-undef": "error",
 ////        Disallow the use of undeclared variables unless mentioned in `/*global */` comments
 //
 //
-//        "no-unexpected-multiline": "error",
-////        Disallow confusing multiline expressions
-//
-//
-//        "no-unmodified-loop-condition": "error",
-////        Disallow unmodified loop conditions
-//
-//
-//        "no-unreachable": "error",
-////        Disallow unreachable code after `return`, `throw`, `continue`, and `break` statements
-//
-//
-//        "no-unreachable-loop": "error",
-////        Disallow loops with a body that allows only one iteration
-//
-//
+        "no-unexpected-multiline": "error",
+//        Disallow confusing multiline expressions
+
+
+        "no-unmodified-loop-condition": "error",
+//        Disallow unmodified loop conditions
+
+
+        "no-unreachable": "error",
+//        Disallow unreachable code after `return`, `throw`, `continue`, and `break` statements
+
+
+        "no-unreachable-loop": "error",
+//        Disallow loops with a body that allows only one iteration
+
+
 //        "no-unsafe-finally": "error",
 ////        Disallow control flow statements in `finally` blocks
-//
-//
-//        "no-unsafe-negation": "error",
-////        Disallow negating the left operand of relational operators
-//
-//
-//        "no-unsafe-optional-chaining": "error",
-////        Disallow use of optional chaining in contexts where the `undefined` value is not allowed
-//
-//
-//        "no-unused-private-class-members": "error",
-////        Disallow unused private class members
-//
-//
+
+
+        "no-unsafe-negation": "error",
+//        Disallow negating the left operand of relational operators
+
+
+        "no-unsafe-optional-chaining": "error",
+//        Disallow use of optional chaining in contexts where the `undefined` value is not allowed
+
+
+        "no-unused-private-class-members": "error",
+//        Disallow unused private class members
+
+
 //        "no-unused-vars": "error",
 ////        Disallow unused variables
-//
-//
-//        "no-use-before-define": "error",
-////        Disallow the use of variables before they are defined
-//
-//
-//        "no-useless-backreference": "error",
-////        Disallow useless backreferences in regular expressions
-//
-//
+
+
+        "no-use-before-define": "error",
+//        Disallow the use of variables before they are defined
+
+
+        "no-useless-backreference": "error",
+//        Disallow useless backreferences in regular expressions
+
+
 //        "require-atomic-updates": "error",
 ////        Disallow assignments that can lead to race conditions due to usage of `await` or `yield`
-//
-//
-//        "use-isnan": "error",
-////        Require calls to `isNaN()` when checking for `NaN`
-//
-//
-//        "valid-typeof": "error",
-////        Enforce comparing `typeof` expressions against valid strings
-//
-//
+
+
+        "use-isnan": "error",
+//        Require calls to `isNaN()` when checking for `NaN`
+
+
+        "valid-typeof": "error",
+//        Enforce comparing `typeof` expressions against valid strings
+
+
 //     //   Suggestions
 //     //  These rules suggest alternate ways of doing things:
-//
+
 //        "accessor-pairs": "warn",
 ////        Enforce getter and setter pairs in objects and classes
-//
-//
-//        "arrow-body-style": "warn",
-////        Require braces around arrow function bodies
-//
-//
-//        "block-scoped-var": "warn",
-////        Enforce the use of variables within the scope they are defined
-//
-//
+
+
+        "arrow-body-style": ["warn","always"],
+//        Require braces around arrow function bodies
+
+
+        "block-scoped-var": "warn",
+//        Enforce the use of variables within the scope they are defined
+
+
 //        "camelcase": "warn",
 ////        Enforce camelcase naming convention
 //
-//
-//        "capitalized-comments": "warn",
-////        Enforce or disallow capitalization of the first letter of a comment
-//
-//
+
+        "capitalized-comments": ["off"],
+//        Enforce or disallow capitalization of the first letter of a comment (OFF)
+
+
 //        "class-methods-use-this": "warn",
 ////        Enforce that class methods utilize `this`
-//
-//
+
+
 //        "complexity": "warn",
 ////        Enforce a maximum cyclomatic complexity allowed in a program
-//
-//
+
+
 //        "consistent-return": "warn",
 ////        Require `return` statements to either always or never specify values
 //
@@ -279,15 +279,15 @@
         "curly": "warn",
 //        Enforce consistent brace style for all control statements
 
-//
-//        "default-case": "warn",
-////        Require `default` cases in `switch` statements
-//
-//
-//        "default-case-last": "warn",
-////        Enforce default clauses in switch statements to be last
-//
-//
+
+        "default-case": "warn",
+//        Require `default` cases in `switch` statements
+
+
+        "default-case-last": "warn",
+//        Enforce default clauses in switch statements to be last
+
+
 //        "default-param-last": "warn",
 ////        Enforce default parameters to be last
 //
@@ -342,116 +342,116 @@
 //
 //        "max-depth": "warn",
 ////        Enforce a maximum depth that blocks can be nested
-//
-//
-//        "max-lines": "warn",
-////        Enforce a maximum number of lines per file
-//
-//
-//        "max-lines-per-function": "warn",
-////        Enforce a maximum number of lines of code in a function
-//
-//
-//        "max-nested-callbacks": "warn",
-////        Enforce a maximum depth that callbacks can be nested
-//
-//
-//        "max-params": "warn",
-////        Enforce a maximum number of parameters in function definitions
-//
-//
-//        "max-statements": "warn",
-////        Enforce a maximum number of statements allowed in function blocks
-//
-//
-//        "multiline-comment-style": "warn",
-////        Enforce a particular style for multiline comments
-//
-//
-//        "new-cap": "warn",
-////        Require constructor names to begin with a capital letter
-//
-//
-//        "no-alert": "warn",
-////        Disallow the use of `alert`, `confirm`, and `prompt`
-//
-//
-//        "no-array-constructor": "warn",
-////        Disallow `"Array"` constructors
-//
-//
-//        "no-bitwise": "warn",
-////        Disallow bitwise operators
-//
-//
-//        "no-caller": "warn",
-////        Disallow the use of `arguments.caller` or `arguments.callee`
-//
-//
-//        "no-case-declarations": "warn",
-////        Disallow lexical declarations in case clauses
-//
-//
-//        "no-confusing-arrow": "warn",
-////        Disallow arrow functions where they could be confused with comparisons
-//
-//
+
+
+        "max-lines": ["warn",{"max": 860, "skipBlankLines" : true, "skipComments": true}],
+//        Enforce a maximum number of lines per file
+
+
+        "max-lines-per-function": ["warn",{"max": 200, "skipBlankLines" : true, "skipComments": true}],
+//        Enforce a maximum number of lines of code in a function
+
+
+        "max-nested-callbacks": ["warn",{"max": 3}],
+//        Enforce a maximum depth that callbacks can be nested
+
+
+        "max-params": ["warn",{"max": 6}],
+//        Enforce a maximum number of parameters in function definitions
+
+
+        "max-statements":["warn",{"max": 120}],
+//        Enforce a maximum number of statements allowed in function blocks  (Should be ~25 maxmax)
+
+
+        "multiline-comment-style": "off",
+//        Enforce a particular style for multiline comments (OFF)
+
+
+        "new-cap": "warn",
+//        Require constructor names to begin with a capital letter
+
+
+        "no-alert": "off",
+//        Disallow the use of `alert`, `confirm`, and `prompt` (OFF)
+
+
+        "no-array-constructor": "warn",
+//        Disallow `"Array"` constructors
+
+
+        "no-bitwise": "off",
+//        Disallow bitwise operators (used by uuiud)
+
+
+        "no-caller": "warn",
+//        Disallow the use of `arguments.caller` or `arguments.callee`
+
+
+        "no-case-declarations": "warn",
+//        Disallow lexical declarations in case clauses
+
+
+        "no-confusing-arrow": "warn",
+//        Disallow arrow functions where they could be confused with comparisons
+
+
 //        "no-console": "warn",
 ////        Disallow the use of `console`
-//
-//
-//        "no-continue": "warn",
-////        Disallow `continue` statements
-//
-//
-//        "no-delete-var": "warn",
-////        Disallow deleting variables
-//
-//
-//        "no-div-regex": "warn",
-////        Disallow division operators explicitly at the beginning of regular expressions
-//
-//
+
+
+        "no-continue": "warn",
+//        Disallow `continue` statements
+
+
+        "no-delete-var": "warn",
+//        Disallow deleting variables
+
+
+        "no-div-regex": "warn",
+//        Disallow division operators explicitly at the beginning of regular expressions
+
+
 //        "no-else-return": "warn",
 ////        Disallow `else` blocks after `return` statements in `if` statements
-//
-//
-//        "no-empty": "warn",
-////        Disallow empty block statements
-//
-//
-//        "no-empty-function": "warn",
-////        Disallow empty functions
-//
-//
+
+
+        "no-empty": "warn",
+//        Disallow empty block statements
+
+
+        "no-empty-function": "warn",
+//        Disallow empty functions
+
+
 //        "no-eq-null": "warn",
 ////        Disallow `null` comparisons without type-checking operators
-//
-//
-//        "no-eval": "warn",
-////        Disallow the use of `eval()`
-//
-//
-//        "no-extend-native": "warn",
-////        Disallow extending native types
-//
-//
+
+
+        "no-eval": "warn",
+//        Disallow the use of `eval()`
+
+
+        "no-extend-native": "warn",
+//        Disallow extending native types
+
+
 //        "no-extra-bind": "warn",
 ////        Disallow unnecessary calls to `.bind()`
-//
-//
-//        "no-extra-boolean-cast": "warn",
-////        Disallow unnecessary boolean casts
-//
-//
+
+
+        "no-extra-boolean-cast": "warn",
+//        Disallow unnecessary boolean casts
+
+
 //        "no-extra-label": "warn",
 ////        Disallow unnecessary labels
-//
-//
-//        "no-extra-semi": "warn",
-////        Disallow unnecessary semicolons
-//
-//
+
+
+        "no-extra-semi": "warn",
+//        Disallow unnecessary semicolons
+
+
 //        "no-floating-decimal": "warn",
 ////        Disallow leading or trailing decimal points in numeric literals
 //
@@ -630,7 +630,7 @@
 //
 //        "no-undef-init": "warn",
 ////        Disallow initializing variables to `undefined`
-//
+
 //
 //        "no-undefined": "warn",
 //        //    Disallow the use of `undefined` as an identifier
@@ -638,8 +638,8 @@
 //
 //        "no-underscore-dangle": "warn",
 //        //    Disallow dangling underscores in identifiers
-//
-//
+
+
 //        "no-unneeded-ternary": "warn",
 //        //    Disallow ternary operators when simpler alternatives exist
 //

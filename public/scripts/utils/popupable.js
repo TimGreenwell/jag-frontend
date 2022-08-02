@@ -29,7 +29,9 @@ export default class Popupable extends HTMLElement {
         if (typeof name === `string`) {
             _name.innerText = name;
         } else {
-            _p.$name = (inputs) => _name.innerText = name(inputs);
+            _p.$name = (inputs) => {
+                return _name.innerText = name(inputs);
+            };
         }
 
         const _description = document.createElement(`span`);
@@ -38,7 +40,9 @@ export default class Popupable extends HTMLElement {
         if (typeof description === `string`) {
             _description.innerText = description;
         } else {
-            _p.$description = (inputs) => _description.innerText = description(inputs);
+            _p.$description = (inputs) => {
+                return _description.innerText = description(inputs);
+            };
         }
 
         _p.append(_name, _description);
@@ -194,7 +198,7 @@ export default class Popupable extends HTMLElement {
                             let roptions = options;
 
                             //  throws error - options is not a function.    --purpose?
-                            if (typeof options !== `array`) {
+                            if (!Array.isArray(options)) {
                                 roptions = await options(data);
                             }
 

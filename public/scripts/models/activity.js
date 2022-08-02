@@ -6,8 +6,7 @@
  * @version 0.89
  */
 
-import {UUIDv4} from '../utils/uuid.js';
-import ValidationUtility from "../utils/validation.js";
+import {uuidV4} from '../utils/uuid.js';
 import Validation from "../utils/validation.js";
 
 /**
@@ -47,9 +46,9 @@ export default class Activity extends EventTarget {
         this._description = description;
         this._connector = connector;
 
-        this._inputs = inputs ? [...inputs] : new Array();
-        this._outputs = outputs ? [...outputs] : new Array();
-        this._children = children ? [...children] : new Array();
+        this._inputs = inputs ? [...inputs] : [];
+        this._outputs = outputs ? [...outputs] : [];
+        this._children = children ? [...children] : [];
         this._bindings = new Set(bindings);
 
         this._author = author;
@@ -81,7 +80,7 @@ export default class Activity extends EventTarget {
     }
 
     set urn(urn) {
-        if (!ValidationUtility.isValidUrn(this._urn)) {
+        if (!Validation.isValidUrn(this._urn)) {
             this._urn = urn;
         }
     }
@@ -177,7 +176,7 @@ export default class Activity extends EventTarget {
         return [...this._children];
     }
 
-    // id: id = UUIDv4(),
+    // id: id = uuidV4(),
     // urn: child.urn,
     // activity: child
 
@@ -237,7 +236,7 @@ export default class Activity extends EventTarget {
         this._collapsed = value;
     }
 
-    addChild(urn, id = undefined) {  // Add UUIDv4 default here
+    addChild(urn, id = undefined) {  // Add uuidV4 default here
         /**
          * Adds the given Activity as a child to this Activity.
          * If an ID already exists, the child already exists, and this was likely called
@@ -247,12 +246,12 @@ export default class Activity extends EventTarget {
          *
          * @param {Activity} child Model to add.
          * @param {String} id ID for child, if it exists.
-         * @returns {String} UUIDv4 string of the child.
+         * @returns {String} uuidV4 string of the child.
          */
         if (id === undefined) {   // <-- prob obs now
             this._children.push({
                 urn: urn,
-                id: id = UUIDv4()
+                id: id = uuidV4()
                 //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
@@ -452,7 +451,7 @@ export default class Activity extends EventTarget {
      */
     removeBinding(binding) {
         if (this._bindings.delete(binding)) {
-
+            console.log(`Stupid blank block - whatfer?`);
         }
     }
 
@@ -626,18 +625,18 @@ export default class Activity extends EventTarget {
         if (Array.isArray(json)) {
             const jagList = json.map(function (element) {
                 try {
-                    ValidationUtility.validateJAG(element);
+                    Validation.validateJAG(element);
                 } catch (e) {
                     throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
 
-                const returnValue = Activity(element);
+                const returnValue = new Activity(element);
                 return returnValue;
             });
             return jagList;
         } else {
             try {
-                ValidationUtility.validateJAG(json);
+                Validation.validateJAG(json);
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }

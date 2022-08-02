@@ -7,11 +7,11 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class TeamModel extends EventTarget {
 
-    constructor({id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set()} = {}) {
+    constructor({id = uuidV4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set()} = {}) {
         super();
         this._id = id;
         this._name = name;
@@ -101,7 +101,9 @@ export default class TeamModel extends EventTarget {
     }
 
     performer(id) {
-        const ids = this._agents.map((agent) => agent.id);
+        const ids = this._agents.map((agent) => {
+            return agent.id;
+        });
 
         if (ids.indexOf(id) >= 0) {
             return this._performerIds.has(id);
