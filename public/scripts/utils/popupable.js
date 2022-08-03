@@ -30,7 +30,8 @@ export default class Popupable extends HTMLElement {
             _name.innerText = name;
         } else {
             _p.$name = (inputs) => {
-                return _name.innerText = name(inputs);
+                _name.innerText = name(inputs);
+                return _name.innerText;
             };
         }
 
@@ -41,7 +42,8 @@ export default class Popupable extends HTMLElement {
             _description.innerText = description;
         } else {
             _p.$description = (inputs) => {
-                return _description.innerText = description(inputs);
+                _description.innerText = description(inputs);
+                return _description.innerText;
             };
         }
 
@@ -50,12 +52,12 @@ export default class Popupable extends HTMLElement {
         _p.setAttributeNS(null, `popup-type`, type);
 
         return {
-            type: type,
+            type,
             display: _p,
-            properties: properties,
-            actions: actions,
-            fallback: fallback,
-            skip: skip
+            properties,
+            actions,
+            fallback,
+            skip
         };
     }
 
@@ -91,7 +93,7 @@ export default class Popupable extends HTMLElement {
             this._popupContent.innerHTML = ``;
 
             const data = {
-                inputs: inputs,
+                inputs,
                 outputs: this._popupOutputs
             };
 
@@ -133,10 +135,10 @@ export default class Popupable extends HTMLElement {
                 displayNext = false;
 
                 if (content.display.$name) {
-                    content.display.$name({inputs: inputs});
+                    content.display.$name({inputs});
                 } // ??
                 if (content.display.$description) {
-                    content.display.$description({inputs: inputs});
+                    content.display.$description({inputs});
                 } // ??
 
                 this._popupContent.appendChild(content.display);
@@ -306,11 +308,11 @@ export default class Popupable extends HTMLElement {
 
     popup({content, trackEl, callback, inputs = {}, highlights = []}) {
         this._popups.push({
-            content: content,
-            trackEl: trackEl,
-            callback: callback,
-            inputs: inputs,
-            highlights: highlights
+            content,
+            trackEl,
+            callback,
+            inputs,
+            highlights
         });
 
         if (!this._popupInterval && !this._activePopup) {

@@ -32,7 +32,7 @@ export default class JAGATValidation {
 
     isValid() {
         const regex = new RegExp(`^[a-zA-Z0-9-:]+([a-zA-Z0-9])$`, `u`);
-        return !!this._urn.match(regex);
+        return Boolean(this._urn.match(regex));
     }
 
     static isValidUrn(urn) {
@@ -273,7 +273,7 @@ export default class JAGATValidation {
                 throw new Error(`Child iterable property must be a boolean.`);
             }
 
-            opt_params++;
+            opt_params = opt_params + 1;
         }
 
         if (child.annotations !== undefined) {
@@ -281,7 +281,7 @@ export default class JAGATValidation {
                 throw new Error(`Child may only have an annotations which is an object.`);
             }
 
-            opt_params++;
+            opt_params = opt_params + 1;
         }
 
         if (child.name !== undefined) {
@@ -293,7 +293,7 @@ export default class JAGATValidation {
                 throw new Error(`Child may only have a name string with at least 1 character.`);
             }
 
-            opt_params++;
+            opt_params = opt_params + 1;
         }
 
         if (child.description !== undefined) {
@@ -305,7 +305,7 @@ export default class JAGATValidation {
                 throw new Error(`Child may only have a description string with at least 1 character.`);
             }
 
-            opt_params++;
+            opt_params = opt_params + 1;
         }
 
         if (Object.keys(child).length !== 2 + opt_params) {

@@ -28,7 +28,7 @@ export default class Node extends EventTarget {
         returnState = null,
         testReturnValue = null,
         testReturnState = null,
-        children = []()
+        children = []
     } = {}) {
         super();
         this._id = id;                       // An assigned unique ID given at construction

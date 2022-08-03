@@ -134,7 +134,7 @@ export default class StorageService extends SharedObservable {
      * No notification made. (Not a storage change)
      */
     static async has(id, schema = this._schema) {
-        return await this._storageInstancesMap.get(this._preferredStorage).has(schema, id);
+        await this._storageInstancesMap.get(this._preferredStorage).has(schema, id);
     }
 
     /**
@@ -147,7 +147,7 @@ export default class StorageService extends SharedObservable {
         await this._storageInstancesMap.get(this._preferredStorage).clear(schema);
         this.confirmStorageChange({
             topic: `command-${schema}-cleared`,
-            schema: schema,
+            schema,
             id: null,
             description: null
         });
@@ -167,7 +167,7 @@ export default class StorageService extends SharedObservable {
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, createdId, jsonObj);
         this.confirmStorageChange({
             topic: `command-${schema}-created`,
-            schema: schema,
+            schema,
             id: createdId,
             description: jsonObj
         });
@@ -184,7 +184,7 @@ export default class StorageService extends SharedObservable {
         await this._storageInstancesMap.get(this._preferredStorage).update(schema, updatedId, jsonObj);
         this.confirmStorageChange({
             topic: `command-${schema}-updated`,
-            schema: schema,
+            schema,
             id: updatedId,
             description: jsonObj
         });
@@ -199,7 +199,7 @@ export default class StorageService extends SharedObservable {
         const result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
         this.confirmStorageChange({
             topic: `command-${schema}-deleted`,
-            schema: schema,
+            schema,
             id: deletedId,
             description: null
         });
@@ -219,9 +219,9 @@ export default class StorageService extends SharedObservable {
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, newId, description);
         this.confirmStorageChange({
             topic: `command-${schema}-replaced`,
-            schema: schema,
+            schema,
             id: origId,
-            description: description
+            description
         });
     }
 
@@ -237,9 +237,9 @@ export default class StorageService extends SharedObservable {
         await this._storageInstancesMap.get(this._preferredStorage).create(schema, SchemaManager.getKeyValue(schema, description), description);
         this.confirmStorageChange({
             topic: `$command-${schema}-cloned`,
-            schema: schema,
+            schema,
             id: cloneId,
-            description: description
+            description
         });
     }
 

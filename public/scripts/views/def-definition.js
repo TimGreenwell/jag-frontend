@@ -331,10 +331,10 @@ class Definition extends HTMLElement {
     _toggleDataMode(event) {
         if (this.dataMode == `test`) {
             this._$swapButton.innerText = `>Live`;
-            this.dataMode == `live`;
+            this.dataMode = `live`;
         } else {
             this._$swapButton.innerText = `>Test`;
-            this.dataMode == `test`;
+            this.dataMode = `test`;
         }
     }
 

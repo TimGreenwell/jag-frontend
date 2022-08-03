@@ -248,17 +248,20 @@ export default class Activity extends EventTarget {
          * @param {String} id ID for child, if it exists.
          * @returns {String} uuidV4 string of the child.
          */
+
+        let newId = id;
         if (id === undefined) {   // <-- prob obs now
+            newId = uuidV4();
             this._children.push({
-                urn: urn,
-                id: id = uuidV4()
+                urn,
+                id: newId
                 //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
         if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
             this._operator = Activity.OPERATOR.AND.name;
         }
-        return id;
+        return newId;
     }
 
 

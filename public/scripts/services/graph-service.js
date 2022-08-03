@@ -31,7 +31,7 @@ export default class GraphService extends EventTarget {
         const payload = {
             type: `run`,
             data: {
-                urn: urn,
+                urn,
                 inputs: data.inputs,
                 actor: data.actor
             }

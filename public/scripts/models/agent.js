@@ -45,7 +45,7 @@ export default class AgentModel extends EventTarget {
             detail: {
                 id: this._id,
                 property: `name`,
-                extra: {name: name}
+                extra: {name}
             }
         }));
     }
@@ -89,8 +89,8 @@ export default class AgentModel extends EventTarget {
                 id: this._id,
                 property: `assessment`,
                 extra: {
-                    urn: urn,
-                    assessment: assessment
+                    urn,
+                    assessment
                 }
             }
         }));
@@ -108,7 +108,7 @@ export default class AgentModel extends EventTarget {
         const assessments = new Map();
         for (const urn in json.assessments) {
             const value = json.assessments[urn];
-            let assessment = undefined;
+            let assessment;
 
             if (value == 1) {
                 assessment = AgentModel.CAN_DO_PERFECTLY;

@@ -229,7 +229,7 @@ class IATable extends Popupable {
                     this.popup({
                         content: IATable.NOTICE_OVERWRITE_JAG,
                         trackEl: this._domElements.import,                  // To separate: put popups in iatable function.  bring rest up.
-                        inputs: {jag: jag},
+                        inputs: {jag},
                         highlights: [this._domElements.import]
                     });
                 }
@@ -293,38 +293,36 @@ class IATable extends Popupable {
     // }
 
     async import(analysisModelImport) {
-        {
-            // Sort nodes with the least number of children first.
-            analysisModelImport.nodes.sort((a, b) => {
-                return a.children.length - b.children.length;
+        // Sort nodes with the least number of children first.
+        analysisModelImport.nodes.sort((a, b) => {
+            return a.children.length - b.children.length;
+        });
+
+        for (const node of analysisModelImport.nodes) {
+            // const nodeModel = await NodeModel.fromJSON(node);
+            // //await service.create(nodeModel,'node');
+            // await StorageService.create(nodeModel, 'node');
+        }
+
+
+        // const team_service = TeamService.instance('idb-service');
+        // const team_service = StorageService.getStorageInstance('idb-service');
+
+        // const agent_service = AgentService.instance('idb-service');
+        // const agent_service = StorageService.getStorageInstance('idb-service');
+
+        for (const team of analysisModelImport.teams) {
+            for (const agent of team.agents) {
+                await StorageService.create(AgentModel.fromJSON(agent), `agent`);
+            }
+
+            team.agents = team.agents.map((agent) => {
+                return agent.id;
             });
-
-            for (const node of analysisModelImport.nodes) {
-                // const nodeModel = await NodeModel.fromJSON(node);
-                // //await service.create(nodeModel,'node');
-                // await StorageService.create(nodeModel, 'node');
-            }
+            const agentModel = await TeamModel.fromJSON(team);
+            await StorageService.create(agentModel, `team`);
         }
 
-        {
-            // const team_service = TeamService.instance('idb-service');
-            // const team_service = StorageService.getStorageInstance('idb-service');
-
-            // const agent_service = AgentService.instance('idb-service');
-            // const agent_service = StorageService.getStorageInstance('idb-service');
-
-            for (const team of analysisModelImport.teams) {
-                for (const agent of team.agents) {
-                    await StorageService.create(AgentModel.fromJSON(agent), `agent`);
-                }
-
-                team.agents = team.agents.map((agent) => {
-                    return agent.id;
-                });
-                const agentModel = await TeamModel.fromJSON(team);
-                await StorageService.create(agentModel, `team`);
-            }
-        }
 
         // const service = AnalysisService.instance('idb-service');
         // const service = StorageService.getStorageInstance('idb-service');
@@ -429,7 +427,7 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
             name: `root`,
             label: `Root JAG`,
             type: `select`,
-            options: async function () {
+            async options() {
                 const options = [];
 
                 const jags = await StorageService.all(`activity`);     // @todo check if StorageService is really necessary
@@ -450,13 +448,11 @@ IATable.NOTICE_CREATE_ANALYSIS = Popupable._createPopup({
             text: `Create`,
             color: `white`,
             bgColor: `green`,
-            action: function ({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
+            action({inputs: {table}, outputs: {name, root}}) {  // analysisModelname and root URN
                 // let id = await this._controller.createAnalysis(name,root);
                 this.dispatchEvent(new CustomEvent(`event-analysis-created`, {
-                    detail: {
-                        name: name,
-                        rootUrn: root
-                    }
+                    detail: {name,
+                        rootUrn: root}
                 }));
             }
         },
@@ -477,7 +473,7 @@ IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
             text: `Yes`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {table}}) {
+            action({inputs: {table}}) {
                 table.export(true);
             }
         },
@@ -485,7 +481,7 @@ IATable.NOTICE_EXPORT_STATIC = Popupable._createPopup({
             text: `No`,
             color: `white`,
             bgColor: `black`,
-            action: function ({inputs: {table}}) {
+            action({inputs: {table}}) {
                 table.export(false);
             }
         }
@@ -501,7 +497,7 @@ IATable.NOTICE_OVERWRITE_ANALYSIS = Popupable._createPopup({
             text: `Overwrite`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {table, analysis}}) {
+            action({inputs: {table, analysis}}) {
                 table.import(analysisModel);
             }
         },
@@ -528,7 +524,7 @@ IATable.NOTICE_OVERWRITE_JAG = Popupable._createPopup({
             text: `Overwrite`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {jag}}) {
+            action({inputs: {jag}}) {
                 const newActivity = ActivityModel.fromJSON(jag);
                 this.dispatchEvent(new CustomEvent(`event-analysis-updated`, {
                     bubbles: true,
@@ -557,7 +553,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             name: `name`,
             label: `Name`,
             type: `text`,
-            options: function () {
+            options() {
                 const eventMap = new Map();
                 eventMap.set(`input`, () => {
                     const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
@@ -572,7 +568,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             name: `urn`,
             label: `URN`,
             type: `text`,
-            options: function () {
+            options() {
                 const eventMap = new Map();
                 return eventMap;
             }
@@ -581,7 +577,7 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             name: `description`,
             label: `Description`,
             type: `textarea`,
-            options: function () {
+            options() {
                 const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -594,11 +590,11 @@ IATable.NOTICE_CREATE_AGENT = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: function ({outputs: agentConstruct}) {
+            action({outputs: agentConstruct}) {
                 this.dispatchEvent(new CustomEvent(`event-agent-created`, {
                     bubbles: true,
                     composed: true,
-                    detail: {agentConstruct: agentConstruct}
+                    detail: {agentConstruct}
                 }));
             }
         },

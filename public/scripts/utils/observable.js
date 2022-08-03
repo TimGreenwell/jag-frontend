@@ -70,10 +70,10 @@ export default class SharedObservable extends SharedService {
     static confirmStorageChange({topic, schema, id, description}) {
         console.log(` {SHARING>} - - Database change confirmed, (${id}/${topic}) -- posting message across shared web worker`);
         this.sharedWorker.port.postMessage({
-            topic: topic,
-            schema: schema,
-            id: id,
-            description: description
+            topic,
+            schema,
+            id,
+            description
         });
     }
 

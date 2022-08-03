@@ -708,11 +708,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 return;
             }
 
-            const input = {
-                name: name,
-                type: type
-            };
-
+            const input = {name,
+                type};
             this._nodeModel.activity.addInput(input);
         }
     }
@@ -729,10 +726,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 return;
             }
 
-            const output = {
-                name: name,
-                type: type
-            };
+            const output = {name,
+                type};
 
             this._nodeModel.activity.addOutput(output);
         }
@@ -763,7 +758,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             return [
                 {
-                    label: label,
+                    label,
                     options: node.inputs.map((input) => {
                         return {
                             text: input.name,
@@ -796,7 +791,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             return [
                 {
-                    label: label,
+                    label,
                     options: node.outputs.map((output) => {
                         return {
                             text: output.name,
@@ -956,7 +951,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         annotation_value.disabled = true;
 
                         const value = annotation[1];
-                        const value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+                        const value_text = value === Object(value) ? JSON.stringify(value) : value.toString();
                         annotation_value.value = value_text;
 
                         annotation_value.className = `annotation value`;
@@ -1066,7 +1061,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         for (const input of this.querySelectorAll(`input`)) {
             input.title = input.value;
             input.onchange = () => {
-                return input.title = input.value;
+                input.title = input.value;
+                return input.title;
             };
         }
     }

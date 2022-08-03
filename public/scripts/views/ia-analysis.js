@@ -129,10 +129,10 @@ class AnalysisView extends HTMLElement {
         const abs_offset = level_count + offset;
 
         // Gets (and makes if necessary) the team header
-        if (!this._columnHeaderMap.has(team.id)) {
-            this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
-        } else {
+        if (this._columnHeaderMap.has(team.id)) {
             this._columnHeaderMap.get(team.id).innerText = team.name;
+        } else {
+            this._makeHeader(team.id, team.name, abs_offset, 0, agent_count);
         }
 
         const $column = this._columnHeaderMap.get(team.id);
@@ -142,10 +142,10 @@ class AnalysisView extends HTMLElement {
         for (let i = abs_offset, agent_idx = 0; i < abs_offset + agent_count; i++, agent_idx++) {
             const agent = team.agents[agent_idx];
 
-            if (!this._columnHeaderMap.has(agent.id)) {
-                this._makeHeader(agent.id, agent.name, i, 1);
-            } else {
+            if (this._columnHeaderMap.has(agent.id)) {
                 this._columnHeaderMap.get(agent.id).innerText = agent.name;
+            } else {
+                this._makeHeader(agent.id, agent.name, i, 1);
             }
 
             const $column = this._columnHeaderMap.get(agent.id);
@@ -274,7 +274,7 @@ class AnalysisView extends HTMLElement {
                 $assessment.style.setProperty(`--col-start`, col + offset + 1);
                 $assessment.style.setProperty(`--row-start`, row + i + 1);
             }
-            offset++;
+            offset = offset + 1;
         }
 
         this.appendChild($assessments);

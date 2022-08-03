@@ -15,8 +15,8 @@ class ColumnHeader extends AnalysisCell {
         super();
         this._name = name;
         this._start = {
-            col: col,
-            row: row
+            col,
+            row
         };
         this._end = {
             col: col_end,
@@ -99,7 +99,7 @@ class ColumnHeader extends AnalysisCell {
         event.preventDefault();
 
         const target = event.target;
-        target.size = target.size + Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY;
+        target.size = target.size + (Math.sign(event.deltaY) * ColumnHeader.SENSITIVITY);
     }
 
 }

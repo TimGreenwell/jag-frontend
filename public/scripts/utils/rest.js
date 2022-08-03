@@ -57,7 +57,7 @@ export default class RESTUtils {
     static async get(url) {
         // TODO: safely join URL paths (perhaps Node package?)
         const options = {};
-        return await RESTUtils.request(url, options, `Error retrieving JAG`);
+        await RESTUtils.request(url, options, `Error retrieving JAG`);
     }
 
     static async has(url) {
@@ -68,7 +68,7 @@ export default class RESTUtils {
                 mode: `cors`
             }
         };
-        return await RESTUtils.request(url, options, `Error finding JAG`, true, false);
+        await RESTUtils.request(url, options, `Error finding JAG`, true, false);
     }
 
     static async create(url, description) {
@@ -82,7 +82,7 @@ export default class RESTUtils {
                 mode: `cors`
             }
         };
-        return await RESTUtils.request(url, options, `Error creating`);
+        await RESTUtils.request(url, options, `Error creating`);
     }
 
     static async update(url, description) {
@@ -95,7 +95,7 @@ export default class RESTUtils {
                 mode: `cors`
             }
         };
-        return await RESTUtils.request(url, options, `Error updating`);
+        await RESTUtils.request(url, options, `Error updating`);
     }
 
     static async delete(url) {
@@ -108,7 +108,7 @@ export default class RESTUtils {
                 'x-xsrf-token': csrfToken
             }
         };
-        return await RESTUtils.request(url, options, `Error deleting`);
+        await RESTUtils.request(url, options, `Error deleting`);
     }
 
 
@@ -122,7 +122,7 @@ export default class RESTUtils {
                 //    'x-xsrf-token': csrfToken
             }
         };
-        return await RESTUtils.request(url, options, `Error clearing`);
+        await RESTUtils.request(url, options, `Error clearing`);
     }
 
     static getCookie(name) {

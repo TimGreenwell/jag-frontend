@@ -181,15 +181,15 @@ export default class ControllerAT extends Controller {
         console.log(updatedNodeModel);
         console.log(updatedNodeModel.parentId);
         //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
-        if (!updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
-            projectNode = updatedNodeModel;
-        } else {
+        if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = this.fetchProject(updatedNodeModel.projectId);
             console.log(`Starting JSON`);
             console.log(JSON.stringify(projectNode));
             projectNode.replaceChild(updatedNodeModel);
             console.log(`Ending JSON`);
             console.log(JSON.stringify(projectNode));
+        } else {
+            projectNode = updatedNodeModel;
         }
         await StorageService.update(projectNode, `node`);
     }
@@ -325,7 +325,7 @@ export default class ControllerAT extends Controller {
             Object.assign(document.createElement(`a`), {
                 target: `_blank`,
                 rel: `noopener noreferrer`,
-                href: href
+                href
             }).click();
         }
 
@@ -552,12 +552,13 @@ export default class ControllerAT extends Controller {
 
     gatherAncestorUrns(projectModelId, parentModelId) {
         const urnStack = [];
+        let nextParentId = null;
         const projectNode = this.fetchProject(projectModelId);
         do {
             const checkNode = projectNode.findChildById(parentModelId);
             urnStack.push(checkNode.urn);
-            parentModelId = checkNode.parentId;
-        } while (parentModelId != undefined);
+            nextParentId = checkNode.parentId;
+        } while (nextParentId != undefined);
         return urnStack;
     }
 

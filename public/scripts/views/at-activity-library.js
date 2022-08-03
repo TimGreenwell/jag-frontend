@@ -67,7 +67,9 @@ customElements.define(`jag-library`, class extends HTMLElement {
         const existingUrns = this._libraryList.filter((entry) => {
             return entry.urn;
         });
-        if (!existingUrns.includes(newActivity.urn)) {
+        if (existingUrns.includes(newActivity.urn)) {
+            console.log(`ERROR -- URN already exists [library-addItem]`);
+        } else {
             if (newActivity instanceof Activity) {
                 const urn = newActivity.urn;
                 const name = newActivity.name || ``;
@@ -157,8 +159,6 @@ customElements.define(`jag-library`, class extends HTMLElement {
             } else {
                 console.log(`ERROR -- unexpected type for newActivity [library-addItem]`);
             }
-        } else {
-            console.log(`ERROR -- URN already exists [library-addItem]`);
         }
     }
 

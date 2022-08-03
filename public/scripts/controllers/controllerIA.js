@@ -290,7 +290,9 @@ export default class ControllerIA extends Controller {
     async eventAgentCreatedHandler(event) {
         console.log(`Local>> (local agent created) `);
         const agentConstruct = event.detail.agentConstruct;
-        if (!this.agentMap.has(agentConstruct.urn)) {
+        if (this.agentMap.has(agentConstruct.urn)) {
+            window.alert(`That URN already exists`);
+        } else {
             const newAgent = new AgentModel(event.detail.agentConstruct);
             newAgent.dateCreated = Date.now();
             if (InputValidator.isValidUrn(newAgent.urn)) {
@@ -298,8 +300,6 @@ export default class ControllerIA extends Controller {
             } else {
                 window.alert(`Invalid URN`);
             }
-        } else {
-            window.alert(`That URN already exists`);
         }
     }
 
@@ -354,7 +354,7 @@ export default class ControllerIA extends Controller {
                 parentActivityChildren.splice(index, 1);
                 found = true;
             } else {
-                ++index;
+                index = index + 1;
             }
         }
         parentActivity.children = parentActivityChildren;
@@ -485,8 +485,8 @@ export default class ControllerIA extends Controller {
 
     async createAgent({name, urn} = {}) {
         const newAgent = new AgentModel({
-            name: name,
-            urn: urn
+            name,
+            urn
         });
         await StorageService.create(newAgent, `agent`);
         return newAgent;
@@ -494,8 +494,8 @@ export default class ControllerIA extends Controller {
 
     async createTeam(name = `unnamed`, agentIds = [], performers = []) {
         const newTeam = new TeamModel({
-            name: name,
-            agentIds: agentIds
+            name,
+            agentIds
         });
         await StorageService.create(newTeam, `team`);
         return newTeam;
@@ -503,9 +503,9 @@ export default class ControllerIA extends Controller {
 
     async createAnalysis({name, description, rootUrn, teamId} = {}) {     // @todo I like the named parameter pattern - might look at standardizing on it.
         const newAnalysis = new AnalysisModel({
-            name: name,
-            rootUrn: rootUrn,
-            teamId: teamId
+            name,
+            rootUrn,
+            teamId
         });
         await StorageService.create(newAnalysis, `analysis`);
         return newAnalysis;
@@ -524,7 +524,7 @@ export default class ControllerIA extends Controller {
         const newTeam = await this.createTeam(`Team Blue`, [agent1.id, agent2.id]);
         const newAnalysis = await this.createAnalysis({
             name: analysisName,
-            rootUrn: rootUrn,
+            rootUrn,
             teamId: newTeam.id
         });// @todo I like the named parameter pattern - might look at standardizing on it.
         return newAnalysis;
@@ -615,7 +615,7 @@ export default class ControllerIA extends Controller {
             detail: {
                 target: child,
                 reference: this,
-                layout: layout
+                layout
             }
         }));
 

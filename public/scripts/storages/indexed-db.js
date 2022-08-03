@@ -47,22 +47,23 @@ export default class IndexedDBStorage {
 
     async create(schema, keyValue, description) {
         const storeName = SchemaManager.get(schema).name;
-        return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
+        await IndexedDBUtils.store(this._db, storeName, description, keyValue);
     }
 
     async clear(schema) {
         const storeName = SchemaManager.get(schema).name;
-        return await IndexedDBUtils.clear(this._db, storeName);
+        await IndexedDBUtils.clear(this._db, storeName);
     }
 
     async update(schema, keyValue, description) {
         const storeName = SchemaManager.get(schema).name;
-        return await IndexedDBUtils.store(this._db, storeName, description, keyValue);
+        await IndexedDBUtils.store(this._db, storeName, description, keyValue);
     }
 
     async delete(schema, keyValue) {
         const storeName = SchemaManager.get(schema).name;
-        return await IndexedDBUtils.delete(this._db, storeName, keyValue);
+        await IndexedDBUtils.delete(this._db, storeName, keyValue);
+
         // return await IndexedDBUtils.delete2(this._db, storeName, keyValue);
     }
 

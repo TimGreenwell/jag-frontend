@@ -122,7 +122,9 @@ export default class Controller extends EventTarget {
     async eventActivityCreatedHandler(event) {
         const activityConstruct = event.detail.activityConstruct;
         console.log(`\nLocal>> (Activity ${activityConstruct.urn} creating) `);
-        if (!this.activityMap.has(activityConstruct.urn)) {
+        if (this.activityMap.has(activityConstruct.urn)) {
+            window.alert(`That URN already exists`);
+        } else {
             const newActivity = new Activity(event.detail.activityConstruct);
             newActivity.createdDate = Date.now();
             if (InputValidator.isValidUrn(newActivity.urn)) {
@@ -130,8 +132,6 @@ export default class Controller extends EventTarget {
             } else {
                 window.alert(`Invalid URN`);
             }
-        } else {
-            window.alert(`That URN already exists`);
         }
     }
 

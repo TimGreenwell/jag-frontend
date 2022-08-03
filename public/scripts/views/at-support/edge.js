@@ -279,7 +279,7 @@ export default class Edge extends EventTarget {
         _tspan_key.innerHTML = `${key}`;
         this._list_el.appendChild(_tspan_key);
 
-        const value_text = value !== Object(value) ? value.toString() : JSON.stringify(value);
+        const value_text = value === Object(value) ? JSON.stringify(value) : value.toString();
 
         const _tspan_value = document.createElementNS(XMLNS, `tspan`);
         _tspan_value.setAttribute(`class`, `annotation-value`);

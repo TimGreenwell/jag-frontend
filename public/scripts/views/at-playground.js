@@ -303,10 +303,10 @@ class AtPlayground extends Popupable {
         down
     }) {
         this._canMoveView = {
-            left: toggle.left != undefined ? toggle.left : this._canMoveView.left,
-            right: toggle.right != undefined ? toggle.right : this._canMoveView.right,
-            up: toggle.up != undefined ? toggle.up : this._canMoveView.up,
-            down: toggle.down != undefined ? toggle.down : this._canMoveView.down
+            left: toggle.left == undefined ? this._canMoveView.left : toggle.left,
+            right: toggle.right == undefined ? this._canMoveView.right : toggle.right,
+            up: toggle.up == undefined ? this._canMoveView.up : toggle.up,
+            down: toggle.down == undefined ? this._canMoveView.down : toggle.down
         };
 
         for (const [key, value] of Object.entries(toggle)) {
@@ -394,9 +394,7 @@ class AtPlayground extends Popupable {
         });
 
         this.dispatchEvent(new CustomEvent(`event-nodes-selected`, {
-            detail: {
-                selectedNodeArray: selectedNodeArray
-            }
+            detail: {selectedNodeArray}
         }));
         e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
@@ -419,8 +417,8 @@ class AtPlayground extends Popupable {
         });
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
             detail: {
-                selectedNodeArray: selectedNodeArray,
-                unselectedNodeArray: unselectedNodeArray
+                selectedNodeArray,
+                unselectedNodeArray
             }
         }));
 
@@ -753,7 +751,7 @@ class AtPlayground extends Popupable {
             }
         } else if (event.key == `ArrowLeft`) {
             if (this._canMoveView.left) {
-                this._dragView(1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
+                this._dragView(Number(AtPlayground.DEFAULT_ARROW_MULTIPLIER), 0);
             }
         } else if (event.key == `ArrowRight`) {
             if (this._canMoveView.right) {
@@ -761,7 +759,7 @@ class AtPlayground extends Popupable {
             }
         } else if (event.key == `ArrowUp`) {
             if (this._canMoveView.up) {
-                this._dragView(0, 1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
+                this._dragView(0, Number(AtPlayground.DEFAULT_ARROW_MULTIPLIER));
             }
         } else if (event.key == `ArrowDown`) {
             if (this._canMoveView.down) {
@@ -830,7 +828,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             name: `name`,
             label: `Name`,
             type: `text`,
-            options: function () {
+            options() {
                 const eventMap = new Map();
                 eventMap.set(`input`, () => {
                     const newName = UserPrefs.getDefaultUrnPrefix() + document.getElementById(`name`).value;
@@ -845,7 +843,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             name: `urn`,
             label: `URN`,
             type: `text`,
-            options: function () {
+            options() {
                 const eventMap = new Map();
                 return eventMap;
             }
@@ -854,7 +852,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             name: `description`,
             label: `Description`,
             type: `textarea`,
-            options: function () {
+            options() {
                 const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -868,11 +866,11 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             color: `black`,
             bgColor: `red`,
             //         action: function ({inputs: {}, outputs: activityConstruct}) {
-            action: function ({outputs: activityConstruct}) {                             // or maybe {inputs = {}, outputs: activityConstruct}
+            action({outputs: activityConstruct}) {                             // or maybe {inputs = {}, outputs: activityConstruct}
                 this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                     bubbles: true,
                     composed: true,
-                    detail: {activityConstruct: activityConstruct}
+                    detail: {activityConstruct}
                 }));
             }
         },
@@ -898,7 +896,7 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
             text: `Yes`,
             color: `black`,
             bgColor: `red`,
-            action: function ({inputs: {node}}) {
+            action({inputs: {node}}) {
                 const edge = node.getParentEdge();
                 const id = edge.getChildId();
                 const parent = node.getParent();
@@ -937,7 +935,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             name: `description`,
             label: `JSON`,
             type: `textarea`,
-            options: function () {
+            options() {
                 const paramMap = new Map();
                 paramMap.set(`cols`, 24);
                 paramMap.set(`rows`, 4);
@@ -950,7 +948,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             text: `Create`,
             color: `black`,
             bgColor: `red`,
-            action: function ({outputs: json}) {
+            action({outputs: json}) {
                 this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                     bubbles: true,
                     composed: true,
@@ -967,7 +965,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             text: `Or select a file...`,
             color: `white`,
             bgColor: `black`,
-            action: async function () {                          //  input:{}, output:{}
+            async action() {                          //  input:{}, output:{}
                 const getFiles = () => {
                     new Promise((resolve) => {
                         const input = document.createElement(`input`);

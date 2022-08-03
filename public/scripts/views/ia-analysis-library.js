@@ -110,24 +110,20 @@ customElements.define(`analysis-library`, class extends HTMLElement {
 
         $bottomHalfWrapper.addEventListener(`click`, (event) => {
             this.dispatchEvent(new CustomEvent(`event-analysis-selected`, {
-                detail: {
-                    model: model
-                }
+                detail: {model}
             }));
         });
 
         $topHalfWrapper.addEventListener(`click`, (event) => {
             this.dispatchEvent(new CustomEvent(`event-analysis-selected`, {
-                detail: {
-                    model: model
-                }
+                detail: {model}
             }));
         });
 
         const newItem = {
             element: li,
             search_content: search_params.join(` `),
-            model: model
+            model
         };
 
         return newItem;

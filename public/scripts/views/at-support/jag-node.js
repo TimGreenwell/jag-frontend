@@ -12,8 +12,7 @@
 
 //  This is the playground Jag Node -
 
-
-import JAG from '../../models/activity.js';
+import Activity from '../../models/activity.js';
 
 customElements.define(`jag-node`, class extends HTMLElement {
 
@@ -201,10 +200,8 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
     removeChild(edge, id) {
         if (edge.getSubActivityNode()) {
-            this._nodeModel.activity.removeChild({
-                id: id,
-                activity: edge.getSubActivityNode().activity
-            });
+            this._nodeModel.activity.removeChild({id,
+                activity: edge.getSubActivityNode().activity});
             this._outs.delete(edge);
             edge.destroy();
         }
@@ -379,8 +376,8 @@ customElements.define(`jag-node`, class extends HTMLElement {
     _initHandlers() {
         this._$header.addEventListener(`mousedown`, (e) => {
             this._center_offset = {
-                x: this._$header.clientWidth / 2.0 - e.offsetX,
-                y: this._$header.clientHeight / 2.0 - e.offsetY
+                x: (this._$header.clientWidth / 2.0) - e.offsetX,
+                y: (this._$header.clientHeight / 2.0) - e.offsetY
             };
 
             this._is_moving = true;
@@ -505,10 +502,8 @@ customElements.define(`jag-node`, class extends HTMLElement {
         }
 
         this.dispatchEvent(new CustomEvent(`change-position`, {
-            detail: {
-                x: x,
-                y: y
-            }
+            detail: {x,
+                y}
         }));
     }
 
@@ -542,7 +537,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._$concurrency.style.display = `none`;
         this._$concurrency.innerHTML = ``;
 
-        if (this._nodeModel.activity.execution != JAG.EXECUTION.SEQUENTIAL.name) {
+        if (this._nodeModel.activity.execution != Activity.EXECUTION.SEQUENTIAL.name) {
             return;
         }
 
@@ -578,21 +573,21 @@ customElements.define(`jag-node`, class extends HTMLElement {
     }
 
     getPosition() {
-        const x = Math.round(this._translation.x - this.clientWidth / 2.0);
-        const y = Math.round(this._translation.y - this.clientHeight / 2.0);
+        const x = Math.round(this._translation.x - (this.clientWidth / 2.0));
+        const y = Math.round(this._translation.y - (this.clientHeight / 2.0));
 
         return [x, y];
     }
 
     _computeNodeInputAttachment() {
-        const x = this._translation.x - this._$header.clientWidth / 2.0;
+        const x = this._translation.x - (this._$header.clientWidth / 2.0);
         const y = this._translation.y;
 
         return [x, y];
     }
 
     _computeNodeOutputAttachment() {
-        const x = this._translation.x + this.clientWidth / 2.0;
+        const x = this._translation.x + (this.clientWidth / 2.0);
         const y = this._translation.y;
 
         return [x, y];

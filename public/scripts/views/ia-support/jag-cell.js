@@ -151,11 +151,11 @@ class JagCell extends AnalysisCell {
                 this.nodeModel.addChild(new Node());
             }   // shift to controller (ControllerIA.addNewNode(cellModel))
             if (e.ctrlKey) {
-                if (this.nodeModel.parent !== undefined) {
+                if (this.nodeModel.parent === undefined) {
+                    console.log(`Can not add siblings to root`);
+                } else {
                     this.nodeModel.parent.addChild(new Node());
                     // shift to controller (ControllerIA.addNewNode(cellModel.parent))
-                } else {
-                    console.log(`Can not add siblings to root`);
                 }
             }
             break;
@@ -201,14 +201,14 @@ class JagCell extends AnalysisCell {
                     this.dispatchEvent(new CustomEvent(`event-activity-created`, {
                         bubbles: true,
                         composed: true,
-                        detail: {activityConstruct: activityConstruct}
+                        detail: {activityConstruct}
                     }));
-                    parent = this.nodeModel.parent.activity;
-                    const id = parent.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
+                    const parentActivity = this.nodeModel.parent.activity;
+                    const id = parentActivity.addChild(this.urnElementEntry);                    // <-- thinking we dont need ids in the jag child list.. does not seem used
                     this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                         bubbles: true,
                         composed: true,
-                        detail: {activity: parent.activity}
+                        detail: {activity: parentActivity}
                     }));
                 }
             }
@@ -321,8 +321,8 @@ class JagCell extends AnalysisCell {
         // if the model does exists, reset to previous state unless replace is true.
         if (!jag) {
             jag = new JAG({
-                urn: urn,
-                name: name
+                urn,
+                name
             });
 
             // await JAGService.instance('idb-service').create(jag);
@@ -368,11 +368,11 @@ class JagCell extends AnalysisCell {
         $urnEntry.setAttribute(`spellcheck`, `false`);
         $urnEntry.setAttribute(`tabindex`, `-1`);
 
-        if (this._cellModel !== undefined) { // && this._cellModel.hasValidURN) {
+        if (this._cellModel === undefined) { // && this._cellModel.hasValidURN) {
+            this.classList.add(`unsaved`);
+        } else {
             $urnEntry.innerText = this.cellModel.activity.urn;
             $nameEntry.innerText = this.cellModel.activity.name;
-        } else {
-            this.classList.add(`unsaved`);
         }
 
         $fold.addEventListener(`click`, () => {
@@ -400,9 +400,10 @@ class JagCell extends AnalysisCell {
         //    tg - Both functions are equivalent but neither seem to be of any use.  this._htmlElements is set to auto-complete.
         //    tg - possibly the '.suggestions.suggestions' is a mistake.
         await StorageService.all(`activity`).then((jags) => {
-            return this._htmlElements.suggestions.suggestions = jags.map((jag) => {
+            this._htmlElements.suggestions.suggestions = jags.map((jag) => {
                 return jag.urn;
             });
+            return this._htmlElements.suggestions.suggestions;
         });
         //   allActivitys.forEach(() => this._htmlElements.suggestions.suggestions = allActivitys.map(cellModel => cellModel.activity.urn));
     }

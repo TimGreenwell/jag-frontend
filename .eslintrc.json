@@ -444,228 +444,228 @@
 //        Disallow unnecessary boolean casts
 
 
-//        "no-extra-label": "warn",
-////        Disallow unnecessary labels
+        "no-extra-label": "warn",
+//        Disallow unnecessary labels
 
 
         "no-extra-semi": "warn",
 //        Disallow unnecessary semicolons
 
 
-//        "no-floating-decimal": "warn",
-////        Disallow leading or trailing decimal points in numeric literals
-//
-//
-//        "no-global-assign": "warn",
-////        Disallow assignments to native objects or read-only global variables
-//
-//
-//        "no-implicit-coercion": "warn",
-////        Disallow shorthand type conversions
-//
-//
-//        "no-implicit-globals": "warn",
-////        Disallow declarations in the global scope
-//
-//
-//        "no-implied-eval": "warn",
-////        Disallow the use of `eval()`-like methods
-//
-//
-//        "no-inline-comments": "warn",
-////        Disallow inline comments after code
-//
-//
+        "no-floating-decimal": "warn",
+//        Disallow leading or trailing decimal points in numeric literals
+
+
+        "no-global-assign": "warn",
+//        Disallow assignments to native objects or read-only global variables
+
+
+        "no-implicit-coercion": "warn",
+//        Disallow shorthand type conversions
+
+
+        "no-implicit-globals": "warn",
+//        Disallow declarations in the global scope
+
+
+        "no-implied-eval": "warn",
+//        Disallow the use of `eval()`-like methods
+
+
+        "no-inline-comments": "off",
+//        Disallow inline comments after code  (OFF)
+
+
 //        "no-invalid-this": "warn",
 ////        Disallow use of `this` in contexts where the value of `this` is `undefined`
-//
-//
-//        "no-iterator": "warn",
-////        Disallow the use of the `__iterator__` property
-//
-//
-//        "no-label-var": "warn",
-////        Disallow labels that share a name with a variable
-//
-//
-//        "no-labels": "warn",
-////        Disallow labeled statements
-//
-//
-//        "no-lone-blocks": "warn",
-////        Disallow unnecessary nested blocks
-//
-//
+
+
+        "no-iterator": "warn",
+//        Disallow the use of the `__iterator__` property
+
+
+        "no-label-var": "warn",
+//        Disallow labels that share a name with a variable
+
+
+        "no-labels": "warn",
+//        Disallow labeled statements
+
+
+        "no-lone-blocks": "warn",
+//        Disallow unnecessary nested blocks
+
+
 //        "no-lonely-if": "warn",
 ////        Disallow `if` statements as the only statement in `else` blocks
-//
-//
-//        "no-loop-func": "warn",
-////        Disallow function declarations that contain unsafe references inside loop statements
-//
-//
+
+
+        "no-loop-func": "warn",
+//        Disallow function declarations that contain unsafe references inside loop statements
+
+
 //        "no-magic-numbers": "warn",
 ////        Disallow magic numbers
-//
-//
-//        "no-mixed-operators": "warn",
-////        Disallow mixed binary operators
-//
-//
-//        "no-multi-assign": "warn",
-////        Disallow use of chained assignment expressions
-//
-//
-//        "no-multi-str": "warn",
-////        Disallow multiline strings
-//
-//
-//        "no-negated-condition": "warn",
-////        Disallow negated conditions
-//
-//
-//        "no-nested-ternary": "warn",
-////        Disallow nested ternary expressions
-//
-//
+
+
+        "no-mixed-operators": "warn",
+//        Disallow mixed binary operators
+
+
+        "no-multi-assign": "warn",
+//        Disallow use of chained assignment expressions
+
+
+        "no-multi-str": "warn",
+//        Disallow multiline strings
+
+
+        "no-negated-condition": "warn",
+//        Disallow negated conditions
+
+
+        "no-nested-ternary": "warn",
+//        Disallow nested ternary expressions
+
+
 //        "no-new": "warn",
 ////        Disallow `new` operators outside of assignments or comparisons
-//
-//
-//        "no-new-func": "warn",
-////        Disallow `new` operators with the `Function` object
-//
-//
-//        "no-new-object": "warn",
-////        Disallow `Object` constructors
-//
-//
-//        "no-new-wrappers": "warn",
-////        Disallow `new` operators with the `String`, `Number`, and `Boolean` objects
-//
-//
-//        "no-nonoctal-decimal-escape": "warn",
-////        Disallow `\8` and `\9` escape sequences in string literals
-//
-//
-//        "no-octal": "warn",
-////        Disallow octal literals
-//
-//
-//        "no-octal-escape": "warn",
-////        Disallow octal escape sequences in string literals
-//
-//
+
+
+        "no-new-func": "warn",
+//        Disallow `new` operators with the `Function` object
+
+
+        "no-new-object": "warn",
+//        Disallow `Object` constructors
+
+
+        "no-new-wrappers": "warn",
+//        Disallow `new` operators with the `String`, `Number`, and `Boolean` objects
+
+
+        "no-nonoctal-decimal-escape": "warn",
+//        Disallow `\8` and `\9` escape sequences in string literals
+
+
+        "no-octal": "warn",
+//        Disallow octal literals
+
+
+        "no-octal-escape": "warn",
+//        Disallow octal escape sequences in string literals
+
+
 //        "no-param-reassign": "warn",
 ////        Disallow reassigning `function` parameters
-//
-//
-//        "no-plusplus": "warn",
-////        Disallow the unary operators `++` and `--`
-//
-//
-//        "no-proto": "warn",
-////        Disallow the use of the `__proto__` property
-//
-//
-//        "no-redeclare": "warn",
-////        Disallow variable redeclaration
-//
-//
-//        "no-regex-spaces": "warn",
-////        Disallow multiple spaces in regular expressions
-//
-//
-//        "no-restricted-exports": "warn",
-////        Disallow specified names in exports
-//
-//
-//        "no-restricted-globals": "warn",
-////        Disallow specified global variables
-//
-//
-//        "no-restricted-imports": "warn",
-////        Disallow specified modules when loaded by `import`
-//
-//
-//        "no-restricted-properties": "warn",
-////        Disallow certain properties on certain objects
-//
-//
-//        "no-restricted-syntax": "warn",
-////        Disallow specified syntax
-//
-//
-//        "no-return-assign": "warn",
-////        Disallow assignment operators in `return` statements
-//
-//
-//        "no-return-await": "warn",
-////        Disallow unnecessary `return await`
-//
-//
-//        "no-script-url": "warn",
-////        Disallow `javascript:` urls
-//
-//
-//        "no-sequences": "warn",
-////        Disallow comma operators
-//
-//
+
+
+        "no-plusplus": ["warn",{"allowForLoopAfterthoughts": true}],
+//        Disallow the unary operators `++` and `--`
+
+
+        "no-proto": "warn",
+//        Disallow the use of the `__proto__` property
+
+
+        "no-redeclare": "warn",
+//        Disallow variable redeclaration
+
+
+        "no-regex-spaces": "warn",
+//        Disallow multiple spaces in regular expressions
+
+
+        "no-restricted-exports": "off",
+//        Disallow specified names in exports  (OFF) (No reason to block export names)
+
+
+        "no-restricted-globals": "off",
+//        Disallow specified global variables  (OFF) (no need to blacklist variable names)
+
+
+        "no-restricted-imports": "off",
+//        Disallow specified modules when loaded by `import`  (OFF) (not restricting imports)
+
+
+        "no-restricted-properties": "off",
+//        Disallow certain properties on certain objects  (OFF)
+
+
+        "no-restricted-syntax": "off",
+//        Disallow specified syntax  (OFF restricting any commands or code styles)
+
+
+        "no-return-assign": "warn",
+//        Disallow assignment operators in `return` statements
+
+
+        "no-return-await": "warn",
+//        Disallow unnecessary `return await`
+
+
+        "no-script-url": "warn",
+//        Disallow `javascript:` urls
+
+
+        "no-sequences": "warn",
+//        Disallow comma operators
+
+
 //        "no-shadow": "warn",
 ////        Disallow variable declarations from shadowing variables declared in the outer scope
-//
-//
+
+
 //        "no-shadow-restricted-names": "warn",
 ////        Disallow identifiers from shadowing restricted names
-//
-//
-//        "no-ternary": "warn",
-////        Disallow ternary operators
-//
-//
-//        "no-throw-literal": "warn",
-////        Disallow throwing literals as exceptions
-//
-//
-//        "no-undef-init": "warn",
-////        Disallow initializing variables to `undefined`
 
-//
+
+        "no-ternary": "off",
+//        Disallow ternary operators  (OFF)(no need)
+
+
+        "no-throw-literal": "warn",
+//        Disallow throwing literals as exceptions
+
+
+        "no-undef-init": "warn",
+//        Disallow initializing variables to `undefined`
+
+
 //        "no-undefined": "warn",
 //        //    Disallow the use of `undefined` as an identifier
-//
-//
-//        "no-underscore-dangle": "warn",
-//        //    Disallow dangling underscores in identifiers
 
 
-//        "no-unneeded-ternary": "warn",
-//        //    Disallow ternary operators when simpler alternatives exist
-//
-//
-//        "no-unused-expressions": "warn",
-//        //    Disallow unused expressions
-//
-//
-//        "no-unused-labels": "warn",
-//        //    Disallow unused labels
-//
-//
-//        "no-useless-call": "warn",
-//        //    Disallow unnecessary calls to `.call()` and `.apply()`
-//
-//
-//        "no-useless-catch": "warn",
-//        //    Disallow unnecessary `catch` clauses
-//
-//
-//        "no-useless-computed-key": "warn",
-//        //    Disallow unnecessary computed property keys in objects and classes
-//
-//
-//        "no-useless-concat": "warn",
-//        //    Disallow unnecessary concatenation of literals or template literals
+        "no-underscore-dangle": "off",
+        //    Disallow dangling underscores in identifiers (OFF) (using _ as private indicator)
+
+
+        "no-unneeded-ternary": "warn",
+        //    Disallow ternary operators when simpler alternatives exist
+
+
+        "no-unused-expressions": "warn",
+        //    Disallow unused expressions
+
+
+        "no-unused-labels": "warn",
+        //    Disallow unused labels
+
+
+        "no-useless-call": "warn",
+        //    Disallow unnecessary calls to `.call()` and `.apply()`
+
+
+        "no-useless-catch": "warn",
+        //    Disallow unnecessary `catch` clauses
+
+
+        "no-useless-computed-key": "warn",
+        //    Disallow unnecessary computed property keys in objects and classes
+
+
+        "no-useless-concat": "warn",
+        //    Disallow unnecessary concatenation of literals or template literals
 
 
         "no-useless-constructor": "warn",
@@ -673,7 +673,7 @@
 
 
 //        "no-useless-escape": "warn",
-//        //    Disallow unnecessary escape characters
+//        //    Disallow unnecessary escape characters      (Seems to mess up metacharacters in regexp eg \s for whitespace)
 
 
         "no-useless-rename": "warn",
@@ -700,13 +700,13 @@
         //    Disallow `with` statements
 
 
-//        "object-shorthand": "warn",
-//        //    Require or disallow method and property shorthand syntax for object literals
-//
-//
-//        "one-var": "warn",
-//        //   Enforce variables to be declared either together or separately in functions
-//
+        "object-shorthand": "warn",
+        //    Require or disallow method and property shorthand syntax for object literals
+
+
+        "one-var": "off",
+        //   Enforce variables to be declared either together or separately in functions  (OFF)
+
 
         "one-var-declaration-per-line": ["warn","always"],
         //    Require or disallow newlines around variable declarations
@@ -718,12 +718,11 @@
 
 //        "prefer-arrow-callback": "warn",
 //        //    Require using arrow functions for callbacks
-//
 
         "prefer-const": "warn",
         //    Require `const` declarations for variables that are never reassigned after declared
 
-//
+
 //        "prefer-destructuring": "warn",
 //        //    Require destructuring from arrays and/or objects
 
@@ -731,7 +730,7 @@
         "prefer-exponentiation-operator": "warn",
         //    Disallow the use of `Math.pow` in favor of the `**` operator
 
-//
+
 //        "prefer-named-capture-group": "warn",
 //        //   Enforce using named capture group in regular expression
 
@@ -747,7 +746,7 @@
         "prefer-object-spread": "warn",
         //    Disallow using Object.assign with an object literal as the first argument and prefer the use of object spread instead.
 
-//
+
 //        "prefer-promise-reject-errors": "warn",
 //        //    Require using Error objects as Promise rejection reasons
 
@@ -803,7 +802,7 @@
 
 //        "strict": "warn",
 //        //    Require or disallow strict mode directives
-//
+
 
         "symbol-description": "warn",
         //    Require symbol descriptions
@@ -964,7 +963,7 @@
 
         "no-trailing-spaces": "warn",
         //    Disallow trailing whitespace at the end of lines
-//
+
 
 
         "no-whitespace-before-property": "warn",

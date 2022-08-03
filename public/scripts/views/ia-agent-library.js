@@ -69,7 +69,9 @@ customElements.define(`agent-library`, class extends HTMLElement {
         const existingUrns = this._libraryList.filter((entry) => {
             return entry.urn;
         });
-        if (!existingUrns.includes(newAgent.urn)) {
+        if (existingUrns.includes(newAgent.urn)) {
+            console.log(`ERROR -- URN already exists [library-addItem]`);
+        } else {
             if (newAgent instanceof AgentModel) {
                 const urn = newAgent.urn;
                 const name = newAgent.name || ``;
@@ -157,8 +159,6 @@ customElements.define(`agent-library`, class extends HTMLElement {
             } else {
                 console.log(`ERROR -- unexpected type for newAgent [library-addItem]`);
             }
-        } else {
-            console.log(`ERROR -- URN already exists [library-addItem]`);
         }
     }
 

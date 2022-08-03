@@ -166,7 +166,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             const actor = this._getInstanceActor();
             const instance_data = {
                 inputs: provider,
-                actor: actor
+                actor
             };
 
             this.dispatchEvent(new CustomEvent(`run`, {detail: instance_data}));
