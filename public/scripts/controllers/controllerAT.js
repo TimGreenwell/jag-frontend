@@ -552,10 +552,10 @@ export default class ControllerAT extends Controller {
 
     gatherAncestorUrns(projectModelId, parentModelId) {
         const urnStack = [];
-        let nextParentId = null;
+        let nextParentId = parentModelId;
         const projectNode = this.fetchProject(projectModelId);
         do {
-            const checkNode = projectNode.findChildById(parentModelId);
+            const checkNode = projectNode.findChildById(nextParentId);
             urnStack.push(checkNode.urn);
             nextParentId = checkNode.parentId;
         } while (nextParentId != undefined);
