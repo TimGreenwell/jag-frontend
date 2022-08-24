@@ -48,6 +48,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
     // ////////  Supporting controllerAT //////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////
 
+    // noinspection JSUnusedGlobalSymbols
     updateItem(updatedAgent) {
         const listItemElement = this.createListItemCollection(updatedAgent);
         for (const item of this._libraryList) {
@@ -169,6 +170,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
         this._$list.appendChild(listItemElement.element);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     addListItems(agentArray) {
         // initializePanels (@controllerAT)
         agentArray.forEach((agent) => {
@@ -179,6 +181,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
 
     // @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
+    // noinspection JSUnusedGlobalSymbols
     replaceItem(newAgent, replacedUrn) {
         // handleAgentStorageReplaced (@controllerAT)
         this.removeLibraryListItem(replacedUrn);

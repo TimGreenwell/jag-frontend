@@ -18,7 +18,6 @@ customElements.define(`node-library`, class extends HTMLElement {
     }
 
     _initUI() {
-        const $header = document.createElement(`header`);
         const $search = document.createElement(`input`);
         const $list = document.createElement(`ol`);
 
@@ -151,6 +150,7 @@ customElements.define(`node-library`, class extends HTMLElement {
         }
     }
 
+    // noinspection JSUnusedGlobalSymbols
     addListItems(nodeModelArray) {
         // initializePanels (@controllerAT)
         nodeModelArray.forEach((nodeModel) => {
@@ -158,7 +158,7 @@ customElements.define(`node-library`, class extends HTMLElement {
         });
     }
 
-
+    // noinspection JSUnusedGlobalSymbols
     updateItem(updatedNodeModel) {                                 // /// WHEN NODE UPDATED
         // @TODO high priority to rethink
         // Way too much spinning for something this simple
@@ -199,23 +199,24 @@ customElements.define(`node-library`, class extends HTMLElement {
     }
 
 
-    updateStructureChange(projectNodes) {
-        for (const item of this._libraryList) {
-            this._$list.removeChild(item.element);
-        }
-
-        projectNodes.forEach((project) => {
-            return this.createListItemCollection(project);
-        });
-
-        for (const item of this._libraryList) {
-            this._$list.appendChild(item.element);
-        }
-    }
+    // updateStructureChange(projectNodes) {
+    //     for (const item of this._libraryList) {
+    //         this._$list.removeChild(item.element);
+    //     }
+    //
+    //     projectNodes.forEach((project) => {
+    //         return this.createListItemCollection(project);
+    //     });
+    //
+    //     for (const item of this._libraryList) {
+    //         this._$list.appendChild(item.element);
+    //     }
+    // }
 
 
     // @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
+    // noinspection JSUnusedGlobalSymbols
     replaceItem(newNodeModel, replacedUrn) {
         // handleJagStorageReplaced (@controllerAT)
         this.removeNodeLibraryListItem(replacedUrn);
@@ -237,15 +238,15 @@ customElements.define(`node-library`, class extends HTMLElement {
 
     //  called by jag-at when listener on graph-service hears 'resources'
 
-    handleResourceUpdate(message) {
-        message.data.sort((a, b) => {
-            return a.name.localeCompare(b.name);
-        });
-
-        message.data.forEach((resource) => {
-            this.addItem(resource);
-        });
-    }
+    // handleResourceUpdate(message) {
+    //     message.data.sort((a, b) => {
+    //         return a.name.localeCompare(b.name);
+    //     });
+    //
+    //     message.data.forEach((resource) => {
+    //         this.addItem(resource);
+    //     });
+    // }
 
 });
 

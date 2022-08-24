@@ -138,13 +138,14 @@ customElements.define(`analysis-library`, class extends HTMLElement {
         this._$list.appendChild(listItemElement.element);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     addListItems(analysisModelArray) {
         analysisModelArray.forEach((analysisModel) => {
             this.addListItem(analysisModel);
         });
     }
 
-
+    // noinspection JSUnusedGlobalSymbols
     removeLibraryListItem(deletedAnalysisId) {
         // handleJagStorageDeleted (@controllerAT)
         for (const item of this._libraryList) {

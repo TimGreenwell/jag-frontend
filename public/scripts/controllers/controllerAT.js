@@ -14,6 +14,7 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
 
+// noinspection JSUnresolvedFunction    // The use of Dependency Injection is too much for the static inspector to handle
 export default class ControllerAT extends Controller {
 
     constructor() {
@@ -37,6 +38,7 @@ export default class ControllerAT extends Controller {
     set menu(value) {
         this._menu = value;
     }
+
 
     set activityLibrary(value) {
         this._activityLibrary = value;
@@ -447,7 +449,7 @@ export default class ControllerAT extends Controller {
     //         }
     //     }
     //     this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
-    //     this._activityLibrary.updateItem(updatedActivity);
+    //     this.activityLibrary.updateItem(updatedActivity);
     // }
 
     async commandActivityDeletedHandler(deletedActivityUrn) {

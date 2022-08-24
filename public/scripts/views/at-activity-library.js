@@ -25,7 +25,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
     }
 
     _initUI() {
-        const $header = document.createElement(`header`);
+        // const $header = document.createElement(`header`);
         const $search = document.createElement(`input`);
         const $list = document.createElement(`ol`);
 
@@ -46,6 +46,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
     // ////////  Supporting controllerAT //////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////////////
 
+    // noinspection JSUnusedGlobalSymbols
     updateItem(updatedActivity) {
         const listItemElement = this.createListItemCollection(updatedActivity);
         for (const item of this._libraryList) {
@@ -169,6 +170,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
         this._$list.appendChild(listItemElement.element);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     addListItems(activityArray) {
         // initializePanels (@controllerAT)
         activityArray.forEach((activity) => {
@@ -179,6 +181,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     // @TODO are updateItem and replaceItem functionally equivalent? Do I need both?
 
+    // noinspection JSUnusedGlobalSymbols
     replaceItem(newActivity, replacedUrn) {
         // handleJagStorageReplaced (@controllerAT)
         this.removeLibraryListItem(replacedUrn);
