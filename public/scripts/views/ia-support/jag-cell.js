@@ -166,7 +166,7 @@ class JagCell extends AnalysisCell {
             console.log(`The key: ${e.key} is not handled`);
         }
         const validCharacters = new RegExp(`[A-Za-z0-9-:]`, `u`);
-        if ((!Validator.isValidUrn(this.cellModel.activity.urn)) && (e.key.length == 1) && (validCharacters.test(e.key))) {
+        if ((!Validator.isValidUrn(this.cellModel.activity.urn)) && (e.key.length === 1) && (validCharacters.test(e.key))) {
             this.urnElementEntry = this.urnElementEntry + e.key.toLowerCase();
         }
     }
@@ -243,7 +243,7 @@ class JagCell extends AnalysisCell {
             console.log(`The key: ${e.key} is not handled`);
         }
         const validCharacters = new RegExp(`^[A-Za-z0-9\-\:]+`, `u`);
-        if ((this.cellModel.activity.name == ``) && (e.key.match(validCharacters))) {
+        if ((this.cellModel.activity.name === ``) && (e.key.match(validCharacters))) {
             this.nameElementEntry = (this.nameElementEntry + e.key).split(`:`).slice(-1);
         }
     }

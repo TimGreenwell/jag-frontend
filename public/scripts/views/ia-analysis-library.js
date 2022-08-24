@@ -151,7 +151,7 @@ customElements.define(`analysis-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
-            return entry.analysis.id != deletedAnalysisId;
+            return entry.analysis.id !== deletedAnalysisId;
         });
         for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
@@ -192,7 +192,7 @@ export default customElements.get(`analysis-library`);
 //     console.log("Analysis Library (updateListItem) received NOTIFICATION for analysis-storage-updated")
 //
 //     for (let idx in this._libraryList) {
-//         if (this._libraryList[idx].model.id == updatedAnalysisModel.id) {
+//         if (this._libraryList[idx].model.id === updatedAnalysisModel.id) {
 //
 //             const rootUrn = this._libraryList[idx].element.querySelectorAll("pre").item(0).innerText;
 //             const name = updatedAnalysisModel.name;

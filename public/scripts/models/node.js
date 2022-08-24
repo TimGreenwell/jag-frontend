@@ -196,7 +196,7 @@ export default class Node extends EventTarget {
     }
 
     get contextualName() {
-        if ((this._contextualName == ``) || (this._contextualName == undefined)) {
+        if ((this._contextualName === ``) || (this._contextualName == undefined)) {
             return this._activity.name;
         } else {
             return this._contextualName;
@@ -208,7 +208,7 @@ export default class Node extends EventTarget {
     }
 
     get contextualDescription() {
-        if ((this._contextualDescription == ``) || (this._contextualName == undefined)) {
+        if ((this._contextualDescription === ``) || (this._contextualName == undefined)) {
             return this.activity.description;
         } else {
             return this._contextualDescription;
@@ -297,7 +297,7 @@ export default class Node extends EventTarget {
         while (workStack.length > 0) {
             const nodeModel = workStack.pop();
 
-            if (nodeModel.activity.urn == urn) {
+            if (nodeModel.activity.urn === urn) {
                 matchStack.push(nodeModel);
             }
             nodeModel.children.forEach((kid) => {
@@ -365,7 +365,7 @@ export default class Node extends EventTarget {
 
     removeChild(child) {
         const filtered = this.children.filter((entry) => {
-            if (entry.id != child.id) {
+            if (entry.id !== child.id) {
                 return entry;
             }
         });
@@ -375,14 +375,14 @@ export default class Node extends EventTarget {
 
     replaceChild(newChild) {
         const workStack = [];
-        if (this.id == newChild.id) {
+        if (this.id === newChild.id) {
             return newChild;
         } else {
             workStack.push(this);
             while (workStack.length > 0) {
                 const workingNode = workStack.pop();
                 workingNode.children.forEach((child) => {
-                    if (child.id == newChild.id) {
+                    if (child.id === newChild.id) {
                         workingNode.removeChild(child);
                         workingNode.addChild(newChild);
                         return this;
@@ -396,7 +396,7 @@ export default class Node extends EventTarget {
 
     removeChildById(id) {  // this wont work - not recursing
         this.children.forEach((child) => {
-            if (child.id == id) {
+            if (child.id === id) {
                 this.removeChild(child);
             }
         });
@@ -407,7 +407,7 @@ export default class Node extends EventTarget {
         workStack.push(this);
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
-            if (checkNode.id == id) {
+            if (checkNode.id === id) {
                 return checkNode;
             } else {
                 checkNode.children.forEach((child) => {
@@ -416,7 +416,7 @@ export default class Node extends EventTarget {
             }
         }
         this.children.forEach((child) => {
-            if (child.id == id) {
+            if (child.id === id) {
                 return child;
             }
         });
@@ -443,7 +443,7 @@ export default class Node extends EventTarget {
     }
 
     isRoot() {
-        return this._id == this._projectId;
+        return this._id === this._projectId;
     }         // is determined by lack of parent.
 
     getAncestor() {

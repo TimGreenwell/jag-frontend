@@ -42,11 +42,11 @@ export default class StorageService extends SharedObservable {
      * Register a new storage instance .
      */
     static addStorageInstance(id, instance) {
-        if ((typeof this._storageInstancesMap != `undefined`) && (this._storageInstancesMap.has(id))) {
+        if ((typeof this._storageInstancesMap !== `undefined`) && (this._storageInstancesMap.has(id))) {
             throw new Error(`There already exists a service instance named ${id}.`);
         }
         this._storageInstancesMap.set(id, instance);
-        if (typeof this._preferredStorage == `undefined`) {
+        if (typeof this._preferredStorage === `undefined`) {
             this._preferredStorage = id;
         }
         console.log(`{} - IndexedDB Storage linked to StorageService`);

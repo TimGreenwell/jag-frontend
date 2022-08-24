@@ -54,7 +54,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         for (const idx in this._libraryList) {
-            if (this._libraryList[idx].agent.urn == updatedAgent.urn) {
+            if (this._libraryList[idx].agent.urn === updatedAgent.urn) {
                 this._libraryList[idx] = listItemElement;
             }
         }
@@ -191,7 +191,7 @@ customElements.define(`agent-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
-            return entry.agent.urn != deletedUrn;
+            return entry.agent.urn !== deletedUrn;
         });
         for (const item of this._libraryList) {
             this._$list.appendChild(item.element);

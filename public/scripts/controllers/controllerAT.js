@@ -177,7 +177,7 @@ export default class ControllerAT extends Controller {
     async eventNodeUpdatedHandler(event) {
         let projectNode = null;
         const updatedNodeModel = event.detail.nodeModel;
-        //   if (updatedNodeModel.id == updatedNodeModel.projectId) {
+        //   if (updatedNodeModel.id === updatedNodeModel.projectId) {
         if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = this.fetchProject(updatedNodeModel.projectId);
             console.log(`Starting JSON`);
@@ -348,9 +348,9 @@ export default class ControllerAT extends Controller {
         console.log(`Local>> (jag deleted) `);
         const deadActivityUrn = event.detail.activityUrn;
         for (const [activityId, activity] of this._activityMap) {
-            //      if (activity.urn != deadActivityUrn) {
+            //      if (activity.urn !== deadActivityUrn) {
             const remainingChildren = activity.children.filter((kid) => {
-                if (kid.urn != deadActivityUrn) {
+                if (kid.urn !== deadActivityUrn) {
                     return kid;
                 }
             });
@@ -457,7 +457,7 @@ export default class ControllerAT extends Controller {
         const deletedActivity = this.fetchActivity(deletedActivityUrn);
         this.uncacheActivity(deletedActivityUrn);
         for (const viewedProject of this._playground.viewedProjects) {
-            if (viewedProject.id == deletedActivityUrn) {
+            if (viewedProject.id === deletedActivityUrn) {
                 await StorageService.delete(viewedProject, `node`);
             }
         }

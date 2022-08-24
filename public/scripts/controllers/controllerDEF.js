@@ -48,7 +48,7 @@ export default class ControllerDEF extends Controller {
 
         const allProjects = await StorageService.all(`node`);
         allProjects.forEach((project) => {
-            if (this._currentProjectId == project.id) {
+            if (this._currentProjectId === project.id) {
                 this.repopulateParent(project);
                 this.repopulateActivity(project);
                 this.repopulateProject(project, project.id);
@@ -139,7 +139,7 @@ export default class ControllerDEF extends Controller {
 
     commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated`);
-        if (this._currentProjectId == updatedProjectIdId) {
+        if (this._currentProjectId === updatedProjectIdId) {
             this.repopulateParent(updatedProject);
             this.repopulateActivity(updatedProject);
             this.repopulateProject(updatedProject, updatedProjectIdId);
@@ -166,7 +166,7 @@ export default class ControllerDEF extends Controller {
         workStack.push(treeNode);
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
-            if (checkNode.id == id) {
+            if (checkNode.id === id) {
                 return checkNode;
             }
             checkNode.children.forEach((child) => {
@@ -182,7 +182,7 @@ export default class ControllerDEF extends Controller {
     //     workStack.push(treeNode)
     //     while(workStack.length>0){
     //         let checkNode = workStack.pop();
-    //         if (checkNode.childId == childId) {return checkNode}
+    //         if (checkNode.childId === childId) {return checkNode}
     //         checkNode.children.forEach(child => workStack.push(child))
     //     }
     //     return null
@@ -200,7 +200,7 @@ export default class ControllerDEF extends Controller {
     //     let losingParents = leavingNodeModel.parent;
     //     let losingParentsJag = this.fetchActivity(losingParents.urn)
     //     let remainingChildren = losingParentsJag.children.filter(entry => {
-    //         if (entry.id != leavingNodeModel.childId) {
+    //         if (entry.id !== leavingNodeModel.childId) {
     //             return entry;
     //         }
     //     })

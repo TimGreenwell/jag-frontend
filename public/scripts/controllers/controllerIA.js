@@ -433,7 +433,7 @@ export default class ControllerIA extends Controller {
         }
         createdTeamModel.agents = agents;
         this.cacheTeam(createdTeamModel);
-        if ((this._currentAnalysis) && this._currentAnalysis.analysisModel.team.id == createdTeamId) {
+        if ((this._currentAnalysis) && this._currentAnalysis.analysisModel.team.id === createdTeamId) {
             this._currentAnalysis.analysisModel.team = createdTeamModel;
         }
     }
@@ -474,7 +474,7 @@ export default class ControllerIA extends Controller {
     //     workStack.push(rootNode);
     //     while (workStack > 0) {
     //         let currentNode = workStack.pop();
-    //         if (currentNode.id == replacementItem.id) {
+    //         if (currentNode.id === replacementItem.id) {
     //             currentNode = replacementItem;
     //             return rootNode;
     //         } else {

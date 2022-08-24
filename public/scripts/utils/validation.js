@@ -80,7 +80,7 @@ export default class JAGATValidation {
             throw new Error(`Name must be a string.`);
         }
 
-        if (name.length == 0) {
+        if (name.length === 0) {
             throw new Error(`Name must be at least 1 character.`);
         }
     }
@@ -102,7 +102,7 @@ export default class JAGATValidation {
             throw new Error(`Connector must have an execution type which is a string.`);
         }
 
-        if (connector.execution.length == 0) {
+        if (connector.execution.length === 0) {
             throw new Error(`Connector execution type must be at least 1 character.`);
         }
 
@@ -114,7 +114,7 @@ export default class JAGATValidation {
             throw new Error(`Connector must have an operator type which is a string.`);
         }
 
-        if (connector.operator.length == 0) {
+        if (connector.operator.length === 0) {
             throw new Error(`Connector execution type must be at least 1 character.`);
         }
 
@@ -151,7 +151,7 @@ export default class JAGATValidation {
             throw new Error(`Input must have a name which is a string.`);
         }
 
-        if (input.name.length == 0) {
+        if (input.name.length === 0) {
             throw new Error(`Input must have a name at least 1 character long.`);
         }
 
@@ -163,7 +163,7 @@ export default class JAGATValidation {
             throw new Error(`Input (${input.name}) must have a type which is a string.`);
         }
 
-        if (input.type.length == 0) {
+        if (input.type.length === 0) {
             throw new Error(`Input (${input.name}) must have a type at least 1 character long.`);
         }
 
@@ -201,7 +201,7 @@ export default class JAGATValidation {
             throw new Error(`Output must have a name which is a string.`);
         }
 
-        if (output.name.length == 0) {
+        if (output.name.length === 0) {
             throw new Error(`Output must have a name at least 1 character long.`);
         }
 
@@ -213,7 +213,7 @@ export default class JAGATValidation {
             throw new Error(`Output (${output.name}) must have a type which is a string.`);
         }
 
-        if (output.type.length == 0) {
+        if (output.type.length === 0) {
             throw new Error(`Output (${output.name}) must have a type at least 1 character long.`);
         }
 
@@ -251,7 +251,7 @@ export default class JAGATValidation {
             throw new Error(`Child must have a URN which is a string.`);
         }
 
-        if (child.urn.length == 0) {
+        if (child.urn.length === 0) {
             throw new Error(`Child must have a URN string with at least 1 character.`);
         }
 
@@ -289,7 +289,7 @@ export default class JAGATValidation {
                 throw new Error(`Child may only have a name which is a string.`);
             }
 
-            if (child.name.length == 0) {
+            if (child.name.length === 0) {
                 throw new Error(`Child may only have a name string with at least 1 character.`);
             }
 
@@ -301,7 +301,7 @@ export default class JAGATValidation {
                 throw new Error(`Child may only have a description which is a string.`);
             }
 
-            if (child.description.length == 0) {
+            if (child.description.length === 0) {
                 throw new Error(`Child may only have a description string with at least 1 character.`);
             }
 
@@ -357,7 +357,7 @@ export default class JAGATValidation {
             throw new Error(`Binding must have a property for its consumer which is a string.`);
         }
 
-        if (binding.consumer.property.length == 0) {
+        if (binding.consumer.property.length === 0) {
             throw new Error(`Binding must have a property string for its consumer which is at least 1 character.`);
         }
 
@@ -388,7 +388,7 @@ export default class JAGATValidation {
             throw new Error(`Binding must have a property for its provider which is a string.`);
         }
 
-        if (binding.provider.property.length == 0) {
+        if (binding.provider.property.length === 0) {
             throw new Error(`Binding must have a property string for its provider which is at least 1 character.`);
         }
 

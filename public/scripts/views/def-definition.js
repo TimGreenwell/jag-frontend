@@ -205,7 +205,7 @@ class Definition extends HTMLElement {
         $testDivTitleLine.appendChild(this.$testerTitle);
         // ///////////  SUBSCRIPTIONS - Div Title Line - Add Button
         this._$swapButton = document.createElement(`button`);
-        this._$swapButton.innerText = (this.dataMode == `live`) ? `>Test` : `>Live`;
+        this._$swapButton.innerText = (this.dataMode === `live`) ? `>Test` : `>Live`;
         this._$swapButton.setAttribute(`id`, `subscription-add-button`);
         $testDivTitleLine.appendChild(this._$swapButton);
         // ///////////  SUBSCRIPTIONS - Entry Field  (buildTestBank)
@@ -285,7 +285,7 @@ class Definition extends HTMLElement {
 
     getAllChildrenReturnValues(node) {
         let values = [];
-        if (this.dataMode == `live`) {
+        if (this.dataMode === `live`) {
             values = node.children.map((child) => {
                 if (values) {
                     return values;
@@ -309,7 +309,7 @@ class Definition extends HTMLElement {
 
     getAvailableChildrenReturnValues(node) {
         let values = [];
-        if (this.dataMode == `live`) {
+        if (this.dataMode === `live`) {
             values = node.children.map((child) => {
                 if ((child.returnValue != `undefined`) || (child.returnValue != `null`)) {
                     return child.returnValue;
@@ -329,7 +329,7 @@ class Definition extends HTMLElement {
 
 
     _toggleDataMode(event) {
-        if (this.dataMode == `test`) {
+        if (this.dataMode === `test`) {
             this._$swapButton.innerText = `>Live`;
             this.dataMode = `live`;
         } else {

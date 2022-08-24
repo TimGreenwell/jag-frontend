@@ -57,7 +57,7 @@ There are pieces worth reviewing but deletion is imminent unless we go back to t
             let actual = false;
 
             for (const actual_child of currentParentActivityNode.children) {
-                if (actual_child.id == id) {
+                if (actual_child.id === id) {
                     actual = true;
                     break;
                 }
@@ -79,7 +79,7 @@ There are pieces worth reviewing but deletion is imminent unless we go back to t
     part 2
 
 
-    // add ActivityNodeTree == used when popup creates new jag -- (obs now i think) also broke - but appears in right place
+    // add ActivityNodeTree === used when popup creates new jag -- (obs now i think) also broke - but appears in right place
     _addActivityNodeTree(selectedActivity, selectedActivityDescendants = new Map(), isExpanded = false) {
         //const margin = 50;
         const height = this.clientHeight;
@@ -137,7 +137,7 @@ Random - also from playground.. look through and wipe.
       //
       //     root.subgoals.forEach(subgoal => {
       //         let node;
-      //         if(subgoal.type == 'GOAL') {
+      //         if(subgoal.type === 'GOAL') {
       //             node = this.addSubGoal(subgoal.item.name, subgoal.item.description);
       //             node.getConnector().setType(subgoal.item.connectorType);
       //         } else {
@@ -154,14 +154,14 @@ Random - also from playground.. look through and wipe.
  *
  *
  *    // getSelectedAsJSON() {
- *     //     if(this._selectedNodeElementSet.size == 0)
+ *     //     if(this._selectedNodeElementSet.size === 0)
  *     //         return undefined;
  *     //
  *     //     return this._selectedNodeElementSet.values().next().value.activity.toJSON();
  *     // }
  *
  *     // getSelectedURN() {
- *     //     if(this._selectedNodeElementSet.size == 0)
+ *     //     if(this._selectedNodeElementSet.size === 0)
  *     //         return undefined;
  *     //
  *     //     return this._selectedNodeElementSet.values().next().value.activity.urn;

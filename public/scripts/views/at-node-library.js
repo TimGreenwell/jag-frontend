@@ -172,7 +172,7 @@ customElements.define(`node-library`, class extends HTMLElement {
         // but only splicing out max 1 thing - so irrelevant.
 
         this._libraryList.forEach((libraryItem) => {
-            if (libraryItem.nodeModel.id == updatedNodeModel.id) {
+            if (libraryItem.nodeModel.id === updatedNodeModel.id) {
                 const listItemCollection = this.createListItemCollection(updatedNodeModel);
                 libraryItem.element = listItemCollection.element;
                 libraryItem.search_content = listItemCollection.search_content;
@@ -191,7 +191,7 @@ customElements.define(`node-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
-            return entry.nodeModel.id != id;
+            return entry.nodeModel.id !== id;
         });
         for (const item of this._libraryList) {
             this._$list.appendChild(item.element);

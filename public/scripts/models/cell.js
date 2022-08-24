@@ -129,7 +129,7 @@ export default class Cell extends EventTarget {
         workStack.push(this);
         while (workStack.length > 0) {
             const nodeModel = workStack.pop();
-            if (nodeModel._urn == urn) {
+            if (nodeModel._urn === urn) {
                 matchStack.push(nodeModel);
             }
             nodeModel.activity.children.forEach((kid) => {
@@ -173,7 +173,7 @@ export default class Cell extends EventTarget {
     }
 
     getChildById(id) {
-        if (id == this.id) {
+        if (id === this.id) {
             return this;
         } else {
             this.children.forEach((child) => {
@@ -199,7 +199,7 @@ export default class Cell extends EventTarget {
 
     removeChild(child) {
         const filtered = this.children.filter((entry) => {
-            if (entry.id != child.id) {
+            if (entry.id !== child.id) {
                 return entry;
             }
         });
@@ -208,7 +208,7 @@ export default class Cell extends EventTarget {
 
     removeChildById(id) {
         this.children.forEach((child) => {
-            if (child.id == id) {
+            if (child.id === id) {
                 this.removeChild(child);
             }
         });

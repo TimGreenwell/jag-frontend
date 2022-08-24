@@ -368,7 +368,7 @@ class IATable extends Popupable {
 
             json.nodes.push(child.toJSON());
 
-            if (child.urn != `` && jags.indexOf(child.urn) === -1) {
+            if (child.urn !== `` && jags.indexOf(child.urn) === -1) {
                 jags.push(child.urn);
             }
         }

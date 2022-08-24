@@ -21,7 +21,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._translation = {
             x: 0,
             y: 0
-        };        // set_translation below == doesnt that make this useless.
+        };        // set_translation below === doesnt that make this useless.
         this._outs = new Set();
         this._in = null;
         this._boundUpdateHandler = this._updateHandler.bind(this);
@@ -430,13 +430,13 @@ customElements.define(`jag-node`, class extends HTMLElement {
     _updateHandler(e) {
         const property = e.detail.property;
 
-        if (property == `operator`) {
+        if (property === `operator`) {
             this._applyOperator();
-        } else if (property == `execution`) {
+        } else if (property === `execution`) {
             this._applyExecution();
-        } else if (property == `name`) {
+        } else if (property === `name`) {
             this._applyName();
-        } else if (property == `children-meta`) {
+        } else if (property === `children-meta`) {
             const meta_map = new Map();
 
             e.detail.extra.children.forEach((child) => {
@@ -456,7 +456,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
                     child_edge.setChildDescription(child_meta.description);
                 }
             });
-        } else if (property == `children`) {
+        } else if (property === `children`) {
             this.refresh();
         }
     }
@@ -517,14 +517,14 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
         const operator = Activity.OPERATOR;
         for (const step in operator) {
-            if (operator[step].name == this._nodeModel.activity.operator) {
+            if (operator[step].name === this._nodeModel.activity.operator) {
                 op = operator[step].symbol;
             }
         }
 
         this._$connector.innerHTML = op;
         // @TODO: move this to styling;
-        if (op == ``) {
+        if (op === ``) {
             this._$connector.style.display = `none`;
         } else {
             this._$connector.style.display = `block`;
@@ -537,11 +537,11 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._$concurrency.style.display = `none`;
         this._$concurrency.innerHTML = ``;
 
-        if (this._nodeModel.activity.execution != Activity.EXECUTION.SEQUENTIAL.name) {
+        if (this._nodeModel.activity.execution !== Activity.EXECUTION.SEQUENTIAL.name) {
             return;
         }
 
-        if (!this._nodeModel.activity.children || this._nodeModel.activity.children.length == 0) {
+        if (!this._nodeModel.activity.children || this._nodeModel.activity.children.length === 0) {
             return;
         }
 

@@ -37,9 +37,9 @@ class AssessmentView extends AnalysisCell {
     }
 
     _handleAgentUpdate(e) {
-        if (e.detail.property == `assessment`) {
+        if (e.detail.property === `assessment`) {
             const {urn, assessment} = e.detail.extra;
-            if (urn == this._node.urn) {
+            if (urn === this._node.urn) {
                 this._setAssessment(assessment);
             }
         }

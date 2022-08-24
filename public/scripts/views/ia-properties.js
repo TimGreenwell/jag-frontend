@@ -149,7 +149,7 @@ customElements.define(`ia-properties`, class extends HTMLElement {
         this._team_agents.addEventListener(`change`, (e) => {
             this._remove_agent.disabled = false;
             for (const agent of this._team.agents) {
-                if (agent.id == e.target.value) {
+                if (agent.id === e.target.value) {
                     this.agent = agent;
                     return;
                 }

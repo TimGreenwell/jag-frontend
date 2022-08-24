@@ -52,7 +52,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         for (const idx in this._libraryList) {
-            if (this._libraryList[idx].activity.urn == updatedActivity.urn) {
+            if (this._libraryList[idx].activity.urn === updatedActivity.urn) {
                 this._libraryList[idx] = listItemElement;
             }
         }
@@ -191,7 +191,7 @@ customElements.define(`jag-library`, class extends HTMLElement {
             this._$list.removeChild(item.element);
         }
         this._libraryList = this._libraryList.filter((entry) => {
-            return entry.activity.urn != deletedUrn;
+            return entry.activity.urn !== deletedUrn;
         });
         for (const item of this._libraryList) {
             this._$list.appendChild(item.element);
@@ -255,7 +255,7 @@ export default customElements.get(`jag-library`);
 // ////////////////////////////////////
 // updateItem(updatedActivity) {
 //     for (let idx in this._libraryList) {
-//         if (this._libraryList[idx].model.urn == updatedActivity.urn) {
+//         if (this._libraryList[idx].model.urn === updatedActivity.urn) {
 //         this._libraryList[idx].model = updatedActivity;
 // this._libraryList[idx].element.id=updatedActivity.urn;
 // this._libraryList[idx].element.querySelectorAll("h3").item(0).innerHTML = updatedActivity.name;

@@ -24,11 +24,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._boundUpdate = function (e) {
             const property = e.detail.property;
 
-            if (property == `bindings` || property == `children` || property == `inputs` || property == `outputs`) {
+            if (property === `bindings` || property === `children` || property === `inputs` || property === `outputs`) {
                 this._updateIO();
             }
 
-            if (property == `annotations` || property == `children`) {
+            if (property === `annotations` || property === `children`) {
                 this._updateAnnotations();
             }
         }.bind(this);
@@ -196,7 +196,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
 
         // this._$urnInput.addEventListener('keyup', e => {
-        //     this._$urnInput.classList.toggle('edited', this._$urnInput.value != this._nodeModel.activity.urn);
+        //     this._$urnInput.classList.toggle('edited', this._$urnInput.value !== this._nodeModel.activity.urn);
         // });
 
         this._$nameInput.addEventListener(`blur`, this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
@@ -231,7 +231,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _handleNameEdit(e) {
-        if (e.key == `Enter`) {
+        if (e.key === `Enter`) {
             e.preventDefault();
             const inputs = this.querySelectorAll(`input:enabled, textarea`);
             const currentPosition = this._$nameInput.tabIndex;
@@ -246,7 +246,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _handleURNChange(e) {
-        if (this._nodeModel.activity.urn != this._$urnInput.value) {
+        if (this._nodeModel.activity.urn !== this._$urnInput.value) {
             if (Validator.isValidUrn(this._$urnInput.value)) {        // && entered urn is valid...
                 this.dispatchEvent(new CustomEvent(`event-urn-changed`, {
                     bubbles: true,
@@ -261,10 +261,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _handleUrnEdit(e) {
-        if (e.key == `Enter`) {
+        if (e.key === `Enter`) {
             e.preventDefault();
             const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            this._$urnInput.classList.toggle(`edited`, this._$urnInput.value != this._nodeModel.activity.urn);
+            this._$urnInput.classList.toggle(`edited`, this._$urnInput.value !== this._nodeModel.activity.urn);
             // current position in 'form'
             const currentPosition = this._$urnInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
@@ -289,7 +289,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _handleDescriptionEdit(e) {
-        if (e.key == `Enter`) {
+        if (e.key === `Enter`) {
             e.preventDefault();
             const inputs = this.querySelectorAll(`input:enabled, textarea`);
             const currentPosition = this._$descInput.tabIndex;
@@ -378,7 +378,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
 
     handleStorageUpdate(newActivity, newActivityUrn) {
-        if (newActivityUrn == this._$urnInput) {
+        if (newActivityUrn === this._$urnInput) {
             this._nodeModel.activity = newActivity;
             this._updateProperties();
         }
@@ -394,7 +394,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._nodeModel = undefined;
         }
         this._clearProperties();
-        if (selection.length == 1) {
+        if (selection.length === 1) {
             const selectedNodeModel = selection[0];
             //    if (selectedNodeModel._nodeModel) {         // why wouldnt this have a model(node)?
             //        this._node = selectedNodeModel;
@@ -549,8 +549,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                             return valid_input_values_for_output.add(`this:${output.name}`);
                         });
 
-                        if (this._nodeModel.activity.execution == Activity.EXECUTION.SEQUENTIAL.name) {
-                            if (provider[0] == `any`) {
+                        if (this._nodeModel.activity.execution === Activity.EXECUTION.SEQUENTIAL.name) {
+                            if (provider[0] === `any`) {
                                 const all_cumulative_outputs = new Set();
 
                                 this._nodeModel.activity.inputs.forEach((input) => {
@@ -751,7 +751,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             if (node.id != `this`) {
                 label = node.nodeModel.activity.name;
                 const order = this._nodeModel.activity.getOrderForId(node.id);
-                if (order != 0) {
+                if (order !== 0) {
                     label = `${label} (${order})`;
                 }
             }
@@ -781,10 +781,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _createBindingOutputs(options) {
         const select_el = FormUtils.createSelect(`binding-outputs`, options.map((node) => {
             let label = node.id;
-            if (node.id != `this` && node.id != `any`) {
+            if (node.id !== `this` && node.id !== `any`) {
                 label = node.nodeModel.activity.name;
                 const order = this._nodeModel.activity.getOrderForId(node.id);
-                if (order != 0) {
+                if (order !== 0) {
                     label = `${label} (${order})`;
                 }
             }

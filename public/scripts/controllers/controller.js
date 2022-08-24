@@ -216,7 +216,7 @@ export default class Controller extends EventTarget {
         nodeStack.push(projectNode);
         while (nodeStack.length > 0) {
             const currentNode = nodeStack.pop();
-            if ((changedActivity.urn == undefined) || (currentNode.urn == changedActivity.urn)) {
+            if ((changedActivity.urn == undefined) || (currentNode.urn === changedActivity.urn)) {
                 if (changedActivity.urn == undefined) {
                     console.log(`Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull`);
                 }
@@ -356,7 +356,7 @@ export default class Controller extends EventTarget {
         workStack.push(treeNode);
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
-            if (checkNode.id == id) {
+            if (checkNode.id === id) {
                 return checkNode;
             }
             checkNode.children.forEach((child) => {
@@ -371,7 +371,7 @@ export default class Controller extends EventTarget {
         workStack.push(treeNode);
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
-            if (checkNode.childId == childId) {
+            if (checkNode.childId === childId) {
                 return checkNode;
             }
             checkNode.children.forEach((child) => {

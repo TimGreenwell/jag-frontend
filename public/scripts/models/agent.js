@@ -110,13 +110,13 @@ export default class AgentModel extends EventTarget {
             const value = json.assessments[urn];
             let assessment;
 
-            if (value == 1) {
+            if (value === 1) {
                 assessment = AgentModel.CAN_DO_PERFECTLY;
-            } else if (value == 2) {
+            } else if (value === 2) {
                 assessment = AgentModel.CAN_DO;
-            } else if (value == 3) {
+            } else if (value === 3) {
                 assessment = AgentModel.CAN_HELP;
-            } else if (value == 4) {
+            } else if (value === 4) {
                 assessment = AgentModel.CANNOT_DO;
             }
 
@@ -142,13 +142,13 @@ export default class AgentModel extends EventTarget {
             const symbol = this._assessments.get(assessment);
             let value = 0;
 
-            if (symbol == AgentModel.CAN_DO_PERFECTLY) {
+            if (symbol === AgentModel.CAN_DO_PERFECTLY) {
                 value = 1;
-            } else if (symbol == AgentModel.CAN_DO) {
+            } else if (symbol === AgentModel.CAN_DO) {
                 value = 2;
-            } else if (symbol == AgentModel.CAN_HELP) {
+            } else if (symbol === AgentModel.CAN_HELP) {
                 value = 3;
-            } else if (symbol == AgentModel.CANNOT_DO) {
+            } else if (symbol === AgentModel.CANNOT_DO) {
                 value = 4;
             }
 

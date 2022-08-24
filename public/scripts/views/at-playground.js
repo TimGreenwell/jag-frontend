@@ -539,7 +539,7 @@ class AtPlayground extends Popupable {
 
     clearPlayground(projectId = undefined) {
         for (const jagNode of this._activeActivityNodeElementSet) {
-            if ((projectId == undefined) || (jagNode.nodeModel.projectId == projectId)) {
+            if ((projectId == undefined) || (jagNode.nodeModel.projectId === projectId)) {
                 jagNode.removeAllEdges();
                 jagNode.detachHandlers();
                 this._activeActivityNodeElementSet.delete(jagNode);
@@ -590,7 +590,7 @@ class AtPlayground extends Popupable {
 
     replaceActivityNode(newActivity, deadUrn) {
         this._activeActivityNodeElementSet.forEach((node) => {
-            if (node.nodeModel.activity.urn == deadUrn) {
+            if (node.nodeModel.activity.urn === deadUrn) {
                 node.nodeModel.activity = newActivity;
             }
         });
@@ -637,7 +637,7 @@ class AtPlayground extends Popupable {
         // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId);
         for (const node of this._activeActivityNodeElementSet) {           // search through active elements
-            //        if (node.nodeModel.projectId == deadId) {         // is this node in the tree of the currentNodeModel?
+            //        if (node.nodeModel.projectId === deadId) {         // is this node in the tree of the currentNodeModel?
             if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
                 node.removeAllEdges();
                 node.detachHandlers();
@@ -650,7 +650,7 @@ class AtPlayground extends Popupable {
 
     getNodeViewById(id) {
         for (const node of this._activeActivityNodeElementSet) {           // search through active elements
-            if (node.nodeModel.id == id) {         // is this node in the tree of the currentNodeModel?
+            if (node.nodeModel.id === id) {         // is this node in the tree of the currentNodeModel?
                 return node;
             }
         }
@@ -672,8 +672,8 @@ class AtPlayground extends Popupable {
 
 
         for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
-            if (this._viewedProjectsMap[index].nodeModel.id == updatedNodeModel.id) {
-                if (updatedNodeModel.id == updatedNodeModel.projectId) {
+            if (this._viewedProjectsMap[index].nodeModel.id === updatedNodeModel.id) {
+                if (updatedNodeModel.id === updatedNodeModel.projectId) {
                     const listItemElement = this.createListItemCollection(updatedNodeModel);
                     this._libraryList[index] = listItemElement;
                 } else {
@@ -718,7 +718,7 @@ class AtPlayground extends Popupable {
     onKeyDown(event) {
         event.stopImmediatePropagation();
         const $node = event.target;
-        if (event.key == `Delete`) {
+        if (event.key === `Delete`) {
             if (this._selectedActivityNodeElementSet.length > 1) {
                 alert(`Can only clear/disconnect one selected item`);
             } else if (this._selectedActivityNodeElementSet.length < 1) {
@@ -729,7 +729,7 @@ class AtPlayground extends Popupable {
                 // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
                 // @TODO - might consider a deleted edge to mean disconnect jag
 
-                if ($node.nodeModel.projectId == $node.nodeModel.id) {
+                if ($node.nodeModel.projectId === $node.nodeModel.id) {
                     this.clearPlayground($node.nodeModel.projectId);
                     this.deselectAll();
                 } else {
@@ -737,7 +737,7 @@ class AtPlayground extends Popupable {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId = $node.nodeModel.childId;
                         const remainingChildren = parentActivity._children.filter((entry) => {
-                            if (entry.id != childActivityChildId) {
+                            if (entry.id !== childActivityChildId) {
                                 return entry;
                             }
                         });
@@ -749,25 +749,25 @@ class AtPlayground extends Popupable {
                     }
                 }
             }
-        } else if (event.key == `ArrowLeft`) {
+        } else if (event.key === `ArrowLeft`) {
             if (this._canMoveView.left) {
                 this._dragView(Number(AtPlayground.DEFAULT_ARROW_MULTIPLIER), 0);
             }
-        } else if (event.key == `ArrowRight`) {
+        } else if (event.key === `ArrowRight`) {
             if (this._canMoveView.right) {
                 this._dragView(-1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER, 0);
             }
-        } else if (event.key == `ArrowUp`) {
+        } else if (event.key === `ArrowUp`) {
             if (this._canMoveView.up) {
                 this._dragView(0, Number(AtPlayground.DEFAULT_ARROW_MULTIPLIER));
             }
-        } else if (event.key == `ArrowDown`) {
+        } else if (event.key === `ArrowDown`) {
             if (this._canMoveView.down) {
                 this._dragView(0, -1 * AtPlayground.DEFAULT_ARROW_MULTIPLIER);
             }
-        } else if (event.key == `PageUp`) {
+        } else if (event.key === `PageUp`) {
             this._zoomView(this._zoomFactor / AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
-        } else if (event.key == `PageDown`) {
+        } else if (event.key === `PageDown`) {
             this._zoomView(this._zoomFactor * AtPlayground.DEFAULT_ZOOM_MULTIPLIER);
         }
     }
@@ -906,7 +906,7 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
                     id: node.nodeModel.childId
                 };
                 const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
-                    if (entry.id != jagChild.id) {
+                    if (entry.id !== jagChild.id) {
                         return entry;
                     }
                 });

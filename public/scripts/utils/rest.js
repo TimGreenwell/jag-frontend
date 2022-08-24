@@ -13,7 +13,7 @@ export default class RESTUtils {
         const response = await fetch(url, details).catch((error_message) => {
             throw new Error(`${error_prefix}: ${error_message}`);
         });
-        if (response.status == 200) {
+        if (response.status === 200) {
             if (ok_fallback) {
                 return ok_fallback;
             }
@@ -26,18 +26,18 @@ export default class RESTUtils {
             }
         }
 
-        if (response.status == 204) {
+        if (response.status === 204) {
             return ok_fallback;
         }
 
-        if (response.status == 404) {
+        if (response.status === 404) {
             if (bad_fallback) {
                 return bad_fallback;
             }
             throw new Error(`${error_prefix}: Resource does not exist at URN.`);
         }
 
-        if (response.status == 409) {
+        if (response.status === 409) {
             if (bad_fallback) {
                 return bad_fallback;
             }

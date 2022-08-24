@@ -114,9 +114,9 @@ export default class AnalysisModel extends EventTarget {
     findNode(id) {
         const searchStack = [];
         searchStack.push(this._rootCellModel);
-        while (searchStack.length != 0) {
+        while (searchStack.length !== 0) {
             const currentNode = searchStack.pop();
-            if (currentNode.id == id) {
+            if (currentNode.id === id) {
                 return currentNode;
             }
             currentNode.children.forEach((child) => {

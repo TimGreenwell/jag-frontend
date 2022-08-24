@@ -167,7 +167,7 @@ export default class Activity extends EventTarget {
 
     set children(value) {
         this._children = value;
-        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
+        if ((this._children.length !== 0) && (this._operator === Activity.OPERATOR.NONE.name)) {
             this._operator = Activity.OPERATOR.AND.name;
         }
     }
@@ -258,7 +258,7 @@ export default class Activity extends EventTarget {
                 //    activity: child   // dont think this is really there.  would be too much to serialize
             });
         }
-        if ((this._children.length !== 0) && (this._operator == Activity.OPERATOR.NONE.name)) {
+        if ((this._children.length !== 0) && (this._operator === Activity.OPERATOR.NONE.name)) {
             this._operator = Activity.OPERATOR.AND.name;
         }
         return newId;
@@ -273,7 +273,7 @@ export default class Activity extends EventTarget {
             }
         }
         for (const binding of this._bindings) {
-            if (binding.provider.id == childId || binding.consumer.id == childId) {
+            if (binding.provider.id === childId || binding.consumer.id === childId) {
                 this.removeBinding(binding);
             }
         }
@@ -287,8 +287,8 @@ export default class Activity extends EventTarget {
      */
     setChildNameXXX(id, name) {
         for (const child of this._children) {
-            if (child.id == id) {
-                if (child.name != name) {
+            if (child.id === id) {
+                if (child.name !== name) {
                     child.name = name;
                 }
                 break;
@@ -304,8 +304,8 @@ export default class Activity extends EventTarget {
      */
     setChildDescriptionXXX(id, description) {
         for (const child of this._children) {
-            if (child.id == id) {
-                if (child.description != description) {
+            if (child.id === id) {
+                if (child.description !== description) {
                     child.description = description;
                 }
                 break;
@@ -331,9 +331,9 @@ export default class Activity extends EventTarget {
             };
         });
 
-        if (this._execution == Activity.EXECUTION.SEQUENTIAL.name) {
+        if (this._execution === Activity.EXECUTION.SEQUENTIAL.name) {
             for (const child of this._children) {
-                if (child.id == id) {
+                if (child.id === id) {
                     break;
                 }
 
@@ -474,7 +474,7 @@ export default class Activity extends EventTarget {
         }
 
         for (const child of this._children) {
-            if (child.id == id) {
+            if (child.id === id) {
                 return child;
             }
         }
@@ -494,7 +494,7 @@ export default class Activity extends EventTarget {
         const child = this.getCanonicalNode(id);
 
         if (!(child == undefined || child.activity == this)) {
-            if (!child.annotations || !child.annotations.has(name) || child.annotations.get(name) != value) {
+            if (!child.annotations || !child.annotations.has(name) || child.annotations.get(name) !== value) {
                 if (!child.annotations) {
                     child.annotations = new Map();
                 }
@@ -532,7 +532,7 @@ export default class Activity extends EventTarget {
      */
     setIterable(id, value) {
         for (const child of this._children) {
-            if (child.id == id) {
+            if (child.id === id) {
                 if (child.iterable == value) {
                     return;
                 }
@@ -543,7 +543,7 @@ export default class Activity extends EventTarget {
     }
 
     getOrderForId(id) {
-        if (this._execution == Activity.EXECUTION.PARALLEL.name) {
+        if (this._execution === Activity.EXECUTION.PARALLEL.name) {
             return 0;
         }
 

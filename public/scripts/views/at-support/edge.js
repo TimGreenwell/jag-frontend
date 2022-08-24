@@ -108,7 +108,7 @@ export default class Edge extends EventTarget {
 
         // @TODO TLG - DO NOT DELETE THIS COMMENT OR THE BLOCK BELOW.  THIS MAY HAVE BEEN PREMATURLY BLOCKED OFF>
         // const child = origin_nodeModel.activity.children.reduce((prev, curr) => {
-        //     if (curr.id == this._childId) {
+        //     if (curr.id === this._childId) {
         //         return curr;
         //     }
         //
@@ -213,13 +213,13 @@ export default class Edge extends EventTarget {
         const property = e.detail.property;
         const data = e.detail.extra;
 
-        if (property == `children`) {
+        if (property === `children`) {
             this._updateOrder(data.children, data.execution);
-        } else if (property == `execution`) {
+        } else if (property === `execution`) {
             this._updateOrder(data.children, data.execution);
-        } else if (property == `operator`) {
+        } else if (property === `operator`) {
             this._updateStrokeDash(data.operator);
-        } else if (property == `annotations`) {
+        } else if (property === `annotations`) {
             this._updateAnnotations(data.id, data.annotations, data.iterable);
         }
 
@@ -254,11 +254,11 @@ export default class Edge extends EventTarget {
     _updateParticipation(type) {
         let icon = ``;
 
-        if (type == `atomic`) {
+        if (type === `atomic`) {
             icon = `&#xf406;`;
-        } else if (type == `conjunctive`) {
+        } else if (type === `conjunctive`) {
             icon = `&#xf4ce;`;
-        } else if (type == `additive`) {
+        } else if (type === `additive`) {
             icon = `&#xf0c0;`;
         }
 
@@ -290,7 +290,7 @@ export default class Edge extends EventTarget {
     }
 
     _updateAnnotations(id, annotations, iterable) {
-        if (this._childId == id) {
+        if (this._childId === id) {
             this._clearAnnotations();
 
             if (iterable) {
@@ -359,7 +359,7 @@ export default class Edge extends EventTarget {
 
     _updateStrokeDash(operator) {
         // OR edges are dashed.
-        if (operator == Activity.OPERATOR.OR.name) {
+        if (operator === Activity.OPERATOR.OR.name) {
             this._edge_el.setAttributeNS(null, `stroke-dasharray`, `4`);
             // AND edges are solid.
         } else {
@@ -424,7 +424,7 @@ export default class Edge extends EventTarget {
         this._part_el.setAttributeNS(null, `y`, ey + 5);
 
         for (const key in this._list_el.children) {
-            if (key % 2 == 0) {
+            if (key % 2 === 0) {
                 this._list_el.children[key].setAttributeNS(null, `x`, mx + 20);
             }
         }
@@ -433,14 +433,14 @@ export default class Edge extends EventTarget {
     _updateOrder(children, execution) {
         let order = 0;
 
-        if (execution == Activity.EXECUTION.SEQUENTIAL.name) {
+        if (execution === Activity.EXECUTION.SEQUENTIAL.name) {
             const ordered = children.map((child) => {
                 return child.id;
             });
             order = ordered.indexOf(this._childId) + 1;
         }
 
-        this._text_el.innerHTML = order == 0 ? `` : order;
+        this._text_el.innerHTML = order === 0 ? `` : order;
     }
 
 

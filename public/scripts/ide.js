@@ -18,9 +18,9 @@ customElements.define(`jag-ide`, class extends HTMLElement {
     }
 
     handleConnection(event) {
-        if (event.type == `open`) {
+        if (event.type === `open`) {
             this._handleNewConnection();
-        } else if (event.type == `error`) {
+        } else if (event.type === `error`) {
             const progress = this._container.querySelector(`#connect .button-progress`);
             this._setFeedback(`Connection failed ! Try accepting the certificate at this address <a href="https://10.100.4.240:8887">    10.100.4.240</a>.`, true);
             this._resetButtonProgress(progress);
@@ -63,7 +63,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             this._inputs.removeChild(this._inputs.firstChild);
         }
 
-        if (selection.size == 1) {
+        if (selection.size === 1) {
             const node = selection.values().next().value;
             node.model.inputs.forEach((input) => {
                 if (this._variables.has(input.type)) {
