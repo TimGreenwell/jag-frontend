@@ -123,8 +123,6 @@ export default class Schemas {
 
     static getRest(schema) {
         const restSchema = Schemas.get(schema).rest;
-        console.log(`REST VALUE USING..`);
-        console.log(restSchema);
         return restSchema;
     }
 

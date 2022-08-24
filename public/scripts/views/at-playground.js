@@ -72,8 +72,8 @@ class AtPlayground extends Popupable {
             }));
         });
 
-        //     this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
-        // this.addEventListener('dragover', this.cancelDefault.bind(this));   // preventDefault
+        //  this.addEventListener('dragenter', this.onPreImport.bind(this));     // what is this?
+        //  this.addEventListener('dragover', this.cancelDefault.bind(this));   // preventDefault
         //  this.addEventListener('drop', this.onImport.bind(this));
     }
 
@@ -165,7 +165,7 @@ class AtPlayground extends Popupable {
 
         if (window.confirm(`Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
             this._is_edge_being_created = false;
-            this._created_edge.setSubActivityNode(node);                // a whole lot happens in here
+            this._created_edge.setSubActivityNode(node);                // a lot happens in here
             this._created_edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
 
             // identical issue below
@@ -180,8 +180,8 @@ class AtPlayground extends Popupable {
             // childNodeModel.childId = this._created_edge._childId
             // parentNodeModel.addChild(childNodeModel);
 
-            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAtribute(project,newAncestor)  +  reparentize
-            //  @TODO -- half thought update Jag should come first - but now think the order is good... rethoughts?
+            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAttribute(project,newAncestor)  +  reparent
+            //  @TODO -- half thought update Jag should come first - but now think the order is good... thoughts?
 
             this.dispatchEvent(new CustomEvent(`event-nodes-connected`, {
                 bubbles: true,
@@ -675,8 +675,6 @@ class AtPlayground extends Popupable {
             if (this._viewedProjectsMap[index].nodeModel.id == updatedNodeModel.id) {
                 if (updatedNodeModel.id == updatedNodeModel.projectId) {
                     const listItemElement = this.createListItemCollection(updatedNodeModel);
-                    console.log(`Potential list item going to be : `);
-                    console.log(listItemElement);
                     this._libraryList[index] = listItemElement;
                 } else {
                     this._libraryList.splice(index, 1);
@@ -726,13 +724,14 @@ class AtPlayground extends Popupable {
             } else if (this._selectedActivityNodeElementSet.length < 1) {
                 alert(`Must select at least one item to clear/disconnect`);
             } else {
-                // if the selected node is a root - then clear the project from the tree
-                // if the selected node is a non-root node - then disconnect the jag from its parent
+                // if the selected node is a root - then clear the project from the tree (manually remove graphics in clearPlayground)
+                // if the selected node is a non-root node - then disconnect the jag from its parent (triggers DB update which auto redraws graphics)
                 // @TODO - bit ugly with two functions for 'delete'  - I cant think of alternative
                 // @TODO - might consider a deleted edge to mean disconnect jag
 
                 if ($node.nodeModel.projectId == $node.nodeModel.id) {
                     this.clearPlayground($node.nodeModel.projectId);
+                    this.deselectAll();
                 } else {
                     if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                         const parentActivity = $node.getParent().nodeModel.activity;
@@ -746,6 +745,7 @@ class AtPlayground extends Popupable {
                         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                             detail: {activity: parentActivity}
                         }));
+                        this.deselectAll();
                     }
                 }
             }
