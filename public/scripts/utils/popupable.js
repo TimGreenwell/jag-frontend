@@ -148,7 +148,7 @@ export default class Popupable extends HTMLElement {
                 this._popupContent.style.top = `${iy - y + 10}px`;
                 this._popupContent.style.height = `10px`;
 
-                trackEl.addEventListener(`change-position`, (e) => {
+                trackEl.addEventListener(`change-position`, () => {
                     const newLoc = trackEl.getBoundingClientRect();
                     const nx = newLoc.x,
                         ny = newLoc.y;
@@ -275,7 +275,7 @@ export default class Popupable extends HTMLElement {
                                 }
                             }
 
-                            this._displayNextPopup();
+                            await this._displayNextPopup();                   // ADDED AWAIT 25 Aug - test
                         }.bind(this);
 
                         this._popupContent.appendChild(actionBtn);
@@ -306,7 +306,7 @@ export default class Popupable extends HTMLElement {
         this._popupBounds = bounds;
     }
 
-    popup({content, trackEl, callback, inputs = {}, highlights = []}) {
+    async popup({content, trackEl, callback, inputs = {}, highlights = []}) {
         this._popups.push({
             content,
             trackEl,
@@ -316,7 +316,7 @@ export default class Popupable extends HTMLElement {
         });
 
         if (!this._popupInterval && !this._activePopup) {
-            this._displayNextPopup();
+            await this._displayNextPopup();
         }
     }
 

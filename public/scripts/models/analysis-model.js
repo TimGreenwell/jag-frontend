@@ -111,22 +111,7 @@ export default class AnalysisModel extends EventTarget {
         this._rootCellModel = value;
     }
 
-    findNode(id) {
-        const searchStack = [];
-        searchStack.push(this._rootCellModel);
-        while (searchStack.length !== 0) {
-            const currentNode = searchStack.pop();
-            if (currentNode.id === id) {
-                return currentNode;
-            }
-            currentNode.children.forEach((child) => {
-                return searchStack.push(child);
-            });
-        }
-    }
-
-
-    fromJSON(json) {
+    static fromJSON(json) {
         // const team_id = json.team;
         // let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
         // json.team = teamNode;                                                          // Exists only to store its data (team is in team)
@@ -150,3 +135,17 @@ export default class AnalysisModel extends EventTarget {
 
 AnalysisModel.DEFAULT_NAME = ``;
 AnalysisModel.DEFAULT_DESCRIPTION = ``;
+
+// findNode(id) {
+//     const searchStack = [];
+//     searchStack.push(this._rootCellModel);
+//     while (searchStack.length !== 0) {
+//         const currentNode = searchStack.pop();
+//         if (currentNode.id === id) {
+//             return currentNode;
+//         }
+//         currentNode.children.forEach((child) => {
+//             return searchStack.push(child);
+//         });
+//     }
+// }

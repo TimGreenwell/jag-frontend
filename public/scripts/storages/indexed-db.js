@@ -18,6 +18,15 @@ export default class IndexedDBStorage {
         console.log(`{} - IndexedDB Storage initialized`);
     }
 
+    help() {
+        let supportedRestPoints = null;
+        for (const key of Object.keys(this.__REST_PATHS)) {
+            supportedRestPoints = supportedRestPoints + `/n`;
+        }
+        const returnString = `Using ${this._name} v.${this._version}  \n on ${this._db}`;
+        return returnString;
+    }
+
     async init() {
         this._db = await IndexedDBUtils.initStorage(
             this._name,
@@ -28,7 +37,7 @@ export default class IndexedDBStorage {
 
     async all(schema) {
         const storeName = SchemaManager.get(schema).name;
-        const cursor = await IndexedDBUtils.all(this._db, SchemaManager.get(schema).name);
+        const cursor = await IndexedDBUtils.all(this._db, storeName);
         return cursor;
     }
 

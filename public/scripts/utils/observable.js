@@ -20,11 +20,6 @@ export default class SharedObservable extends SharedService {
         this.sharedWorker.port.onmessage = this.handleReceiveMessage.bind(this);
     }
 
-
-    static get subscribers() {
-        return this._subscribers;
-    }
-
     /**
      * Interested listeners register an activity-type (topic) and
      * a subscriber-bound callback (subscriber)

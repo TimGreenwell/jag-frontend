@@ -7,6 +7,7 @@
 'use strict';
 
 
+// noinspection JSUnusedGlobalSymbols
 export default class Subscription extends EventTarget {
 
     constructor({name, lastReportTime = null, lastReportedData = null} = {}) {

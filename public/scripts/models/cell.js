@@ -12,6 +12,7 @@ import Validation from '../utils/validation.js';
 
 
 // node (with view/jag)  = at's jag-node       -- both syn with JAG model
+// noinspection JSUnusedGlobalSymbols
 export default class Cell extends EventTarget {
 
     constructor({
@@ -27,7 +28,7 @@ export default class Cell extends EventTarget {
         this._id = id;               // An assigned unique ID given at construction
         this._urn = urn;
         this._jag = jag;             // convenience
-        this._childId = childId;               // child seperator (ex.  2nd child with urn 'goto')  //@todo  isnt this in the jag? is not used on the cell level
+        this._childId = childId;     // child separator (ex.  2nd child with urn 'goto')  //@todo  isn't this in the jag? is not used on the cell level
         this._parentUrn = parentUrn;
         this._rootUrn = rootUrn;     // convenience
         this._children = children;
@@ -185,7 +186,6 @@ export default class Cell extends EventTarget {
 
     addChild(node) {                              // moved to controller
         if (this.canHaveChildren) {
-            const child = new Cell();
             this._children.push(node);
             node.parent = this;
             this.incrementDepth(1);
@@ -206,13 +206,6 @@ export default class Cell extends EventTarget {
         this.children = filtered;
     }
 
-    removeChildById(id) {
-        this.children.forEach((child) => {
-            if (child.id === id) {
-                this.removeChild(child);
-            }
-        });
-    }
 
     getLastChild() {
         return this._children[this.children.length - 1];
@@ -234,14 +227,6 @@ export default class Cell extends EventTarget {
 
     isRoot() {
         return this._rootUrn === this._urn;
-    }
-
-    getAncestor() {
-        let topAncestor = this;
-        while (!topAncestor.isRoot()) {
-            topAncestor = topAncestor.parent;
-        }
-        return topAncestor;
     }
 
 
@@ -270,4 +255,20 @@ export default class Cell extends EventTarget {
 
 }
 
+
+// removeChildById(id) {
+//     this.children.forEach((child) => {
+//         if (child.id === id) {
+//             this.removeChild(child);
+//         }
+//     });
+// }
+
+// getAncestor() {
+//     let topAncestor = this;
+//     while (!topAncestor.isRoot()) {
+//         topAncestor = topAncestor.parent;
+//     }
+//     return topAncestor;
+// }
 

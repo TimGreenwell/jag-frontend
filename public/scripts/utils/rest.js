@@ -125,22 +125,21 @@ export default class RESTUtils {
         await RESTUtils.request(url, options, `Error clearing`);
     }
 
-    static getCookie(name) {
-        if (!document.cookie) {
-            return null;
-        }
-
-        const xsrfCookies = document.cookie.split(`;`).map((c) => {
-            return c.trim();
-        }).filter((c) => {
-            return c.startsWith(`${name}=`);
-        });
-
-        if (xsrfCookies.length === 0) {
-            return null;
-        }
-        return decodeURIComponent(xsrfCookies[0].split(`=`)[1]);
-    }
-
-
 }
+
+// static getCookie(name) {
+//     if (!document.cookie) {
+//         return null;
+//     }
+//
+//     const xsrfCookies = document.cookie.split(`;`).map((c) => {
+//         return c.trim();
+//     }).filter((c) => {
+//         return c.startsWith(`${name}=`);
+//     });
+//
+//     if (xsrfCookies.length === 0) {
+//         return null;
+//     }
+//     return decodeURIComponent(xsrfCookies[0].split(`=`)[1]);
+// }

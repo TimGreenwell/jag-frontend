@@ -10,6 +10,7 @@
 import {uuidV4} from '../utils/uuid.js';
 import Validation from '../utils/validation.js';
 
+// noinspection JSUnusedGlobalSymbols
 export default class Node extends EventTarget {
 
     constructor({
@@ -53,8 +54,8 @@ export default class Node extends EventTarget {
         this._leafCount = 1;
         this._treeDepth = 0;
         // Temp
-        this._hasNewStructure = false;
-        this._hasNewProperties = false;
+        // @TODO this._hasNewStructure = false;
+        // @TODO this._hasNewProperties = false;
     }
 
     get id() {
@@ -341,12 +342,6 @@ export default class Node extends EventTarget {
         }
     }
 
-    reId() {
-        this.id = uuidV4();
-        return this;
-    }
-
-
     leafcounter() {
         if (this.hasChildren()) {
             let sum = 0;
@@ -394,13 +389,6 @@ export default class Node extends EventTarget {
         }
     }
 
-    removeChildById(id) {  // this wont work - not recursing
-        this.children.forEach((child) => {
-            if (child.id === id) {
-                this.removeChild(child);
-            }
-        });
-    }
 
     findChildById(id) {
         const workStack = [];
@@ -434,25 +422,10 @@ export default class Node extends EventTarget {
         return this._children.length;
     }
 
-    toggleExpanded() {
-        this._isExpanded = !this._isExpanded;
-        console.log(`---------------- Not Possible -------------------------------`);
-
-        // 2 dispatches here - 1 listener in views/Analysis
-        this.dispatchEvent(new CustomEvent(`layout`));
-    }
 
     isRoot() {
         return this._id === this._projectId;
     }         // is determined by lack of parent.
-
-    getAncestor() {
-        let topAncestor = this;
-        while (!topAncestor.isRoot()) {
-            topAncestor = topAncestor.parent;
-        }
-        return topAncestor;
-    }
 
 
     toJSON() {
@@ -496,4 +469,26 @@ export default class Node extends EventTarget {
 
 }
 
+// removeChildById(id) {  // this wont work - not recursing
+//     this.children.forEach((child) => {
+//         if (child.id === id) {
+//             this.removeChild(child);
+//         }
+//     });
+// }
 
+// toggleExpanded() {
+//     this._isExpanded = !this._isExpanded;
+//     console.log(`---------------- Not Possible -------------------------------`);
+//
+//     // 2 dispatches here - 1 listener in views/Analysis
+//     this.dispatchEvent(new CustomEvent(`layout`));
+// }
+
+// getAncestor() {
+//     let topAncestor = this;
+//     while (!topAncestor.isRoot()) {
+//         topAncestor = topAncestor.parent;
+//     }
+//     return topAncestor;
+// }

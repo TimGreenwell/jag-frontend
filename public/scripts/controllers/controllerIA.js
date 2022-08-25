@@ -7,6 +7,7 @@
 
 'use strict';
 
+
 import StorageService from "../services/storage-service.js";
 import CellModel from "../models/cell.js";
 import Activity from "../models/activity.js";
@@ -17,6 +18,7 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import InputValidator from "../utils/validation.js";
 
+// noinspection DuplicatedCode,JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable
 export default class ControllerIA extends Controller {
 
     constructor() {
@@ -306,17 +308,15 @@ export default class ControllerIA extends Controller {
     async eventAnalysisCreatedHandler(event) {
         const standardAnalysis = await this.createStandardAnalysis(event.detail.name, event.detail.rootUrn, `Popup`);
         this._iaProperties.team = standardAnalysis.team;
-        // zzzz
     }
 
     async eventAnalysisUpdatedHandler(event) {
-        const analysis = event.detail.analysis;
         await StorageService.update(event.detail.analysis, `analysis`);
     }
 
     eventNodeAddChildHandler(event) {      // if not working - check why this->._currentAnalysis is not being updated (just passed)
-        // This will not be permanent until a valid URN is set.  Not-persistant.
-        // @todo push this back down into iaTable (from there - to there)
+        // This will not be permanent until a valid URN is set.  Not-persistent.
+        // @TODO push this back down into iaTable (from there - to there)
         const parentCell = event.detail.cell;
         this._currentAnalysis = this._iaTable._analysisModel;
         if (parentCell.canHaveChildren) {

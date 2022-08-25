@@ -23,9 +23,19 @@ export default class RESTStorage {
             create: `/{urlHandle}`,
             update: `/{urlHandle}/{id}`,
             delete: `/{urlHandle}/{id}`,
-            clear: `/{urlHandle}`
+            clear: `/{urlHandle}`,
+            help: ``
         };
         console.log(`{} - Rest Storage Service initialized at (${endpoint})`);
+    }
+
+    help() {
+        let supportedRestPoints = null;
+        for (const key of Object.keys(this.__REST_PATHS)) {
+            supportedRestPoints = supportedRestPoints + `/n`;
+        }
+        const returnString = `Using ${this._name} v.${this._version}  \n Supports: \n` + supportedRestPoints;
+        return returnString;
     }
 
     async init() {

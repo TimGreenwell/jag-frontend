@@ -16,6 +16,7 @@ import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
 import CellModel from "../models/cell.js";
 
+// noinspection DuplicatedCode, JSUnusedGlobalSymbols
 export default class Controller extends EventTarget {
 
     constructor() {
@@ -145,8 +146,6 @@ export default class Controller extends EventTarget {
     async eventUrnChangedHandler(event) {
         const originalUrn = event.detail.originalUrn;
         const newUrn = event.detail.newUrn;
-
-        const URL_CHANGED_WARNING_POPUP = `The URN has changed. Would you like to save this model to the new URN (${newUrn})? (URN cannot be modified except to create a new model.)`;
         const URL_RENAME_WARNING_POPUP = `The new URN (${newUrn}) is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)`;
         // Changing a URN is either a rename/move or a copy or just not allowed.
         // Proposing we have a 'isLocked' tag.
@@ -216,9 +215,9 @@ export default class Controller extends EventTarget {
         nodeStack.push(projectNode);
         while (nodeStack.length > 0) {
             const currentNode = nodeStack.pop();
-            if ((changedActivity.urn == undefined) || (currentNode.urn === changedActivity.urn)) {
-                if (changedActivity.urn == undefined) {
-                    console.log(`Not  bad - this happens when the precide URN of change is not know.  For example, a rebuild from an archive or fresh pull`);
+            if ((changedActivity.urn === undefined) || (currentNode.urn === changedActivity.urn)) {
+                if (changedActivity.urn === undefined) {
+                    console.log(`Not bad - this happens when the URN of change is not known.  For example, a rebuild from an archive or fresh pull`);
                 }
                 const existingNodeChildren = currentNode.children.map((child) => {
                     return {
@@ -403,7 +402,7 @@ export default class Controller extends EventTarget {
     }
 
     repopulateProject(currentNode, projectId) {
-        console.log(`setting ${currentNode.urn} from  ${currentNode.projectId} to ${projectId}`);
+        // @TODO make these repopulate methods more efficient
         currentNode.projectId = projectId;
         for (const child of currentNode.children) {
             this.repopulateProject(child, projectId);

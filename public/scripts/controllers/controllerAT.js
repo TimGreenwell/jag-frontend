@@ -14,7 +14,8 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
 
-// noinspection JSUnresolvedFunction    // The use of Dependency Injection is too much for the static inspector to handle
+
+// noinspection DuplicatedCode,JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable
 export default class ControllerAT extends Controller {
 
     constructor() {
@@ -75,7 +76,8 @@ export default class ControllerAT extends Controller {
             this.cacheProject(node);
         });
 
-        window.onblur = function (ev) {
+        // Event function (event parameter unused)
+        window.onblur = function () {
             console.log(`window.onblur`);
         };
     }
@@ -177,7 +179,7 @@ export default class ControllerAT extends Controller {
     // eventActivityUpdatedHandler --- hosted by common controller.
 
     async eventNodeUpdatedHandler(event) {
-        let projectNode = null;
+        let projectNode;
         const updatedNodeModel = event.detail.nodeModel;
         //   if (updatedNodeModel.id === updatedNodeModel.projectId) {
         if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
@@ -350,7 +352,6 @@ export default class ControllerAT extends Controller {
         console.log(`Local>> (jag deleted) `);
         const deadActivityUrn = event.detail.activityUrn;
         for (const [activityId, activity] of this._activityMap) {
-            //      if (activity.urn !== deadActivityUrn) {
             const remainingChildren = activity.children.filter((kid) => {
                 if (kid.urn !== deadActivityUrn) {
                     return kid;
@@ -360,7 +361,6 @@ export default class ControllerAT extends Controller {
                 activity.children = remainingChildren;
                 await StorageService.update(activity, `activity`);
             }
-            //  }
         }
         await StorageService.delete(deadActivityUrn, `activity`);
     }
@@ -456,7 +456,7 @@ export default class ControllerAT extends Controller {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
         console.log(`((COMMAND INCOMING)) >> Activity Deleted`);
-        const deletedActivity = this.fetchActivity(deletedActivityUrn);
+        // const deletedActivity = this.fetchActivity(deletedActivityUrn);
         this.uncacheActivity(deletedActivityUrn);
         for (const viewedProject of this._playground.viewedProjects) {
             if (viewedProject.id === deletedActivityUrn) {
@@ -472,12 +472,11 @@ export default class ControllerAT extends Controller {
     }
 
     commandActivityReplacedHandler(newActivity, replacedActivityUrn) {
-        //  UserPrefs.setDefaultUrnPrefixFromUrn(newActivity.urn)
         this._playground.replaceActivityNode(newActivity, replacedActivityUrn);
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn);                   // Replace Activity list item in activityLibrary
     }
 
-    commandNodeCreatedHandler(createdNodeModel, createdNodeId) { // / this coming in is no good
+    commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Created`);
         this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
@@ -500,9 +499,6 @@ export default class ControllerAT extends Controller {
         this._activityLibrary.updateItem(updatedActivity);
     }
 
-    // au
-
-
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
 
@@ -514,11 +510,7 @@ export default class ControllerAT extends Controller {
 
         this._playground._rebuildNodeView(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel);
-        //   this._projectLibrary.updateStructureChange(Array.from(this.projectMap.values()))
-        // update playground
     }
-
-    // nu
 
     commandNodeDeletedHandler(deletedNodeId) {
         this.uncacheProject(deletedNodeId);
@@ -552,7 +544,7 @@ export default class ControllerAT extends Controller {
             const checkNode = projectNode.findChildById(nextParentId);
             urnStack.push(checkNode.urn);
             nextParentId = checkNode.parentId;
-        } while (nextParentId != undefined);
+        } while (nextParentId !== undefined);
         return urnStack;
     }
 

@@ -82,18 +82,6 @@ export default class IndexedDBUtils {
         });
     }
 
-    static delete2(db, store, key) {  //  only keeping this around to see if i like this format better...
-        const request = db.transaction(store, `readwrite`).objectStore(store).delete(key);
-
-        request.onsuccess = () => {
-            console.log(`SUCCESS: ${request.result}`);
-        };
-
-        request.onerror = (err) => {
-            console.error(`FAILED: ${err}`);
-        };
-    }
-
     // tlg
     static clear(db, store, key) {
         return new Promise((resolve, reject) => {
@@ -178,4 +166,17 @@ export default class IndexedDBUtils {
     }
 
 }
+
+// static delete2(db, store, key) {  //  only keeping this around to see if i like this format better...
+//     const request = db.transaction(store, `readwrite`).objectStore(store).delete(key);
+//
+//     request.onsuccess = () => {
+//         console.log(`SUCCESS: ${request.result}`);
+//     };
+//
+//     request.onerror = (err) => {
+//         console.error(`FAILED: ${err}`);
+//     };
+// }
+
 

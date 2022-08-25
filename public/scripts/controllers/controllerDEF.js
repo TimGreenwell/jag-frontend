@@ -12,6 +12,7 @@
 import StorageService from "../services/storage-service.js";
 import Controller from "./controller.js";
 
+// noinspection DuplicatedCode,JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable
 export default class ControllerDEF extends Controller {
 
     constructor(startProjectId = null, startNodeId = null) {
@@ -56,7 +57,8 @@ export default class ControllerDEF extends Controller {
             }
         });
 
-        window.onblur = function (ev) {
+        // Event function (event parameter unused)
+        window.onblur = function () {
             console.log(`window.onblur`);
         };
     }
@@ -69,8 +71,8 @@ export default class ControllerDEF extends Controller {
     }
 
     initializeHandlers() {
-        this._menu.addEventListener(`event-execution-updated`, this.eventExecutionUpdatedHandler.bind(this));
-        this._menu.addEventListener(`event-returns-updated`, this.eventReturnsUpdatedHandler.bind(this));
+        // this._menu.addEventListener(`event-execution-updated`, this.eventExecutionUpdatedHandler.bind(this));
+        // this._menu.addEventListener(`event-returns-updated`, this.eventReturnsUpdatedHandler.bind(this));
         this._menu.addEventListener(`event-operator-updated`, this.eventOperatorUpdatedHandler.bind(this));
     }
 
@@ -99,32 +101,12 @@ export default class ControllerDEF extends Controller {
     /**   -- Dashboard --  */
 
     /**   -- Menu --  */
-    // eventExecutionUpdatedHandler() {
-    //
-    // }
-    //
-    // eventReturnsUpdatedHandler() {
-    //
-    // }
 
     eventOperatorUpdatedHandler(event) {
         const returns = event.detail.returns;
         const operator = event.detail.operator;
         this._definition._templateFunction(returns, operator);
     }
-
-    //
-    // async responseActivityUpdatedHandler(event) {
-    //     // The Event: Playground just alerted that the updated JAG we recieved is used by the showing Projects.
-    //     // Need to update and save the adjusted Projects
-    //     let projectId = event.detail.projectId; // could have used id
-    //     let projectNode = this.fetchProject(projectId)
-    //     let changedActivityUrn = event.detail.activityUrn;
-    //     projectNode = this.updateTreeWithActivityChange(projectNode,changedActivityUrn);
-    //     await StorageService.update(projectNode, 'node');
-    //     console.log("Local<< (new node affects project) \n")
-    // }
-
 
     /**
      *                                   Downward Command Handlers

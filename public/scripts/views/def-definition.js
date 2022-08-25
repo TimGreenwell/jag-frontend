@@ -311,7 +311,7 @@ class Definition extends HTMLElement {
         let values = [];
         if (this.dataMode === `live`) {
             values = node.children.map((child) => {
-                if ((child.returnValue != `undefined`) || (child.returnValue != `null`)) {
+                if ((child.returnValue !== undefined) || (child.returnValue !== null)) {
                     return child.returnValue;
                 }
             });
@@ -319,7 +319,7 @@ class Definition extends HTMLElement {
             values = this.definingNode.children.map((child) => {
                 return this._testBankMap.get(child.id);
             }).filter((value) => {
-                if ((value != `undefined`) || (value != `null`)) {
+                if ((value !== undefined) || (value !== null)) {
                     return value;
                 }
             });

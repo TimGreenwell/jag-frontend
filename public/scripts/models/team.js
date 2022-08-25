@@ -19,7 +19,6 @@ export default class TeamModel extends EventTarget {
         this._performerIds = performerIds;
         // non-persistent
         this._agents = [];
-        this._performers = [];
     }
 
     get id() {
@@ -126,7 +125,7 @@ export default class TeamModel extends EventTarget {
         return json;
     }
 
-    fromJSON(json) {
+    static fromJSON(json) {
         // const agents = [];
         // for (const agent_id of json.agents) {
         //     let agent = await StorageService.get(agent_id,'agent');

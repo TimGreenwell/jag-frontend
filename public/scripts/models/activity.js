@@ -9,13 +9,7 @@
 import {uuidV4} from '../utils/uuid.js';
 import Validation from "../utils/validation.js";
 
-/**
- * Joint Activity Graph (Activity) model.
- *
- * @class
- * @constructor
- * @public
- */
+
 export default class Activity extends EventTarget {
 
     constructor({
@@ -255,7 +249,7 @@ export default class Activity extends EventTarget {
             this._children.push({
                 urn,
                 id: newId
-                //    activity: child   // dont think this is really there.  would be too much to serialize
+                //    activity: child   // don't think this is really there.  would be too much to serialize
             });
         }
         if ((this._children.length !== 0) && (this._operator === Activity.OPERATOR.NONE.name)) {
