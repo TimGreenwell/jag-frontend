@@ -24,6 +24,7 @@ export default class ControllerAT extends Controller {
         this._activityLibrary = null;
         this._projectLibrary = null;
         this._playground = null;
+        this._timeview = null;
         this._properties = null;
 
         StorageService.subscribe(`command-activity-created`, this.commandActivityCreatedHandler.bind(this));   //    }
@@ -53,6 +54,10 @@ export default class ControllerAT extends Controller {
         this._playground = value;
     }
 
+    set timeview(value) {
+        this._timeview = value;
+    }
+
     set properties(value) {
         this._properties = value;
     }
@@ -79,6 +84,7 @@ export default class ControllerAT extends Controller {
         // Event function (event parameter unused)
         window.onblur = function () {
             console.log(`window.onblur`);
+
         };
     }
 
@@ -197,7 +203,10 @@ export default class ControllerAT extends Controller {
 
 
     eventNodesSelectedHandler(event) {
-        this._properties.handleSelectionUpdate(event.detail.selectedNodeArray);
+        const selectedNodeArray = event.detail.selectedNodeArray;
+        this._properties.handleSelectionUpdate(selectedNodeArray);
+
+        this._timeview.drawNode(selectedNodeArray[0]);
         // ide.handleSelectionUpdate(e.detail);
     }
 
@@ -206,6 +215,8 @@ export default class ControllerAT extends Controller {
         const nodeModel = event.detail.nodeModel;
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
+        console.log(`repositioned node`);
+
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 

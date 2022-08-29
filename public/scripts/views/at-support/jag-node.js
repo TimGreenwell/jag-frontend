@@ -362,7 +362,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._snap();
         this.dispatchEvent(new CustomEvent(`drag`));
         this.removeEventListener(`mousemove`, this._boundNodeDrag);
-        //    this.parentNode.removeEventListener('mousemove', this._boundDrag);                // tlg I thook this out -- being annoying -- what is parentNode..never defined
+        //    this.parentNode.removeEventListener('mousemove', this._boundDrag);                // tlg I took this out -- being annoying -- what is parentNode..never defined
         this.dispatchEvent(new CustomEvent(`event-node-repositioned`, {
             bubbles: true,
             detail: {
@@ -382,13 +382,9 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
             this._is_moving = true;
             this._$header.className = `moving`;
-
             this._$header.addEventListener(`mousemove`, this._boundNodeDrag);
-
             this.parentNode.addEventListener(`mousemove`, this._boundDrag);
-
             this._$header.addEventListener(`mouseup`, this._boundMouseUp);
-
             this.parentNode.addEventListener(`mouseup`, this._boundMouseUp);
         });
 

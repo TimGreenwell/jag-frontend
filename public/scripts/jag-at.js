@@ -9,6 +9,7 @@
  */
 
 import Playground from './views/at-playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
+import TimeView from "./views/at-timeview.js";
 import Library from './views/at-activity-library.js';                     // AT - Left view of available Activities
 import ProjectLibrary from './views/at-node-library.js';         // AT - Left view(2) of current JAGs
 import Menu from './views/at-menu.js';                           // AT - Top view of user actions (plus title/logo)
@@ -50,6 +51,8 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     mainPanels.setAttribute(`id`, `main-panels`);
     const leftPanel = document.createElement(`div`);
     leftPanel.setAttribute(`id`, `left-panel`);
+    const centerPanel = document.createElement(`div`);
+    centerPanel.setAttribute(`id`, `center-panel`);
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
 
@@ -58,19 +61,23 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     const menu = new Menu();
     const playground = new Playground();
     const properties = new Properties();
+    const timeview = new TimeView();
     body.appendChild(menu);
     body.appendChild(mainPanels);
     mainPanels.appendChild(leftPanel);
-    mainPanels.appendChild(playground);
+    mainPanels.appendChild(centerPanel);
     mainPanels.appendChild(rightPanel);
     leftPanel.appendChild(projectLibrary);
     leftPanel.appendChild(library);
+    centerPanel.appendChild(playground);
+    centerPanel.appendChild(timeview);
     rightPanel.appendChild(properties);
 
     controller.menu = menu;
     controller.activityLibrary = library;
     controller.projectLibrary = projectLibrary;
     controller.playground = playground;
+    controller.timeview = timeview;
     controller.properties = properties;
     await controller.initialize();
 
