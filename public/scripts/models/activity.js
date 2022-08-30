@@ -52,9 +52,9 @@ export default class Activity extends EventTarget {
         this._isLocked = isLocked;
         this._collapsed = collapsed;
 
-        this._execution = connector.execution;
-        this._returns = connector.returns;
-        this._operator = connector.operator;
+      //  this._execution = connector.execution;
+      //  this._returns = connector.returns;
+      //  this._operator = connector.operator;
 
         // The below has not been looked at.
         for (const child of this._children) {
@@ -161,8 +161,8 @@ export default class Activity extends EventTarget {
 
     set children(value) {
         this._children = value;
-        if ((this._children.length !== 0) && (this._operator === Activity.OPERATOR.NONE.name)) {
-            this._operator = Activity.OPERATOR.AND.name;
+        if ((this._children.length !== 0) && (this.connector.operator === Activity.OPERATOR.NONE.name)) {
+            this.connector.operator = Activity.OPERATOR.AND.name;
         }
     }
 
@@ -191,27 +191,27 @@ export default class Activity extends EventTarget {
     }
 
     set execution(type) {
-        this._execution = type;
+        this.connector.execution = type;
     }
 
     get execution() {
-        return this._execution;
+        return this.connector.execution;
     }
 
     set operator(type) {
-        this._operator = type;
+        this.connector.operator = type;
     }
 
     get operator() {
-        return this._operator;
+        return this.connector.operator;
     }
 
     set returns(type) {
-        this._returns = type;
+        this.connector.returns = type;
     }
 
     get returns() {
-        return this._returns;
+        return this.connector.returns;
     }
 
     set isLocked(bool) {
@@ -252,8 +252,8 @@ export default class Activity extends EventTarget {
                 //    activity: child   // don't think this is really there.  would be too much to serialize
             });
         }
-        if ((this._children.length !== 0) && (this._operator === Activity.OPERATOR.NONE.name)) {
-            this._operator = Activity.OPERATOR.AND.name;
+        if ((this._children.length !== 0) && (this.connector.operator === Activity.OPERATOR.NONE.name)) {
+            this.connector.operator = Activity.OPERATOR.AND.name;
         }
         return newId;
     }
@@ -325,7 +325,7 @@ export default class Activity extends EventTarget {
             };
         });
 
-        if (this._execution === Activity.EXECUTION.SEQUENTIAL.name) {
+        if (this.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
             for (const child of this._children) {
                 if (child.id === id) {
                     break;
@@ -537,7 +537,7 @@ export default class Activity extends EventTarget {
     }
 
     getOrderForId(id) {
-        if (this._execution === Activity.EXECUTION.PARALLEL.name) {
+        if (this.connector.execution === Activity.EXECUTION.PARALLEL.name) {
             return 0;
         }
 
@@ -558,9 +558,9 @@ export default class Activity extends EventTarget {
             description: this._description,
             type: `node.type.plan`,
             connector: {
-                execution: this._execution,
-                returns: this._returns,
-                operator: this._operator
+                execution: this.connector.execution,
+                returns: this.connector.returns,
+                operator: this.connector.operator
             },
             inputs: [],
             outputs: [],

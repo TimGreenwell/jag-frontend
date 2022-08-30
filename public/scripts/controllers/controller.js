@@ -139,6 +139,7 @@ export default class Controller extends EventTarget {
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
         console.log(`\nLocal>> (Activity ${updatedActivity.urn} updating) `);
+        console.log(updatedActivity);
         updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, `activity`);
     }

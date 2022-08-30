@@ -206,7 +206,7 @@ export default class ControllerAT extends Controller {
         const selectedNodeArray = event.detail.selectedNodeArray;
         this._properties.handleSelectionUpdate(selectedNodeArray);
 
-        this._timeview.drawNode(selectedNodeArray[0]);
+        this._timeview.refreshTimeview(selectedNodeArray[0]);
         // ide.handleSelectionUpdate(e.detail);
     }
 
@@ -216,7 +216,6 @@ export default class ControllerAT extends Controller {
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
         console.log(`repositioned node`);
-
         //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
@@ -239,11 +238,18 @@ export default class ControllerAT extends Controller {
 
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
+
+            console.log(`Checking if node.execution is none - and change if necessary`);
+            console.log(parentNodeModel.activity.connector.execution);
+            if (parentNodeModel.activity.connector.execution === `node.execution.none`) {
+                parentNodeModel.activity.connector.execution = `node.execution.sequential`;
+            }
+            console.log(parentNodeModel.activity.connector.execution);
             childNodeModel.parent = null;
-            childNodeModel.parentId = null;  // /         This changed because of the extra revesre step in AddChild. Change that then fix this.
+            childNodeModel.parentId = null;  // /         This changed because of the extra reverse step in AddChild. Change that then fix this.
 
             this.repopulateProject(parentNodeModel, projectNodeId);
-            childNodeModel.childId = childId;  // this could also be done later.. ok here
+            childNodeModel.childId = childId;  // this could also be done later. ok here
 
             event.detail.nodeModel = childNodeModel;      // update the child - this will set up this node as a non-root.
             await this.eventNodeUpdatedHandler(event);
