@@ -25,6 +25,10 @@ class AtTimeview extends HTMLElement {
         this.HORIZONTAL_MARGIN = 10;
         this.VERTICAL_MARGIN = 10;
         this.LINE_WIDTH = 1;
+        this.STANDARD_FONT_SIZE = 15;
+        this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
+        this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
+        this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
     }
 
     drawRectangle(x, y, width, height) {
@@ -39,17 +43,27 @@ class AtTimeview extends HTMLElement {
         document.getElementById(`time-container`).appendChild(rectangle);
     }
 
-    writeText(x, y, text) {
+    createTextElement(text) {
         const svgText = document.createElementNS(`http://www.w3.org/2000/svg`, `text`);
-        svgText.setAttributeNS(null, `x`, x);
-        svgText.setAttributeNS(null, `y`, y);
-        svgText.setAttributeNS(null, `width`, `30`);
-        svgText.setAttributeNS(null, `height`, `auto`);
-        svgText.setAttributeNS(null, `font-size`, `20`);
+        svgText.setAttributeNS(null, `font-size`, this.STANDARD_FONT_SIZE.toString());
+        svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
         const textNode = document.createTextNode(text);
         svgText.appendChild(textNode);
+        return svgText;
+    }
+
+    labelWidth(svgText) {
+        const bbox = svgText.getBBox();
+        const {width, height} = bbox;
+        return width;
+    }
+
+    writeTextElement(svgText, x, y) {
+        svgText.setAttributeNS(null, `x`, x);
+        svgText.setAttributeNS(null, `y`, y);
         document.getElementById(`time-container`).appendChild(svgText);
     }
+
 
     clearSvg() {
         while (this._timeContainerDiv.hasChildNodes()) {
@@ -61,110 +75,86 @@ class AtTimeview extends HTMLElement {
     refreshTimeview(nodeModel) {
         this.clearSvg();
         this.boxMap.clear();
-        this.buildBoxSet(nodeModel, this.START_X, this.START_Y, 0, 0);
+        this.buildBoxSet(nodeModel, this.START_X, this.START_Y);
         for (const box of this.boxMap.values()) {
-            console.log(`id : ${box.id}`);
-            console.log(`label : ${box.label}`);
-            console.log(`x : ${box.x}`);
-            console.log(`y : ${box.y}`);
-            console.log(`height : ${box.height}`);
-            console.log(`width : ${box.width}`);
-            console.log(`\n`);
             this.drawRectangle(box.x, box.y, box.width, box.height);
         }
     }
 
-    buildBoxSet(nodeModel, topLeftX, topLeftY, width = 0, height = 0) {
+    buildBoxSet(nodeModel, topLeftX, topLeftY) {
+        topLeftY = topLeftY + this.LABEL_HEIGHT;
+        const box = new TimeviewBox();
+        box.id = nodeModel.id;
+        box.label = nodeModel.name;
+        const labelElement = this.createTextElement(box.label);
+
         if (nodeModel.hasChildren()) {
-            const box = new TimeviewBox();
             let newBox;
             if (nodeModel._activity.connector.execution === `node.execution.parallel`) {
-                let childrenTopLeftY = topLeftY;
-                let biggestX = 0;
-                let parentBoxHeight = 0;
+                let childTopLeftY = topLeftY;
+                let widestChild = 0;
+                let growingBoxHeight = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(child, topLeftX + this.HORIZONTAL_MARGIN, childrenTopLeftY + this.VERTICAL_MARGIN, 0, 0);
-                    childrenTopLeftY = childrenTopLeftY + newBox.height + this.VERTICAL_MARGIN;
-                    parentBoxHeight = parentBoxHeight + newBox.height;
-                    if (newBox.width > biggestX){
-                        biggestX = newBox.width;
+                    newBox = this.buildBoxSet(child, topLeftX + this.HORIZONTAL_MARGIN, childTopLeftY + this.VERTICAL_MARGIN);
+                    childTopLeftY = childTopLeftY + newBox.height + this.VERTICAL_MARGIN;
+                    growingBoxHeight = growingBoxHeight + newBox.height;
+                    if (newBox.width > widestChild) {
+                        widestChild = newBox.width;
                     }
                 });
                 nodeModel.children.forEach((child) => {
-                    let boxToStretch = this.boxMap.get(child.id);
-                    boxToStretch.width = biggestX;
+                    const boxToStretch = this.boxMap.get(child.id);
+                    boxToStretch.width = widestChild;
                     this.boxMap.set(child.id, boxToStretch);
                 });
                 box.x = topLeftX + this.HORIZONTAL_MARGIN;
                 box.y = topLeftY + this.VERTICAL_MARGIN;
-                box.height = parentBoxHeight + ((nodeModel.children.length + 1) * this.VERTICAL_MARGIN);
-                box.width = biggestX + (this.HORIZONTAL_MARGIN * 2);
-                box.label = nodeModel.urn;
-                box.id = nodeModel.id;
-                this.boxMap.set(box.id, box);
-                return box;
+                this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
+                box.width = Math.max(
+                    widestChild + (this.HORIZONTAL_MARGIN * 2),
+                    this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
+                );
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
-                let childrenTopLeftX = topLeftX;
+                let childTopLeftX = topLeftX;
                 let biggestY = 0;
-                let parentBoxWidth = 0;
+                let growingBoxWidth = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(child, childrenTopLeftX + this.HORIZONTAL_MARGIN, topLeftY + this.VERTICAL_MARGIN, 0, 0);
-                    childrenTopLeftX = childrenTopLeftX + newBox.width + this.HORIZONTAL_MARGIN;
-                    parentBoxWidth = parentBoxWidth + newBox.width;
-                    if (newBox.height > biggestY){
+                    newBox = this.buildBoxSet(child, childTopLeftX + this.HORIZONTAL_MARGIN, topLeftY + this.VERTICAL_MARGIN);
+                    childTopLeftX = childTopLeftX + newBox.width + this.HORIZONTAL_MARGIN;
+                    growingBoxWidth = growingBoxWidth + newBox.width;
+                    if (newBox.height > biggestY) {
                         biggestY = newBox.height;
                     }
                 });
                 nodeModel.children.forEach((child) => {
-                    let boxToStretch = this.boxMap.get(child.id);
+                    const boxToStretch = this.boxMap.get(child.id);
                     boxToStretch.height = biggestY;
                     this.boxMap.set(child.id, boxToStretch);
                 });
                 box.x = topLeftX + this.HORIZONTAL_MARGIN;
                 box.y = topLeftY + this.VERTICAL_MARGIN;
-                box.height = biggestY + (this.VERTICAL_MARGIN * 2);
-                console.log(parentBoxWidth);
-                console.log(nodeModel.children.width);
-                console.log(this.HORIZONTAL_MARGIN);
-                box.width = parentBoxWidth + ((nodeModel.children.length + 1) * this.HORIZONTAL_MARGIN);
-                box.label = nodeModel.urn;
-                box.id = nodeModel.id;
-                this.boxMap.set(box.id, box);
-                return box;
+                this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                box.height = biggestY + (this.VERTICAL_MARGIN * 2) + this.LABEL_HEIGHT;
+                box.width = Math.max(
+                    growingBoxWidth + ((nodeModel.children.length + 1) * this.HORIZONTAL_MARGIN),
+                    this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
+                );
             }
         } else {
-            const box = new TimeviewBox();
             box.x = topLeftX + this.HORIZONTAL_MARGIN;
             box.y = topLeftY + this.VERTICAL_MARGIN;
-            box.height = 30;
-            box.width = 60;
-            box.label = nodeModel.urn;
-            box.id = nodeModel.id;
-            this.boxMap.set(box.id, box);
-            return box;
+            this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+            box.height = this.STANDARD_BOX_HEIGHT;
+            box.width = this.labelWidth(labelElement) + (this.LABEL_INDENT * 2);
         }
-    }
-
-    drawNode(nodeModel, startX = TimeviewBox.START_X, startY = TimeviewBox.START_Y) {
-        const timeviewBox = new TimeviewBox();
-        timeviewBox.id = nodeModel.id;
-        timeviewBox.label = nodeModel.urn;
-        console.log(nodeModel);
-        if (nodeModel.hasChildren()) {
-            console.log(`hasChildren`);
-        } else {
-            console.log(`is a Leaf`);
-        }
-
-        this.drawRectangle(50, 50, 100, 20);
-        this.writeText(50, 50, `Goober`);
+        this.boxMap.set(box.id, box);
+        return box;
     }
 
 }
 
-
 customElements.define(`jag-timeview`, AtTimeview);
-
 export default customElements.get(`jag-timeview`);
 

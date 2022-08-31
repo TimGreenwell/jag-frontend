@@ -282,6 +282,12 @@ export default class Node extends EventTarget {
     // ///////////////////////////////// Supporting Functions  ////////////////////////////////
     // /////////////////////////////////////////////////////////////////////////////////////////
 
+    getShortUrn() {
+        const parts = this.urn.split(`:`);
+        const lastPart = parts.pop().trim();
+        return lastPart;
+    }
+
     gatherDescendentUrns(childNodeModel = this, workStack = []) {   // need this in nodes
         workStack.push(childNodeModel.urn);
         childNodeModel.children.forEach((child) => {
