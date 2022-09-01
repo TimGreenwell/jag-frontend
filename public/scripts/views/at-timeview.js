@@ -12,14 +12,16 @@ class AtTimeview extends HTMLElement {
 
     constructor() {
         super();
+        this._timeContainerWrapperDiv = document.createElement(`div`);
+        this._timeContainerWrapperDiv.id = `timeContainerWrapper`;
+        this.appendChild(this._timeContainerWrapperDiv);
         this._timeContainerDiv = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
         this._timeContainerDiv.id = `time-container`;
         this._timeContainerDiv.setAttribute(`version`, `1.1`);
         this._timeContainerDiv.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
         this._timeContainerDiv.setAttribute(`width`, `100%`);
-        this._timeContainerDiv.setAttribute(`height`, `auto`);
-        this.appendChild(this._timeContainerDiv);
-        this.boxMap = new Map();
+        this._timeContainerDiv.setAttribute(`height`, `100%`);
+        this._timeContainerWrapperDiv.appendChild(this._timeContainerDiv);
         this.START_X = 10;
         this.START_Y = 10;
         this.HORIZONTAL_MARGIN = 10;
@@ -29,6 +31,8 @@ class AtTimeview extends HTMLElement {
         this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
         this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
         this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
+
+        this.boxMap = new Map();
     }
 
     drawRectangle(x, y, width, height) {
@@ -54,7 +58,7 @@ class AtTimeview extends HTMLElement {
 
     labelWidth(svgText) {
         const bbox = svgText.getBBox();
-        const {width, height} = bbox;
+        const {width} = bbox;
         return width;
     }
 
@@ -82,6 +86,10 @@ class AtTimeview extends HTMLElement {
     }
 
     buildBoxSet(nodeModel, topLeftX, topLeftY) {
+        console.log(`----`);
+        console.log(nodeModel);
+        console.log(topLeftX);
+        console.log(topLeftY);
         topLeftY = topLeftY + this.LABEL_HEIGHT;
         const box = new TimeviewBox();
         box.id = nodeModel.id;
@@ -116,7 +124,10 @@ class AtTimeview extends HTMLElement {
                     this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
                 );
             }
-            if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
+            if ((nodeModel._activity.connector.execution === `node.execution.sequential`) ||
+                (nodeModel._activity.connector.execution === `node.execution.none`) ||
+                (nodeModel._activity.connector.execution !== `node.execution.parallel`))  // Catch-all @TODO -> need smarter control
+            {
                 let childTopLeftX = topLeftX;
                 let biggestY = 0;
                 let growingBoxWidth = 0;

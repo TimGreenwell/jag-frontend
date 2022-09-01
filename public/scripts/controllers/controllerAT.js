@@ -56,6 +56,7 @@ export default class ControllerAT extends Controller {
 
     set timeview(value) {
         this._timeview = value;
+        this._timeview.style.display = `none`
     }
 
     set properties(value) {
@@ -117,6 +118,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener(`event-define-node`, this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
         this._menu.addEventListener(`event-redraw-nodes`, this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener(`event-popup-importer`, this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
+        this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                     // menu item: call 'Import Jag' popup
 
         this._activityLibrary.addEventListener(`event-activity-selected`, this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener(`event-activity-deleted`, this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
@@ -205,8 +207,8 @@ export default class ControllerAT extends Controller {
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
         this._properties.handleSelectionUpdate(selectedNodeArray);
-
         this._timeview.refreshTimeview(selectedNodeArray[0]);
+
         // ide.handleSelectionUpdate(e.detail);
     }
 
@@ -216,7 +218,7 @@ export default class ControllerAT extends Controller {
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
         console.log(`repositioned node`);
-        //    await StorageService.update(movedItem,"node");                 // Is this worth the trouble - only cosmetic.
+        //   await StorageService.update(nodeModel,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
     async eventNodesConnectedHandler(event) {            // only needed id's
@@ -358,6 +360,15 @@ export default class ControllerAT extends Controller {
     eventPopupImporterHandler() {
         // This just calls the popup to get the data.  That result calls:eventImportJagHandler
         this._playground._eventImportJagHandler();
+    }
+
+    eventToggleTimeviewHandler() {
+        if (this._timeview.style.display === `none`) {
+            this._timeview.style.display = `block`;
+            this._timeview.clearSvg();
+        } else {
+            this._timeview.style.display = `none`;
+        }
     }
 
     /**   -- Activity Library --  */

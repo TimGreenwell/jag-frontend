@@ -20,7 +20,7 @@ class AnalysisView extends HTMLElement {
         super();
         this._analysisModel = analysisModel;
         this._columnHeaderMap = new Map();
-        this._leafArray = []();
+        this._leafArray = [];
         this._$assessment_menu = undefined;
         this._idToTableCellMap = new Map();  // id to viewCell... looks like ids can be agents or nodes(activities)
         this._initializeContextMenus();
