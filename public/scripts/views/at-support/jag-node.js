@@ -533,7 +533,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
         this._$concurrency.style.display = `none`;
         this._$concurrency.innerHTML = ``;
 
-        if (this._nodeModel.activity.execution !== Activity.EXECUTION.SEQUENTIAL.name) {
+        if (this._nodeModel.activity.connector.execution !== Activity.EXECUTION.SEQUENTIAL.name) {
             return;
         }
 

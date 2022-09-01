@@ -86,10 +86,6 @@ class AtTimeview extends HTMLElement {
     }
 
     buildBoxSet(nodeModel, topLeftX, topLeftY) {
-        console.log(`----`);
-        console.log(nodeModel);
-        console.log(topLeftX);
-        console.log(topLeftY);
         topLeftY = topLeftY + this.LABEL_HEIGHT;
         const box = new TimeviewBox();
         box.id = nodeModel.id;

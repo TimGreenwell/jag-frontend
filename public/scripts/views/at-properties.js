@@ -334,7 +334,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            this._nodeModel.activity.execution = this._$executionSelect.value;
+            console.log(this._$executionSelect.value);
+            this._nodeModel.activity.connector.execution = this._$executionSelect.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -345,6 +346,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleOperatorChange(e) {
         e.stopImmediatePropagation();
+        console.log("sees the change");
         if (this._nodeModel) {
             this._nodeModel.activity.operator = this._$operatorSelect.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -549,7 +551,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                             return valid_input_values_for_output.add(`this:${output.name}`);
                         });
 
-                        if (this._nodeModel.activity.execution === Activity.EXECUTION.SEQUENTIAL.name) {
+                        if (this._nodeModel.activity.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
                             if (provider[0] === `any`) {
                                 const all_cumulative_outputs = new Set();
 
@@ -1050,7 +1052,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _updateProperties() {
         this._$urnInput.value = this._nodeModel.activity.urn;
         this._$nameInput.value = this._nodeModel.activity.name;
-        this._$executionSelect.value = this._nodeModel.activity.execution.name || `none`;
+        console.log("--------------");
+        console.log(this._nodeModel.activity.connector.execution);
+        console.log(this._nodeModel.activity.operator);
+        this._$executionSelect.value = this._nodeModel.activity.connector.execution || `none`;
         this._$operatorSelect.value = this._nodeModel.activity.operator || `none`;
         this._$descInput.value = this._nodeModel.activity.description;
         this._$name_ctxInput.value = this._nodeModel.contextualName;

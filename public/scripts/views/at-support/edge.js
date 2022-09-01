@@ -102,7 +102,7 @@ export default class Edge extends EventTarget {
         //   - Sets _subActivityNode activity's parent to _leadActivityNode activity
         //   - Dispatches update event
 
-        this._updateOrder(origin_nodeModel.activity.children, origin_nodeModel.activity.execution);
+        this._updateOrder(origin_nodeModel.activity.children, origin_nodeModel.activity.connector.execution);
         this._updateStrokeDash(origin_nodeModel.activity.operator);
 
 
