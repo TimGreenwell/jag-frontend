@@ -53,6 +53,8 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     leftPanel.setAttribute(`id`, `left-panel`);
     const centerPanel = document.createElement(`div`);
     centerPanel.setAttribute(`id`, `center-panel`);
+    const centerGutterPanel = document.createElement(`div`);
+    centerGutterPanel.className = `gutter`;
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
 
@@ -71,6 +73,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     leftPanel.appendChild(library);
     centerPanel.appendChild(playground);
     centerPanel.appendChild(timeview);
+    timeview.appendChild(centerGutterPanel);
     rightPanel.appendChild(properties);
 
     controller.menu = menu;
@@ -98,4 +101,45 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     library.addEventListener(`refresh`, (e) => {
         playground.handleRefresh(e.detail);
     });
+
+
+    const topPane = playground;
+    const rightPane = timeview;
+    const gutter = centerGutterPanel;
+
+    function rowResizer(e) {
+        let prevY = e.y;
+        const topPanel = topPane.getBoundingClientRect();
+        function mousemove(e) {
+            let newY = prevY - e.y;
+            topPane.style.height = topPanel.height - newY + "px";
+        }
+        function mouseup() {
+            window.removeEventListener('mousemove', mousemove);
+            window.removeEventListener('mouseup', mouseup);
+
+        }
+        window.addEventListener('mousemove', mousemove);
+        window.addEventListener('mouseup', mouseup);
+    }
+
+    function colResizer(e) {
+        let prevX = e.x;
+        const leftPanel = leftPane.getBoundingClientRect();
+        function mousemove(e) {
+            let newX = prevX - e.x;
+            leftPane.style.height = leftPanel.height - newX + "px";
+        }
+        function mouseup() {
+            window.removeEventListener('mousemove', mousemove);
+            window.removeEventListener('mouseup', mouseup);
+
+        }
+        window.addEventListener('mousemove', mousemove);
+        window.addEventListener('mouseup', mouseup);
+    }
+
+
+    gutter.addEventListener('mousedown', resizer);
+
 });

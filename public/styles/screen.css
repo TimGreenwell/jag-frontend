@@ -20,6 +20,10 @@
     --transition-function: cubic-bezier(0.4, 0.0, 0.2, 1) ;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     display: flex;
     flex-flow: column nowrap;
@@ -59,9 +63,10 @@ body #left-panel {
 body #center-panel {
     display: flex;
     flex-flow: column nowrap;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     box-shadow: inset 0 0 3px darkgray;
-    border: 2px solid darkgray;
+    border: 6px solid darkgray;
 }
 
 body #right-panel {
@@ -111,3 +116,22 @@ span.variable {
     font-style: italic;
 }
 
+.row-gutter {
+    height: 10px;
+    width: 100%;
+    background: #666;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: row-resize;
+}
+
+.col-gutter {
+    width: 10px;
+    height: 100%;
+    background: #666;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: col-resize;
+}

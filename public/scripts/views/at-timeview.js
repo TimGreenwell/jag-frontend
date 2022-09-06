@@ -48,7 +48,7 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `fill`, `none`);
         rectangle.setAttributeNS(null, `stroke`, `black`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
-        document.getElementById(`time-container`).appendChild(rectangle);
+        return rectangle;
     }
 
     createTextElement(text) {
@@ -66,10 +66,10 @@ class AtTimeview extends HTMLElement {
         return width;
     }
 
-    writeTextElement(svgText, x, y) {
+    positionTextElement(svgText, x, y) {
         svgText.setAttributeNS(null, `x`, x);
         svgText.setAttributeNS(null, `y`, y);
-        document.getElementById(`time-container`).appendChild(svgText);
+        return svgText;
     }
 
 
@@ -83,27 +83,33 @@ class AtTimeview extends HTMLElement {
     refreshTimeview(nodeModel) {
         this.clearSvg();
         this.boxMap.clear();
-        this.buildBoxSet(nodeModel, this.START_X, this.START_Y);
-        for (const box of this.boxMap.values()) {
-            this.drawRectangle(box.x, box.y, box.width, box.height);
-        }
+        this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
+        // for (const box of this.boxMap.values()) {
+        //     let svgBox = this.drawRectangle(box.x, box.y, box.width, box.height);
+        //     svgBox.id = `timebox:${nodeModel.id}`;
+        // }
     }
 
-    buildBoxSet(nodeModel, topLeftX, topLeftY) {
+    buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
         topLeftY = topLeftY + this.LABEL_HEIGHT;
         const box = new TimeviewBox();
         box.id = nodeModel.id;
         box.label = nodeModel.name;
         const labelElement = this.createTextElement(box.label);
+        const group = document.createElementNS(`http://www.w3.org/2000/svg`, `g`);
+        group.id = `timegroup:${nodeModel.id}`;
+        parentGroup.appendChild(group);
 
         if (nodeModel.hasChildren()) {
             let newBox;
-            if (nodeModel._activity.connector.execution === `node.execution.parallel`) {
+            if ((nodeModel._activity.connector.execution === `node.execution.parallel`) ||
+            (nodeModel._activity.connector.execution === `node.execution.none`) ||
+            (nodeModel._activity.connector.execution !== `node.execution.sequential`)) {               // Catch-all @TODO -> need smarter control
                 let childTopLeftY = topLeftY;
                 let widestChild = 0;
                 let growingBoxHeight = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(child, topLeftX + this.HORIZONTAL_MARGIN, childTopLeftY + this.VERTICAL_MARGIN);
+                    newBox = this.buildBoxSet(group, child, topLeftX + this.HORIZONTAL_MARGIN, childTopLeftY + this.VERTICAL_MARGIN);
                     childTopLeftY = childTopLeftY + newBox.height + this.VERTICAL_MARGIN;
                     growingBoxHeight = growingBoxHeight + newBox.height;
                     if (newBox.width > widestChild) {
@@ -117,22 +123,20 @@ class AtTimeview extends HTMLElement {
                 });
                 box.x = topLeftX + this.HORIZONTAL_MARGIN;
                 box.y = topLeftY + this.VERTICAL_MARGIN;
-                this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                group.appendChild(svgText);
                 box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
                 box.width = Math.max(
                     widestChild + (this.HORIZONTAL_MARGIN * 2),
                     this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
                 );
             }
-            if ((nodeModel._activity.connector.execution === `node.execution.sequential`) ||
-                (nodeModel._activity.connector.execution === `node.execution.none`) ||
-                (nodeModel._activity.connector.execution !== `node.execution.parallel`))  // Catch-all @TODO -> need smarter control
-            {
+            if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
                 let childTopLeftX = topLeftX;
                 let biggestY = 0;
                 let growingBoxWidth = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(child, childTopLeftX + this.HORIZONTAL_MARGIN, topLeftY + this.VERTICAL_MARGIN);
+                    newBox = this.buildBoxSet(group, child, childTopLeftX + this.HORIZONTAL_MARGIN, topLeftY + this.VERTICAL_MARGIN);
                     childTopLeftX = childTopLeftX + newBox.width + this.HORIZONTAL_MARGIN;
                     growingBoxWidth = growingBoxWidth + newBox.width;
                     if (newBox.height > biggestY) {
@@ -146,7 +150,8 @@ class AtTimeview extends HTMLElement {
                 });
                 box.x = topLeftX + this.HORIZONTAL_MARGIN;
                 box.y = topLeftY + this.VERTICAL_MARGIN;
-                this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                group.appendChild(svgText);
                 box.height = biggestY + (this.VERTICAL_MARGIN * 2) + this.LABEL_HEIGHT;
                 box.width = Math.max(
                     growingBoxWidth + ((nodeModel.children.length + 1) * this.HORIZONTAL_MARGIN),
@@ -156,10 +161,14 @@ class AtTimeview extends HTMLElement {
         } else {
             box.x = topLeftX + this.HORIZONTAL_MARGIN;
             box.y = topLeftY + this.VERTICAL_MARGIN;
-            this.writeTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+            const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+            group.appendChild(svgText);
             box.height = this.STANDARD_BOX_HEIGHT;
             box.width = this.labelWidth(labelElement) + (this.LABEL_INDENT * 2);
         }
+        const svgBox = this.drawRectangle(box.x, box.y, box.width, box.height);
+        svgBox.id = `timebox:${nodeModel.id}`;
+        group.appendChild(svgBox);
         this.boxMap.set(box.id, box);
         return box;
     }

@@ -1052,9 +1052,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _updateProperties() {
         this._$urnInput.value = this._nodeModel.activity.urn;
         this._$nameInput.value = this._nodeModel.activity.name;
-        console.log("--------------");
-        console.log(this._nodeModel.activity.connector.execution);
-        console.log(this._nodeModel.activity.operator);
         this._$executionSelect.value = this._nodeModel.activity.connector.execution || `none`;
         this._$operatorSelect.value = this._nodeModel.activity.operator || `none`;
         this._$descInput.value = this._nodeModel.activity.description;
