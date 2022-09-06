@@ -2,9 +2,9 @@
 
 jag-timeview {
     display: flex;
-    flex-direction: column;
+    position: static;
     flex-grow: 1;
-    width: 100%;
+    width: 99%;
 
     z-index: 100;                      /* new */
     background: var(--main-bg-lighter);
@@ -13,7 +13,20 @@ jag-timeview {
     border: 1px solid darkgray;
 }
 
-jag-timeview #timeContainerWrapper {
+/*jag-timeview > svg, jag-timeview > div {*/
+/*    width: 100%;*/
+/*    overflow: scroll;*/
+/*    height: 95%;*/
+/*}*/
+
+jag-timeview #time-container-wrapper {
+    position: fixed;
     overflow-x: scroll;
+    overflow-y: scroll;
     height: 100%;
+    width: 100%;
 }
+
+/*absolute shows overflow
+relative and static does not
+*/

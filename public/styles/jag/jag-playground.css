@@ -1,6 +1,7 @@
 /* Playground */
 jag-playground {
     /* Reset layout */
+    display: flex;
     position: relative;
     flex-grow: 1;
     box-shadow: 0 0 0 1px darkgrey;  /* new */
@@ -16,7 +17,7 @@ jag-playground > div, jag-playground > svg {
 
 jag-playground jag-node {
     position: absolute;
-    display: flex;
+
     z-index: 3;
     top: 0px;
     left: 0px;

@@ -13,14 +13,18 @@ class AtTimeview extends HTMLElement {
     constructor() {
         super();
         this._timeContainerWrapperDiv = document.createElement(`div`);
-        this._timeContainerWrapperDiv.id = `timeContainerWrapper`;
+        this._timeContainerWrapperDiv.id = `time-container-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
         this._timeContainerDiv = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
         this._timeContainerDiv.id = `time-container`;
         this._timeContainerDiv.setAttribute(`version`, `1.1`);
         this._timeContainerDiv.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
-        this._timeContainerDiv.setAttribute(`width`, `100%`);
-        this._timeContainerDiv.setAttribute(`height`, `100%`);
+        this._timeContainerDiv.setAttribute(`viewBox`, `0 0 2000 2000`);
+        // this._timeContainerDiv.setAttribute(`width`, `100%`);
+        // this._timeContainerDiv.setAttribute(`height`, `100%`);
+        this._timeContainerDiv.setAttribute(`overflow-x`, `scroll`);
+        this._timeContainerDiv.setAttribute(`overflow-y`, `scroll`);
+
         this._timeContainerWrapperDiv.appendChild(this._timeContainerDiv);
         this.START_X = 10;
         this.START_Y = 10;
