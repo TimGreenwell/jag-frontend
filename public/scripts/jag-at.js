@@ -47,14 +47,23 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector(`body`);
+
+    const allPanels = document.createElement(`div`);
+    allPanels.setAttribute(`id`, `all-panels`);
+
     const mainPanels = document.createElement(`div`);
     mainPanels.setAttribute(`id`, `main-panels`);
+
     const leftPanel = document.createElement(`div`);
     leftPanel.setAttribute(`id`, `left-panel`);
+
     const centerPanel = document.createElement(`div`);
     centerPanel.setAttribute(`id`, `center-panel`);
-    const centerGutterPanel = document.createElement(`div`);
-    centerGutterPanel.className = `gutter`;
+
+    const centerGutter = document.createElement(`div`);
+    centerGutter.setAttribute(`id`, `center-gutter`);
+    centerGutter.innerText = ` `;
+
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
 
@@ -64,16 +73,22 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     const playground = new Playground();
     const properties = new Properties();
     const timeview = new TimeView();
-    body.appendChild(menu);
-    body.appendChild(mainPanels);
+
+    body.appendChild(allPanels);
+    allPanels.appendChild(menu);
+    allPanels.appendChild(mainPanels);
+
     mainPanels.appendChild(leftPanel);
     mainPanels.appendChild(centerPanel);
     mainPanels.appendChild(rightPanel);
+
     leftPanel.appendChild(projectLibrary);
     leftPanel.appendChild(library);
+
     centerPanel.appendChild(playground);
+    centerPanel.appendChild(centerGutter);
     centerPanel.appendChild(timeview);
-    timeview.appendChild(centerGutterPanel);
+
     rightPanel.appendChild(properties);
 
     controller.menu = menu;
@@ -102,44 +117,73 @@ document.addEventListener(`DOMContentLoaded`, async () => {
         playground.handleRefresh(e.detail);
     });
 
+    let ismdwn = 0;
 
-    const topPane = playground;
-    const rightPane = timeview;
-    const gutter = centerGutterPanel;
-
-    function rowResizer(e) {
-        let prevY = e.y;
-        const topPanel = topPane.getBoundingClientRect();
-        function mousemove(e) {
-            let newY = prevY - e.y;
-            topPane.style.height = topPanel.height - newY + "px";
-        }
-        function mouseup() {
-            window.removeEventListener('mousemove', mousemove);
-            window.removeEventListener('mouseup', mouseup);
-
-        }
-        window.addEventListener('mousemove', mousemove);
-        window.addEventListener('mouseup', mouseup);
+    const end = (e) => {
+        ismdwn = 0;
+        document.body.removeEventListener(`mouseup`, end);
+        // eslint-disable-next-line no-use-before-define
+        document.body.removeEventListener(`mousemove`, mV);
+    };
+    function mD(event) {
+        ismdwn = 1;
+        // eslint-disable-next-line no-use-before-define
+        document.body.addEventListener(`mousemove`, mV);
+        document.body.addEventListener(`mouseup`, end);
     }
-
-    function colResizer(e) {
-        let prevX = e.x;
-        const leftPanel = leftPane.getBoundingClientRect();
-        function mousemove(e) {
-            let newX = prevX - e.x;
-            leftPane.style.height = leftPanel.height - newX + "px";
+    function mV(event) {
+        if (ismdwn === 1) {
+            let change = event.clientY - menu.getBoundingClientRect().height - 30;
+            playground.style.height = change + `px`;
+        } else {
+            end();
         }
-        function mouseup() {
-            window.removeEventListener('mousemove', mousemove);
-            window.removeEventListener('mouseup', mouseup);
-
-        }
-        window.addEventListener('mousemove', mousemove);
-        window.addEventListener('mouseup', mouseup);
     }
 
 
-    gutter.addEventListener('mousedown', resizer);
+    function centerResizer(e) {
+        const originalY = e.y;
+        console.log(`Orig mouse pos: ${originalY}`);
+        const menuPanel = menu.getBoundingClientRect();
+        const topPanel = playground.getBoundingClientRect();
+        const menuPanelHeight = menuPanel.height;
+        const topPanelHeight = topPanel.height;
 
+        function mousemove(e) {
+            console.log(e);
+            const heightChange = e.movementY;  // Diff of current location to original location
+            console.log(`mouse pos: ${e.y}`);
+            console.log(`heightChange: ${heightChange}`);
+            console.log(`topPanelHeight: ${topPanelHeight}`);
+            // console.log(`diff: ${heightChange - gutterHeight}`);
+            playground.style.height = `${e.pageY}px`;  // add menu height
+        }
+
+        function mouseup() {
+            window.removeEventListener(`mousemove`, mousemove);
+            window.removeEventListener(`mouseup`, mouseup);
+        }
+
+        window.addEventListener(`mousemove`, mousemove);
+        window.addEventListener(`mouseup`, mouseup);
+    }
+
+    // function colResizer(e) {
+    //     let prevX = e.x;
+    //     const leftPanel = leftPane.getBoundingClientRect();
+    //     function mousemove(e) {
+    //         let newX = prevX - e.x;
+    //         leftPane.style.height = leftPanel.height - newX + "px";
+    //     }
+    //     function mouseup() {
+    //         window.removeEventListener('mousemove', mousemove);
+    //         window.removeEventListener('mouseup', mouseup);
+    //
+    //     }
+    //     window.addEventListener('mousemove', mousemove);
+    //     window.addEventListener('mouseup', mouseup);
+    // }
+
+
+    centerGutter.addEventListener(`mousedown`, mD);
 });

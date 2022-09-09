@@ -24,64 +24,75 @@
     box-sizing: border-box;
 }
 
+
+body, html {
+    padding: 0;
+    margin: 0;
+}
+
 body {
     display: flex;
-    flex-flow: column nowrap;
+    /*flex-flow: column nowrap;*/
+    /*why is the above necessary*/
     background-color: var(--main-bg);
     color: var(--main-fg);
     font-family:'Helvetica Neue Light', Helvetica, sans-serif;
+    font-size: 11px;
     font-weight: lighter;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    /*margin: 0;*/
 }
 
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-size: 12px;
+body #all-panels {
+    display: flex;
+    flex: 1;
+    flex-flow: column nowrap;
+    min-height: 100vh;
+    max-height: 100vh;
 }
 
 body #main-panels {
     display: flex;
+    flex-grow: 1;
+    flex-basis: auto;
     flex-flow: row nowrap;
-    height: 100%;
+    overflow-y: auto;
+    border: 8px solid darkblue;
 }
 
 body #left-panel {
     display: flex;
+    flex: 0;
     flex-flow: column nowrap;
+    /*height: 100%;*/
     width: 160px;
     min-width: 160px;
-    box-shadow: inset 0 0 3px darkgray;
-    border: 2px solid darkgray;
 }
 
 body #center-panel {
     display: flex;
+    flex: 1;
     flex-flow: column nowrap;
-    height: 100vh;
-    width: 100vw;
-    box-shadow: inset 0 0 3px darkgray;
-    border: 6px solid darkgray;
+    flex-grow: 1;
+    /*box-shadow: inset 0 0 3px darkgray;*/
+    /*border: 3px solid darkgray;*/
 }
 
 body #right-panel {
     display: flex;
+    flex: 0;
     flex-flow: column nowrap;
+    /*height: 100%;*/
     min-width: 160px;
     width: 160px;
-    box-shadow: inset 0 0 3px darkgray;
-    border: 2px solid darkgray;
 }
 
 h1, h2, h3, h4, span, p, input, select, ol, ul, li {
     margin: 0;
     padding: 0;
-    font-weight: lighter;
+    /*font-weight: lighter;*/
 }
 
 input:not([type='checkbox']), select {
@@ -116,22 +127,13 @@ span.variable {
     font-style: italic;
 }
 
-.row-gutter {
+#center-gutter {
+    flex-grow: 0;
+    flex-shrink: 0;
+    background: gold;
     height: 10px;
+    color: gold;
     width: 100%;
-    background: #666;
-    position: absolute;
-    top: 0;
-    left: 0;
     cursor: row-resize;
-}
-
-.col-gutter {
-    width: 10px;
-    height: 100%;
-    background: #666;
-    position: absolute;
-    top: 0;
-    left: 0;
-    cursor: col-resize;
+    margin: 0 0 auto 0;
 }

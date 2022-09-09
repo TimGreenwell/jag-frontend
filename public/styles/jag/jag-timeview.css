@@ -3,9 +3,11 @@
 jag-timeview {
     display: flex;
     position: relative;
-    /*flex-grow: 1;*/
+    flex-grow: 0;
+    flex-shrink: 1;
+    overflow-y: auto;
     /*width: 99%;*/
-    min-height: 200px;
+    min-height: 100px;
 
     z-index: 100;                      /* new */
     background: var(--main-bg-lighter);

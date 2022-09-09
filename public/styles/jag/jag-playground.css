@@ -2,12 +2,13 @@
 jag-playground {
     /* Reset layout */
     display: flex;
-    position: relative;
     flex-grow: 1;
+    flex-shrink: 0;
+    position: relative;
     box-shadow: 0 0 0 1px darkgrey;  /* new */
     cursor: grab;
     overflow: hidden;
-    min-height: 200px;
+    min-height: 100px;
 }
 
 jag-playground > div, jag-playground > svg {

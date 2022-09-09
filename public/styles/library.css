@@ -1,23 +1,17 @@
 /* Library panels */
 
-jag-library, node-library, analysis-library, agent-library {
+jag-library, analysis-library, agent-library, node-library {
     display: flex;
     flex-direction: column;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
     width: 100%;
     z-index: 100;                      /* new */
+    overflow-y: scroll;
     background: var(--main-bg-lighter);
     color: var(--main-fg);             /* new */
-    box-shadow: inset 0 0 3px darkgray;
-    border: 1px solid darkgray;
-}
-
-jag-library, analysis-library {  /*analysis-library new */
-    height: 100%;          /* was 95 */
-}
-
-node-library, agent-library {
-    height: fit-content;
-    max-height: 50%;
+    box-shadow: inset 0 0 12px darkblue;
 }
 
 analysis-library .name-entry, node-library .name-entry {
@@ -28,14 +22,13 @@ jag-library .name-entry, jag-library .name-entry {
     font-size: 15px;
 }
 
-
 jag-library .description-entry, analysis-library .description-entry, node-library .description-entry, agent-library .description-entry {
     font-size: 10px;
 }
 
 jag-library .library-list, analysis-library .library-list, node-library .library-list, agent-library .library-list {
-    height: 100%;
-    overflow-y: scroll;
+    /*height: fit-content;*/
+    /*overflow-y: scroll;*/
 }
 
 jag-library .list-item, analysis-library .list-item, node-library .list-item, agent-library .list-item {

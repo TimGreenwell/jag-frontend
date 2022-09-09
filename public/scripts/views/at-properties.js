@@ -45,6 +45,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _initUI() {
         // The "Child-Of" banner
+        const propertyContainer = document.createElement(`div`);
+        propertyContainer.id = `property-container`;
+
         const childOf_el = document.createElement(`div`);
         childOf_el.className = `special-wrapper child-of-notice`;
         this._childOf = document.createElement(`p`);
@@ -86,12 +89,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         const name_ctx_el = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
         this._$name_ctxInput = FormUtils.createTextInput(`name-ctx-property`);
-        this._$name_ctxInput.className = `contextual`;
+        this._$name_ctxInput.className = `direct-property contextual`;
         name_ctx_el.appendChild(this._$name_ctxInput);
 
         const desc_ctx_el = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
         this._$desc_ctxInput = FormUtils.createTextInput(`desc-ctx-property`);
-        this._$desc_ctxInput.className = `contextual`;
+        this._$desc_ctxInput.className = `direct-property contextual`;
         desc_ctx_el.appendChild(this._$desc_ctxInput);
 
         const executionOptions = [];
@@ -167,6 +170,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const export_el = FormUtils.createEmptyInputContainer(`export`);
         this._export = document.createElement(`button`);
         this._export.innerHTML = `Export to File`;
+        export_el.className = `directProperty`;
         export_el.appendChild(this._export);
 
         // Create projt area
@@ -174,25 +178,26 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._projectButton = document.createElement(`button`);
         this._projectButton.innerHTML = `Create New JAG`;
         projectButton_el.appendChild(this._projectButton);
+        projectButton_el.className = `directProperty`;
 
 
         this._enableProperties(false);
-
-        this.appendChild(childOf_el);
-        this.appendChild(leafNode_el);
-        this.appendChild(name_el);
-        this.appendChild(urn_el);
-        this.appendChild(desc_el);
-        this.appendChild(name_ctx_el);
-        this.appendChild(desc_ctx_el);
-        this.appendChild(execution_el);
-        this.appendChild(operator_el);
-        this.appendChild(inputs_el);
-        this.appendChild(outputs_el);
-        this.appendChild(bindings_el);
-        this.appendChild(annotations_el);
-        this.appendChild(export_el);
-        this.appendChild(projectButton_el);
+        this.appendChild(propertyContainer);
+        propertyContainer.appendChild(childOf_el);
+        propertyContainer.appendChild(leafNode_el);
+        propertyContainer.appendChild(name_el);
+        propertyContainer.appendChild(urn_el);
+        propertyContainer.appendChild(desc_el);
+        propertyContainer.appendChild(name_ctx_el);
+        propertyContainer.appendChild(desc_ctx_el);
+        propertyContainer.appendChild(execution_el);
+        propertyContainer.appendChild(operator_el);
+        propertyContainer.appendChild(inputs_el);
+        propertyContainer.appendChild(outputs_el);
+        propertyContainer.appendChild(bindings_el);
+        propertyContainer.appendChild(annotations_el);
+        propertyContainer.appendChild(export_el);
+        propertyContainer.appendChild(projectButton_el);
 
 
         // this._$urnInput.addEventListener('keyup', e => {
@@ -1095,11 +1100,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._$name_ctxInput.disabled = true;
             this._$desc_ctxInput.disabled = true;
         }
-
-        if (enabled || (!enabled && !this._nodeModel)) {
-            this.classList.toggle(`defined-model`, true);   // This block useful?
-            this.classList.toggle(`non-leaf-node`, true);
-        }
+         // tlg 9 sep
+        // if (enabled || (!enabled && !this._nodeModel)) {
+        //     this.classList.toggle(`defined-model`, true);   // This block useful?
+        //     this.classList.toggle(`non-leaf-node`, true);
+        // }
     }
 
     _clearProperties() {
