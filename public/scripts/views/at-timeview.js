@@ -15,19 +15,25 @@ class AtTimeview extends HTMLElement {
         this._timeContainerWrapperDiv = document.createElement(`div`);
         this._timeContainerWrapperDiv.id = `time-container-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
-        this._timeContainerDiv = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
-        this._timeContainerDiv.id = `time-container`;
-        this._timeContainerDiv.setAttribute(`version`, `1.1`);
-        this._timeContainerDiv.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
-        this._timeContainerDiv.setAttribute(`viewBox`, `0 0 2000 2000`);
-        // this._timeContainerDiv.setAttribute(`width`, `100%`);
-        // this._timeContainerDiv.setAttribute(`height`, `100%`);
-        this._timeContainerDiv.setAttribute(`overflow-x`, `scroll`);
-        this._timeContainerDiv.setAttribute(`overflow-y`, `scroll`);
+        const windowHeight = this._timeContainerWrapperDiv.getBoundingClientRect().height;
+        const windowWidth = this._timeContainerWrapperDiv.getBoundingClientRect().width;
+        // const windowHeight = this.getBoundingClientRect().height;
+        // const windowWidth = this.getBoundingClientRect().width;
+        this._timeviewSvg = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
+        this._timeviewSvg.id = `time-container`;
+        this._timeviewSvg.setAttribute(`version`, `1.1`);
+        this._timeviewSvg.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
+        this.panX = 0;
+        this.panY = 0;
+        this.windowHeight = 0;
+        this.windowWidth = 0;
+        this.ratio = 0;
+        this._timeviewSvg.setAttribute(`overflow-x`, `auto`);
+        this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
-        this._timeContainerWrapperDiv.appendChild(this._timeContainerDiv);
-        this.START_X = 10;
-        this.START_Y = 10;
+        this._timeContainerWrapperDiv.appendChild(this._timeviewSvg);
+        this.START_X = 5;
+        this.START_Y = 5;
         this.HORIZONTAL_MARGIN = 10;
         this.VERTICAL_MARGIN = 10;
         this.LINE_WIDTH = 1;
@@ -37,7 +43,16 @@ class AtTimeview extends HTMLElement {
         this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
 
         this.boxMap = new Map();
+
+        this._timeviewSvg.addEventListener(`mousedown`, this.playgroundClicked.bind(this));
+        this._boundDragView = this.dragView.bind(this);
+        this._boundStopDragView = this.stopDragView.bind(this);
     }
+
+    // setViewBox(x,y){
+    //     height = this._timeviewSvg.first.firstOne
+    //     this._timeviewSvg.setAttribute(`viewBox`, `0 0 ${x} ${y}`);
+    // }
 
     drawRectangle(x, y, width, height) {
         const rectangle = document.createElementNS(`http://www.w3.org/2000/svg`, `rect`);
@@ -74,20 +89,30 @@ class AtTimeview extends HTMLElement {
 
 
     clearSvg() {
-        while (this._timeContainerDiv.hasChildNodes()) {
-            const deadChild = this._timeContainerDiv.firstChild;
-            this._timeContainerDiv.removeChild(deadChild);
+        while (this._timeviewSvg.hasChildNodes()) {
+            const deadChild = this._timeviewSvg.firstChild;
+            this._timeviewSvg.removeChild(deadChild);
         }
     }
 
     refreshTimeview(nodeModel) {
         this.clearSvg();
+        const outerBox = document.getElementById(`time-container-wrapper`).getBoundingClientRect();
+    //    this._timeviewSvg.setAttribute(`viewBox`, `0 0 ${outerBox.width} ${outerBox.height}`);
+        let boxSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
+        this.windowHeight = this.getBoundingClientRect().height;
+        this.windowWidth = this.getBoundingClientRect().width;
+        console.log(this.windowWidth);
+        console.log(boxSize.width);
+        this.ratio = this.windowWidth / boxSize.width;
+        this.panX = 0;
+        this.panY = 0;
+        this._timeviewSvg.setAttribute(`viewBox`, `${this.panX} ${this.panY} ${this.windowWidth}  ${this.windowHeight}`);
         this.boxMap.clear();
-        this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
-        // for (const box of this.boxMap.values()) {
-        //     let svgBox = this.drawRectangle(box.x, box.y, box.width, box.height);
-        //     svgBox.id = `timebox:${nodeModel.id}`;
-        // }
+
+        console.log(`-------------`);
+        console.log(outerBox.width);
+        console.log(outerBox.height);
     }
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
@@ -171,6 +196,31 @@ class AtTimeview extends HTMLElement {
         group.appendChild(svgBox);
         this.boxMap.set(box.id, box);
         return box;
+    }
+
+
+    dragView(e) {
+        console.log(this.ratio);
+        this.panX = this.panX + ((this._initialMouse.x - e.clientX) * this.ratio) ;
+        this.panY = this.panY + ((this._initialMouse.y - e.clientY) * this.ratio) ;
+        const boxSize = this.getBoundingClientRect();
+        this._timeviewSvg.setAttribute(`viewBox`, `${this.panX} ${this.panY}  ${this.windowWidth}  ${this.windowHeight}`);
+    }
+
+    stopDragView(event) {
+        this.removeEventListener(`mousemove`, this._boundDragView);
+    }
+
+    playgroundClicked(e) {
+        // The background clicker
+        this.windowHeight = this.getBoundingClientRect().height;
+        this.windowWidth = this.getBoundingClientRect().width;
+        this._initialMouse = {
+            x: e.clientX,
+            y: e.clientY
+        };
+        this.addEventListener(`mousemove`, this._boundDragView);
+        this.addEventListener(`mouseup`, this._boundStopDragView);
     }
 
 }

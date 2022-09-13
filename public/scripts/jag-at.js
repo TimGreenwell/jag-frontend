@@ -146,17 +146,15 @@ document.addEventListener(`DOMContentLoaded`, async () => {
         console.log(`Orig mouse pos: ${originalY}`);
         const menuPanel = menu.getBoundingClientRect();
         const topPanel = playground.getBoundingClientRect();
-        const menuPanelHeight = menuPanel.height;
-        const topPanelHeight = topPanel.height;
+        // const menuPanelHeight = menuPanel.height;
+        // const topPanelHeight = topPanel.height;
+        // const totalHeight = mainPanels.style.height;
+        // const totalWidth = mainPanels.style.width;
 
         function mousemove(e) {
-            console.log(e);
-            const heightChange = e.movementY;  // Diff of current location to original location
-            console.log(`mouse pos: ${e.y}`);
-            console.log(`heightChange: ${heightChange}`);
-            console.log(`topPanelHeight: ${topPanelHeight}`);
-            // console.log(`diff: ${heightChange - gutterHeight}`);
             playground.style.height = `${e.pageY}px`;  // add menu height
+            // const y = totalHeight - e.pageY;
+            // timeview.setViewbox(totalWidth, y);
         }
 
         function mouseup() {

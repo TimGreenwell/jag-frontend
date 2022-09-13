@@ -56,13 +56,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         childOf_el.appendChild(this._childOf);
 
         // The "Leaf" banner
-        const leafNode_el = document.createElement(`div`);
-        leafNode_el.className = `special-wrapper leaf-node-notice`;
-        this._leafNode = document.createElement(`p`);
-        this._leafNode.innerHTML = `Possible leaf node: it is a child without a model.`;
-        this._leafNode.className = `special leaf-node-notice`;
-        this._leafNode.id = `leaf-node`;
-        leafNode_el.appendChild(this._leafNode);
+        // const leafNode_el = document.createElement(`div`);
+        // leafNode_el.className = `special-wrapper leaf-node-notice`;
+        // this._leafNode = document.createElement(`p`);
+        // this._leafNode.innerHTML = `Possible leaf node: it is a child without a model.`;
+        // this._leafNode.className = `special leaf-node-notice`;
+        // this._leafNode.id = `leaf-node`;
+        // leafNode_el.appendChild(this._leafNode);
 
         const name_el = FormUtils.createPropertyElement(`name-property`, `Name`);
         this._$nameInput = FormUtils.createTextInput(`name-property`);
@@ -184,7 +184,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._enableProperties(false);
         this.appendChild(propertyContainer);
         propertyContainer.appendChild(childOf_el);
-        propertyContainer.appendChild(leafNode_el);
+        // propertyContainer.appendChild(leafNode_el);
         propertyContainer.appendChild(name_el);
         propertyContainer.appendChild(urn_el);
         propertyContainer.appendChild(desc_el);
