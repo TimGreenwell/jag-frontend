@@ -14,7 +14,6 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
 
-
 // noinspection DuplicatedCode,JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable
 export default class ControllerAT extends Controller {
 
@@ -41,7 +40,6 @@ export default class ControllerAT extends Controller {
         this._menu = value;
     }
 
-
     set activityLibrary(value) {
         this._activityLibrary = value;
     }
@@ -56,7 +54,6 @@ export default class ControllerAT extends Controller {
 
     set timeview(value) {
         this._timeview = value;
-        this._timeview.style.display = `none`
     }
 
     set properties(value) {
@@ -118,7 +115,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener(`event-define-node`, this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
         this._menu.addEventListener(`event-redraw-nodes`, this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener(`event-popup-importer`, this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
-        this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                     // menu item: call 'Import Jag' popup
+        // this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                     // menu item: call 'Import Jag' popup
 
         this._activityLibrary.addEventListener(`event-activity-selected`, this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener(`event-activity-deleted`, this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
@@ -361,18 +358,12 @@ export default class ControllerAT extends Controller {
         // This just calls the popup to get the data.  That result calls:eventImportJagHandler
         this._playground._eventImportJagHandler();
     }
-
-    eventToggleTimeviewHandler() {
-        if (this._timeview.style.display === `none`) {
-            this._timeview.style.display = `block`;
-            this._timeview.clearSvg();
-        } else {
-            this._timeview.style.display = `none`;
-        }
-    }
+    //
+    // eventToggleTimeviewHandler() {
+    //     this._timeview.clearSvg();
+    // }
 
     /**   -- Activity Library --  */
-
 
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
@@ -416,7 +407,6 @@ export default class ControllerAT extends Controller {
         // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
         this._playground._rebuildNodeView(newProjectRootNode);
     }
-
 
     /**   -- Project Library --  */
 

@@ -32,12 +32,11 @@ body, html {
 
 body {
     display: flex;
-    /*flex-flow: column nowrap;*/
-    /*why is the above necessary*/
+    flex-flow: column nowrap;
     background-color: var(--main-bg);
     color: var(--main-fg);
     font-family:'Helvetica Neue Light', Helvetica, sans-serif;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: lighter;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -47,45 +46,59 @@ body {
 
 body #all-panels {
     display: flex;
-    flex: 1;
     flex-flow: column nowrap;
-    min-height: 100vh;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    height: 100vh;
     max-height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    /*border: 4px solid deeppink;*/
 }
 
 body #main-panels {
     display: flex;
-    flex-grow: 1;
-    flex-basis: auto;
     flex-flow: row nowrap;
-    overflow-y: auto;
-    border: 8px solid darkblue;
+    align-items: normal;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    max-height: 94vh;
+    /* really dont like this - but do not have another way to limit this height */
+    border: 4px solid darkorange;
 }
 
 body #left-panel {
     display: flex;
-    flex: 0;
     flex-flow: column nowrap;
-    /*height: 100%;*/
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: content;
+    max-height: 100%;
     width: 160px;
-    min-width: 160px;
+    max-width: 160px;
 }
 
 body #center-panel {
     display: flex;
-    flex: 1;
     flex-flow: column nowrap;
     flex-grow: 1;
+    flex-shrink: 0;
+    max-height: 100%;
+    flex-basis: content;
     /*box-shadow: inset 0 0 3px darkgray;*/
-    /*border: 3px solid darkgray;*/
+    border: 4px solid darkgreen;
 }
 
 body #right-panel {
     display: flex;
-    flex: 0;
     flex-flow: column nowrap;
-    /*height: 100%;*/
-    min-width: 160px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: content;
+    height: 100%;
+    max-width: 160px;
     width: 160px;
 }
 
@@ -135,5 +148,10 @@ span.variable {
     color: gold;
     width: 100%;
     cursor: row-resize;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
     margin: 0 0 auto 0;
+}
+
+.hidden {
+    display: none;
 }

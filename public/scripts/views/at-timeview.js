@@ -7,6 +7,7 @@
  */
 
 import TimeviewBox from '../models/timeview-box.js';
+//customElements.define(`jag-timeview`, class extends HTMLElement {
 
 class AtTimeview extends HTMLElement {
 
@@ -23,11 +24,16 @@ class AtTimeview extends HTMLElement {
         this._timeviewSvg.id = `time-container`;
         this._timeviewSvg.setAttribute(`version`, `1.1`);
         this._timeviewSvg.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
-        this.panX = 0;
-        this.panY = 0;
+        this.svgLocationX = 0;
+        this.svgLocationY = 0;
         this.windowHeight = 0;
         this.windowWidth = 0;
-        this.ratio = 0;
+        this.windowSize = null;
+        this.svgSize = null;
+        this.panX = 0;
+        this.panY = 0;
+        this.ratioX = 1;
+        this.ratioY = 1;
         this._timeviewSvg.setAttribute(`overflow-x`, `auto`);
         this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
@@ -96,23 +102,18 @@ class AtTimeview extends HTMLElement {
     }
 
     refreshTimeview(nodeModel) {
+        console.log(nodeModel);
         this.clearSvg();
-        const outerBox = document.getElementById(`time-container-wrapper`).getBoundingClientRect();
-    //    this._timeviewSvg.setAttribute(`viewBox`, `0 0 ${outerBox.width} ${outerBox.height}`);
-        let boxSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
-        this.windowHeight = this.getBoundingClientRect().height;
-        this.windowWidth = this.getBoundingClientRect().width;
-        console.log(this.windowWidth);
-        console.log(boxSize.width);
-        this.ratio = this.windowWidth / boxSize.width;
-        this.panX = 0;
-        this.panY = 0;
-        this._timeviewSvg.setAttribute(`viewBox`, `${this.panX} ${this.panY} ${this.windowWidth}  ${this.windowHeight}`);
+        this.svgLocationX = 0;
+        this.svgLocationY = 0;
+        this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
+        this.windowSize = this.getBoundingClientRect();
+        console.log(this.windowSize);
+        this.ratioX = this.svgSize.width / this.windowSize.width;
+        this.ratioY = this.svgSize.height / this.windowSize.height;
+        this.ratioX = 1;
+        this._timeviewSvg.setAttribute(`viewBox`, `${this.svgLocationX} ${this.svgLocationY} ${this.windowSize.width} ${this.windowSize.height}`);
         this.boxMap.clear();
-
-        console.log(`-------------`);
-        console.log(outerBox.width);
-        console.log(outerBox.height);
     }
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
@@ -200,21 +201,46 @@ class AtTimeview extends HTMLElement {
 
 
     dragView(e) {
-        console.log(this.ratio);
-        this.panX = this.panX + ((this._initialMouse.x - e.clientX) * this.ratio) ;
-        this.panY = this.panY + ((this._initialMouse.y - e.clientY) * this.ratio) ;
-        const boxSize = this.getBoundingClientRect();
-        this._timeviewSvg.setAttribute(`viewBox`, `${this.panX} ${this.panY}  ${this.windowWidth}  ${this.windowHeight}`);
+        const svgPresentationSizeX = this.svgSize.width + this.START_X;
+        const svgPresentationSizeY = this.svgSize.height + this.START_Y;
+        if ((this.panX + this.windowSize.width) < (svgPresentationSizeX) + 10) {
+            if (this.windowSize.width > svgPresentationSizeX) {
+                this.panX = 0;
+            } else {
+                this.panX = this.svgLocationX + (this._initialMouse.x - e.clientX);
+            }
+        } else {
+            this.panX = (svgPresentationSizeX) - this.windowSize.width;
+        }
+        if ((this.panY + this.windowSize.height) < (svgPresentationSizeY) + 10) {
+            this.panY = this.svgLocationY + (this._initialMouse.y - e.clientY);
+        }
+        else {
+            if (this.windowSize.height > svgPresentationSizeY) {
+                this.panY = 0;
+            } else {
+                this.panY = (svgPresentationSizeY) - this.windowSize.height;
+            }
+        }
+        if (this.panX < 0 ) {
+            this.panX = 0;
+        }
+        if (this.panY < 0 ) {
+            this.panY = 0;
+        }
+        this._timeviewSvg.setAttribute(`viewBox`,
+            `${this.panX} ${this.panY}  ${this.windowSize.width}  ${this.windowSize.height}`);
     }
 
     stopDragView(event) {
         this.removeEventListener(`mousemove`, this._boundDragView);
+        this.svgLocationX = this.panX;
+        this.svgLocationY = this.panY;
     }
 
     playgroundClicked(e) {
         // The background clicker
-        this.windowHeight = this.getBoundingClientRect().height;
-        this.windowWidth = this.getBoundingClientRect().width;
+        this.windowSize = this.getBoundingClientRect();
         this._initialMouse = {
             x: e.clientX,
             y: e.clientY
@@ -224,6 +250,7 @@ class AtTimeview extends HTMLElement {
     }
 
 }
+
 
 customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);

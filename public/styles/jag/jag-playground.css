@@ -8,7 +8,7 @@ jag-playground {
     box-shadow: 0 0 0 1px darkgrey;  /* new */
     cursor: grab;
     overflow: hidden;
-    min-height: 100px;
+    /*min-height: 100px;*/
 }
 
 jag-playground > div, jag-playground > svg {

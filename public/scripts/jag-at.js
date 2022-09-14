@@ -62,7 +62,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     const centerGutter = document.createElement(`div`);
     centerGutter.setAttribute(`id`, `center-gutter`);
-    centerGutter.innerText = ` `;
+
 
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
@@ -73,6 +73,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     const playground = new Playground();
     const properties = new Properties();
     const timeview = new TimeView();
+
 
     body.appendChild(allPanels);
     allPanels.appendChild(menu);
@@ -117,71 +118,36 @@ document.addEventListener(`DOMContentLoaded`, async () => {
         playground.handleRefresh(e.detail);
     });
 
-    let ismdwn = 0;
 
-    const end = (e) => {
-        ismdwn = 0;
-        document.body.removeEventListener(`mouseup`, end);
-        // eslint-disable-next-line no-use-before-define
-        document.body.removeEventListener(`mousemove`, mV);
-    };
-    function mD(event) {
-        ismdwn = 1;
-        // eslint-disable-next-line no-use-before-define
-        document.body.addEventListener(`mousemove`, mV);
-        document.body.addEventListener(`mouseup`, end);
+
+    function eventToggleTimeviewHandler() {
+        centerGutter.classList.toggle(`hidden`);
+        timeview.classList.toggle(`hidden`);
     }
+    menu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
+
+
+
+
+    let isMouseDown = false;
     function mV(event) {
-        if (ismdwn === 1) {
-            let change = event.clientY - menu.getBoundingClientRect().height - 30;
-            playground.style.height = change + `px`;
+        if (isMouseDown) {
+            const change = event.clientY - menu.getBoundingClientRect().height - 35;
+            playground.style.height = `${change}px`;
         } else {
+            // eslint-disable-next-line no-use-before-define
             end();
         }
     }
-
-
-    function centerResizer(e) {
-        const originalY = e.y;
-        console.log(`Orig mouse pos: ${originalY}`);
-        const menuPanel = menu.getBoundingClientRect();
-        const topPanel = playground.getBoundingClientRect();
-        // const menuPanelHeight = menuPanel.height;
-        // const topPanelHeight = topPanel.height;
-        // const totalHeight = mainPanels.style.height;
-        // const totalWidth = mainPanels.style.width;
-
-        function mousemove(e) {
-            playground.style.height = `${e.pageY}px`;  // add menu height
-            // const y = totalHeight - e.pageY;
-            // timeview.setViewbox(totalWidth, y);
-        }
-
-        function mouseup() {
-            window.removeEventListener(`mousemove`, mousemove);
-            window.removeEventListener(`mouseup`, mouseup);
-        }
-
-        window.addEventListener(`mousemove`, mousemove);
-        window.addEventListener(`mouseup`, mouseup);
+    const end = (e) => {
+        isMouseDown = false;
+        document.body.removeEventListener(`mouseup`, end);
+        document.body.removeEventListener(`mousemove`, mV);
+    };
+    function mD(event) {
+        isMouseDown = true;
+        document.body.addEventListener(`mousemove`, mV);
+        document.body.addEventListener(`mouseup`, end);
     }
-
-    // function colResizer(e) {
-    //     let prevX = e.x;
-    //     const leftPanel = leftPane.getBoundingClientRect();
-    //     function mousemove(e) {
-    //         let newX = prevX - e.x;
-    //         leftPane.style.height = leftPanel.height - newX + "px";
-    //     }
-    //     function mouseup() {
-    //         window.removeEventListener('mousemove', mousemove);
-    //         window.removeEventListener('mouseup', mouseup);
-    //
-    //     }
-    //     window.addEventListener('mousemove', mousemove);
-    //     window.addEventListener('mouseup', mouseup);
-    // }
-
-
     centerGutter.addEventListener(`mousedown`, mD);
 });
