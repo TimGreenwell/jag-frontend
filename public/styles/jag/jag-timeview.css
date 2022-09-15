@@ -7,7 +7,6 @@ jag-timeview {
     overflow: auto;
     height: 100%;
     min-height: 100px;
-
     z-index: 100;                      /* new */
     background: var(--main-bg-lighter);
     color: var(--main-fg);             /* new */

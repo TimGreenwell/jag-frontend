@@ -30,7 +30,7 @@ body, html {
     margin: 0;
 }
 
-body {
+body {;
     display: flex;
     flex-flow: column nowrap;
     background-color: var(--main-bg);

@@ -7,33 +7,71 @@
  */
 
 import TimeviewBox from '../models/timeview-box.js';
-//customElements.define(`jag-timeview`, class extends HTMLElement {
+// customElements.define(`jag-timeview`, class extends HTMLElement {
 
 class AtTimeview extends HTMLElement {
 
     constructor() {
         super();
+        const svgns = `http://www.w3.org/2000/svg`;
         this._timeContainerWrapperDiv = document.createElement(`div`);
         this._timeContainerWrapperDiv.id = `time-container-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
         const windowHeight = this._timeContainerWrapperDiv.getBoundingClientRect().height;
         const windowWidth = this._timeContainerWrapperDiv.getBoundingClientRect().width;
-        // const windowHeight = this.getBoundingClientRect().height;
-        // const windowWidth = this.getBoundingClientRect().width;
-        this._timeviewSvg = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
+
+
+        this._timeviewSvg = document.createElementNS(svgns, `svg`);
         this._timeviewSvg.id = `time-container`;
         this._timeviewSvg.setAttribute(`version`, `1.1`);
-        this._timeviewSvg.setAttribute(`xmlns`, `http://www.w3.org/2000/svg`);
+        this._timeviewSvg.setAttribute(`xmlns`, svgns);
+
+
+        const defs = document.createElementNS(svgns, `defs`);
+        this._timeviewSvg.appendChild(defs);
+
+        const filter = document.createElementNS(svgns, `filter`);
+        filter.setAttributeNS(null, `id`, `blur-effect`);
+        filter.setAttributeNS(null, `x`, `-20px`);
+        filter.setAttributeNS(null, `y`, `-20px`);
+        filter.setAttributeNS(null, `width`, `160px`);
+        filter.setAttributeNS(null, `height`, `160px`);
+        defs.appendChild(filter);
+
+        // const feOffset = document.createElementNS(svgns, `feOffset`);
+        // feOffset.setAttributeNS(null, `result`, `offOut`);
+        // feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
+        // feOffset.setAttributeNS(null, `dx`, `0`);
+        // feOffset.setAttributeNS(null, `dy`, `0`);
+
+
+        const feGaussianBlur = document.createElementNS(svgns, `feGaussianBlur`);
+        // this._gaussianFilter.setAttribute(`in`, `SourceGraphic`);
+        // feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
+        // feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
+        feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
+
+        // const feBlend = document.createElementNS(svgns, `feBlend`);
+        // feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
+        // feBlend.setAttributeNS(null, `in2`, `blurOut`);
+        // feBlend.setAttributeNS(null, `mode`, `normal`);
+
+        // filter.appendChild(feOffset);
+        filter.appendChild(feGaussianBlur);
+        // filter.appendChild(feBlend);
+
+
+
         this.svgLocationX = 0;
         this.svgLocationY = 0;
         this.windowHeight = 0;
         this.windowWidth = 0;
+        this.zoomAdjustment = 0;
         this.windowSize = null;
         this.svgSize = null;
         this.panX = 0;
         this.panY = 0;
-        this.ratioX = 1;
-        this.ratioY = 1;
+        this.zoomStep = 0;
         this._timeviewSvg.setAttribute(`overflow-x`, `auto`);
         this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
@@ -50,7 +88,8 @@ class AtTimeview extends HTMLElement {
 
         this.boxMap = new Map();
 
-        this._timeviewSvg.addEventListener(`mousedown`, this.playgroundClicked.bind(this));
+        this._timeviewSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));
+        this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));
         this._boundDragView = this.dragView.bind(this);
         this._boundStopDragView = this.stopDragView.bind(this);
     }
@@ -66,9 +105,12 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `y`, y);
         rectangle.setAttributeNS(null, `width`, width);
         rectangle.setAttributeNS(null, `height`, height);
+        rectangle.setAttributeNS(null, `rx`, `3`);
         rectangle.setAttributeNS(null, `fill`, `none`);
         rectangle.setAttributeNS(null, `stroke`, `black`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
+        // rectangle.style.filter = `url(#blur-effect)`;
+        rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
         return rectangle;
     }
 
@@ -95,24 +137,25 @@ class AtTimeview extends HTMLElement {
 
 
     clearSvg() {
-        while (this._timeviewSvg.hasChildNodes()) {
-            const deadChild = this._timeviewSvg.firstChild;
-            this._timeviewSvg.removeChild(deadChild);
-        }
+        // while (this._timeviewSvg.hasChildNodes()) {
+        //     const deadChild = this._timeviewSvg.firstChild;
+        //     this._timeviewSvg.removeChild(deadChild);
+        // }
     }
 
     refreshTimeview(nodeModel) {
-        console.log(nodeModel);
         this.clearSvg();
+        this.zoomStep = 0;
         this.svgLocationX = 0;
         this.svgLocationY = 0;
         this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
         this.windowSize = this.getBoundingClientRect();
-        console.log(this.windowSize);
-        this.ratioX = this.svgSize.width / this.windowSize.width;
-        this.ratioY = this.svgSize.height / this.windowSize.height;
-        this.ratioX = 1;
-        this._timeviewSvg.setAttribute(`viewBox`, `${this.svgLocationX} ${this.svgLocationY} ${this.windowSize.width} ${this.windowSize.height}`);
+        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
+        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
+        this._timeviewSvg.setAttribute(
+            `viewBox`,
+            `${this.svgLocationX} ${this.svgLocationY}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
+        );
         this.boxMap.clear();
     }
 
@@ -199,37 +242,58 @@ class AtTimeview extends HTMLElement {
         return box;
     }
 
+    svgWheelZoomEvent(event) {
+        event.preventDefault();
+        if (event.deltaY > 0) {
+            this.zoomStep = this.zoomStep + 1;
+        } else {
+            this.zoomStep = this.zoomStep - 1;
+        }
+        this.redrawSvg();
+    }
+
+    redrawSvg() {
+        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
+        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
+        if ((zoomedBoxWidth > 0) && (zoomedBoxHeight)) {
+            this._timeviewSvg.setAttribute(
+                `viewBox`,
+                `${this.panX} ${this.panY}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
+            );
+        }
+    }
 
     dragView(e) {
-        const svgPresentationSizeX = this.svgSize.width + this.START_X;
-        const svgPresentationSizeY = this.svgSize.height + this.START_Y;
-        if ((this.panX + this.windowSize.width) < (svgPresentationSizeX) + 10) {
-            if (this.windowSize.width > svgPresentationSizeX) {
-                this.panX = 0;
-            } else {
-                this.panX = this.svgLocationX + (this._initialMouse.x - e.clientX);
-            }
+        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
+        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
+        const svgViewSizeX = this.svgSize.width + this.START_X + this.HORIZONTAL_MARGIN;
+        const svgViewSizeY = this.svgSize.height + this.START_Y + this.VERTICAL_MARGIN;
+
+        if (zoomedBoxWidth > svgViewSizeX) {
+            this.panX = 0;
         } else {
-            this.panX = (svgPresentationSizeX) - this.windowSize.width;
+            const delta = this._initialMouse.x - e.clientX;
+            this.panX = Math.min(
+                this.svgLocationX + (delta + (delta * this.zoomStep * 0.05)),
+                svgViewSizeX - zoomedBoxWidth
+            );
         }
-        if ((this.panY + this.windowSize.height) < (svgPresentationSizeY) + 10) {
-            this.panY = this.svgLocationY + (this._initialMouse.y - e.clientY);
+        if (zoomedBoxHeight > svgViewSizeY) {
+            this.panY = 0;
+        } else {
+            const delta = this._initialMouse.y - e.clientY;
+            this.panY = Math.min(
+                this.svgLocationY + (delta + (delta * this.zoomStep * 0.05)),
+                svgViewSizeY - zoomedBoxHeight
+            );
         }
-        else {
-            if (this.windowSize.height > svgPresentationSizeY) {
-                this.panY = 0;
-            } else {
-                this.panY = (svgPresentationSizeY) - this.windowSize.height;
-            }
-        }
-        if (this.panX < 0 ) {
+        if (this.panX < 0) {
             this.panX = 0;
         }
-        if (this.panY < 0 ) {
+        if (this.panY < 0) {
             this.panY = 0;
         }
-        this._timeviewSvg.setAttribute(`viewBox`,
-            `${this.panX} ${this.panY}  ${this.windowSize.width}  ${this.windowSize.height}`);
+        this.redrawSvg();
     }
 
     stopDragView(event) {
@@ -238,7 +302,7 @@ class AtTimeview extends HTMLElement {
         this.svgLocationY = this.panY;
     }
 
-    playgroundClicked(e) {
+    svgMouseDownEvent(e) {
         // The background clicker
         this.windowSize = this.getBoundingClientRect();
         this._initialMouse = {

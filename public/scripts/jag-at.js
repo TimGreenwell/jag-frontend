@@ -74,6 +74,9 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     const properties = new Properties();
     const timeview = new TimeView();
 
+    timeview.classList.toggle(`hidden`);
+    centerGutter.classList.toggle(`hidden`);
+
 
     body.appendChild(allPanels);
     allPanels.appendChild(menu);
@@ -119,14 +122,14 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     });
 
 
-
     function eventToggleTimeviewHandler() {
         centerGutter.classList.toggle(`hidden`);
         timeview.classList.toggle(`hidden`);
+        if (!playground.style.height) {
+            playground.style.height = `50%`;
+        }
     }
     menu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
-
-
 
 
     let isMouseDown = false;
