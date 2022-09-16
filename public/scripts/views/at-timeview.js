@@ -17,15 +17,11 @@ class AtTimeview extends HTMLElement {
         this._timeContainerWrapperDiv = document.createElement(`div`);
         this._timeContainerWrapperDiv.id = `time-container-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
-        const windowHeight = this._timeContainerWrapperDiv.getBoundingClientRect().height;
-        const windowWidth = this._timeContainerWrapperDiv.getBoundingClientRect().width;
-
 
         this._timeviewSvg = document.createElementNS(svgns, `svg`);
         this._timeviewSvg.id = `time-container`;
         this._timeviewSvg.setAttribute(`version`, `1.1`);
         this._timeviewSvg.setAttribute(`xmlns`, svgns);
-
 
         const defs = document.createElementNS(svgns, `defs`);
         this._timeviewSvg.appendChild(defs);
@@ -44,7 +40,6 @@ class AtTimeview extends HTMLElement {
         feOffset.setAttributeNS(null, `dx`, `3`);
         feOffset.setAttributeNS(null, `dy`, `3`);
 
-
         const feGaussianBlur = document.createElementNS(svgns, `feGaussianBlur`);
         feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
         feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
@@ -55,22 +50,12 @@ class AtTimeview extends HTMLElement {
         feBlend.setAttributeNS(null, `in2`, `blurOut`);
         feBlend.setAttributeNS(null, `mode`, `normal`);
 
-        const feDropShadow = document.createElementNS(svgns, `feDropShadow`);
-        feDropShadow.setAttributeNS(null, `dx`, `3`);
-        feDropShadow.setAttributeNS(null, `dy`, `-3`);
-        feDropShadow.setAttributeNS(null, `stdDeviation`, `5`);
-        feDropShadow.setAttributeNS(null, `flood-opacity`, `0.9`);
-
         filter.appendChild(feOffset);
         filter.appendChild(feGaussianBlur);
         filter.appendChild(feBlend);
 
-
         this.svgLocationX = 0;
         this.svgLocationY = 0;
-        this.windowHeight = 0;
-        this.windowWidth = 0;
-        this.zoomAdjustment = 0;
         this.windowSize = null;
         this.svgSize = null;
         this.panX = 0;
@@ -98,11 +83,6 @@ class AtTimeview extends HTMLElement {
         this._boundStopDragView = this.stopDragView.bind(this);
     }
 
-    // setViewBox(x,y){
-    //     height = this._timeviewSvg.first.firstOne
-    //     this._timeviewSvg.setAttribute(`viewBox`, `0 0 ${x} ${y}`);
-    // }
-
     drawRectangle(x, y, width, height) {
         const rectangle = document.createElementNS(`http://www.w3.org/2000/svg`, `rect`);
         rectangle.setAttributeNS(null, `x`, x);
@@ -113,7 +93,6 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `fill`, `none`);
         rectangle.setAttributeNS(null, `stroke`, `black`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
-        // rectangle.style.filter = `url(#blur-effect)`;
         rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
         return rectangle;
     }
@@ -139,7 +118,6 @@ class AtTimeview extends HTMLElement {
         return svgText;
     }
 
-
     clearSvg() {
         this._timeviewSvg.childNodes.forEach((gNode) => {
             if (gNode.nodeName === `g`) {
@@ -155,14 +133,65 @@ class AtTimeview extends HTMLElement {
         this.svgLocationY = 0;
         this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
         this.windowSize = this.getBoundingClientRect();
-        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
-        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
-        this._timeviewSvg.setAttribute(
-            `viewBox`,
-            `${this.svgLocationX} ${this.svgLocationY}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
-        );
+        // this.syncSizes(nodeModel);
+        // this.createSVG();
+        this.redrawSvg();
         this.boxMap.clear();
     }
+
+    // createSVG(){
+    //     this.boxMap.forEach((value, key) => {
+    //         this.drawRectangle(value.x,value.y,value.width,value.height));
+    //     });
+    // }
+
+    syncSizes(nodeModel) {
+
+        const box = this.boxMap.get(nodeModel.id);
+        if (!nodeModel.isRoot()) {
+            if ((nodeModel.parent._activity.connector.execution === `node.execution.parallel`) ||
+            (nodeModel.parent._activity.connector.execution === `node.execution.none`) ||
+            (nodeModel.parent._activity.connector.execution !== `node.execution.sequential`)) {
+                nodeModel.parent.children.forEach((sibling) => {
+                    if ((this.boxMap.has(sibling.id))) {    // (nodeModel.id !== sibling.id) &&
+                        const boxOfSibling = this.boxMap.get(sibling.id);
+                        console.log(`Comparing ${nodeModel.name} (${box.width}) and ${sibling.name} (${boxOfSibling.width})`);
+                        if (boxOfSibling.width > box.width) {
+                            console.log(`Sibling is bigger than me`);
+                            box.width = boxOfSibling.width;
+                            this.boxMap.set(nodeModel.id, box);
+                            let updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
+                            updatedBox.setAttributeNS(null, `width`, box.width);
+                        } else if (box.width > boxOfSibling.width) {
+                            console.log(`I am bigger than sibling`);
+                            boxOfSibling.width = box.width;
+                            this.boxMap.set(sibling.id, boxOfSibling);
+                            let updatedBox = document.getElementById(`timebox:${sibling.id}`);
+                            updatedBox.setAttributeNS(null, `width`, box.width);
+                        }
+                    }
+                });
+            }
+        }
+        nodeModel.children.forEach((child) => {
+            if ((nodeModel._activity.connector.execution === `node.execution.parallel`) ||
+                (nodeModel._activity.connector.execution === `node.execution.none`) ||
+                (nodeModel._activity.connector.execution !== `node.execution.sequential`)) {
+                if (this.boxMap.has(child.id)) {
+                    const boxOfChild = this.boxMap.get(child.id);
+                    if (boxOfChild.width < box.width - (2 * this.HORIZONTAL_MARGIN)) {
+                        boxOfChild.width = box.width - (2 * this.HORIZONTAL_MARGIN);
+                        this.boxMap.set(child.id, boxOfChild);
+                        let updatedBox = document.getElementById(`timebox:${child.id}`);
+                        updatedBox.setAttributeNS(null, `width`, box.width);
+                    }
+                }
+            }
+            this.syncSizes(child);
+        });
+
+    }
+
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
         topLeftY = topLeftY + this.LABEL_HEIGHT;
@@ -195,11 +224,12 @@ class AtTimeview extends HTMLElement {
                     boxToStretch.width = widestChild;
                     this.boxMap.set(child.id, boxToStretch);
                 });
-                box.x = topLeftX + this.HORIZONTAL_MARGIN;
-                box.y = topLeftY + this.VERTICAL_MARGIN;
-                const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                box.topLeftX = topLeftX + this.HORIZONTAL_MARGIN;
+                box.topLeftY = topLeftY + this.VERTICAL_MARGIN;
+                const svgText = this.positionTextElement(labelElement, box.topLeftX + this.LABEL_INDENT, box.topLeftY);
                 group.appendChild(svgText);
                 box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
+
                 box.width = Math.max(
                     widestChild + (this.HORIZONTAL_MARGIN * 2),
                     this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
@@ -207,40 +237,40 @@ class AtTimeview extends HTMLElement {
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
                 let childTopLeftX = topLeftX;
-                let biggestY = 0;
+                let tallestChild = 0;
                 let growingBoxWidth = 0;
                 nodeModel.children.forEach((child) => {
                     newBox = this.buildBoxSet(group, child, childTopLeftX + this.HORIZONTAL_MARGIN, topLeftY + this.VERTICAL_MARGIN);
                     childTopLeftX = childTopLeftX + newBox.width + this.HORIZONTAL_MARGIN;
                     growingBoxWidth = growingBoxWidth + newBox.width;
-                    if (newBox.height > biggestY) {
-                        biggestY = newBox.height;
+                    if (newBox.height > tallestChild) {
+                        tallestChild = newBox.height;
                     }
                 });
                 nodeModel.children.forEach((child) => {
                     const boxToStretch = this.boxMap.get(child.id);
-                    boxToStretch.height = biggestY;
+                    boxToStretch.height = tallestChild;
                     this.boxMap.set(child.id, boxToStretch);
                 });
-                box.x = topLeftX + this.HORIZONTAL_MARGIN;
-                box.y = topLeftY + this.VERTICAL_MARGIN;
-                const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+                box.topLeftX = topLeftX + this.HORIZONTAL_MARGIN;
+                box.topLeftY = topLeftY + this.VERTICAL_MARGIN;
+                const svgText = this.positionTextElement(labelElement, box.topLeftX + this.LABEL_INDENT, box.topLeftY);
                 group.appendChild(svgText);
-                box.height = biggestY + (this.VERTICAL_MARGIN * 2) + this.LABEL_HEIGHT;
+                box.height = tallestChild + (this.VERTICAL_MARGIN * 2) + this.LABEL_HEIGHT;
                 box.width = Math.max(
                     growingBoxWidth + ((nodeModel.children.length + 1) * this.HORIZONTAL_MARGIN),
                     this.labelWidth(labelElement) + (this.LABEL_INDENT * 2)
                 );
             }
         } else {
-            box.x = topLeftX + this.HORIZONTAL_MARGIN;
-            box.y = topLeftY + this.VERTICAL_MARGIN;
-            const svgText = this.positionTextElement(labelElement, box.x + this.LABEL_INDENT, box.y);
+            box.topLeftX = topLeftX + this.HORIZONTAL_MARGIN;
+            box.topLeftY = topLeftY + this.VERTICAL_MARGIN;
+            const svgText = this.positionTextElement(labelElement, box.topLeftX + this.LABEL_INDENT, box.topLeftY);
             group.appendChild(svgText);
             box.height = this.STANDARD_BOX_HEIGHT;
             box.width = this.labelWidth(labelElement) + (this.LABEL_INDENT * 2);
         }
-        const svgBox = this.drawRectangle(box.x, box.y, box.width, box.height);
+        const svgBox = this.drawRectangle(box.topLeftX, box.topLeftY, box.width, box.height);
         svgBox.id = `timebox:${nodeModel.id}`;
         group.appendChild(svgBox);
         this.boxMap.set(box.id, box);
@@ -257,10 +287,15 @@ class AtTimeview extends HTMLElement {
         this.redrawSvg();
     }
 
+    applyZoom(num) {
+        const zoomedNum = num + (num * this.zoomStep * 0.05);
+        return zoomedNum;
+    }
+
     redrawSvg() {
-        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
-        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
-        if ((zoomedBoxWidth > 0) && (zoomedBoxHeight)) {
+        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
+        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
+        if ((zoomedBoxWidth > 0) && (zoomedBoxHeight > 0)) {
             this._timeviewSvg.setAttribute(
                 `viewBox`,
                 `${this.panX} ${this.panY}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
@@ -269,26 +304,26 @@ class AtTimeview extends HTMLElement {
     }
 
     dragView(e) {
-        const zoomedBoxWidth = this.windowSize.width + (this.windowSize.width * this.zoomStep * 0.05);
-        const zoomedBoxHeight = this.windowSize.height + (this.windowSize.height * this.zoomStep * 0.05);
+        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
+        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
         const svgViewSizeX = this.svgSize.width + this.START_X + this.HORIZONTAL_MARGIN;
         const svgViewSizeY = this.svgSize.height + this.START_Y + this.VERTICAL_MARGIN;
 
         if (zoomedBoxWidth > svgViewSizeX) {
             this.panX = 0;
         } else {
-            const delta = this._initialMouse.x - e.clientX;
+            const delta = this.applyZoom(this._initialMouse.x - e.clientX);
             this.panX = Math.min(
-                this.svgLocationX + (delta + (delta * this.zoomStep * 0.05)),
+                this.svgLocationX + delta,
                 svgViewSizeX - zoomedBoxWidth
             );
         }
         if (zoomedBoxHeight > svgViewSizeY) {
             this.panY = 0;
         } else {
-            const delta = this._initialMouse.y - e.clientY;
+            const delta = this.applyZoom(this._initialMouse.y - e.clientY);
             this.panY = Math.min(
-                this.svgLocationY + (delta + (delta * this.zoomStep * 0.05)),
+                this.svgLocationY + delta,
                 svgViewSizeY - zoomedBoxHeight
             );
         }
@@ -301,7 +336,7 @@ class AtTimeview extends HTMLElement {
         this.redrawSvg();
     }
 
-    stopDragView(event) {
+    stopDragView() {
         this.removeEventListener(`mousemove`, this._boundDragView);
         this.svgLocationX = this.panX;
         this.svgLocationY = this.panY;
@@ -319,7 +354,6 @@ class AtTimeview extends HTMLElement {
     }
 
 }
-
 
 customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);

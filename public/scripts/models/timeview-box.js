@@ -12,16 +12,16 @@ export default class Node extends EventTarget {
     constructor({
         id,
         label,
-        x,
-        y,
+        topLeftX,
+        topLeftY,
         height,
         width
     } = {}) {
         super();
         this._id = id;                       // An assigned unique ID given at construction
         this._label = label;
-        this._x = x;
-        this._y = y;
+        this._topLeftX = topLeftX;
+        this._topLeftY = topLeftY;
         this._height = height;
         this._width = width;
     }
@@ -42,20 +42,20 @@ export default class Node extends EventTarget {
         this._label = value;
     }
 
-    get x() {
-        return this._x;
+    get topLeftX() {
+        return this._topLeftX;
     }
 
-    set x(value) {
-        this._x = value;
+    set topLeftX(value) {
+        this._topLeftX = value;
     }
 
-    get y() {
-        return this._y;
+    get topLeftY() {
+        return this._topLeftY;
     }
 
-    set y(value) {
-        this._y = value;
+    set topLeftY(value) {
+        this._topLeftY = value;
     }
 
     get height() {

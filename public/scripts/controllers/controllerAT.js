@@ -189,11 +189,7 @@ export default class ControllerAT extends Controller {
         //   if (updatedNodeModel.id === updatedNodeModel.projectId) {
         if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = this.fetchProject(updatedNodeModel.projectId);
-            console.log(`Starting JSON`);
-            console.log(JSON.stringify(projectNode));
             projectNode.replaceChild(updatedNodeModel);
-            console.log(`Ending JSON`);
-            console.log(JSON.stringify(projectNode));
         } else {
             projectNode = updatedNodeModel;
         }
