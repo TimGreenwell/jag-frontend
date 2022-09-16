@@ -38,28 +38,32 @@ class AtTimeview extends HTMLElement {
         filter.setAttributeNS(null, `height`, `160px`);
         defs.appendChild(filter);
 
-        // const feOffset = document.createElementNS(svgns, `feOffset`);
-        // feOffset.setAttributeNS(null, `result`, `offOut`);
-        // feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
-        // feOffset.setAttributeNS(null, `dx`, `0`);
-        // feOffset.setAttributeNS(null, `dy`, `0`);
+        const feOffset = document.createElementNS(svgns, `feOffset`);
+        feOffset.setAttributeNS(null, `result`, `offOut`);
+        feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
+        feOffset.setAttributeNS(null, `dx`, `3`);
+        feOffset.setAttributeNS(null, `dy`, `3`);
 
 
         const feGaussianBlur = document.createElementNS(svgns, `feGaussianBlur`);
-        // this._gaussianFilter.setAttribute(`in`, `SourceGraphic`);
-        // feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
-        // feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
+        feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
+        feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
         feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
 
-        // const feBlend = document.createElementNS(svgns, `feBlend`);
-        // feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
-        // feBlend.setAttributeNS(null, `in2`, `blurOut`);
-        // feBlend.setAttributeNS(null, `mode`, `normal`);
+        const feBlend = document.createElementNS(svgns, `feBlend`);
+        feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
+        feBlend.setAttributeNS(null, `in2`, `blurOut`);
+        feBlend.setAttributeNS(null, `mode`, `normal`);
 
-        // filter.appendChild(feOffset);
+        const feDropShadow = document.createElementNS(svgns, `feDropShadow`);
+        feDropShadow.setAttributeNS(null, `dx`, `3`);
+        feDropShadow.setAttributeNS(null, `dy`, `-3`);
+        feDropShadow.setAttributeNS(null, `stdDeviation`, `5`);
+        feDropShadow.setAttributeNS(null, `flood-opacity`, `0.9`);
+
+        filter.appendChild(feOffset);
         filter.appendChild(feGaussianBlur);
-        // filter.appendChild(feBlend);
-
+        filter.appendChild(feBlend);
 
 
         this.svgLocationX = 0;
@@ -137,10 +141,11 @@ class AtTimeview extends HTMLElement {
 
 
     clearSvg() {
-        // while (this._timeviewSvg.hasChildNodes()) {
-        //     const deadChild = this._timeviewSvg.firstChild;
-        //     this._timeviewSvg.removeChild(deadChild);
-        // }
+        this._timeviewSvg.childNodes.forEach((gNode) => {
+            if (gNode.nodeName === `g`) {
+                this._timeviewSvg.removeChild(gNode);
+            }
+        });
     }
 
     refreshTimeview(nodeModel) {
