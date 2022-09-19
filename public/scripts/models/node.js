@@ -241,7 +241,7 @@ export default class Node extends EventTarget {
     get testReturnValue() {
         return this._testReturnValue;
     }
-
+leaf
     set testReturnValue(value) {
         this._testReturnValue = value;
     }
@@ -281,6 +281,17 @@ export default class Node extends EventTarget {
     // /////////////////////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////// Supporting Functions  ////////////////////////////////
     // /////////////////////////////////////////////////////////////////////////////////////////
+
+    // calculateNodeHeights(node) {
+    //     if (node.isLeaf(node)) {
+    //         node.
+    //     }
+    // }
+
+
+    isLeaf(node) {
+        return !(node.hasChildren());
+    }
 
     getShortUrn() {
         const parts = this.urn.split(`:`);

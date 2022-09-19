@@ -13,7 +13,7 @@ jag-library, analysis-library, agent-library, node-library {
     overflow-y: auto;
     background: var(--main-bg-lighter);
     color: var(--main-fg);             /* new */
-    box-shadow: inset 0 0 12px darkblue;
+
 }
 
 jag-library .library-search, analysis-library .library-search, node-library .library-search, agent-library .library-search {
@@ -60,6 +60,11 @@ jag-library .list-item, analysis-library .list-item, node-library .list-item, ag
     border-bottom: 1px solid white;
     cursor: pointer;
     transition: background-color 350ms var(--transition-function);
+    box-shadow: inset 0 0 8px lightblue;
+
+
+
+
 }
 
 jag-library .list-item:hover, analysis-library .list-item:hover, node-library .list-item:hover, agent-library .list-item:hover {

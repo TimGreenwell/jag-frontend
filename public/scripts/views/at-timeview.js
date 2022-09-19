@@ -54,6 +54,7 @@ class AtTimeview extends HTMLElement {
         filter.appendChild(feGaussianBlur);
         filter.appendChild(feBlend);
 
+        this.currentNodeModel = null;
         this.svgLocationX = 0;
         this.svgLocationY = 0;
         this.windowSize = null;
@@ -76,6 +77,7 @@ class AtTimeview extends HTMLElement {
         this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
 
         this.boxMap = new Map();
+        this.zoomMap = new Map();
 
         this._timeviewSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));
         this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));
@@ -83,7 +85,7 @@ class AtTimeview extends HTMLElement {
         this._boundStopDragView = this.stopDragView.bind(this);
     }
 
-    drawRectangle(x, y, width, height) {
+    drawRectangle(x, y, width, height, depth) {
         const rectangle = document.createElementNS(`http://www.w3.org/2000/svg`, `rect`);
         rectangle.setAttributeNS(null, `x`, x);
         rectangle.setAttributeNS(null, `y`, y);
@@ -94,6 +96,7 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `stroke`, `black`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
+        console.log(depth);
         return rectangle;
     }
 
@@ -126,17 +129,25 @@ class AtTimeview extends HTMLElement {
         });
     }
 
-    refreshTimeview(nodeModel) {
+    refreshTimeview(nodeModel = this.currentNodeModel) {
+        if (this.currentNodeModel) {
+            this.zoomMap.set(this.currentNodeModel.id, this.zoomStep);
+        }
+        this.currentNodeModel = nodeModel;
         this.clearSvg();
-        this.zoomStep = 0;
-        this.svgLocationX = 0;
-        this.svgLocationY = 0;
-        this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
-        this.windowSize = this.getBoundingClientRect();
-        // this.syncSizes(nodeModel);
-        // this.createSVG();
-        this.redrawSvg();
-        this.boxMap.clear();
+        if (this.currentNodeModel) {
+            if (this.zoomMap.has(this.currentNodeModel.id)) {
+                this.zoomStep = this.zoomMap.get(this.currentNodeModel.id);
+            } else {
+                this.zoomStep = 0;
+            }
+            this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
+            this.windowSize = this.getBoundingClientRect();
+            // this.syncSizes(nodeModel);
+            // this.createSVG();
+            this.redrawSvg();
+            this.boxMap.clear();
+        }
     }
 
     // createSVG(){
@@ -146,7 +157,6 @@ class AtTimeview extends HTMLElement {
     // }
 
     syncSizes(nodeModel) {
-
         const box = this.boxMap.get(nodeModel.id);
         if (!nodeModel.isRoot()) {
             if ((nodeModel.parent._activity.connector.execution === `node.execution.parallel`) ||
@@ -160,13 +170,13 @@ class AtTimeview extends HTMLElement {
                             console.log(`Sibling is bigger than me`);
                             box.width = boxOfSibling.width;
                             this.boxMap.set(nodeModel.id, box);
-                            let updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
+                            const updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
                             updatedBox.setAttributeNS(null, `width`, box.width);
                         } else if (box.width > boxOfSibling.width) {
                             console.log(`I am bigger than sibling`);
                             boxOfSibling.width = box.width;
                             this.boxMap.set(sibling.id, boxOfSibling);
-                            let updatedBox = document.getElementById(`timebox:${sibling.id}`);
+                            const updatedBox = document.getElementById(`timebox:${sibling.id}`);
                             updatedBox.setAttributeNS(null, `width`, box.width);
                         }
                     }
@@ -182,14 +192,13 @@ class AtTimeview extends HTMLElement {
                     if (boxOfChild.width < box.width - (2 * this.HORIZONTAL_MARGIN)) {
                         boxOfChild.width = box.width - (2 * this.HORIZONTAL_MARGIN);
                         this.boxMap.set(child.id, boxOfChild);
-                        let updatedBox = document.getElementById(`timebox:${child.id}`);
+                        const updatedBox = document.getElementById(`timebox:${child.id}`);
                         updatedBox.setAttributeNS(null, `width`, box.width);
                     }
                 }
             }
             this.syncSizes(child);
         });
-
     }
 
 
@@ -270,7 +279,7 @@ class AtTimeview extends HTMLElement {
             box.height = this.STANDARD_BOX_HEIGHT;
             box.width = this.labelWidth(labelElement) + (this.LABEL_INDENT * 2);
         }
-        const svgBox = this.drawRectangle(box.topLeftX, box.topLeftY, box.width, box.height);
+        const svgBox = this.drawRectangle(box.topLeftX, box.topLeftY, box.width, box.height, nodeModel.treeDepth);
         svgBox.id = `timebox:${nodeModel.id}`;
         group.appendChild(svgBox);
         this.boxMap.set(box.id, box);

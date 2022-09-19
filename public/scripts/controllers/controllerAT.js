@@ -230,7 +230,9 @@ export default class ControllerAT extends Controller {
             this._playground._rebuildNodeView(projectModel);
         } else {
             // conn
-
+            if (this._timeview) {
+                this._timeview.refreshTimeview();
+            }
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
 
@@ -354,9 +356,10 @@ export default class ControllerAT extends Controller {
         // This just calls the popup to get the data.  That result calls:eventImportJagHandler
         this._playground._eventImportJagHandler();
     }
-    //
+
     // eventToggleTimeviewHandler() {
-    //     this._timeview.clearSvg();
+    //     const selectedNodes = this._playground.selectedNodes;
+    //     this._timeview.refreshTimeview(selectedNodes[0]);
     // }
 
     /**   -- Activity Library --  */

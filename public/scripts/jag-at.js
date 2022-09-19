@@ -128,6 +128,8 @@ document.addEventListener(`DOMContentLoaded`, async () => {
         if (!playground.style.height) {
             playground.style.height = `50%`;
         }
+        const selectedNodes = playground.selectedNodes;
+        timeview.refreshTimeview(selectedNodes[0]);
     }
     menu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
 
@@ -146,6 +148,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
         isMouseDown = false;
         document.body.removeEventListener(`mouseup`, end);
         document.body.removeEventListener(`mousemove`, mV);
+        timeview.refreshTimeview();
     };
     function mD(event) {
         isMouseDown = true;
