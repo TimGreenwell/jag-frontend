@@ -32,9 +32,9 @@ export default class RESTStorage {
     help() {
         let supportedRestPoints = null;
         for (const key of Object.keys(this.__REST_PATHS)) {
-            supportedRestPoints = supportedRestPoints + `/n`;
+            supportedRestPoints = `${supportedRestPoints} /n`;
         }
-        const returnString = `Using ${this._name} v.${this._version}  \n Supports: \n` + supportedRestPoints;
+        const returnString = `Using ${this._name} v.${this._version}  \n Supports: \n ${supportedRestPoints}`;
         return returnString;
     }
 

@@ -199,9 +199,11 @@ export default class Cell extends EventTarget {
 
     removeChild(child) {
         const filtered = this.children.filter((entry) => {
-            if (entry.id !== child.id) {
-                return entry;
-            }
+            // if (entry.id !== child.id) {
+            //     return entry;
+            // }
+            // xxxxx
+            return entry.id !== child.id;
         });
         this.children = filtered;
     }

@@ -737,9 +737,11 @@ class AtPlayground extends Popupable {
                         const parentActivity = $node.getParent().nodeModel.activity;
                         const childActivityChildId = $node.nodeModel.childId;
                         const remainingChildren = parentActivity._children.filter((entry) => {
-                            if (entry.id !== childActivityChildId) {
-                                return entry;
-                            }
+                            // if (entry.id !== childActivityChildId) {
+                            //     return entry;
+                            // }
+                            // xxxxxx
+                            return entry.id !== childActivityChildId;
                         });
                         parentActivity.children = remainingChildren;
                         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -906,9 +908,11 @@ AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this 
                     id: node.nodeModel.childId
                 };
                 const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
-                    if (entry.id !== jagChild.id) {
-                        return entry;
-                    }
+                    // if (entry.id !== jagChild.id) {
+                    //     return entry;
+                    // }
+                    // xxxxx
+                    return entry.id !== jagChild.id;
                 });
                 parent.nodeModel.activity.children = remainingChildren;
                 this.dispatchEvent(new CustomEvent(`event-activity-updated`, {

@@ -52,9 +52,9 @@ export default class Activity extends EventTarget {
         this._isLocked = isLocked;
         this._collapsed = collapsed;
 
-      //  this._execution = connector.execution;
-      //  this._returns = connector.returns;
-      //  this._operator = connector.operator;
+        //  this._execution = connector.execution;
+        //  this._returns = connector.returns;
+        //  this._operator = connector.operator;
 
         // The below has not been looked at.
         for (const child of this._children) {

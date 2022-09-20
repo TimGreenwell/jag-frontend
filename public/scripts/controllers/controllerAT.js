@@ -82,7 +82,6 @@ export default class ControllerAT extends Controller {
         // Event function (event parameter unused)
         window.onblur = function () {
             console.log(`window.onblur`);
-
         };
     }
 
@@ -257,15 +256,28 @@ export default class ControllerAT extends Controller {
     }
 
 
+    // async eventPlaygroundClickedHandler(event) {
+    //     if (event.detail.unselectedNodeArray) {
+    //         for (const node of event.detail.unselectedNodeArray) {
+    //             await StorageService.update(node, `node`);
+    //             console.log("unhandled");
+    //         }
+    //     }
+    //
+    //     this._properties.handleSelectionUnselected();
+    // }
+
     async eventPlaygroundClickedHandler(event) {
         if (event.detail.unselectedNodeArray) {
+            const updatePromises = [];
             for (const node of event.detail.unselectedNodeArray) {
-                await StorageService.update(node, `node`);
+                updatePromises.push(StorageService.update(node, `node`));
             }
+            await Promise.all(updatePromises);
         }
-
         this._properties.handleSelectionUnselected();
     }
+
 
     async eventImportJagHandler(event) {
         console.log(`Importing as JSON - `);
@@ -273,16 +285,27 @@ export default class ControllerAT extends Controller {
         const jsonDescriptor = JSON.parse(json);
         const activities = jsonDescriptor.activities;
         const jags = jsonDescriptor.jags;
+        const activityPromises = [];
         for (const activity of activities) {
             const activityModel = Activity.fromJSON(activity);
             const fullActivityModel = new Activity(activityModel);
-            await StorageService.create(fullActivityModel, `activity`);
+            activityPromises.push(StorageService.create(fullActivityModel, `activity`));
         }
+        await Promise.all(activityPromises);
+        const jagPromises = [];
         for (const jag of jags) {
-            const jagModel = await NodeModel.fromJSON(jag);
-            const fullJagModel = new NodeModel(jagModel);
-            await StorageService.create(fullJagModel, `node`);
+            jagPromises.push(NodeModel.fromJSON(jag).
+                then((jagModel) => {
+                    const fullJagModel = new NodeModel(jagModel);
+                    StorageService.create(fullJagModel, `node`);
+                }), (reason) => {
+                console.log(`Failed to import jag: ${reason}`);
+            });
+            // const jagModel = await NodeModel.fromJSON(jag);
+            // const fullJagModel = new NodeModel(jagModel);
+            // await StorageService.create(fullJagModel, `node`);
         }
+        await Promise.all(jagPromises);
     }
 
 
@@ -369,17 +392,21 @@ export default class ControllerAT extends Controller {
         // If match found, remove that child from the parent and signal update on the parent.
         console.log(`Local>> (jag deleted) `);
         const deadActivityUrn = event.detail.activityUrn;
+        const updatePromises = [];
         for (const [activityId, activity] of this._activityMap) {
             const remainingChildren = activity.children.filter((kid) => {
-                if (kid.urn !== deadActivityUrn) {
-                    return kid;
-                }
+                // if (kid.urn !== deadActivityUrn) {
+                //     return kid;
+                // }
+                // xxxxxx
+                return kid.urn !== deadActivityUrn;
             });
             if (remainingChildren.length < activity.children.length) {
                 activity.children = remainingChildren;
-                await StorageService.update(activity, `activity`);
+                updatePromises.push(StorageService.update(activity, `activity`));
             }
         }
+        await Promise.all(updatePromises);
         await StorageService.delete(deadActivityUrn, `activity`);
     }
 
@@ -475,11 +502,13 @@ export default class ControllerAT extends Controller {
         console.log(`((COMMAND INCOMING)) >> Activity Deleted`);
         // const deletedActivity = this.fetchActivity(deletedActivityUrn);
         this.uncacheActivity(deletedActivityUrn);
+        const deletePromises = [];
         for (const viewedProject of this._playground.viewedProjects) {
             if (viewedProject.id === deletedActivityUrn) {
-                await StorageService.delete(viewedProject, `node`);
+                deletePromises.push(StorageService.delete(viewedProject, `node`));
             }
         }
+        await Promise.all(deletePromises);
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn);
     }
 
@@ -506,12 +535,14 @@ export default class ControllerAT extends Controller {
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         this.cacheActivity(updatedActivity);
+        const updatePromises = [];
         for (const viewedProject of this._playground.viewedProjects) {
             if (viewedProject.isActivityInProject(updatedActivityUrn)) {
                 const updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
-                await StorageService.update(updatedProject, `node`);
+                updatePromises.push(StorageService.update(updatedProject, `node`));
             }
         }
+        await Promise.all(updatePromises);
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }

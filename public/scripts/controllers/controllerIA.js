@@ -214,16 +214,18 @@ export default class ControllerIA extends Controller {
         console.log(`((COMMAND INCOMING)) >> Agent Deleted`);
         const deletedAgent = this.fetchAgent(deletedAgentUrn);
         // Remove Agent from teams
+        const promises = [];
         for (const [teamId, team] of this._teamMap) {
             if (team.agentIds.contains(deletedAgentUrn)) {
                 team.agentIds.removeChild(deletedAgentUrn);
                 if (team.agentIds > 0) {
-                    await StorageService.update(team, `team`);
+                    promises.push(StorageService.update(team, `team`));
                 } else {
-                    await StorageService.delete(team.id, `team`);
+                    promises.push(StorageService.delete(team.id, `team`));
                 }
             }
         }
+        await Promise.all(promises);
         this.uncacheAgent(deletedAgentUrn);
         this._agentLibrary.removeLibraryListItem(deletedAgentUrn);
     }
@@ -595,15 +597,16 @@ export default class ControllerIA extends Controller {
     }
 
     async _createChildren() {
+        const promises = [];
         for (const child of this.jag.children) {
-            // const jag = await JAGService.instance('idb-service').get(child.urn);
-            const jag = await StorageService.get(child.urn, `activity`);
-            const model = new Node();
-            model.urn = jag.urn;
-            // await NodeService.instance('idb-service').create(model);
-            await StorageService.create(model, `node`);
-            this.addChild(model, true);
+            promises.push(StorageService.get(child.urn, `activity`).then((jag) => {
+                const model = new Node();
+                model.urn = jag.urn;
+                this.addChild(model, true);
+                StorageService.create(model, `node`);
+            }));
         }
+        await Promise.all(promises);
     }
 
     addChild(child, layout = true) {

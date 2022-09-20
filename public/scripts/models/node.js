@@ -241,7 +241,7 @@ export default class Node extends EventTarget {
     get testReturnValue() {
         return this._testReturnValue;
     }
-leaf
+
     set testReturnValue(value) {
         this._testReturnValue = value;
     }
@@ -377,9 +377,11 @@ leaf
 
     removeChild(child) {
         const filtered = this.children.filter((entry) => {
-            if (entry.id !== child.id) {
-                return entry;
-            }
+            // if (entry.id !== child.id) {
+            //     return entry;
+            // }
+            // xxxxx
+            return entry.id !== child.id;
         });
         this.children = filtered;
     }
@@ -475,11 +477,12 @@ leaf
 
 
     static async fromJSON(json) {
-        const childStack = [];
+        const childPromises = [];
         for (const child of json.children) {
-            childStack.push(await Node.fromJSON(child));
+            childPromises.push(Node.fromJSON(child));
         }
-        json.children = childStack;
+        await Promise.all(childPromises);
+        json.children = childPromises;
         const node = new Node(json);
         return node;
     }

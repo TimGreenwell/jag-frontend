@@ -378,10 +378,13 @@ class IATable extends Popupable {
             // const service = JAGService.instance('idb-service');
             // const service = StorageService.getStorageInstance('idb-service');
 
+            const jagPromises = [];
             for (const jag of jags) {
-                const activity = await StorageService.get(jag, `activity`);
-                json.jags.push(activity.toJSON());
+                StorageService.get(jag, `activity`).then((activity) => {
+                    json.jags.push(activity.toJSON());
+                });
             }
+            await Promise.all(jagPromises);
         }
 
         const teams = [];

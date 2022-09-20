@@ -310,18 +310,22 @@ class Definition extends HTMLElement {
     getAvailableChildrenReturnValues(node) {
         let values = [];
         if (this.dataMode === `live`) {
-            values = node.children.map((child) => {
-                if ((child.returnValue !== undefined) || (child.returnValue !== null)) {
+            values = node.children.
+                filter((child) => {
+                    return (child.returnValue !== undefined);
+                }).
+                map((child) => {
                     return child.returnValue;
-                }
-            });
+                });
         } else {
             values = this.definingNode.children.map((child) => {
                 return this._testBankMap.get(child.id);
             }).filter((value) => {
-                if ((value !== undefined) || (value !== null)) {
-                    return value;
-                }
+                // if ((value !== undefined) || (value !== null)) {
+                //     return value;
+                // }
+                // xxxx
+                return (value !== undefined) || (value !== null);
             });
         }
         return values;

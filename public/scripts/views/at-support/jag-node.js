@@ -466,7 +466,7 @@ customElements.define(`jag-node`, class extends HTMLElement {
 
         if (this._outs != undefined && (recursive || (recursive == undefined && !this._nodeModel.isExpanded))) {
             this._outs.forEach((edge) => {
-    //            edge._leadActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);            // This caused the Shift Drag error
+                // edge._leadActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);            // This caused the Shift Drag error
                 edge._subActivityNode.translate(dx, dy, recursive || !this._nodeModel.isExpanded);
             });
         }

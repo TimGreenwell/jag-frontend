@@ -351,7 +351,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleOperatorChange(e) {
         e.stopImmediatePropagation();
-        console.log("sees the change");
+        console.log(`sees the change`);
         if (this._nodeModel) {
             this._nodeModel.activity.operator = this._$operatorSelect.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -1100,7 +1100,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._$name_ctxInput.disabled = true;
             this._$desc_ctxInput.disabled = true;
         }
-         // tlg 9 sep
+        // tlg 9 sep
         // if (enabled || (!enabled && !this._nodeModel)) {
         //     this.classList.toggle(`defined-model`, true);   // This block useful?
         //     this.classList.toggle(`non-leaf-node`, true);

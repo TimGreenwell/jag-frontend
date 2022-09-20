@@ -21,7 +21,7 @@ export default class IndexedDBStorage {
     help() {
         let supportedRestPoints = null;
         for (const key of Object.keys(this.__REST_PATHS)) {
-            supportedRestPoints = supportedRestPoints + `/n`;
+            supportedRestPoints = `${supportedRestPoints} /n`;
         }
         const returnString = `Using ${this._name} v.${this._version}  \n on ${this._db}`;
         return returnString;
