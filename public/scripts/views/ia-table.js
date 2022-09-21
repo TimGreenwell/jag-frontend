@@ -319,7 +319,7 @@ class IATable extends Popupable {
             team.agents = team.agents.map((agent) => {
                 return agent.id;
             });
-            const agentModel = await TeamModel.fromJSON(team);
+            const agentModel = await TeamModel.fromJSON(team);   // WHY AWAIT?
             await StorageService.create(agentModel, `team`);
         }
 
@@ -327,7 +327,7 @@ class IATable extends Popupable {
         // const service = AnalysisService.instance('idb-service');
         // const service = StorageService.getStorageInstance('idb-service');
 
-        const analysisModel = await AnalysisModel.fromJSON({
+        const analysisModel = await AnalysisModel.fromJSON({            // WHY AWAIT?
             id: analysisModelImport.id,
             name: analysisModelImport.name,
             root: analysisModelImport.root,
@@ -381,7 +381,9 @@ class IATable extends Popupable {
             const jagPromises = [];
             for (const jag of jags) {
                 StorageService.get(jag, `activity`).then((activity) => {
-                    json.jags.push(activity.toJSON());
+                    // json.jags.push(activity.toJSON());
+                    // 21Sep2023 - above seems wrong
+                    jagPromises.push(activity.toJSON());
                 });
             }
             await Promise.all(jagPromises);

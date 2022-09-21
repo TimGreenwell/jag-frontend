@@ -56,6 +56,9 @@ export default class SharedObservable extends SharedService {
         if (description) {
             dataModel = await SchemaManager.deserialize(schema, description);
         }
+        console.log(`getting close`);
+        console.log(message);
+        console.log(dataModel);
         this.notifySubscribers(topic, dataModel, id);
     }
 
@@ -78,6 +81,7 @@ export default class SharedObservable extends SharedService {
      */
     static notifySubscribers(topic, dataModel, id) {
         console.log(`\n {COMMANDED} (${topic}) : (${id})`);
+        console.log(dataModel);
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {

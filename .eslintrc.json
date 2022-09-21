@@ -19,7 +19,7 @@
         // Enforce `return` statements in getters
         "no-async-promise-executor": "error",
         // Disallow using an async function as a Promise executor
-         "no-await-in-loop": "error",
+        // "no-await-in-loop": "error",
         // Disallow `await` inside of loops
         // WHY - couple awaits in loops I couldn't solve.  All others corrected.
         "no-class-assign": "error",
@@ -84,7 +84,7 @@
         // Disallow calling some `Object.prototype` methods directly on objects
         // "no-self-assign": "error",
         // Disallow assignments where both sides are exactly the same
-        // WHY - (stupid code uses setter to run code)
+        // WHY - (stupid code uses setter to run code - fixable but low priority right now)
         "no-self-compare": "error",
         // Disallow comparisons where both sides are exactly the same
         "no-setter-return": "error",
@@ -95,7 +95,7 @@
         // Disallow template literal placeholder syntax in regular strings
         "no-this-before-super": "error",
         // Disallow `this`/`super` before calling `super()` in constructors
-        // "no-undef": "error",
+         "no-undef": "error",
         // Disallow the use of undeclared variables unless mentioned in `/*global */` comments
         "no-unexpected-multiline": "error",
         // Disallow confusing multiline expressions

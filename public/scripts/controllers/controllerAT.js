@@ -294,16 +294,9 @@ export default class ControllerAT extends Controller {
         await Promise.all(activityPromises);
         const jagPromises = [];
         for (const jag of jags) {
-            jagPromises.push(NodeModel.fromJSON(jag).
-                then((jagModel) => {
-                    const fullJagModel = new NodeModel(jagModel);
-                    StorageService.create(fullJagModel, `node`);
-                }), (reason) => {
-                console.log(`Failed to import jag: ${reason}`);
-            });
-            // const jagModel = await NodeModel.fromJSON(jag);
-            // const fullJagModel = new NodeModel(jagModel);
-            // await StorageService.create(fullJagModel, `node`);
+            const jagModel = NodeModel.fromJSON(jag);
+            const fullJagModel = new NodeModel(jagModel);
+            jagPromises.push(StorageService.create(fullJagModel, `node`));
         }
         await Promise.all(jagPromises);
     }
@@ -403,6 +396,7 @@ export default class ControllerAT extends Controller {
             });
             if (remainingChildren.length < activity.children.length) {
                 activity.children = remainingChildren;
+                console.log(`HERE 1`);
                 updatePromises.push(StorageService.update(activity, `activity`));
             }
         }
@@ -524,6 +518,7 @@ export default class ControllerAT extends Controller {
 
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Created`);
+        console.log(`--${createdNodeModel}`)
         this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id);
@@ -542,6 +537,7 @@ export default class ControllerAT extends Controller {
                 updatePromises.push(StorageService.update(updatedProject, `node`));
             }
         }
+        console.log(`HERE 2`);
         await Promise.all(updatePromises);
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
@@ -549,7 +545,7 @@ export default class ControllerAT extends Controller {
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
-
+console.log(updatedNodeModel);  // At this point it it normal node with promises as children
         this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId);

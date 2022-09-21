@@ -395,6 +395,8 @@ export default class Controller extends EventTarget {
     }
 
     repopulateParent(currentNode) {
+        console.log(currentNode.children);
+        console.log(`----REPOPULATE PARENT-------`);
         for (const child of currentNode.children) {
             child.parent = currentNode;
             child.parentId = currentNode.id;

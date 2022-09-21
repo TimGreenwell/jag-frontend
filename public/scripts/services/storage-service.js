@@ -114,6 +114,8 @@ export default class StorageService extends SharedObservable {
             const newModel = await SchemaManager.deserialize(schema, description);
             return newModel;
         });
+        //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        console.log(`all`);
         const newModels = await Promise.all(promisedModels);
         return newModels;
     }

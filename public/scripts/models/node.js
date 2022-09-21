@@ -469,6 +469,7 @@ export default class Node extends EventTarget {
         };
         const childStack = [];
         for (const child of this._children) {
+            console.log(`child is ${child.id}`);
             childStack.push(child.toJSON());
         }
         json.children = childStack;
@@ -476,16 +477,26 @@ export default class Node extends EventTarget {
     }
 
 
-    static async fromJSON(json) {
-        const childPromises = [];
+    // static async fromJSON(json) {
+    //     const childStack = [];
+    //     for (const child of json.children) {
+    //         childStack.push(await Node.fromJSON(child));
+    //     }
+    //     json.children = childStack;
+    //     const node = new Node(json);
+    //     return node;
+    // }
+
+    static fromJSON(json) {
+        const childStack = [];
         for (const child of json.children) {
-            childPromises.push(Node.fromJSON(child));
+            childStack.push(Node.fromJSON(child));
         }
-        await Promise.all(childPromises);
-        json.children = childPromises;
+        json.children = childStack;
         const node = new Node(json);
         return node;
     }
+
 
 }
 

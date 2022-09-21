@@ -663,25 +663,25 @@ class AtPlayground extends Popupable {
     }
 
 
-    _filterOrphans() {
-        for (const [key, val] of this._viewedProjectsMap) {
-            if (!val.isRoot()) {
-                this._viewedProjectsMap.delete(key);
-            }
-        }
-
-
-        for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
-            if (this._viewedProjectsMap[index].nodeModel.id === updatedNodeModel.id) {
-                if (updatedNodeModel.id === updatedNodeModel.projectId) {
-                    const listItemElement = this.createListItemCollection(updatedNodeModel);
-                    this._libraryList[index] = listItemElement;
-                } else {
-                    this._libraryList.splice(index, 1);
-                }
-            }
-        }
-    }
+    // _filterOrphans() {
+    //     for (const [key, val] of this._viewedProjectsMap) {
+    //         if (!val.isRoot()) {
+    //             this._viewedProjectsMap.delete(key);
+    //         }
+    //     }
+    //
+    //
+    //     for (let index = this._viewedProjectsMap.length - 1; index >= 0; --index) {
+    //         if (this._viewedProjectsMap[index].nodeModel.id === updatedNodeModel.id) {
+    //             if (updatedNodeModel.id === updatedNodeModel.projectId) {
+    //                 const listItemElement = this.createListItemCollection(updatedNodeModel);
+    //                 this._libraryList[index] = listItemElement;
+    //             } else {
+    //                 this._libraryList.splice(index, 1);
+    //             }
+    //         }
+    //     }
+    // }
 
     _rebuildNodeView(projectNodeModel) {
         this.deleteNodeModel(projectNodeModel.id);

@@ -597,6 +597,7 @@ export default class ControllerIA extends Controller {
     }
 
     async _createChildren() {
+        console.log(`_createChildren ========`)
         const promises = [];
         for (const child of this.jag.children) {
             promises.push(StorageService.get(child.urn, `activity`).then((jag) => {
