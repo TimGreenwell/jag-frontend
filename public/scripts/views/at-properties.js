@@ -322,12 +322,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleContextualDescriptionChange(e) {
         e.stopImmediatePropagation();
-        console.log(`_handleContextualDescriptionChange ++++++++++++++`);
-        console.log(JSON.stringify(this._nodeModel));
         if (this._nodeModel) {
             this._nodeModel.contextualDescription = this._$desc_ctxInput.value;
-            console.log(this._$desc_ctxInput.value);
-            console.log(JSON.stringify(this._nodeModel));
             this.dispatchEvent(new CustomEvent(`event-node-updated`, {
                 bubbles: true,
                 composed: true,
@@ -351,7 +347,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleOperatorChange(e) {
         e.stopImmediatePropagation();
-        console.log(`sees the change`);
         if (this._nodeModel) {
             this._nodeModel.activity.operator = this._$operatorSelect.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {

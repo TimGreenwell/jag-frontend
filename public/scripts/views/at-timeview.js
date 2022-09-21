@@ -13,46 +13,28 @@ class AtTimeview extends HTMLElement {
 
     constructor() {
         super();
-        const svgns = `http://www.w3.org/2000/svg`;
+        this.SVGNS = `http://www.w3.org/2000/svg`;
+        this.START_X = 5;
+        this.START_Y = 5;
+        this.HORIZONTAL_MARGIN = 10;
+        this.VERTICAL_MARGIN = 10;
+        this.LINE_WIDTH = 1;
+        this.STANDARD_FONT_SIZE = 15;
+        this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
+        this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
+        this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
+
         this._timeContainerWrapperDiv = document.createElement(`div`);
         this._timeContainerWrapperDiv.id = `time-container-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
 
-        this._timeviewSvg = document.createElementNS(svgns, `svg`);
+        this._timeviewSvg = document.createElementNS(this.SVGNS, `svg`);
         this._timeviewSvg.id = `time-container`;
         this._timeviewSvg.setAttribute(`version`, `1.1`);
-        this._timeviewSvg.setAttribute(`xmlns`, svgns);
+        this._timeviewSvg.setAttribute(`xmlns`, this.SVGNS);
 
-        const defs = document.createElementNS(svgns, `defs`);
-        this._timeviewSvg.appendChild(defs);
-
-        const filter = document.createElementNS(svgns, `filter`);
-        filter.setAttributeNS(null, `id`, `blur-effect`);
-        filter.setAttributeNS(null, `x`, `-20px`);
-        filter.setAttributeNS(null, `y`, `-20px`);
-        filter.setAttributeNS(null, `width`, `160px`);
-        filter.setAttributeNS(null, `height`, `160px`);
-        defs.appendChild(filter);
-
-        const feOffset = document.createElementNS(svgns, `feOffset`);
-        feOffset.setAttributeNS(null, `result`, `offOut`);
-        feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
-        feOffset.setAttributeNS(null, `dx`, `3`);
-        feOffset.setAttributeNS(null, `dy`, `3`);
-
-        const feGaussianBlur = document.createElementNS(svgns, `feGaussianBlur`);
-        feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
-        feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
-        feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
-
-        const feBlend = document.createElementNS(svgns, `feBlend`);
-        feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
-        feBlend.setAttributeNS(null, `in2`, `blurOut`);
-        feBlend.setAttributeNS(null, `mode`, `normal`);
-
-        filter.appendChild(feOffset);
-        filter.appendChild(feGaussianBlur);
-        filter.appendChild(feBlend);
+        this.$def = this.createFilterDefinition();
+        this._timeviewSvg.appendChild(this.$def);
 
         this.currentNodeModel = null;
         this.svgLocationX = 0;
@@ -66,15 +48,6 @@ class AtTimeview extends HTMLElement {
         this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
         this._timeContainerWrapperDiv.appendChild(this._timeviewSvg);
-        this.START_X = 5;
-        this.START_Y = 5;
-        this.HORIZONTAL_MARGIN = 10;
-        this.VERTICAL_MARGIN = 10;
-        this.LINE_WIDTH = 1;
-        this.STANDARD_FONT_SIZE = 15;
-        this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
-        this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
-        this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
 
         this.boxMap = new Map();
         this.zoomMap = new Map();
@@ -83,6 +56,75 @@ class AtTimeview extends HTMLElement {
         this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));
         this._boundDragView = this.dragView.bind(this);
         this._boundStopDragView = this.stopDragView.bind(this);
+    }
+
+    createFilterDefinition(){
+        const defs = document.createElementNS(this.SVGNS, `defs`);
+
+        const filter = document.createElementNS(this.SVGNS, `filter`);
+        filter.setAttributeNS(null, `id`, `blur-effect`);
+        filter.setAttributeNS(null, `x`, `-20%`);
+        filter.setAttributeNS(null, `y`, `-20%`);
+        filter.setAttributeNS(null, `width`, `150%`);
+        filter.setAttributeNS(null, `height`, `150%`);
+        defs.appendChild(filter);
+
+        const feOffset = document.createElementNS(this.SVGNS, `feOffset`);
+        feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
+        feOffset.setAttributeNS(null, `result`, `offOut`);
+        feOffset.setAttributeNS(null, `dx`, `3`);
+        feOffset.setAttributeNS(null, `dy`, `3`);
+
+        const feGaussianBlur = document.createElementNS(this.SVGNS, `feGaussianBlur`);
+        feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
+        feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
+        feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
+
+        const feBlend = document.createElementNS(this.SVGNS, `feBlend`);
+        feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
+        feBlend.setAttributeNS(null, `in2`, `blurOut`);
+        feBlend.setAttributeNS(null, `mode`, `normal`);
+
+
+        // Thickens input
+        const feMorphology = document.createElementNS(this.SVGNS, `feMorphology`);
+        feMorphology.setAttributeNS(null, `in`, `SourceAlpha`);
+        feMorphology.setAttributeNS(null, `result`, `BEVEL_10`);
+        feMorphology.setAttributeNS(null,`operator`,  `dilate`);
+        feMorphology.setAttributeNS(null, `radius`, `1`);
+
+        // // 3d extrude
+        // const feConvolveMatrix = document.createElementNS(this.SVGNS, `feConvolveMatrix`);
+        // feConvolveMatrix.setAttributeNS(null, `in`, `BEVEL_10`);
+        // feConvolveMatrix.setAttributeNS(null, `result`, `BEVEL_20`);
+        // feConvolveMatrix.setAttributeNS(null,`order`,  `3,3`);
+        // feConvolveMatrix.setAttributeNS(null, `kernelMatrix`,
+        //     `1 0 0
+        //           0 1 0
+        //           0 0 1`
+        // );
+
+        const feOffset2 = document.createElementNS(this.SVGNS, `feOffset`);
+        feOffset2.setAttributeNS(null, `in`, `BEVEL_20`);
+        feOffset2.setAttributeNS(null, `result`, `BEVEL_30`);
+        feOffset2.setAttributeNS(null, `dx`, `5`);
+        feOffset2.setAttributeNS(null, `dy`, `5`);
+
+        const feComposite = document.createElementNS(this.SVGNS, `feComposite`);
+        feComposite.setAttributeNS(null, `operator`, `out`);
+        feComposite.setAttributeNS(null, `in`, `BEVEL_20`);
+        feComposite.setAttributeNS(null, `in2`, `BEVEL_10`);
+        feComposite.setAttributeNS(null, `result`, `BEVEL_30`);
+
+
+        // filter.appendChild(feOffset);
+        // filter.appendChild(feGaussianBlur);
+        // filter.appendChild(feBlend);
+        filter.appendChild(feMorphology);
+        // filter.appendChild(feConvolveMatrix);
+        filter.appendChild(feOffset2);
+        filter.appendChild(feComposite);
+        return defs;
     }
 
     drawRectangle(x, y, width, height, depth) {
@@ -96,7 +138,6 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `stroke`, `black`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
-        console.log(depth);
         return rectangle;
     }
 

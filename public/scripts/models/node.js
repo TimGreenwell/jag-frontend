@@ -469,7 +469,6 @@ export default class Node extends EventTarget {
         };
         const childStack = [];
         for (const child of this._children) {
-            console.log(`child is ${child.id}`);
             childStack.push(child.toJSON());
         }
         json.children = childStack;

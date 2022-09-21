@@ -235,12 +235,10 @@ export default class ControllerAT extends Controller {
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
             parentNodeModel.addChild(childNodeModel);
 
-            console.log(`Checking if node.execution is none - and change if necessary`);
-            console.log(parentNodeModel.activity.connector.execution);
             if (parentNodeModel.activity.connector.execution === `node.execution.none`) {
                 parentNodeModel.activity.connector.execution = `node.execution.sequential`;
             }
-            console.log(parentNodeModel.activity.connector.execution);
+
             childNodeModel.parent = null;
             childNodeModel.parentId = null;  // /         This changed because of the extra reverse step in AddChild. Change that then fix this.
 
@@ -280,7 +278,6 @@ export default class ControllerAT extends Controller {
 
 
     async eventImportJagHandler(event) {
-        console.log(`Importing as JSON - `);
         const json = event.detail.result;
         const jsonDescriptor = JSON.parse(json);
         const activities = jsonDescriptor.activities;
@@ -396,7 +393,6 @@ export default class ControllerAT extends Controller {
             });
             if (remainingChildren.length < activity.children.length) {
                 activity.children = remainingChildren;
-                console.log(`HERE 1`);
                 updatePromises.push(StorageService.update(activity, `activity`));
             }
         }
@@ -517,8 +513,6 @@ export default class ControllerAT extends Controller {
     }
 
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
-        console.log(`((COMMAND INCOMING) >>  Node Created`);
-        console.log(`--${createdNodeModel}`)
         this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id);
@@ -545,7 +539,6 @@ export default class ControllerAT extends Controller {
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
-console.log(updatedNodeModel);  // At this point it it normal node with promises as children
         this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId);

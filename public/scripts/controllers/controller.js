@@ -139,7 +139,6 @@ export default class Controller extends EventTarget {
     async eventActivityUpdatedHandler(event) {                                       // Store and notify 'Updated JAG'
         const updatedActivity = event.detail.activity;               // Locally updated Activity - uncached.
         console.log(`\nLocal>> (Activity ${updatedActivity.urn} updating) `);
-        console.log(updatedActivity);
         updatedActivity.modifiedDate = Date.now();
         await StorageService.update(updatedActivity, `activity`);
     }
@@ -395,8 +394,6 @@ export default class Controller extends EventTarget {
     }
 
     repopulateParent(currentNode) {
-        console.log(currentNode.children);
-        console.log(`----REPOPULATE PARENT-------`);
         for (const child of currentNode.children) {
             child.parent = currentNode;
             child.parentId = currentNode.id;
