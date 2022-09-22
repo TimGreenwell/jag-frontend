@@ -401,6 +401,13 @@ export default class Controller extends EventTarget {
         }
     }
 
+    repopulateDepth(currentNode) {
+        currentNode.setDepth();
+        currentNode.children.forEach((child) => {
+            this.repopulateDepth(child);
+        });
+    }
+
     repopulateProject(currentNode, projectId) {
         // @TODO make these repopulate methods more efficient
         currentNode.projectId = projectId;

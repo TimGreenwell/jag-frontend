@@ -188,6 +188,10 @@ export default class Node extends EventTarget {
         return this._treeDepth;
     }
 
+    set treeDepth(depth) {
+        this._treeDepth = depth;
+    }
+
     get leafCount() {
         return this._leafCount;
     }
@@ -329,13 +333,22 @@ export default class Node extends EventTarget {
         return (this.activitiesInProject(urn).length > 0);
     }
 
-    incrementDepth(depthCount) {
-        if (depthCount > this._treeDepth) {
-            this._treeDepth = depthCount;
-            if (this.parent) {
-                this.parent.incrementDepth(depthCount + 1);
-            }
+    setDepth() {
+        if (this.isRoot()) {
+            this.treeDepth = 0;
+        } else {
+            console.log(this.name);
+            this.treeDepth = this.parent.treeDepth + 1;
         }
+        console.log(`${this.name} set to ${this.treeDepth}`)
+    }
+
+
+    incrementDepth(depthCount) {
+        this._treeDepth = depthCount + 1;
+        this._children.forEach((child) => {
+            child.incrementDepth(this._treeDepth)
+        });
     }
 
     incrementLeafCount(moreLeaves) {
@@ -353,7 +366,7 @@ export default class Node extends EventTarget {
         if (this.canHaveChildren) {
             this._children.push(node);
             node.parent = this;
-            this.incrementDepth(1);
+            node.incrementDepth(this._treeDepth);
         } else {
             alert(`Node must first be assigned a valid URN`);
         }

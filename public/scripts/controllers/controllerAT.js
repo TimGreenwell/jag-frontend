@@ -210,6 +210,7 @@ export default class ControllerAT extends Controller {
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
         console.log(`repositioned node`);
+        console.log(nodeModel.treeDepth);
         //   await StorageService.update(nodeModel,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
@@ -295,7 +296,11 @@ export default class ControllerAT extends Controller {
             const fullJagModel = new NodeModel(jagModel);
             jagPromises.push(StorageService.create(fullJagModel, `node`));
         }
+
+
         await Promise.all(jagPromises);
+
+
     }
 
 
@@ -431,6 +436,7 @@ export default class ControllerAT extends Controller {
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.isExpanded;
         projectSelected.isExpanded = expandRequested;
+
         this._playground._rebuildNodeView(projectSelected);
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         //    let newProjectRootNode = this.buildNodeTreeFromActivity(projectSelected);
@@ -539,9 +545,14 @@ export default class ControllerAT extends Controller {
 
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
-        this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
-        this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId);
+        this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
+        this.repopulateParent(updatedNodeModel);
+        this.repopulateDepth(updatedNodeModel);
+
+        // this.repopulateParent(updatedNodeModel);
+        // this.repopulateActivity(updatedNodeModel);
+        // this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId);
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);
 
