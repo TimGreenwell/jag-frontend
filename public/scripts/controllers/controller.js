@@ -386,6 +386,15 @@ export default class Controller extends EventTarget {
         }
     }
 
+    addDerivedProjectData(node) {
+        const projectNode = this.fetchProject(node.projectId);
+        this.repopulateActivity(projectNode);
+        this.repopulateProject(projectNode, projectNode.id);
+        this.repopulateParent(projectNode);
+        this.repopulateDepth(projectNode);
+        this.cacheProject(projectNode);
+    }
+
     repopulateActivity(currentNode) {
         currentNode.activity = this.fetchActivity(currentNode.urn);
         for (const child of currentNode.children) {

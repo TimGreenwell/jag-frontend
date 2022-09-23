@@ -126,8 +126,7 @@ export default class ControllerIA extends Controller {
         // @TODO need this?
         const allNodes = await StorageService.all(`node`);
         allNodes.forEach((node) => {
-            this.repopulateActivity(node);
-            this.repopulateParent(node);
+            this.addDerivedProjectData(node);
         });
 
         const allAgents = await StorageService.all(`agent`);

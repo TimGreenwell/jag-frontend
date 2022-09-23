@@ -74,6 +74,7 @@ export default class ControllerAT extends Controller {
 
         const allNodes = await StorageService.all(`node`);
         allNodes.forEach((node) => {
+            // THE REPOPULATE COLLECTION FAILED HERE
             this.repopulateActivity(node);
             this.repopulateParent(node);
             this.cacheProject(node);
@@ -209,8 +210,6 @@ export default class ControllerAT extends Controller {
         const nodeModel = event.detail.nodeModel;
         nodeModel.x = event.detail.x;
         nodeModel.y = event.detail.y;
-        console.log(`repositioned node`);
-        console.log(nodeModel.treeDepth);
         //   await StorageService.update(nodeModel,"node");                 // Is this worth the trouble - only cosmetic.
     }
 
@@ -255,27 +254,26 @@ export default class ControllerAT extends Controller {
     }
 
 
-    // async eventPlaygroundClickedHandler(event) {
-    //     if (event.detail.unselectedNodeArray) {
-    //         for (const node of event.detail.unselectedNodeArray) {
-    //             await StorageService.update(node, `node`);
-    //             console.log("unhandled");
-    //         }
-    //     }
-    //
-    //     this._properties.handleSelectionUnselected();
-    // }
-
     async eventPlaygroundClickedHandler(event) {
         if (event.detail.unselectedNodeArray) {
-            const updatePromises = [];
             for (const node of event.detail.unselectedNodeArray) {
-                updatePromises.push(StorageService.update(node, `node`));
+                await StorageService.update(node, `node`);
             }
-            await Promise.all(updatePromises);
         }
+             ////  THE FUNCTION BELOW IS PREFERRED
         this._properties.handleSelectionUnselected();
     }
+
+    // async eventPlaygroundClickedHandler(event) {
+    //     if (event.detail.unselectedNodeArray) {
+    //         const updatePromises = [];
+    //         for (const node of event.detail.unselectedNodeArray) {
+    //             updatePromises.push(StorageService.update(node, `node`));
+    //         }
+    //         await Promise.all(updatePromises);
+    //     }
+    //     this._properties.handleSelectionUnselected();
+    // }
 
 
     async eventImportJagHandler(event) {
@@ -418,11 +416,9 @@ export default class ControllerAT extends Controller {
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
         const newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
-
-        this.repopulateParent(newProjectRootNode);
-        this.repopulateActivity(newProjectRootNode);
-        this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
-        newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
+        console.log(`b`);
+        this.addDerivedProjectData(newProjectRootNode);
+        newProjectRootNode.leafCount = newProjectRootNode.leafcounter(); //@todo ?
 
         await StorageService.create(newProjectRootNode, `node`);
         // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
@@ -436,6 +432,11 @@ export default class ControllerAT extends Controller {
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.isExpanded;
         projectSelected.isExpanded = expandRequested;
+         // THE REPOPULATE COLLECTION FAILED HERE
+        this.repopulateActivity(projectSelected);
+        this.repopulateProject(projectSelected, projectSelected.id);
+        this.repopulateParent(projectSelected);
+        this.repopulateDepth(projectSelected);
 
         this._playground._rebuildNodeView(projectSelected);
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
@@ -517,11 +518,12 @@ export default class ControllerAT extends Controller {
         this._playground.replaceActivityNode(newActivity, replacedActivityUrn);
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn);                   // Replace Activity list item in activityLibrary
     }
-
+    // D
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
-        this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id);
+        this.repopulateParent(createdNodeModel);
+        this.repopulateDepth(createdNodeModel);
         createdNodeModel.leafCount = createdNodeModel.leafcounter();
         this.cacheProject(createdNodeModel);
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
@@ -537,22 +539,19 @@ export default class ControllerAT extends Controller {
                 updatePromises.push(StorageService.update(updatedProject, `node`));
             }
         }
-        console.log(`HERE 2`);
         await Promise.all(updatePromises);
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
-
+ // E
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
         this.repopulateParent(updatedNodeModel);
-        this.repopulateDepth(updatedNodeModel);
-
-        // this.repopulateParent(updatedNodeModel);
-        // this.repopulateActivity(updatedNodeModel);
-        // this.repopulateProject(updatedNodeModel, updatedNodeModel.projectId);
+      //  this.repopulateDepth(updatedNodeModel);
+        console.log(`e`);
+        // this.addDerivedProjectData(updatedNodeModel);
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);
 

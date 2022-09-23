@@ -18,8 +18,8 @@ class AtTimeview extends HTMLElement {
         this.START_Y = 5;
         this.HORIZONTAL_MARGIN = 10;
         this.VERTICAL_MARGIN = 10;
-        this.LINE_WIDTH = 1;
-        this.STANDARD_FONT_SIZE = 15;
+        this.LINE_WIDTH = 2;
+        this.STANDARD_FONT_SIZE = 17;
         this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
         this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
         this.STANDARD_BOX_HEIGHT = this.STANDARD_FONT_SIZE + this.LABEL_INDENT;
@@ -56,6 +56,7 @@ class AtTimeview extends HTMLElement {
         this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));
         this._boundDragView = this.dragView.bind(this);
         this._boundStopDragView = this.stopDragView.bind(this);
+        this._treeHeight = null;
     }
 
     createFilterDefinition(){
@@ -69,6 +70,7 @@ class AtTimeview extends HTMLElement {
         filter.setAttributeNS(null, `height`, `180%`);
         defs.appendChild(filter);
 
+        // ////////////////////////////////////////////////////////////////////////////////////////////
         const feOffset = document.createElementNS(this.SVGNS, `feOffset`);
         feOffset.setAttributeNS(null, `in`, `SourceAlpha`);
         feOffset.setAttributeNS(null, `result`, `offOut`);
@@ -85,7 +87,7 @@ class AtTimeview extends HTMLElement {
         feBlend.setAttributeNS(null, `in2`, `blurOut`);
         feBlend.setAttributeNS(null, `mode`, `normal`);
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+        // ////////////////////////////////////////////////////////////////////////////////////////////
         // Thickens input
         // const feMorphology = document.createElementNS(this.SVGNS, `feMorphology`);
         // feMorphology.setAttributeNS(null, `in`, `SourceAlpha`);
@@ -96,25 +98,26 @@ class AtTimeview extends HTMLElement {
         // 3d extrude
         const feConvolveMatrix = document.createElementNS(this.SVGNS, `feConvolveMatrix`);
         feConvolveMatrix.setAttributeNS(null, `in`, `SourceAlpha`);
-        feConvolveMatrix.setAttributeNS(null,`order`,  `3,3`);
+        feConvolveMatrix.setAttributeNS(null, `result`, `Convolved`);
+        feConvolveMatrix.setAttributeNS(null,`order`,  `4,4`);
         feConvolveMatrix.setAttributeNS(null, `kernelMatrix`,
-            `1 0 0
-                  0 1 0
-                  0 0 1`
-
+            `1 0 0 0
+                  0 1 0 0
+                  0 0 1 0
+                  0 0 0 1`
         );
-        feConvolveMatrix.setAttributeNS(null, `result`, `BEVEL_20`);
+
 
         const feOffset2 = document.createElementNS(this.SVGNS, `feOffset`);
-        feOffset2.setAttributeNS(null, `in`, `BEVEL_20`);
-        feOffset2.setAttributeNS(null, `dx`, `2`);
-        feOffset2.setAttributeNS(null, `dy`, `2`);
-        feOffset2.setAttributeNS(null, `result`, `BEVEL_30`);
+        feOffset2.setAttributeNS(null, `in`, `Convolved`);
+        feOffset2.setAttributeNS(null, `dx`, `-2`);
+        feOffset2.setAttributeNS(null, `dy`, `-2`);
+        feOffset2.setAttributeNS(null, `result`, `ConvolvedAndOffset`);
 
         const feComposite = document.createElementNS(this.SVGNS, `feComposite`);
-        feComposite.setAttributeNS(null, `operator`, `atop`);
+        feComposite.setAttributeNS(null, `operator`, `over`);
         feComposite.setAttributeNS(null, `in`, `SourceGraphic`);
-        feComposite.setAttributeNS(null, `in2`, `BEVEL_30`);
+        feComposite.setAttributeNS(null, `in2`, `ConvolvedAndOffset`);
         feComposite.setAttributeNS(null, `result`, `outout`);
 
 
@@ -134,9 +137,12 @@ class AtTimeview extends HTMLElement {
         rectangle.setAttributeNS(null, `y`, y);
         rectangle.setAttributeNS(null, `width`, width);
         rectangle.setAttributeNS(null, `height`, height);
-        rectangle.setAttributeNS(null, `rx`, `3`);
-        rectangle.setAttributeNS(null, `fill`, `blue`);
-        rectangle.setAttributeNS(null, `stroke`, `black`);
+        rectangle.setAttributeNS(null, `rx`, `7`);
+        let step = 5;
+        let shadeFill = 50 - (this.treeHeight * step / 2) +  (depth * step);
+        let shadeStroke = shadeFill - (step * 4);
+        rectangle.setAttributeNS(null, `fill`, `hsla(200,100%,${shadeFill}%,1)`);
+        rectangle.setAttributeNS(null, `stroke`, `hsla(200,100%,${shadeStroke}%,1)`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
         return rectangle;
@@ -183,6 +189,7 @@ class AtTimeview extends HTMLElement {
             } else {
                 this.zoomStep = 0;
             }
+            this.treeHeight = nodeModel.findTreeHeight();
             this.svgSize = this.buildBoxSet(document.getElementById(`time-container`), nodeModel, this.START_X, this.START_Y);
             this.windowSize = this.getBoundingClientRect();
             // this.syncSizes(nodeModel);
@@ -245,18 +252,16 @@ class AtTimeview extends HTMLElement {
 
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
+
         let svgText;
         let groupTop;
         topLeftY = topLeftY + this.LABEL_HEIGHT;
         const box = new TimeviewBox();
         box.id = nodeModel.id;
         box.label = nodeModel.name;
-        const labelElement = this.createTextElement(box.label);
+        const labelElement = this.createTextElement(`${box.label}`);
         const group = document.createElementNS(`http://www.w3.org/2000/svg`, `g`);
         group.id = `timegroup:${nodeModel.id}`;
-        console.log(`OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO`);
-        console.log(nodeModel);
-        group.setAttributeNS(null, `z-index`, `${nodeModel.treeDepth}`);
         parentGroup.appendChild(group);
 
         if (nodeModel.hasChildren()) {

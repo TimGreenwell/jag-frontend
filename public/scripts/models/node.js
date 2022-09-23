@@ -50,6 +50,7 @@ export default class Node extends EventTarget {
         this._testReturnState = testReturnState;
         this._children = children;            // Links to actual children [objects]
         // Derived
+        this._parent = null;
         this._activity = undefined;
         this._leafCount = 1;
         this._treeDepth = 0;
@@ -337,10 +338,8 @@ export default class Node extends EventTarget {
         if (this.isRoot()) {
             this.treeDepth = 0;
         } else {
-            console.log(this.name);
             this.treeDepth = this.parent.treeDepth + 1;
         }
-        console.log(`${this.name} set to ${this.treeDepth}`)
     }
 
 
@@ -371,6 +370,23 @@ export default class Node extends EventTarget {
             alert(`Node must first be assigned a valid URN`);
         }
     }
+
+    findTreeHeight() {
+        return this.findDeepestLeaf() - this.treeDepth;
+    }
+
+    findDeepestLeaf() {
+        const depths = [];
+        if (this.hasChildren()) {
+            this.children.forEach((child) => {
+                depths.push(child.findDeepestLeaf())
+            });
+        } else {
+            depths.push(this.treeDepth);
+        }
+        return Math.max(...depths);
+    }
+
 
     leafcounter() {
         if (this.hasChildren()) {

@@ -50,10 +50,7 @@ export default class ControllerDEF extends Controller {
         const allProjects = await StorageService.all(`node`);
         allProjects.forEach((project) => {
             if (this._currentProjectId === project.id) {
-                this.repopulateParent(project);
-                this.repopulateActivity(project);
-                this.repopulateProject(project, project.id);
-                this.cacheProject(project);
+                this.addDerivedProjectData(project);
             }
         });
 
@@ -119,13 +116,10 @@ export default class ControllerDEF extends Controller {
      *
      */
 
-    commandNodeUpdatedHandler(updatedProject, updatedProjectIdId) {
+    commandNodeUpdatedHandler(updatedProject, updatedProjectId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated`);
-        if (this._currentProjectId === updatedProjectIdId) {
-            this.repopulateParent(updatedProject);
-            this.repopulateActivity(updatedProject);
-            this.repopulateProject(updatedProject, updatedProjectIdId);
-            this.cacheProject(updatedProject);
+        if (this._currentProjectId === updatedProjectId) {
+            this.addDerivedProjectData(updatedProject);
             const node = this.searchTreeForId(updatedProject, this._currentNodeId);
             this._definition.reset(node);
         }
