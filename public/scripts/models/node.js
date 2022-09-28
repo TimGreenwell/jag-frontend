@@ -124,6 +124,13 @@ export default class Node extends EventTarget {
         this._parentId = parent ? parent.id : null;
     }
 
+    getAncestor() {
+        let topAncestor = this;
+        while (!topAncestor.isRoot()) {
+            topAncestor = topAncestor.parent;
+        }
+        return topAncestor;
+    }
 
     get subscriptions() {
         return this._subscriptions;
@@ -544,10 +551,4 @@ export default class Node extends EventTarget {
 //     this.dispatchEvent(new CustomEvent(`layout`));
 // }
 
-// getAncestor() {
-//     let topAncestor = this;
-//     while (!topAncestor.isRoot()) {
-//         topAncestor = topAncestor.parent;
-//     }
-//     return topAncestor;
-// }
+

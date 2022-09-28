@@ -6,7 +6,7 @@
  * @version 0.80
  */
 
-import TimeviewBox from '../models/timeview-box.js';
+import TimeviewBox from '../models/svg-box.js';
 // customElements.define(`jag-timeview`, class extends HTMLElement {
 
 class AtTimeview extends HTMLElement {
@@ -32,9 +32,12 @@ class AtTimeview extends HTMLElement {
         this._timeviewSvg.id = `time-container`;
         this._timeviewSvg.setAttribute(`version`, `1.1`);
         this._timeviewSvg.setAttribute(`xmlns`, this.SVGNS);
+        this._timeviewSvg.setAttribute(`overflow-x`, `auto`);
+        this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
         this.$def = this.createFilterDefinition();
         this._timeviewSvg.appendChild(this.$def);
+        this._timeContainerWrapperDiv.appendChild(this._timeviewSvg);
 
         this.currentNodeModel = null;
         this.svgLocationX = 0;
@@ -44,13 +47,9 @@ class AtTimeview extends HTMLElement {
         this.panX = 0;
         this.panY = 0;
         this.zoomStep = 0;
-        this._timeviewSvg.setAttribute(`overflow-x`, `auto`);
-        this._timeviewSvg.setAttribute(`overflow-y`, `auto`);
 
-        this._timeContainerWrapperDiv.appendChild(this._timeviewSvg);
-
-        this.boxMap = new Map();
-        this.zoomMap = new Map();
+        this.boxMap = new Map();  // id, svg rectangle (id is copy of corresponding node id)
+        this.zoomMap = new Map(); // id, zoomlevel (each node temporarily saves users zoom level)
 
         this._timeviewSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));
         this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));

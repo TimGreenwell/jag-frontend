@@ -255,26 +255,13 @@ export default class ControllerAT extends Controller {
 
 
     async eventPlaygroundClickedHandler(event) {
-        if (event.detail.unselectedNodeArray) {
-            for (const node of event.detail.unselectedNodeArray) {
-                await StorageService.update(node, `node`);
-            }
+        const unselectedNodes = event.detail.unselectedNodeArray;
+        if (unselectedNodes.length > 0) {
+            const projectNode = unselectedNodes[0].getAncestor();
+            await StorageService.update(projectNode, `node`);
         }
-             ////  THE FUNCTION BELOW IS PREFERRED
         this._properties.handleSelectionUnselected();
     }
-
-    // async eventPlaygroundClickedHandler(event) {
-    //     if (event.detail.unselectedNodeArray) {
-    //         const updatePromises = [];
-    //         for (const node of event.detail.unselectedNodeArray) {
-    //             updatePromises.push(StorageService.update(node, `node`));
-    //         }
-    //         await Promise.all(updatePromises);
-    //     }
-    //     this._properties.handleSelectionUnselected();
-    // }
-
 
     async eventImportJagHandler(event) {
         const json = event.detail.result;
@@ -417,8 +404,10 @@ export default class ControllerAT extends Controller {
         const isExpanded = event.detail.isExpanded;
         const newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
         console.log(`b`);
-        this.addDerivedProjectData(newProjectRootNode);
-        newProjectRootNode.leafCount = newProjectRootNode.leafcounter(); //@todo ?
+        this.repopulateParent(newProjectRootNode);
+        this.repopulateActivity(newProjectRootNode);
+        this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
+        newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
 
         await StorageService.create(newProjectRootNode, `node`);
         // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
@@ -546,9 +535,10 @@ export default class ControllerAT extends Controller {
  // E
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
         console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
+        this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
-        this.repopulateParent(updatedNodeModel);
+
       //  this.repopulateDepth(updatedNodeModel);
         console.log(`e`);
         // this.addDerivedProjectData(updatedNodeModel);

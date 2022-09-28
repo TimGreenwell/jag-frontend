@@ -386,8 +386,7 @@ export default class Controller extends EventTarget {
         }
     }
 
-    addDerivedProjectData(node) {
-        const projectNode = this.fetchProject(node.projectId);
+    addDerivedProjectData(projectNode) {
         this.repopulateActivity(projectNode);
         this.repopulateProject(projectNode, projectNode.id);
         this.repopulateParent(projectNode);
@@ -410,7 +409,7 @@ export default class Controller extends EventTarget {
         }
     }
 
-    repopulateDepth(currentNode) {
+    repopulateDepth(currentNode) {  // needs accurate parent info.
         currentNode.setDepth();
         currentNode.children.forEach((child) => {
             this.repopulateDepth(child);
