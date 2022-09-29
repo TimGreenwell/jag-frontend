@@ -16,7 +16,6 @@ class AtPlayground extends Popupable {
 
     constructor() {
         super();
-        const margin = 50;
         this._edgeContainerDiv = document.createElementNS(`http://www.w3.org/2000/svg`, `svg`);
         this._edgeContainerDiv.id = `edges-container`;
         this._edgeContainerDiv.setAttribute(`version`, `1.1`);
@@ -128,7 +127,6 @@ class AtPlayground extends Popupable {
     }
 
     onEdgeInitialized(e, node) {
-        console.log(`ONEDGEINITIALIZED is getting called.`);
         this.removeEventListener(`mousemove`, this._boundDragView);
         this.removeEventListener(`mouseup`, this._boundStopDragView);
         this.addEventListener(`mousemove`, this._boundOnEdgeUpdated);
@@ -142,7 +140,6 @@ class AtPlayground extends Popupable {
     }
 
     _createEdge(origin, id = undefined) {
-        console.log(`CREATEEDGE is getting called.`);
         const edge = new EdgeElement(this._edgeContainerDiv);
         edge.setLeadActivityNode(origin);
         if (id) {

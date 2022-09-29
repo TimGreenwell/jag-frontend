@@ -194,59 +194,8 @@ class AtTimeview extends HTMLElement {
             // this.syncSizes(nodeModel);
             // this.createSVG();
             this.redrawSvg();
-            this.boxMap.clear();
+            this.boxMap.clear(); // ?
         }
-    }
-
-    // createSVG(){
-    //     this.boxMap.forEach((value, key) => {
-    //         this.drawRectangle(value.x,value.y,value.width,value.height));
-    //     });
-    // }
-
-    syncSizes(nodeModel) {
-        const box = this.boxMap.get(nodeModel.id);
-        if (!nodeModel.isRoot()) {
-            if ((nodeModel.parent._activity.connector.execution === `node.execution.parallel`) ||
-            (nodeModel.parent._activity.connector.execution === `node.execution.none`) ||
-            (nodeModel.parent._activity.connector.execution !== `node.execution.sequential`)) {
-                nodeModel.parent.children.forEach((sibling) => {
-                    if ((this.boxMap.has(sibling.id))) {    // (nodeModel.id !== sibling.id) &&
-                        const boxOfSibling = this.boxMap.get(sibling.id);
-                        console.log(`Comparing ${nodeModel.name} (${box.width}) and ${sibling.name} (${boxOfSibling.width})`);
-                        if (boxOfSibling.width > box.width) {
-                            console.log(`Sibling is bigger than me`);
-                            box.width = boxOfSibling.width;
-                            this.boxMap.set(nodeModel.id, box);
-                            const updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
-                            updatedBox.setAttributeNS(null, `width`, box.width);
-                        } else if (box.width > boxOfSibling.width) {
-                            console.log(`I am bigger than sibling`);
-                            boxOfSibling.width = box.width;
-                            this.boxMap.set(sibling.id, boxOfSibling);
-                            const updatedBox = document.getElementById(`timebox:${sibling.id}`);
-                            updatedBox.setAttributeNS(null, `width`, box.width);
-                        }
-                    }
-                });
-            }
-        }
-        nodeModel.children.forEach((child) => {
-            if ((nodeModel._activity.connector.execution === `node.execution.parallel`) ||
-                (nodeModel._activity.connector.execution === `node.execution.none`) ||
-                (nodeModel._activity.connector.execution !== `node.execution.sequential`)) {
-                if (this.boxMap.has(child.id)) {
-                    const boxOfChild = this.boxMap.get(child.id);
-                    if (boxOfChild.width < box.width - (2 * this.HORIZONTAL_MARGIN)) {
-                        boxOfChild.width = box.width - (2 * this.HORIZONTAL_MARGIN);
-                        this.boxMap.set(child.id, boxOfChild);
-                        const updatedBox = document.getElementById(`timebox:${child.id}`);
-                        updatedBox.setAttributeNS(null, `width`, box.width);
-                    }
-                }
-            }
-            this.syncSizes(child);
-        });
     }
 
 
@@ -420,4 +369,56 @@ class AtTimeview extends HTMLElement {
 
 customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);
+
+
+// createSVG(){
+//     this.boxMap.forEach((value, key) => {
+//         this.drawRectangle(value.x,value.y,value.width,value.height));
+//     });
+// }
+
+// syncSizes(nodeModel) {
+//     const box = this.boxMap.get(nodeModel.id);
+//     if (!nodeModel.isRoot()) {
+//         if ((nodeModel.parent._activity.connector.execution === `node.execution.parallel`) ||
+//         (nodeModel.parent._activity.connector.execution === `node.execution.none`) ||
+//         (nodeModel.parent._activity.connector.execution !== `node.execution.sequential`)) {
+//             nodeModel.parent.children.forEach((sibling) => {
+//                 if ((this.boxMap.has(sibling.id))) {    // (nodeModel.id !== sibling.id) &&
+//                     const boxOfSibling = this.boxMap.get(sibling.id);
+//                     console.log(`Comparing ${nodeModel.name} (${box.width}) and ${sibling.name} (${boxOfSibling.width})`);
+//                     if (boxOfSibling.width > box.width) {
+//                         console.log(`Sibling is bigger than me`);
+//                         box.width = boxOfSibling.width;
+//                         this.boxMap.set(nodeModel.id, box);
+//                         const updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
+//                         updatedBox.setAttributeNS(null, `width`, box.width);
+//                     } else if (box.width > boxOfSibling.width) {
+//                         console.log(`I am bigger than sibling`);
+//                         boxOfSibling.width = box.width;
+//                         this.boxMap.set(sibling.id, boxOfSibling);
+//                         const updatedBox = document.getElementById(`timebox:${sibling.id}`);
+//                         updatedBox.setAttributeNS(null, `width`, box.width);
+//                     }
+//                 }
+//             });
+//         }
+//     }
+//     nodeModel.children.forEach((child) => {
+//         if ((nodeModel._activity.connector.execution === `node.execution.parallel`) ||
+//             (nodeModel._activity.connector.execution === `node.execution.none`) ||
+//             (nodeModel._activity.connector.execution !== `node.execution.sequential`)) {
+//             if (this.boxMap.has(child.id)) {
+//                 const boxOfChild = this.boxMap.get(child.id);
+//                 if (boxOfChild.width < box.width - (2 * this.HORIZONTAL_MARGIN)) {
+//                     boxOfChild.width = box.width - (2 * this.HORIZONTAL_MARGIN);
+//                     this.boxMap.set(child.id, boxOfChild);
+//                     const updatedBox = document.getElementById(`timebox:${child.id}`);
+//                     updatedBox.setAttributeNS(null, `width`, box.width);
+//                 }
+//             }
+//         }
+//         this.syncSizes(child);
+//     });
+// }
 

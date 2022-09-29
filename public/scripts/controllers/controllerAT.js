@@ -539,9 +539,6 @@ export default class ControllerAT extends Controller {
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
 
-      //  this.repopulateDepth(updatedNodeModel);
-        console.log(`e`);
-        // this.addDerivedProjectData(updatedNodeModel);
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);
 
