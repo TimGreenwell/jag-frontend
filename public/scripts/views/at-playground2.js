@@ -43,7 +43,7 @@ class AtPlayground extends Popupable {
         this.svgLocationX = 0;
         this.svgLocationY = 0;
         this.windowSize = null;
-        this.svgSize = null;
+        this.svgSize = {height: 0, width: 0};
         this.panX = 0;
         this.panY = 0;
         this.zoomStep = 0;
@@ -81,6 +81,7 @@ class AtPlayground extends Popupable {
         });
     }
 
+
     get selectedNodes() {
         const selectedIdArray = [...this._selectedActivityNodeElementSet].map((element) => {
             return element.nodeModel;
@@ -93,10 +94,46 @@ class AtPlayground extends Popupable {
         return viewedRootNodes;
     } // ok
 
+
+    screenToSVGCoords(canvas, e) {
+        // Read the SVG's bounding rectangle...
+        let canvasRect = canvas.getBoundingClientRect();
+        // ...and transform clientX / clientY to be relative to that rectangle
+        return {
+            x: e.clientX - canvasRect.x,
+            y: e.clientY - canvasRect.y
+        }
+    }
+
+    didit(e) {
+        console.log(`didididididididididid it`);
+        https://observablehq.com/@danburzo/drawing-svg-rectangles
+    }
+    dragNode(e) {
+        e.preventDefault();
+        const x = parseFloat(e.target.getAttributeNS(null, "x"));
+        console.log(`x`);
+        e.target.setAttributeNS(null, "x", (x + 0.1).toString());
+        console.log(`moveoveoveoveoved it`);
+    }
+
+    startNodeDrag(e) {
+        e.stopPropagation();
+        console.log("yup");
+        console.log(e);
+        let initial_coords = this.screenToSVGCoords(this._playgroundSvg, e);
+        // e.target.addEventListener(`mouseup`, this.didit);
+        // e.target.addEventListener(`mousemove`, this.dragNode);
+        document.addEventListener(`mousemove`, this.dragNode);
+        document.addEventListener(`mouseup`, this.endNodeDrag);
+       // e.target.addEventListener(`mouseleave`, this.endNodeDrag);
+    }
+
     drawRectangle(x, y, width, height, depth) {
         const rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle.setAttributeNS(null, `x`, x);
         rectangle.setAttributeNS(null, `y`, y);
+        rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
         rectangle.setAttributeNS(null, `width`, width);
         rectangle.setAttributeNS(null, `height`, height);
         rectangle.setAttributeNS(null, `rx`, `7`);
@@ -107,13 +144,44 @@ class AtPlayground extends Popupable {
         rectangle.setAttributeNS(null, `stroke`, `hsla(200,100%,${shadeStroke}%,1)`);
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         // rectangle.setAttributeNS(null, `filter`, `url(#blur-effect)`);
+
+        rectangle.addEventListener(`mousedown`, this.startNodeDrag);
         return rectangle;
     }
+
+
+
+    drawEdge(sourceBox, destBox) {
+        const edge = document.createElementNS(this.SVGNS, `path`);
+        edge.setAttributeNS(null, `stroke`, `black`);
+        edge.setAttributeNS(null, `fill`, `transparent`);
+        edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
+        edge.id = `playgroundedge:${destBox.id}`;
+        // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
+        const ox = sourceBox.topLeftX + sourceBox.width;
+        const oy = sourceBox.topLeftY + (sourceBox.height / 2);
+        const ex = destBox.topLeftX;
+        const ey = destBox.topLeftY + (destBox.height / 2);
+        const delta_x = (ex - ox) / 2.0;
+        const x1 = ox + delta_x;
+        const y1 = oy;
+        const x2 = ex - delta_x;
+        const y2 = ey;
+        // const mx = (ox + ex) / 2.0;
+        // const my = (oy + ey) / 2.0;
+
+        let cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+
+        edge.setAttributeNS(null, `d`, cubicCurve);
+        return edge;
+    }
+
 
     createTextElement(text) {
         const svgText = document.createElementNS(this.SVGNS, `text`);
         svgText.setAttributeNS(null, `font-size`, this.STANDARD_FONT_SIZE.toString());
         svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
+        svgText.setAttributeNS(null, `pointer-events`, `none`);
         const textNode = document.createTextNode(text);
         svgText.appendChild(textNode);
         return svgText;
@@ -182,7 +250,8 @@ class AtPlayground extends Popupable {
         this.treeHeight = projectNodeModel.findTreeHeight();
         console.log(`${this.treeHeight} is der hohe.`)
         // equiv to this._buildNodeViewFromNodeModel
-        this.svgSize = this.buildJointActivityGraphs(document.getElementById(`playground-svg`), this._viewedProjectsMap, this.START_X, this.START_Y);
+        let svgScope = new PlaygroundBox();
+        this.buildJointActivityGraphs(document.getElementById(`playground-svg`), this._viewedProjectsMap, svgScope);
 
         this.windowSize = this.getBoundingClientRect();
         this.redrawSvg();
@@ -190,7 +259,10 @@ class AtPlayground extends Popupable {
 
 
     buildJointActivityGraphs(svg, viewedJagRoots) {
-        viewedJagRoots.forEach((jagRoot) => {this.buildJointActivityGraph(svg, jagRoot);
+        let svgScope = new PlaygroundBox();
+        let jagScope = new PlaygroundBox();
+        viewedJagRoots.forEach((jagRoot) => {
+            jagScope = this.buildJointActivityGraph(svg, jagRoot);
         });
     }
     buildJointActivityGraph(parentGroup, nodeModel) {
@@ -209,14 +281,8 @@ class AtPlayground extends Popupable {
         const group = document.createElementNS(this.SVGNS, `g`);
         group.id = `playgroundgroup:${nodeModel.id}`;
         parentGroup.appendChild(group);
-        if ((nodeModel.isExpanded) || true) {
-            nodeModel.children.forEach((child) => {
-                let newBox = this.buildJointActivityGraph(group, child);
-                // const edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-                // const $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
-                // edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-                // edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
-            }); }
+
+// here
 
         svgText = this.positionTextElement(labelElement, box.topLeftX + this.LABEL_INDENT, box.topLeftY);
         groupTop = group.firstChild;
@@ -227,6 +293,19 @@ class AtPlayground extends Popupable {
         svgBox.id = `playground:${nodeModel.id}`;
         group.insertBefore(svgBox, svgText);
         // this.boxMap.set(box.id, box);
+        this.svgSize.width = Math.max(this.svgSize.width, box.topLeftX + box.width);
+        this.svgSize.height = Math.max(this.svgSize.height, box.topLeftY + box.height);
+        if ((nodeModel.isExpanded) || true) {
+            nodeModel.children.forEach((child) => {
+                let subBox = this.buildJointActivityGraph(group, child);
+                const svgEdge = this.drawEdge(box, subBox);
+
+                group.appendChild(svgEdge);
+                // const edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
+                // const $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
+                // edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
+                // edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
+            }); }
         return box;
     }
 

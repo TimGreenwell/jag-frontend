@@ -12,10 +12,10 @@ export default class Node extends EventTarget {
     constructor({
         id,
         label,
-        topLeftX,
-        topLeftY,
-        height,
-        width
+        topLeftX = 0,
+        topLeftY = 0,
+        height = 0,
+        width = 0
     } = {}) {
         super();
         this._id = id;                       // An assigned unique ID given at construction
