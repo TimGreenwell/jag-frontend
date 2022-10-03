@@ -319,6 +319,14 @@ export default class Node extends EventTarget {
         return workStack;
     }
 
+    gatherDescendentIds(childNodeModel = this, workStack = []) {   // need this in nodes
+        workStack.push(childNodeModel.id);
+        childNodeModel.children.forEach((child) => {
+            this.gatherDescendentIds(child, workStack);
+        });
+        return workStack;
+    }
+
     activitiesInProject(urn) {    // return array of nodes matching urn
         const matchStack = [];
         const workStack = [];
