@@ -514,7 +514,6 @@ export default class ControllerIA extends Controller {
     }
 
     async createStandardAnalysis(analysisName, rootUrn, source) {
-        console.log(`CREATING THE STANDARD ANALYSIS`);
         const agent1 = await this.createAgent({
             name: `Agent 1`,
             urn: `org.example.agent1`
@@ -597,7 +596,6 @@ export default class ControllerIA extends Controller {
     }
 
     async _createChildren() {
-        console.log(`_createChildren ========`)
         const promises = [];
         for (const child of this.jag.children) {
             promises.push(StorageService.get(child.urn, `activity`).then((jag) => {

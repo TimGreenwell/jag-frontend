@@ -199,7 +199,6 @@ export default class ControllerAT extends Controller {
 
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
-        console.log(`!!! ${selectedNodeArray}`);
         this._properties.handleSelectionUpdate(selectedNodeArray);
         this._timeview.refreshTimeview(selectedNodeArray[0]);
 
@@ -269,6 +268,7 @@ export default class ControllerAT extends Controller {
         const jsonDescriptor = JSON.parse(json);
         const activities = jsonDescriptor.activities;
         const jags = jsonDescriptor.jags;
+
         const activityPromises = [];
         for (const activity of activities) {
             const activityModel = Activity.fromJSON(activity);
@@ -404,7 +404,6 @@ export default class ControllerAT extends Controller {
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
         const newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
-        console.log(`b`);
         this.repopulateParent(newProjectRootNode);
         this.repopulateActivity(newProjectRootNode);
         this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
@@ -539,6 +538,7 @@ export default class ControllerAT extends Controller {
         this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
+        this.repopulateDepth(updatedNodeModel);
 
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);

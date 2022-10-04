@@ -25,6 +25,7 @@ export default class Node extends EventTarget {
         this._height = height;
         this._width = width;
         this._zoomStep = 0;
+        this._selected = false;
     }
 
     get id() {
@@ -83,4 +84,12 @@ export default class Node extends EventTarget {
         this._zoomStep = value;
     }
 
+
+    get selected() {
+        return this._selected;
+    }
+
+    set selected(value) {
+        this._selected = value;
+    }
 }

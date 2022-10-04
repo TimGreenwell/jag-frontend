@@ -119,8 +119,6 @@ class AtPlayground extends Popupable {
         console.log("edge selected");
         if (e.detail.selected) {
             this._selectedActivityNodeElementSet.add(e.target);
-            console.log(e.target);
-            console.log(this._selectedActivityNodeElementSet)
         } else {
             this._selectedActivityNodeElementSet.delete(e.target);
         }

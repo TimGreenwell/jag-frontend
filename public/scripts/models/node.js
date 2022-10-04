@@ -327,6 +327,14 @@ export default class Node extends EventTarget {
         return workStack;
     }
 
+    gatherDescendents(childNodeModel = this, workStack = []) {   // need this in nodes
+        workStack.push(childNodeModel);
+        childNodeModel.children.forEach((child) => {
+            this.gatherDescendents(child, workStack);
+        });
+        return workStack;
+    }
+
     activitiesInProject(urn) {    // return array of nodes matching urn
         const matchStack = [];
         const workStack = [];
@@ -553,7 +561,6 @@ export default class Node extends EventTarget {
 
 // toggleExpanded() {
 //     this._isExpanded = !this._isExpanded;
-//     console.log(`---------------- Not Possible -------------------------------`);
 //
 //     // 2 dispatches here - 1 listener in views/Analysis
 //     this.dispatchEvent(new CustomEvent(`layout`));
