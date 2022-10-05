@@ -27,7 +27,6 @@ class AtPlayground extends Popupable {
         this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
         this.STANDARD_BOX_HEIGHT = (2 * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
 
-
         this.INITIAL_BRIGHTNESS = 50;
         this.STEP_BRIGHTNESS = 5;
 
@@ -112,7 +111,7 @@ class AtPlayground extends Popupable {
     // SVG Manipulation
     selectNode(node) {  // Apply 'select' effect (highlight)
         this._selectedActivityNodeMap.set(node.id, node);
-        const rectangle = this._playgroundSvg.getElementById(`node${node.id}`);
+        const rectangle = this._playgroundSvg.getElementById(`rect${node.id}`);
         const text = this._playgroundSvg.getElementById(`text${node.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
@@ -121,7 +120,7 @@ class AtPlayground extends Popupable {
 
     unselectNode(node) {   // Remove 'select' effect (highlight)
         this._selectedActivityNodeMap.delete(node.id);
-        const rectangle = this._playgroundSvg.getElementById(`node${node.id}`);
+        const rectangle = this._playgroundSvg.getElementById(`rect${node.id}`);
         const text = this._playgroundSvg.getElementById(`text${node.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
@@ -149,25 +148,48 @@ class AtPlayground extends Popupable {
 
     stopDraggingNode(e) {
         e.preventDefault();
+        this.svgSelectedItems.nodes.forEach((nodeItem) => {
+            const id = nodeItem.id.replace(`rect`, ``);
+            const nodeModel = this._selectedActivityNodeMap.get(id);
+            nodeModel.x = Math.round(Number(nodeItem.getAttributeNS(null, `x`)));
+            nodeModel.y = Math.round(Number(nodeItem.getAttributeNS(null, `y`)));
+            console.log(nodeModel);
+
+            this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+                detail: {nodeModel}
+            }));
+        });
+
         this._playgroundWrapperDiv.removeEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseleave`, this._boundStopDraggingNode);
     }
 
 
-    changeDestination(origPath, destBoxTopLeftX, destBoxTopLeftY) {
-
-
+    changeDestination(origPath, destinationItem) {
         const splitOrigPath = origPath.split(` `);
         const ox = Math.round(splitOrigPath[1]);
         const oy = Math.round(splitOrigPath[2]);
-        // const ex = Math.round(splitOrigPath[8]);
-        // const ey = Math.round(splitOrigPath[9]);
+        const ex = destinationItem.getAttributeNS(null, `x`);
+        const boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
+        const ey = Number(destinationItem.getAttributeNS(null, `y`)) + boxAdjustment;
+        const delta_x = (ex - ox) / 2.0;
+        const x1 = ox + delta_x;
+        const y1 = oy;
+        const x2 = ex - delta_x;
+        const y2 = ey;
+        const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        return cubicCurve;
+    }
 
-        const ex = Math.round(Number(splitOrigPath[8]) + destBoxTopLeftX);
-        const ey = Math.round(Number(splitOrigPath[9]) + destBoxTopLeftY + (this.STANDARD_BOX_HEIGHT / 2));
-        console.log(ex)
-        console.log(ey)
+    changeSource(sourceItem, origPath) {
+        const splitOrigPath = origPath.split(` `);
+        let boxAdjustment = Math.round(Number(sourceItem.getAttributeNS(null, `width`)));
+        const ox = Math.round(Number(sourceItem.getAttributeNS(null, `x`)) + boxAdjustment);
+        boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
+        const oy = Math.round(Number(sourceItem.getAttributeNS(null, `y`)) + boxAdjustment);
+        const ex = Math.round(splitOrigPath[8]);
+        const ey = Math.round(splitOrigPath[9]);
         const delta_x = (ex - ox) / 2.0;
         const x1 = ox + delta_x;
         const y1 = oy;
@@ -183,31 +205,32 @@ class AtPlayground extends Popupable {
 
         //     let newSvgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
-        let diffX = e.x - this.svgCursor.x; // - this.innerNodeDelta.x;
-        let diffY = e.y - this.svgCursor.y; //  - this.innerNodeDelta.y;
+        const diffX = Math.round(e.x - this.svgCursor.x); // - this.innerNodeDelta.x;
+        const diffY = Math.round(e.y - this.svgCursor.y); //  - this.innerNodeDelta.y;
 
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
-            let id = nodeItem.id.replace(`node`,``);
-            let nodeModel = this._selectedActivityNodeMap.get(id);
-            this.moveItem(nodeItem, nodeModel.x + diffX, nodeModel.y + diffY);
-        }) 
-        
-        
+            const id = nodeItem.id.replace(`rect`, ``);
+            const nodeModel = this._selectedActivityNodeMap.get(id);
+            this.moveItem(nodeItem, diffX, diffY);
+        });
+
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
-            let origPath = edge.getAttributeNS(null, `d`);
-            let sourceNodeId = edge.id.split(`:`)[0].replace(`node`,``);
-            let destinationNodeId = edge.id.split(`:`)[1].replace(`node`,``);
-            let newPath = this.buildPath();
-            edge.setAttributeNS(null, `d`, `${newPath}`);
-        })
+            const origPath = edge.getAttributeNS(null, `d`);
+            const destinationNodeId = edge.id.split(`:`)[1].replace(`edge`, ``);
+            console.log(edge);
+            const destinationNode = this.svgSelectedItems.nodes.get(destinationNodeId);
+            const newPath = this.changeDestination(origPath, destinationNode);
+            edge.setAttributeNS(null, `d`, newPath);
+        });
 
-        // const x = this.svgCursor.x - this.innerNodeDelta.x;           // further transform to upper left point of node position
-        // const y = this.svgCursor.y - this.innerNodeDelta.y;
-
-        // rectangle.setAttributeNS(null, `x`, `${x}`);
-        // rectangle.setAttributeNS(null, `y`, `${y}`);
+        this.svgSelectedItems.outgoingEdges.forEach((edge) => {
+            const origPath = edge.getAttributeNS(null, `d`);
+            const sourceNodeId = edge.id.split(`:`)[0].replace(`edge`, ``);
+            const sourceNode = this.svgSelectedItems.nodes.get(sourceNodeId);
+            const newPath = this.changeSource(sourceNode, origPath);
+            edge.setAttributeNS(null, `d`, newPath);
+        });
     }
-
 
     /**
                    Events
@@ -216,7 +239,7 @@ class AtPlayground extends Popupable {
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
         this.unselectAllNodes();
         const rectangle = e.target;
-        const nodeId = rectangle.id.replace(`node`, ``);
+        const nodeId = rectangle.id.replace(`rect`, ``);
         const selectedNodeModel = this.retrieveNodeModel(nodeId);
         if (e.ctrlKey) {
             selectedNodeModel.gatherDescendents().forEach((descendant) => {
@@ -227,25 +250,27 @@ class AtPlayground extends Popupable {
 
         this.svgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
-        this.svgCursor.x = e.x;
-        this.svgCursor.y = e.y;
+        this.svgCursor.x = Math.round(e.x);
+        this.svgCursor.y = Math.round(e.y);
         this.innerNodeDelta.x = this.svgCursor.x - selectedNodeModel.x;           // further transform to upper left point of node position
         this.innerNodeDelta.y = this.svgCursor.y - selectedNodeModel.y;
 
-        this.svgSelectedItems = {edges: [],
+        this.svgSelectedItems = {incomingEdges: [],
+            outgoingEdges: [],
             nodes: new Map()};
         this._selectedActivityNodeMap.forEach((value, key) => {
-            const edges = Array.from(document.querySelectorAll(`[id*=edge${key}]`));
-            this.svgSelectedItems.edges = [...this.svgSelectedItems.edges, ...edges];
-            this.svgSelectedItems.nodes.set(key, document.getElementById(`node${key}`));
-            })
-        
+            const incomingEdge = document.querySelector(`[id$=edge${key}]`);
+            const outgoingEdges = document.querySelectorAll(`[id^=edge${key}]`);
+            const node = document.getElementById(`rect${key}`);
+            if (incomingEdge) {
+                this.svgSelectedItems.incomingEdges.push(incomingEdge);
+            }
+            this.svgSelectedItems.outgoingEdges = [...this.svgSelectedItems.outgoingEdges, ...Array.from(outgoingEdges)];
+            this.svgSelectedItems.nodes.set(key, node);
+        });
 
-        console.log(this.svgSelectedItems.edges)
-        console.log(this.svgSelectedItems.nodes)
-
-        this.svgCursor.x = e.x;
-        this.svgCursor.y = e.y;
+        this.svgCursor.x = Math.round(e.x);
+        this.svgCursor.y = Math.round(e.y);
 
         this._playgroundWrapperDiv.addEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.addEventListener(`mouseup`, this._boundStopDraggingNode);
@@ -378,6 +403,7 @@ class AtPlayground extends Popupable {
         svgText.appendChild(textNode);
         return svgText;
     }
+
     labelWidth(svgText) {
         const bbox = svgText.getBBox();
         const {width} = bbox;
@@ -464,25 +490,29 @@ class AtPlayground extends Popupable {
             nodeModel.x = 30 + Math.floor(Math.random() * 20);
             nodeModel.y = Math.floor((this.clientHeight / 2) + (Math.random() * 70));
         }
-        box.topLeftX = nodeModel.x;
-        box.topLeftY = nodeModel.y;
+        box.topLeftX = Math.round(nodeModel.x);
+        box.topLeftY = Math.round(nodeModel.y);
         const labelElement = this.createTextElement(`${box.label}`);
         labelElement.id = `text${nodeModel.id}`;
         const group = document.createElementNS(this.SVGNS, `g`);
+        const nodeContentGroup = document.createElementNS(this.SVGNS, `g`);
         group.id = `group${nodeModel.id}`;
+        nodeContentGroup.id = `node${nodeModel.id}`;
+        nodeContentGroup.setAttributeNS(null, `transform`, `translate(${box.topLeftX},${box.topLeftY}) rotate(0)`)
         parentGroup.appendChild(group);
+        group.appendChild(nodeContentGroup);
 
         // here
 
 
-        svgText = this.moveItem(labelElement, box.topLeftX + this.LABEL_INDENT, box.topLeftY);
-        groupTop = group.firstChild;
-        group.insertBefore(svgText, groupTop);
+        svgText = this.moveItem(labelElement, this.LABEL_INDENT, 0);
+        groupTop = nodeContentGroup.firstChild;
+        nodeContentGroup.insertBefore(svgText, groupTop);
         box.height = this.STANDARD_BOX_HEIGHT;
-        box.width = this.labelWidth(labelElement) + (this.LABEL_INDENT * 2);
-        const svgBox = this.createRectangle(box.topLeftX, box.topLeftY, box.width, box.height, nodeModel.treeDepth);
-        svgBox.id = `node${nodeModel.id}`;
-        group.insertBefore(svgBox, svgText);
+        box.width = Math.round(this.labelWidth(labelElement) + (this.LABEL_INDENT * 2));
+        const svgBox = this.createRectangle(0, 0, box.width, box.height, nodeModel.treeDepth);
+        svgBox.id = `rect${nodeModel.id}`;
+        nodeContentGroup.insertBefore(svgBox, svgText);
         this.svgSize.width = Math.max(this.svgSize.width, box.topLeftX + box.width);
         this.svgSize.height = Math.max(this.svgSize.height, box.topLeftY + box.height);
         if ((nodeModel.isExpanded) || true) {

@@ -143,7 +143,7 @@ export default class ControllerAT extends Controller {
      *    -- playground --
      * eventActivityCreatedHandler    (a) (C) - popup create Activity (original event in menu starts playground popup)
      * eventActivityUpdatedHandler    (a) (C) - structure change
-     * eventNodeUpdatedHandler            (a) - Node isExpanded property changed
+     * eventNodeUpdatedHandler            (a) - Node isExpanded/location property changed
      * eventNodesSelectedHandler              - user selects Node in graph
      * eventNodeRepositionedHandler           - user repositioned Node
      * eventNodesConnectedHandler        (a)  - user connects two Nodes with an edge
