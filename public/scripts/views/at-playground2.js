@@ -26,6 +26,7 @@ class AtPlayground extends Popupable {
         this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
         this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
         this.STANDARD_BOX_HEIGHT = (2 * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
+        this.BUTTON_SIZE = 8;
 
         this.INITIAL_BRIGHTNESS = 50;
         this.STEP_BRIGHTNESS = 5;
@@ -78,6 +79,7 @@ class AtPlayground extends Popupable {
         this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);           // ?
         this._boundDragView = this.dragView.bind(this);                       // ?
         this._boundStopDragView = this.stopDragView.bind(this);               // ?
+        this._boundToggleExpand = this.toggleExpand.bind(this);
     }
 
     get selectedNodes() {
@@ -147,15 +149,15 @@ class AtPlayground extends Popupable {
     stopDraggingNode(e) {
         e.preventDefault();
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
-            const id = nodeItem.id.replace(`rect`, ``);
+            const id = nodeItem.id.replace(`node`, ``);
             const nodeModel = this._selectedActivityNodeMap.get(id);
-            const groupid = document.getElementById(`group${nodeModel.id}`);
 
-            nodeModel.x = Math.round(Number(nodeItem.getAttributeNS(null, `x`)));
-            nodeModel.y = Math.round(Number(nodeItem.getAttributeNS(null, `y`)));
-            console.log(nodeItem);
-            console.log(nodeModel);
-
+            const transformString = nodeItem.getAttributeNS(null, `transform`);
+            const transformComponents = this.parse(transformString);
+            const groupTransformX = Number(transformComponents.translate[0]);
+            const groupTransformY = Number(transformComponents.translate[1]);
+            nodeModel.x = groupTransformX;
+            nodeModel.y = groupTransformY;
             this.dispatchEvent(new CustomEvent(`event-node-updated`, {
                 detail: {nodeModel}
             }));
@@ -172,70 +174,71 @@ class AtPlayground extends Popupable {
         const ox = Math.round(splitOrigPath[1]);
         const oy = Math.round(splitOrigPath[2]);
 
-        // I need the transform data here --- not this destination item
-
-        const ex = destinationItem.getAttributeNS(null, `x`);
+        const transformString = destinationItem.getAttributeNS(null, `transform`);
+        const transformComponents = this.parse(transformString);
+        const ex = Number(transformComponents.translate[0]);
         const boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
-        const ey = Number(destinationItem.getAttributeNS(null, `y`)) + boxAdjustment;
+        const ey = Number(transformComponents.translate[1]) + boxAdjustment;
+
         const delta_x = (ex - ox) / 2.0;
         const x1 = ox + delta_x;
         const y1 = oy;
         const x2 = ex - delta_x;
         const y2 = ey;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
-        console.log(`changeDestination -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
     }
 
     changeSource(sourceItem, origPath) {
+        const id = sourceItem.id.replace(`node`, ``);
+        const rect = document.getElementById(`rect${id}`);
+        const width = rect.getAttributeNS(null, `width`);
+
         const splitOrigPath = origPath.split(` `);
-        let boxAdjustment = Math.round(Number(sourceItem.getAttributeNS(null, `width`)));
-        const ox = Math.round(Number(sourceItem.getAttributeNS(null, `x`)) + boxAdjustment);
+
+        const transformString = sourceItem.getAttributeNS(null, `transform`);
+        const transformComponents = this.parse(transformString);
+        let boxAdjustment = width;
+        const ox = Number(transformComponents.translate[0]) + Number(boxAdjustment);
         boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
-        const oy = Math.round(Number(sourceItem.getAttributeNS(null, `y`)) + boxAdjustment);
+        const oy = Number(transformComponents.translate[1]) + boxAdjustment;
+
         const ex = Math.round(splitOrigPath[8]);
         const ey = Math.round(splitOrigPath[9]);
+
         const delta_x = (ex - ox) / 2.0;
         const x1 = ox + delta_x;
         const y1 = oy;
         const x2 = ex - delta_x;
         const y2 = ey;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
-        console.log(`changeSource -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
     }
 
 
-    modifyTransform(nodeGroup, diffX, diffY){
+    modifyTransform(nodeGroup, diffX, diffY) {
+        const id = nodeGroup.id.replace(`node`, ``);
+        // A static position can be found as x,y in the nodeModel in selectedItems map
+        const nodeModel = this._selectedActivityNodeMap.get(id);
+        const groupTransformX = nodeModel.x + diffX;
+        const groupTransformY = nodeModel.y + diffY;
 
-        // const id = nodeGroup.id.replace(`node`, ``);
-        let transformString = nodeGroup.getAttributeNS(null, `transform`);
-        console.log(`oldtranform ${transformString}`)
-        let transformComponents = this.parse(transformString);
-        console.log(transformComponents.translate);
-        console.log(`${transformComponents.translate[0]} -- ${transformComponents.translate[0]}`)
-        let groupTransformX = Number(transformComponents.translate[0]) + diffX;
-        console.log(groupTransformX);
-        let groupTransformY = Number(transformComponents.translate[1]) + diffY;
-        console.log(groupTransformY);
-        let newTransform = `translate(${groupTransformX},${groupTransformY})`;
-        console.log(`newtranform ${newTransform}`)
+        const newTransform = `translate(${groupTransformX},${groupTransformY})`;
         nodeGroup.setAttributeNS(null, `transform`, `${newTransform}`);
     }
 
     dragNode(e) {
         e.preventDefault();
         const diffX = Math.round(e.x - this.svgCursor.x);
-        const diffY = Math.round(e.y - this.svgCursor.y);
+        const diffY = Math.round(e.y - this.svgCursor.y); // Diff between cursor start and now.
 
-        this.svgSelectedItems.nodes.forEach((nodeGroup,key) => {
-            this.modifyTransform(nodeGroup, diffX, diffY)
+        this.svgSelectedItems.nodes.forEach((nodeGroup, key) => {
+            this.modifyTransform(nodeGroup, diffX, diffY);
         });
 
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
             const origPath = edge.getAttributeNS(null, `d`);
             const destinationNodeId = edge.id.split(`:`)[1].replace(`edge`, ``);
-            console.log(edge);
             const destinationNode = this.svgSelectedItems.nodes.get(destinationNodeId);
             const newPath = this.changeDestination(origPath, destinationNode);
             edge.setAttributeNS(null, `d`, newPath);
@@ -249,17 +252,16 @@ class AtPlayground extends Popupable {
             edge.setAttributeNS(null, `d`, newPath);
         });
     }
-    parse (a)    // shameless stolen from chernjie - stackoverflow
+
+    parse(a)    // shameless stolen from chernjie - stackoverflow
     {
-        var b={};
-        for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
-        {
-            var c = a[i].match(/[\w\.\-]+/g);
+        const b = {};
+        for (const i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
+            const c = a[i].match(/[\w\.\-]+/g);
             b[c.shift()] = c;
         }
         return b;
     }
-
 
 
     /**
@@ -268,7 +270,7 @@ class AtPlayground extends Popupable {
 
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
         this.unselectAllNodes();
-        console.log(e)
+        console.log(e);
         const rectangle = e.target;
         const nodeModelId = rectangle.id.replace(`rect`, ``);
         const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
@@ -278,10 +280,6 @@ class AtPlayground extends Popupable {
             });
         }
         this.selectNode(selectedNodeModel);
-        
-
-
-
         this.svgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
         this.svgCursor.x = Math.round(e.x);
@@ -309,7 +307,7 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.addEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.addEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.addEventListener(`mouseleave`, this._boundStopDraggingNode);
-        
+
         e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
 
@@ -331,8 +329,9 @@ class AtPlayground extends Popupable {
     }
 
     createCircle(x, y, radius) {
-        let circle = document.createElementNS(this.SVGNS, `circle`);
-        circle = this.moveItem(circle, x, y);
+        const circle = document.createElementNS(this.SVGNS, `circle`);
+        circle.setAttributeNS(null, `cx`, x);
+        circle.setAttributeNS(null, `cy`, y);
         circle.setAttributeNS(null, `r`, radius);
         circle.setAttributeNS(null, `fill`, `blue`);
         return circle;
@@ -379,21 +378,96 @@ class AtPlayground extends Popupable {
         return rectangle;
     }
 
+    createAddButton(width, height, fillShading, strokeShading) {
+        const halfFont = this.STANDARD_FONT_SIZE / 2;
+        const addButton = document.createElementNS(this.SVGNS, `g`);
+        const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
+        circle.setAttributeNS(null, `fill`, `${fillShading}`);
+        circle.setAttributeNS(null, `fill-opacity`, `1`);
+        circle.setAttributeNS(null, `stroke`, `${strokeShading}`);
+        circle.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        const horizLine = document.createElementNS(this.SVGNS, `path`);
+
+        horizLine.setAttributeNS(null, `d`, `M ${width - this.STANDARD_FONT_SIZE},${height - halfFont} L ${width},${height - halfFont}`);
+        horizLine.setAttributeNS(null, `stroke`, `${strokeShading}`);
+        horizLine.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        const vertLine = document.createElementNS(this.SVGNS, `path`);
+
+        vertLine.setAttributeNS(null, `d`, `M ${width - halfFont},${height - this.STANDARD_FONT_SIZE} L ${width - halfFont},${height}`);
+        vertLine.setAttributeNS(null, `stroke`, `${strokeShading}`);
+        vertLine.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        addButton.appendChild(circle);
+        addButton.appendChild(horizLine);
+        addButton.appendChild(vertLine);
+        return addButton;
+    }
+
+    composeTrianglePath(width, isExpanded) {
+        let path;
+        if (isExpanded) {
+            const x1 = width - this.LABEL_INDENT;
+            const y1 = 3;
+            const x2 = x1;
+            const y2 = y1 + this.STANDARD_FONT_SIZE;
+            const x3 = x2 - (this.STANDARD_FONT_SIZE / 2);
+            const y3 = y2 - (this.STANDARD_FONT_SIZE / 2);
+            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`
+        } else {
+            const x1 = width - this.LABEL_INDENT;
+            const y1 = (this.STANDARD_FONT_SIZE / 2) + 3;
+            const x2 = x1 - (this.STANDARD_FONT_SIZE / 2);
+            const y2 = y1 - (this.STANDARD_FONT_SIZE / 2);
+            const x3 = x2;
+            const y3 = y2 + (this.STANDARD_FONT_SIZE);
+            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`
+        }
+        return path
+    }
+
+
+    toggleExpand(e){
+        const id = e.target.id.replace(`show`,``);
+        console.log()
+        let nodeModel;
+        for (const project of this._viewedProjectsMap.values()) {
+            const findNode = project.findChildById(id);
+            if (findNode) {
+                nodeModel = findNode;
+            }
+        }
+        console.log("11");
+        console.log(nodeModel)
+        nodeModel.isExpanded = !nodeModel.isExpanded;
+        this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+            detail: {nodeModel}
+        }));
+    }
+
+    createShowTriangle(x, y, width, height, isExpanded) {
+        let triangle = document.createElementNS(this.SVGNS, `path`);
+        let path = this.composeTrianglePath(width, isExpanded);
+        triangle.setAttributeNS(null, `d`, path);
+        triangle.addEventListener(`mousedown`,this.toggleExpand.bind(this));
+        return triangle;
+    }
+
+
     createRectangle(x, y, width, height, depthOfNode) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle = this.moveItem(rectangle, x, y);
         rectangle = this.resizeRectangle(rectangle, height, width);
         rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
         rectangle.setAttributeNS(null, `rx`, `7`);
-        const fillShading = this.fillDepthLightness(depthOfNode);
-        const strokeShading = this.strokeDepthLightness(depthOfNode);
-        rectangle.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${fillShading}%,1)`);
-        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${strokeShading}%,1)`);
+
         rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         rectangle.addEventListener(`mousedown`, this.eventNodeSelected.bind(this));
         return rectangle;
     }
 
+    addColor(item, fill = `black`, stroke = `black`) {
+        item.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${fillShading}%,1)`);
+        item.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${strokeShading}%,1)`);
+    }
 
     buildPath(sourceBox, destBox) {
         const ox = sourceBox.topLeftX + sourceBox.width;
@@ -408,7 +482,6 @@ class AtPlayground extends Popupable {
         // const mx = (ox + ex) / 2.0;
         // const my = (oy + ey) / 2.0;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
-        console.log(`BUILDPATH -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
     }
 
@@ -528,25 +601,37 @@ class AtPlayground extends Popupable {
         const nodeContentGroup = document.createElementNS(this.SVGNS, `g`);
         group.id = `group${nodeModel.id}`;
         nodeContentGroup.id = `node${nodeModel.id}`;
-        nodeContentGroup.setAttributeNS(null, `transform`, `translate(${box.topLeftX},${box.topLeftY}) rotate(0)`)
+        nodeContentGroup.setAttributeNS(null, `transform`, `translate(${box.topLeftX},${box.topLeftY}) rotate(0)`);
 
         parentGroup.appendChild(group);
         group.appendChild(nodeContentGroup);
-
-        // here
-
 
         svgText = this.moveItem(labelElement, this.LABEL_INDENT, 0);
         groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
         box.height = this.STANDARD_BOX_HEIGHT;
-        box.width = Math.round(this.labelWidth(labelElement) + (this.LABEL_INDENT * 2));
-        const svgBox = this.createRectangle(0, 0, box.width, box.height, nodeModel.treeDepth);
+        box.width = Math.round(this.labelWidth(labelElement) + (this.LABEL_INDENT * 3) + this.BUTTON_SIZE);
+        const svgBox = this.createRectangle(0, 0, box.width, box.height);
         svgBox.id = `rect${nodeModel.id}`;
+        const fillShading = this.fillDepthLightness(nodeModel.treeDepth);
+        const strokeShading = this.strokeDepthLightness(nodeModel.treeDepth);
+        const fill = `hsla(${this.HUE},100%,${fillShading}%,1)`;
+        const stroke = `hsla(${this.HUE},100%,${strokeShading}%,1)`;
+        svgBox.setAttributeNS(null, `fill`, fill);
+        svgBox.setAttributeNS(null, `stroke`, stroke);
         nodeContentGroup.insertBefore(svgBox, svgText);
         this.svgSize.width = Math.max(this.svgSize.width, box.topLeftX + box.width);
         this.svgSize.height = Math.max(this.svgSize.height, box.topLeftY + box.height);
-        if ((nodeModel.isExpanded) || true) {
+        if (nodeModel.hasChildren()) {
+            const showButton = this.createShowTriangle(box.x, box.y, box.width, box.height, nodeModel.isExpanded);
+            showButton.id = `show${nodeModel.id}`;
+            nodeContentGroup.insertBefore(showButton, svgText);
+        }
+        const addButton = this.createAddButton(box.width, box.height, fill, stroke);
+        nodeContentGroup.insertBefore(addButton, svgText);
+
+
+        if (nodeModel.isExpanded) {
             nodeModel.children.forEach((child) => {
                 const subBox = this.buildJointActivityGraph(group, child);
                 const svgEdge = this.createEdge(box, subBox);
