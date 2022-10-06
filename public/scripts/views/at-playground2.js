@@ -151,8 +151,11 @@ class AtPlayground extends Popupable {
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
             const id = nodeItem.id.replace(`rect`, ``);
             const nodeModel = this._selectedActivityNodeMap.get(id);
+            const groupid = document.getElementById(`group${nodeModel.id}`);
+
             nodeModel.x = Math.round(Number(nodeItem.getAttributeNS(null, `x`)));
             nodeModel.y = Math.round(Number(nodeItem.getAttributeNS(null, `y`)));
+            console.log(nodeItem);
             console.log(nodeModel);
 
             this.dispatchEvent(new CustomEvent(`event-node-updated`, {
@@ -231,6 +234,18 @@ class AtPlayground extends Popupable {
             edge.setAttributeNS(null, `d`, newPath);
         });
     }
+    parse (a)    // shameless stolen from chernjie - stackoverflow
+    {
+        var b={};
+        for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
+        {
+            var c = a[i].match(/[\w\.\-]+/g);
+            b[c.shift()] = c;
+        }
+        return b;
+    }
+
+
 
     /**
                    Events
@@ -238,15 +253,29 @@ class AtPlayground extends Popupable {
 
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
         this.unselectAllNodes();
+        console.log(e)
         const rectangle = e.target;
-        const nodeId = rectangle.id.replace(`rect`, ``);
-        const selectedNodeModel = this.retrieveNodeModel(nodeId);
+        const nodeModelId = rectangle.id.replace(`rect`, ``);
+        const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
         if (e.ctrlKey) {
             selectedNodeModel.gatherDescendents().forEach((descendant) => {
                 this.selectNode(descendant);
             });
         }
         this.selectNode(selectedNodeModel);
+
+        console.log(`Because I am curious... g transform vs nodeModel x,y`);
+        let groupElement = document.getElementById(`node${nodeModelId}`);
+        let transformString = groupElement.getAttributeNS(null, `transform`);
+        let transformComponents = this.parse(transformString);
+        let groupTransformX = transformComponents.translate[0];
+        let groupTransformY = transformComponents.translate[1];
+        console.log(`${groupTransformX}, ${groupTransformY}`);
+        console.log(`${selectedNodeModel.x}, ${selectedNodeModel.y}`)
+
+
+
+
 
         this.svgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
@@ -499,6 +528,7 @@ class AtPlayground extends Popupable {
         group.id = `group${nodeModel.id}`;
         nodeContentGroup.id = `node${nodeModel.id}`;
         nodeContentGroup.setAttributeNS(null, `transform`, `translate(${box.topLeftX},${box.topLeftY}) rotate(0)`)
+
         parentGroup.appendChild(group);
         group.appendChild(nodeContentGroup);
 
