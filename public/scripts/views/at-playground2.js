@@ -54,8 +54,6 @@ class AtPlayground extends Popupable {
         this._zoomFactor = 1.00;   //  PROB NOT NECESSARY
         this.svgCursor = {x: 0,
             y: 0};     // @todo Localize this later   // location  of pointer
-        this.innerNodeDelta = {x: 0,
-            y: 0};     // @todo Localize this later   // diff of pointer to upper left of rectangle
 
         // Data objects displayed by the SVG
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
@@ -173,6 +171,9 @@ class AtPlayground extends Popupable {
         const splitOrigPath = origPath.split(` `);
         const ox = Math.round(splitOrigPath[1]);
         const oy = Math.round(splitOrigPath[2]);
+
+        // I need the transform data here --- not this destination item
+
         const ex = destinationItem.getAttributeNS(null, `x`);
         const boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
         const ey = Number(destinationItem.getAttributeNS(null, `y`)) + boxAdjustment;
@@ -182,6 +183,7 @@ class AtPlayground extends Popupable {
         const x2 = ex - delta_x;
         const y2 = ey;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        console.log(`changeDestination -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
     }
 
@@ -199,22 +201,35 @@ class AtPlayground extends Popupable {
         const x2 = ex - delta_x;
         const y2 = ey;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        console.log(`changeSource -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
+    }
+
+
+    modifyTransform(nodeGroup, diffX, diffY){
+
+        // const id = nodeGroup.id.replace(`node`, ``);
+        let transformString = nodeGroup.getAttributeNS(null, `transform`);
+        console.log(`oldtranform ${transformString}`)
+        let transformComponents = this.parse(transformString);
+        console.log(transformComponents.translate);
+        console.log(`${transformComponents.translate[0]} -- ${transformComponents.translate[0]}`)
+        let groupTransformX = Number(transformComponents.translate[0]) + diffX;
+        console.log(groupTransformX);
+        let groupTransformY = Number(transformComponents.translate[1]) + diffY;
+        console.log(groupTransformY);
+        let newTransform = `translate(${groupTransformX},${groupTransformY})`;
+        console.log(`newtranform ${newTransform}`)
+        nodeGroup.setAttributeNS(null, `transform`, `${newTransform}`);
     }
 
     dragNode(e) {
         e.preventDefault();
-        const rectangle = e.target;
+        const diffX = Math.round(e.x - this.svgCursor.x);
+        const diffY = Math.round(e.y - this.svgCursor.y);
 
-        //     let newSvgCursor = this.screenToSVGCoords(e);   // transform screen to svg
-
-        const diffX = Math.round(e.x - this.svgCursor.x); // - this.innerNodeDelta.x;
-        const diffY = Math.round(e.y - this.svgCursor.y); //  - this.innerNodeDelta.y;
-
-        this.svgSelectedItems.nodes.forEach((nodeItem) => {
-            const id = nodeItem.id.replace(`rect`, ``);
-            const nodeModel = this._selectedActivityNodeMap.get(id);
-            this.moveItem(nodeItem, diffX, diffY);
+        this.svgSelectedItems.nodes.forEach((nodeGroup,key) => {
+            this.modifyTransform(nodeGroup, diffX, diffY)
         });
 
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
@@ -263,17 +278,7 @@ class AtPlayground extends Popupable {
             });
         }
         this.selectNode(selectedNodeModel);
-
-        console.log(`Because I am curious... g transform vs nodeModel x,y`);
-        let groupElement = document.getElementById(`node${nodeModelId}`);
-        let transformString = groupElement.getAttributeNS(null, `transform`);
-        let transformComponents = this.parse(transformString);
-        let groupTransformX = transformComponents.translate[0];
-        let groupTransformY = transformComponents.translate[1];
-        console.log(`${groupTransformX}, ${groupTransformY}`);
-        console.log(`${selectedNodeModel.x}, ${selectedNodeModel.y}`)
-
-
+        
 
 
 
@@ -281,8 +286,6 @@ class AtPlayground extends Popupable {
 
         this.svgCursor.x = Math.round(e.x);
         this.svgCursor.y = Math.round(e.y);
-        this.innerNodeDelta.x = this.svgCursor.x - selectedNodeModel.x;           // further transform to upper left point of node position
-        this.innerNodeDelta.y = this.svgCursor.y - selectedNodeModel.y;
 
         this.svgSelectedItems = {incomingEdges: [],
             outgoingEdges: [],
@@ -290,7 +293,7 @@ class AtPlayground extends Popupable {
         this._selectedActivityNodeMap.forEach((value, key) => {
             const incomingEdge = document.querySelector(`[id$=edge${key}]`);
             const outgoingEdges = document.querySelectorAll(`[id^=edge${key}]`);
-            const node = document.getElementById(`rect${key}`);
+            const node = document.getElementById(`node${key}`);     //*
             if (incomingEdge) {
                 this.svgSelectedItems.incomingEdges.push(incomingEdge);
             }
@@ -298,18 +301,15 @@ class AtPlayground extends Popupable {
             this.svgSelectedItems.nodes.set(key, node);
         });
 
-        this.svgCursor.x = Math.round(e.x);
-        this.svgCursor.y = Math.round(e.y);
-
-        this._playgroundWrapperDiv.addEventListener(`mousemove`, this._boundDragNode);
-        this._playgroundWrapperDiv.addEventListener(`mouseup`, this._boundStopDraggingNode);
-        this._playgroundWrapperDiv.addEventListener(`mouseleave`, this._boundStopDraggingNode);
-
-
         const selectedNodeArray = Array.from(this._selectedActivityNodeMap.values());
         this.dispatchEvent(new CustomEvent(`event-nodes-selected`, {
             detail: {selectedNodeArray}
         }));
+
+        this._playgroundWrapperDiv.addEventListener(`mousemove`, this._boundDragNode);
+        this._playgroundWrapperDiv.addEventListener(`mouseup`, this._boundStopDraggingNode);
+        this._playgroundWrapperDiv.addEventListener(`mouseleave`, this._boundStopDraggingNode);
+        
         e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
 
@@ -408,6 +408,7 @@ class AtPlayground extends Popupable {
         // const mx = (ox + ex) / 2.0;
         // const my = (oy + ey) / 2.0;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        console.log(`BUILDPATH -- M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`)
         return cubicCurve;
     }
 
