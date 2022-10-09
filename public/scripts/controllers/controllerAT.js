@@ -421,10 +421,16 @@ export default class ControllerAT extends Controller {
         const expandRequested = event.detail.isExpanded;
         projectSelected.isExpanded = expandRequested;
          // THE REPOPULATE COLLECTION FAILED HERE
+        // this.repopulateActivity(projectSelected);
+        // this.repopulateProject(projectSelected, projectSelected.id);
+        // this.repopulateParent(projectSelected);
+        // this.repopulateDepth(projectSelected);
+        this.repopulateParent(projectSelected);
         this.repopulateActivity(projectSelected);
         this.repopulateProject(projectSelected, projectSelected.id);
-        this.repopulateParent(projectSelected);
         this.repopulateDepth(projectSelected);
+
+        projectSelected.leafCount = projectSelected.leafcounter();
 
         this._playground._rebuildNodeView(projectSelected);
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
@@ -508,10 +514,15 @@ export default class ControllerAT extends Controller {
     }
     // D
     commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
+        // this.repopulateActivity(createdNodeModel);
+        // this.repopulateProject(createdNodeModel, createdNodeModel.id);
+        // this.repopulateParent(createdNodeModel);
+        // this.repopulateDepth(createdNodeModel);
+        this.repopulateParent(createdNodeModel);
         this.repopulateActivity(createdNodeModel);
         this.repopulateProject(createdNodeModel, createdNodeModel.id);
-        this.repopulateParent(createdNodeModel);
         this.repopulateDepth(createdNodeModel);
+
         createdNodeModel.leafCount = createdNodeModel.leafcounter();
         this.cacheProject(createdNodeModel);
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library

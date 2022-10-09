@@ -1,8 +1,10 @@
-export default class SvgManipulation {
+export default class Svg {
 
     static {
         this.SVGNS = `http://www.w3.org/2000/svg`;
         this.HUE = 200;
+        this.SELECTED_HUE = 400;
+        this.POSSIBLE_HUE = 600;
         this.HORIZONTAL_MARGIN = 10;
         this.VERTICAL_MARGIN = 10;
         this.LINE_WIDTH = 2;
@@ -51,29 +53,37 @@ export default class SvgManipulation {
 
 
 
-    static buildSvg() {
-        const svg = document.createElementNS(SvgManipulation.SVGNS, `svg`);
+    static buildSvg(id) {
+        const svg = document.createElementNS(Svg.SVGNS, `svg`);
+        svg.id = id;
         svg.setAttribute(`version`, `1.1`);
         svg.setAttribute(`xmlns`, this.SVGNS);
-        svg.setAttribute(`overflow-x`, `auto`);
-        svg.setAttribute(`overflow-y`, `auto`);
         return svg;
     }
 
     static selectNode(svg, node) {  // Apply 'select' effect (highlight)
-        const rectangle = svg.getElementById(`rect${node.id}`);
-        const text = svg.getElementById(`text${node.id}`);
+        const rectangle = svg.getElementById(`rect-${node.id}`);
+        const text = svg.getElementById(`text-${node.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(500,100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.SELECTED_HUE},100%,${shadeFill},1)`);
+    }
+
+    static signalPossibleChild(svg, node) {  // Apply 'select' effect (highlight)
+        const rectangle = svg.getElementById(`rect-${node.id}`);
+        const text = svg.getElementById(`text-${node.id}`);
+        const hsla = rectangle.getAttributeNS(null, `fill`);
+        const shadeFill = hsla.split(`,`)[2];
+        console.log(`hsla(${Svg.POSSIBLE_HUE},100%,${shadeFill},1)`)
+        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.POSSIBLE_HUE},100%,${shadeFill},1)`);
     }
 
     static unselectNode(svg, node) {   // Remove 'select' effect (highlight)
-        const rectangle = svg.getElementById(`rect${node.id}`);
-        const text = svg.getElementById(`text${node.id}`);
+        const rectangle = svg.getElementById(`rect-${node.id}`);
+        const text = svg.getElementById(`text-${node.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(200,100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.HUE},100%,${shadeFill},1)`);
     }
 
     static parse(a)    // shameless stolen from chernjie - stackoverflow
@@ -93,13 +103,33 @@ export default class SvgManipulation {
         nodeGroup.setAttributeNS(null, `transform`, `${newTransform}`);
     }
 
-    static changeDestination(svgSelectedItems, edge) {
+
+    static followCursor(edge, cursor) {
         const origPath = edge.getAttributeNS(null, `d`);
-        const destinationNodeId = edge.id.split(`:`)[1].replace(`edge`, ``);
-        const destinationNode = svgSelectedItems.nodes.get(destinationNodeId);
         const splitOrigPath = origPath.split(` `);
         const ox = Math.round(Number(splitOrigPath[1]));
         const oy = Math.round(Number(splitOrigPath[2]));
+        const ex = cursor.x;
+        const ey = cursor.y;
+
+        const delta_x = (ex - ox) / 2.0;
+        const x1 = ox + delta_x;
+        const y1 = oy;
+        const x2 = ex - delta_x;
+        const y2 = ey;
+        const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        edge.setAttributeNS(null, `d`, cubicCurve);
+    }
+
+
+
+    static changeDestination(svgSelectedItems, edge) {
+        const origPath = edge.getAttributeNS(null, `d`);
+        const splitOrigPath = origPath.split(` `);
+        const ox = Math.round(Number(splitOrigPath[1]));
+        const oy = Math.round(Number(splitOrigPath[2]));
+        const destinationNodeId = edge.id.split(`:`)[1].replace(`edge-`, ``);
+        const destinationNode = svgSelectedItems.nodes.get(destinationNodeId);
 
         const transformString = destinationNode.getAttributeNS(null, `transform`);
         const transformComponents = this.parse(transformString);
@@ -118,10 +148,10 @@ export default class SvgManipulation {
 
     static changeSource(svgSelectedItems, edge) {
         const origPath = edge.getAttributeNS(null, `d`);
-        const sourceNodeId = edge.id.split(`:`)[0].replace(`edge`, ``);
+        const sourceNodeId = edge.id.split(`:`)[0].replace(`edge-`, ``);
         const sourceNode = svgSelectedItems.nodes.get(sourceNodeId);
-        const id = sourceNode.id.replace(`node`, ``);
-        const rect = document.getElementById(`rect${id}`);
+        const id = sourceNode.id.replace(`node-`, ``);
+        const rect = document.getElementById(`rect-${id}`);
         const width = rect.getAttributeNS(null, `width`);
 
         const splitOrigPath = origPath.split(` `);
@@ -145,18 +175,12 @@ export default class SvgManipulation {
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
 
-    static getIncomingEdges(nodeId) {
-        let incomingEdges = document.querySelector(`[id$=edge${nodeId}]`);
-        return incomingEdges;
-    }
-    static getOutgoingEdges(nodeId){
-        let outgoingEdges = document.querySelectorAll(`[id^=edge${nodeId}]`);
-        return outgoingEdges;
-    }
-    static getNodes(nodeId){
-        let nodes = document.getElementById(`node${nodeId}`);
-        return nodes;
-    }
+
+
+
+
+
+
 
     static positionItem(item, x, y) {
         if (item.tagName.toLowerCase() === `g`) {
@@ -234,9 +258,6 @@ export default class SvgManipulation {
     static createRectangle(width, height, depthOfNode) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle = this.resizeRectangle(rectangle, height, width);
-        rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
-        rectangle.setAttributeNS(null, `rx`, `7`);
-        rectangle.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH.toString());
         return rectangle;
     }
 
@@ -248,10 +269,10 @@ export default class SvgManipulation {
 
 
     static buildPath(sourceBox, destBox) {
-        const ox = sourceBox.topLeftX + sourceBox.width;
-        const oy = sourceBox.topLeftY + (sourceBox.height / 2);
-        const ex = destBox.topLeftX;
-        const ey = destBox.topLeftY + (destBox.height / 2);
+        const ox = sourceBox.x + sourceBox.width;
+        const oy = sourceBox.y + (sourceBox.height / 2);
+        const ex = destBox.x;
+        const ey = destBox.y + (destBox.height / 2);
         const delta_x = (ex - ox) / 2.0;
         const x1 = ox + delta_x;
         const y1 = oy;
@@ -269,7 +290,7 @@ export default class SvgManipulation {
         edge.setAttributeNS(null, `fill`, `transparent`);
         edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
         // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
-        const cubicCurve = this.buildPath(sourceBox, destBox);
+        const cubicCurve = Svg.buildPath(sourceBox, destBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
         return edge;
     }
@@ -287,17 +308,18 @@ export default class SvgManipulation {
 
     static clearSvg(svg) {
         svg.childNodes.forEach((gNode) => {
-            if (gNode.nodeName === `g`) {
-                svg.removeChild(gNode);
+            while (svg.firstChild) {
+                //The list is LIVE so it will re-index each call
+                svg.removeChild(svg.firstChild);
             }
+
         });
     }
 
-    static createShowTriangle(x, y, width, height, isExpanded) {
+    static createShowTriangle(width, height, isExpanded) {
         let triangle = document.createElementNS(this.SVGNS, `path`);
-        let path = SvgManipulation.composeTrianglePath(width, isExpanded);
+        let path = Svg.composeTrianglePath(width, isExpanded);
         triangle.setAttributeNS(null, `d`, path);
-
         return triangle;
     }
 
@@ -308,8 +330,8 @@ export default class SvgManipulation {
     }
 
     static applyDepthEffect(item, depth, treeHeight) {
-        const fillShading = SvgManipulation.fillDepthLightness(depth, treeHeight);
-        const strokeShading = SvgManipulation.strokeDepthLightness(depth, treeHeight);
+        const fillShading = Svg.fillDepthLightness(depth, treeHeight);
+        const strokeShading = Svg.strokeDepthLightness(depth, treeHeight);
         const fill = `hsla(${this.HUE},100%,${fillShading}%,1)`;
         const stroke = `hsla(${this.HUE},100%,${strokeShading}%,1)`;
         item.setAttributeNS(null, `fill`, fill);
@@ -324,6 +346,41 @@ export default class SvgManipulation {
         const fillShading = this.fillDepthLightness(depthOfNode, treeHeight);
         const strokeShading = fillShading - (this.STEP_BRIGHTNESS * 4);
         return strokeShading;
+    }
+
+
+    static fetchEdgeToCursor() {
+        let cursorEdge = document.querySelector(`[id$=cursor]`);
+        return cursorEdge;
+    }
+    static fetchEdgeTo(nodeId) {
+        let incomingEdges = document.querySelector(`[id$=edge-${nodeId}]`);
+        return incomingEdges;
+    }
+    static fetchEdgesFrom(nodeId){
+        let outgoingEdges = Array.from(document.querySelectorAll(`[id^=edge-${nodeId}]`));
+        return outgoingEdges;
+    }
+    static fetchNodeGroup(id){
+        return document.getElementById(`node-${id}`);
+    }
+
+    static fetchRectangle(id){
+        return document.getElementById(`rect-${id}`);
+    }
+    static fetchGroup(id){
+        return document.getElementById(`group-${id}`);
+    }
+
+    static fetchTargetId(svgElement){
+        let id;
+        if (svgElement.id) {
+            id = svgElement.id.split(`-`)[1];
+        }
+        else {
+            id = Svg.fetchTargetId(svgElement.parentNode);
+        }
+        return id;
     }
 
 
