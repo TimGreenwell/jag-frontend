@@ -827,11 +827,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._model = new_model;
 
 		let regex = new RegExp("^" + this._defaultURN + "tmp-[0-9]{5}$");    ///^(" + this._defaultURN +
-		if (new_model.urn.match(regex)) {
-			console.log("success")
-		} else {
-			console.log("fail")
-		}
 
 		if (!new_model.urn.match(regex)) {
 			// Store the updated model.
@@ -872,19 +867,16 @@ customElements.define('jag-properties', class extends HTMLElement {
 		this._urn.addEventListener('focusout', (e) => {
 			if (this._model.urn != this._urn.value) {
 				if (!/^[a-zA-Z0-9-:]+(?<!:)$/.test(this._urn.value)) {
-					console.log("FAIL");
 					window.alert("Invalid URL - Assigning unsavable temp.");
 					this._urn.value = this._defaultURN + "tmp-" + this._undefinedURLIndex.toString().padStart(5, '0');
 					this._updateURN(this._urn.value);    // getting renamed to TMP CRAP
 					this._undefinedURLIndex = this._undefinedURLIndex + 1;
-					console.log(this._undefinedURLIndex);
 					this._urn.setAttribute("temp", "true");
 					this._name.value = this._urn.value.split(':').pop();
 					this._model.name = this._name.value;
 				} else {
 					this._updateURN(this._urn.value);  // might be a rename
 					if (this._name.value == ' New ') {
-						console.log("Replacing the 'New' name....");
 						this._name.value = this._urn.value.split(':').pop();
 						this._model.name = this._name.value;
 					}
@@ -905,7 +897,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 
 				//current position in 'form'
 				const currentPosition = this._name.tabIndex;
-				console.log("--------" + currentPosition + "---------" + inputs.length + "----------");
 				if (currentPosition < inputs.length-1) {
 					inputs.item(currentPosition + 1).focus();
 				} else {
@@ -931,7 +922,6 @@ customElements.define('jag-properties', class extends HTMLElement {
 				let inputs = this.querySelectorAll("input:enabled, textarea");
 				//current position in 'form'
 				const currentPosition = this._desc.tabIndex;
-				console.log("--------" + currentPosition + "---------" + inputs.length + "----------");
 				if (currentPosition < inputs.length-1) {
 					inputs.item(currentPosition + 1).focus();
 				} else {

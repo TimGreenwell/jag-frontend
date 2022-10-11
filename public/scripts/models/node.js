@@ -23,7 +23,8 @@ export default class Node extends EventTarget {
         isLocked = Boolean(false),
         contextualName = ``,
         contextualDescription = ``,
-        x, y,
+        x = 30,
+        y = 30,
         subscriptions = [],        // still unknown implementation (hopefully observer)
         returnValue = null,
         returnState = null,

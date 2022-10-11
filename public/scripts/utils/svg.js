@@ -3,9 +3,9 @@ export default class Svg {
     static {
         this.SVGNS = `http://www.w3.org/2000/svg`;
         this.HUE = 200;
-        this.SELECTED_HUE = 400;
-        this.POSSIBLE_HUE = 600;
-        this.HORIZONTAL_MARGIN = 10;
+        this.SELECTED_HUE = 150;
+        this.POSSIBLE_HUE = 50;
+        // this.HORIZONTAL_MARGIN = 10;
         this.VERTICAL_MARGIN = 10;
         this.LINE_WIDTH = 2;
         this.STANDARD_FONT_SIZE = 17;
@@ -52,18 +52,19 @@ export default class Svg {
     }
 
 
-
     static buildSvg(id) {
         const svg = document.createElementNS(Svg.SVGNS, `svg`);
-        svg.id = id;
+        svg.id = `svg-${id}`;
         svg.setAttribute(`version`, `1.1`);
         svg.setAttribute(`xmlns`, this.SVGNS);
+        svg.setAttribute(`pointer-events`, `none`);
         return svg;
     }
 
+
     static selectNode(svg, node) {  // Apply 'select' effect (highlight)
         const rectangle = svg.getElementById(`rect-${node.id}`);
-        const text = svg.getElementById(`text-${node.id}`);
+        // const text = svg.getElementById(`text-${node.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
         rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.SELECTED_HUE},100%,${shadeFill},1)`);
@@ -71,23 +72,27 @@ export default class Svg {
 
     static signalPossibleChild(svg, node) {  // Apply 'select' effect (highlight)
         const rectangle = svg.getElementById(`rect-${node.id}`);
-        const text = svg.getElementById(`text-${node.id}`);
-        const hsla = rectangle.getAttributeNS(null, `fill`);
-        const shadeFill = hsla.split(`,`)[2];
-        console.log(`hsla(${Svg.POSSIBLE_HUE},100%,${shadeFill},1)`)
+        // const text = svg.getElementById(`text-${node.id}`);
+        const hslaFill = rectangle.getAttributeNS(null, `fill`);
+        const shadeFill = hslaFill.split(`,`)[2];
         rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.POSSIBLE_HUE},100%,${shadeFill},1)`);
+        const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
+        const shadeStroke = hslaStroke.split(`,`)[2];
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${Svg.POSSIBLE_HUE},100%,${shadeStroke},1)`);
     }
 
     static unselectNode(svg, node) {   // Remove 'select' effect (highlight)
         const rectangle = svg.getElementById(`rect-${node.id}`);
         const text = svg.getElementById(`text-${node.id}`);
-        const hsla = rectangle.getAttributeNS(null, `fill`);
-        const shadeFill = hsla.split(`,`)[2];
+        const hslaFill = rectangle.getAttributeNS(null, `fill`);
+        const shadeFill = hslaFill.split(`,`)[2];
         rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.HUE},100%,${shadeFill},1)`);
+        const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
+        const shadeStroke = hslaStroke.split(`,`)[2];
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${Svg.HUE},100%,${shadeStroke},1)`);
     }
 
-    static parse(a)    // shameless stolen from chernjie - stackoverflow
-    {
+    static parse(a) {    // shameless stolen from chernjie - stackoverflow
         const b = {};
         for (const i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
             const c = a[i].match(/[\w\.\-]+/g);
@@ -120,7 +125,6 @@ export default class Svg {
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
-
 
 
     static changeDestination(svgSelectedItems, edge) {
@@ -176,12 +180,6 @@ export default class Svg {
     }
 
 
-
-
-
-
-
-
     static positionItem(item, x, y) {
         if (item.tagName.toLowerCase() === `g`) {
             item.setAttributeNS(null, `transform`, `translate(${x},${y})`);
@@ -209,7 +207,7 @@ export default class Svg {
         return rectangle;
     }
 
-    static createAddButton(width, height) {
+    static createAddButton(id, width, height) {
         const halfFont = this.STANDARD_FONT_SIZE / 2;
         const addButton = document.createElementNS(this.SVGNS, `g`);
         const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
@@ -230,11 +228,14 @@ export default class Svg {
         addButton.appendChild(circle);
         addButton.appendChild(horizLine);
         addButton.appendChild(vertLine);
+        addButton.id = `add-${id}`;
+        addButton.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled with classList?
         return addButton;
     }
 
-    static composeTrianglePath(width, isExpanded) {
+    static createExpandButton(id, width, height, isExpanded) {
         let path;
+        const expandButton = document.createElementNS(this.SVGNS, `g`);
         if (isExpanded) {
             const x1 = width - this.LABEL_INDENT;
             const y1 = 3;
@@ -242,7 +243,7 @@ export default class Svg {
             const y2 = y1 + this.STANDARD_FONT_SIZE;
             const x3 = x2 - (this.STANDARD_FONT_SIZE / 2);
             const y3 = y2 - (this.STANDARD_FONT_SIZE / 2);
-            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`
+            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`;
         } else {
             const x1 = width - this.LABEL_INDENT;
             const y1 = (this.STANDARD_FONT_SIZE / 2) + 3;
@@ -250,14 +251,28 @@ export default class Svg {
             const y2 = y1 - (this.STANDARD_FONT_SIZE / 2);
             const x3 = x2;
             const y3 = y2 + (this.STANDARD_FONT_SIZE);
-            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`
+            path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`;
         }
-        return path
+        const triangle = document.createElementNS(this.SVGNS, `path`);
+        triangle.setAttributeNS(null, `d`, path);
+        expandButton.appendChild(triangle);
+        expandButton.id = `expand-${id}`;
+        expandButton.setAttributeNS(null, `pointer-events`, `bounding-box`);    // handled with classlist?
+        return expandButton;
+    }
+
+    static createNodeGroup(id) {
+        const nodeGroup = document.createElementNS(this.SVGNS, `g`);
+        nodeGroup.id = `node-${id}`;
+        nodeGroup.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled by under rect -rethink
+        return nodeGroup;
     }
 
     static createRectangle(width, height, depthOfNode) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle = this.resizeRectangle(rectangle, height, width);
+        rectangle.setAttributeNS(null, `rx`, `7`);
+        // rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
         return rectangle;
     }
 
@@ -292,6 +307,7 @@ export default class Svg {
         // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
         const cubicCurve = Svg.buildPath(sourceBox, destBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
+        edge.setAttributeNS(null, `pointer-events`, `none`);
         return edge;
     }
 
@@ -306,26 +322,27 @@ export default class Svg {
         return svgText;
     }
 
-    static clearSvg(svg) {
-        svg.childNodes.forEach((gNode) => {
-            while (svg.firstChild) {
-                //The list is LIVE so it will re-index each call
-                svg.removeChild(svg.firstChild);
+    static clearBackground(id) {
+        const background = Svg.fetchBackground(id);
+        background.childNodes.forEach((gNode) => {
+            while (background.firstChild) {
+                // The list is LIVE so it will re-index each call
+                background.removeChild(background.firstChild);
             }
-
         });
     }
 
-    static createShowTriangle(width, height, isExpanded) {
-        let triangle = document.createElementNS(this.SVGNS, `path`);
-        let path = Svg.composeTrianglePath(width, isExpanded);
-        triangle.setAttributeNS(null, `d`, path);
-        return triangle;
+    static createBackground(id) {
+        const group = document.createElementNS(this.SVGNS, `g`);
+        group.id = `background-${id}`;
+        group.setAttributeNS(null, `pointer-events`, `bounding-box`);
+        return group;
     }
 
-    static createGroup(id){
+    static createSubGroup(id) {
         const group = document.createElementNS(this.SVGNS, `g`);
-        group.id = id;
+        group.id = `subgroup-${id}`;
+        group.setAttributeNS(null, `pointer-events`, `none`);
         return group;
     }
 
@@ -350,38 +367,72 @@ export default class Svg {
 
 
     static fetchEdgeToCursor() {
-        let cursorEdge = document.querySelector(`[id$=cursor]`);
+        const cursorEdge = document.querySelector(`[id$=cursor]`);
         return cursorEdge;
     }
+
     static fetchEdgeTo(nodeId) {
-        let incomingEdges = document.querySelector(`[id$=edge-${nodeId}]`);
+        const incomingEdges = document.querySelector(`[id$=edge-${nodeId}]`);
         return incomingEdges;
     }
-    static fetchEdgesFrom(nodeId){
-        let outgoingEdges = Array.from(document.querySelectorAll(`[id^=edge-${nodeId}]`));
+
+    static fetchEdgesFrom(nodeId) {
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=edge-${nodeId}]`));
         return outgoingEdges;
     }
-    static fetchNodeGroup(id){
+
+    static fetchNodeGroup(id) {
         return document.getElementById(`node-${id}`);
     }
 
-    static fetchRectangle(id){
-        return document.getElementById(`rect-${id}`);
-    }
-    static fetchGroup(id){
-        return document.getElementById(`group-${id}`);
+    static fetchExpandButton(id) {
+        return document.getElementById(`expand-${id}`);
     }
 
-    static fetchTargetId(svgElement){
+    static fetchAddButton(id) {
+        return document.getElementById(`add-${id}`);
+    }
+
+
+    static fetchRectangle(id) {
+        return document.getElementById(`rect-${id}`);
+    }
+
+
+    static fetchBackground() {
+        return document.getElementById(`background-jag`);
+    }
+
+    static fetchTargetId(svgElement) {
         let id;
         if (svgElement.id) {
             id = svgElement.id.split(`-`)[1];
-        }
-        else {
+        } else {
             id = Svg.fetchTargetId(svgElement.parentNode);
         }
         return id;
     }
 
+    static fetchTargetElementType(svgElement) {
+        let id;
+        if (svgElement.id) {
+            id = svgElement.id.split(`-`)[0];
+        } else {
+            id = Svg.fetchTargetElementType(svgElement.parentNode);
+        }
+        return id;
+    }
+
+    static fetchEdgeSourceId(edge) {
+        const sourceEdgeId = edge.id.split(`:`)[0];
+        const sourceId = sourceEdgeId.split(`-`)[1];
+        return sourceId;
+    }
+
+    static fetchEdgeDestinationId(edge) {
+        const sourceDestinationId = edge.id.split(`:`)[1];
+        const destinationId = sourceDestinationId.split(`-`)[1];
+        return destinationId;
+    }
 
 }

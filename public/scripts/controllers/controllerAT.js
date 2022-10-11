@@ -82,7 +82,6 @@ export default class ControllerAT extends Controller {
 
         // Event function (event parameter unused)
         window.onblur = function () {
-            console.log(`window.onblur`);
         };
     }
 
@@ -98,6 +97,7 @@ export default class ControllerAT extends Controller {
         this._playground.addEventListener(`event-activity-created`, this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
         this._playground.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node isExpanded property changed
+        this._playground.addEventListener(`event-nodes-updated`, this.eventNodesUpdatedHandler.bind(this));                   // Node isExpanded property changed
         this._playground.addEventListener(`event-nodes-selected`, this.eventNodesSelectedHandler.bind(this));               // mouse clicks on nodes
         this._playground.addEventListener(`event-node-repositioned`, this.eventNodeRepositionedHandler.bind(this));         // mouse movement event
         this._playground.addEventListener(`event-nodes-connected`, this.eventNodesConnectedHandler.bind(this));             // onEdgeFinalized between nodes (user connects)
@@ -197,6 +197,22 @@ export default class ControllerAT extends Controller {
     }
 
 
+    async eventNodesUpdatedHandler(event) {
+        let projectNode;
+        const updatedNodeModels = event.detail.nodeModels;
+        const jagPromises = [];
+        updatedNodeModels.forEach((updatedNodeModel) => {
+            if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
+                projectNode = this.fetchProject(updatedNodeModel.projectId);
+                projectNode.replaceChild(updatedNodeModel);
+            } else {
+                projectNode = updatedNodeModel;
+            }
+            jagPromises.push(StorageService.update(projectNode, `node`));
+        })
+        await Promise.all(jagPromises);
+    }
+
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
         this._properties.handleSelectionUpdate(selectedNodeArray);
@@ -217,12 +233,12 @@ export default class ControllerAT extends Controller {
         const parentNodeId = event.detail.parentNodeId;
         const childNodeId = event.detail.childNodeId;
 
+
         const projectModel = this.fetchProject(projectNodeId);
         const parentNodeModel = this.searchTreeForId(projectModel, parentNodeId);
         parentNodeModel.isExpanded = true;
 
         const childNodeModel = this.fetchProject(childNodeId);
-        console.log(`Local>> (Adopting - Project ${projectModel.name} assimilating node ${childNodeModel.name}) `);
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
             this._playground._rebuildNodeView(projectModel);
@@ -232,33 +248,37 @@ export default class ControllerAT extends Controller {
                 this._timeview.refreshTimeview();
             }
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
-            parentNodeModel.addChild(childNodeModel);
+            parentNodeModel.addChild(childNodeModel);  // dont think this does anything here... or?
 
             if (parentNodeModel.activity.connector.execution === `node.execution.none`) {
                 parentNodeModel.activity.connector.execution = `node.execution.sequential`;
             }
 
-            childNodeModel.parent = null;
-            childNodeModel.parentId = null;  // /         This changed because of the extra reverse step in AddChild. Change that then fix this.
+            childNodeModel.parent = parentNodeModel;              //  useless as we are about to go into and out of storage -- which drops this
+            childNodeModel.parentId = parentNodeModel.id;  // /         This changed because of the extra reverse step in AddChild. Change that then fix this.  //??
+            childNodeModel.projectId = parentNodeModel.projectId;  // this is actually covered in the next statement 'repopulateProject'-- no harm here
 
             this.repopulateProject(parentNodeModel, projectNodeId);
             childNodeModel.childId = childId;  // this could also be done later. ok here
 
-            event.detail.nodeModel = childNodeModel;      // update the child - this will set up this node as a non-root.
-            await this.eventNodeUpdatedHandler(event);
+//  IF WE NEED TO UNDO THIS -- IT WAS UPDATE NODE (CHILD) FOLLOWED BY UPDATE ACTIVITY(PARENT)
+            // The problem was getting the adopted node to register as gone with playground.
 
             event.detail.activity = parentNodeModel.activity;
             await this.eventActivityUpdatedHandler(event);
+
+            event.detail.nodeModelId = childNodeModel.id;      // update the child - this will set up this node as a non-root.
+            await this.eventProjectDeletedHandler(event);
         }
     }
 
 
-    async eventPlaygroundClickedHandler(event) {
-        const unselectedNodes = event.detail.unselectedNodeArray;
-        if (unselectedNodes.length > 0) {
-            const projectNode = unselectedNodes[0].getAncestor();
-            await StorageService.update(projectNode, `node`);
-        }
+    async eventPlaygroundClickedHandler() {
+        // const unselectedNodes = event.detail.unselectedNodeArray;
+        // if (unselectedNodes.length > 0) {
+        //     const projectNode = unselectedNodes[0].getAncestor();
+        //     await StorageService.update(projectNode, `node`);
+        // }
         this._properties.handleSelectionUnselected();
     }
 

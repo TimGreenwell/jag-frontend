@@ -164,7 +164,7 @@ jag-playground svg text.participation-label {
     font-weight: 900;
     font-family: FontAwesome;
 }
-/**/
+/******************************************************************************/
 jag-playground #playground-svg {
     overflow-x: auto;
     overflow-y: auto;
@@ -172,14 +172,23 @@ jag-playground #playground-svg {
 
 jag-playground #playground-svg rect {
     pointer-events: bounding-box;
-    rx: 7;
+    /*rx: 7;           interesting: this works but says not valid..*/
     stroke-width: 4;
+}
+
+jag-playground #playground-svg .button {
+    pointer-events: bounding-box;
 }
 
 jag-playground #playground-svg .possibleChild:hover {
     font-weight: bold;
 }
+jag-playground #playground-svg #hidden {
+    visibility: hidden;
+    /*experiment with display:none*/
+}
 
+/******************************************************************************/
 
 jag-playground .popup-box {
     background-color: rgba(0, 0, 0, 0.60);

@@ -116,7 +116,6 @@ class AtPlayground extends Popupable {
      */
 
     _handleEdgeSelected(e) {
-        console.log("edge selected");
         if (e.detail.selected) {
             this._selectedActivityNodeElementSet.add(e.target);
         } else {
@@ -148,7 +147,6 @@ class AtPlayground extends Popupable {
     }
 
     onEdgeUpdated(e) {
-        console.log(`ONEDGEUPDATED is getting called.`);
         if (!this._is_edge_being_created) {
             return;
         }
@@ -158,7 +156,6 @@ class AtPlayground extends Popupable {
     }
 
     onEdgeFinalized(e) {
-        console.log(`ONEDGEFINALIZED is getting called.`);
         const node = e.target.offsetParent;
 
         if (!this._is_edge_being_created) {
@@ -216,7 +213,6 @@ class AtPlayground extends Popupable {
     }
 
     onEdgeCanceled(e, node) {
-        console.log(`ONEDGECANCELED is getting called.`);
         this.cancelEdge();
     }
 

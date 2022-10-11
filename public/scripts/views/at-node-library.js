@@ -112,7 +112,7 @@ customElements.define(`node-library`, class extends HTMLElement {
                 this.dispatchEvent(new CustomEvent(`event-project-selected`, {
                     detail: {
                         projectModel: newNodeModel,
-                        isExpanded: event.shiftKey
+                        isExpanded: !event.shiftKey
                     }
                 }));
             });
@@ -121,7 +121,7 @@ customElements.define(`node-library`, class extends HTMLElement {
                 this.dispatchEvent(new CustomEvent(`event-project-selected`, {
                     detail: {
                         projectModel: newNodeModel,
-                        isExpanded: event.shiftKey
+                        isExpanded: !event.shiftKey
                     }
                 }));
             });

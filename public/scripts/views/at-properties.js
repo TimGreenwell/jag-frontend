@@ -335,7 +335,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
         if (this._nodeModel) {
-            console.log(this._$executionSelect.value);
             this._nodeModel.activity.connector.execution = this._$executionSelect.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
