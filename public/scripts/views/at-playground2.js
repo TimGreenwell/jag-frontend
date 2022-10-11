@@ -32,7 +32,6 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.appendChild(this._playgroundSvg);
 
 
-
         // SVG control (panning, zooming)
         this.windowSize = null;
         this.svgCursor = new Point();
@@ -89,8 +88,6 @@ class AtPlayground extends Popupable {
         if (elementType === `background`) {
             this.svgMouseDownEvent(e);
         }
-
-
     }
 
     shift() {
@@ -199,7 +196,7 @@ class AtPlayground extends Popupable {
             const groupTransformX = Number(transformComponents.translate[0]);
             const groupTransformY = Number(transformComponents.translate[1]);
             const deltaX = groupTransformX - nodeModel.x;
-            const deltaY = groupTransformY - nodeModel.y
+            const deltaY = groupTransformY - nodeModel.y;
             if ((deltaX !== 0) || (deltaY !== 0)) {
                 nodeModel.x = groupTransformX;
                 nodeModel.y = groupTransformY;
@@ -238,9 +235,9 @@ class AtPlayground extends Popupable {
                    Events
     */
 
-     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
-          const rectangle = e.target;
-     const nodeModelId = rectangle.id.replace(`rect-`, ``);
+    eventNodeSelected(e) {           // on mousedown  applied during jag-node create
+        const rectangle = e.target;
+        const nodeModelId = rectangle.id.replace(`rect-`, ``);
         this.unselectAllNodes();
         const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
         if ((e.ctrlKey) || (!selectedNodeModel.isExpanded)) {
@@ -308,7 +305,7 @@ class AtPlayground extends Popupable {
     }
 
     toggleExpand(e) {
-         e.stopPropagation();
+        e.stopPropagation();
         const id = Svg.fetchTargetId(e.target);
         const nodeModel = this.retrieveNodeModel(id);
         nodeModel.isExpanded = !nodeModel.isExpanded;
@@ -370,7 +367,6 @@ class AtPlayground extends Popupable {
     }
 
     buildJointActivityGraph(parentGroup, nodeModel) {
-
         const nodeBox = {x: nodeModel.x,
             y: nodeModel.y,
             width: 0,
@@ -960,7 +956,7 @@ class AtPlayground extends Popupable {
         // 1) Everything is unselected - let controller know.
         // 2) Prepare for panning
 
-        console.log(`SELECTED THE BACKGROUND!!!!!!!!!!!!!!!!!`)
+        console.log(`SELECTED THE BACKGROUND!!!!!!!!!!!!!!!!!`);
 
         const unselectedNodeArray = this.selectedNodes;
         this.unselectAllNodes();
@@ -978,6 +974,13 @@ class AtPlayground extends Popupable {
             x: e.clientX,
             y: e.clientY
         };
+
+
+        // ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+
+        // this.downloadSvg(this._playgroundSvg, "jag.png")
+        this.saveSvg(this._playgroundSvg, "jag.svg")
+
         this.addEventListener(`mousemove`, this._boundDragView);
         this.addEventListener(`mouseup`, this._boundStopDragView);
     }
@@ -1039,6 +1042,85 @@ class AtPlayground extends Popupable {
             );
         }
     }
+
+
+    copyStylesInline(destinationNode, sourceNode) {
+        const containerElements = [`svg`, `g`];
+        for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
+            const child = destinationNode.childNodes[cd];
+            if (containerElements.indexOf(child.tagName) != -1) {
+                this.copyStylesInline(child, sourceNode.childNodes[cd]);
+                continue;
+            }
+            const style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
+            if (style == `undefined` || style == null) {
+                continue;
+            }
+            for (let st = 0; st < style.length; st++) {
+                child.style.setProperty(style[st], style.getPropertyValue(style[st]));
+            }
+        }
+    }
+
+
+    triggerDownload (imgURI, fileName) {
+        let evt = new MouseEvent("click", {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        });
+        let a = document.createElement("a");
+        a.setAttribute("download", fileName);
+        a.setAttribute("href", imgURI);
+        a.setAttribute("target", '_blank');
+        a.dispatchEvent(evt);
+    }
+
+    downloadSvg(svg, fileName) {
+        const copy = svg.cloneNode(true);
+        this.copyStylesInline(copy, svg);
+        const canvas = document.createElement(`canvas`);
+        const bbox = svg.getBBox();
+        canvas.width = bbox.width;
+        canvas.height = bbox.height;
+        const ctx = canvas.getContext(`2d`);
+        ctx.clearRect(0, 0, bbox.width, bbox.height);
+        const data = (new XMLSerializer()).serializeToString(copy);
+        const DOMURL = window.URL || window.webkitURL || window;
+        const img = new Image();
+        const svgBlob = new Blob([data], {type: `image/svg+xml;charset=utf-8`});
+        const url = DOMURL.createObjectURL(svgBlob);
+        img.onload = this.printIt(ctx, img, DOMURL, canvas, url, fileName).bind(this);
+        img.src = url;
+    }
+
+    printIt(ctx, img, DOMURL, canvas, url, fileName) {
+        ctx.drawImage(img, 0, 0);
+        DOMURL.revokeObjectURL(url);
+        if (typeof navigator !== `undefined` && navigator.msSaveOrOpenBlob) {
+            const blob = canvas.msToBlob();
+            navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+            const imgURI = canvas.
+            toDataURL(`image/png`).
+            replace(`image/png`, `image/octet-stream`);
+            this.triggerDownload(imgURI, fileName);
+        }
+        document.removeChild(canvas);
+    }
+
+
+
+printSvg(name){
+        Svg.saveSvg(this._playgroundSvg, name);
+}
+
+
+
+
+
+
+
 
 
 }

@@ -7,6 +7,7 @@
  */
 
 import TimeviewBox from '../models/svg-box.js';
+import Svg from "../utils/svg.js";
 // customElements.define(`jag-timeview`, class extends HTMLElement {
 
 class AtTimeview extends HTMLElement {
@@ -57,6 +58,11 @@ class AtTimeview extends HTMLElement {
         this._boundStopDragView = this.stopDragView.bind(this);
         this._treeHeight = null;
     }
+
+    printSvg(name){
+        Svg.saveSvg(this._timeviewSvg, name);
+    }
+
 
     createFilterDefinition(){
         const defs = document.createElementNS(this.SVGNS, `defs`);

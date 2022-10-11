@@ -106,7 +106,8 @@ export default class ControllerAT extends Controller {
 
         this._properties.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
         this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
-        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file
+        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file as JSON
+        this._properties.addEventListener(`event-exportsvg-jag`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
         this._properties.addEventListener(`event-promote-project`, this.eventPromoteProjectHandler.bind(this));             // button to promote node to Jag (root)
         this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
 
@@ -331,6 +332,12 @@ export default class ControllerAT extends Controller {
         a.href = data;
         a.download = `${node.activity.name}.json`;
         a.click();
+    }
+
+    eventExportSvgHandler(event) {
+        const node = event.detail.node;
+        this._playground.printSvg(`${node.name}-jag.svg`);
+        this._timeview.printSvg(`${node.name}-layout.svg`);
     }
 
     async eventPromoteProjectHandler(event) {

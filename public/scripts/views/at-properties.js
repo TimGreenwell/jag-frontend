@@ -166,12 +166,19 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._annotations.className = `directProperty`;
         annotations_el.appendChild(this._annotations);
 
-        // Create export area
+        // Create JSON export area
         const export_el = FormUtils.createEmptyInputContainer(`export`);
         this._export = document.createElement(`button`);
-        this._export.innerHTML = `Export to File`;
+        this._export.innerHTML = `Export to JSON`;
         export_el.className = `directProperty`;
         export_el.appendChild(this._export);
+
+        // Create SVG export area
+        const exportSvg_el = FormUtils.createEmptyInputContainer(`export-svg`);
+        this._exportSvg = document.createElement(`button`);
+        this._exportSvg.innerHTML = `Export to SVG`;
+        exportSvg_el.className = `directProperty`;
+        exportSvg_el.appendChild(this._exportSvg);
 
         // Create projt area
         const projectButton_el = FormUtils.createEmptyInputContainer(`export`);
@@ -197,6 +204,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         propertyContainer.appendChild(bindings_el);
         propertyContainer.appendChild(annotations_el);
         propertyContainer.appendChild(export_el);
+        propertyContainer.appendChild(exportSvg_el);
         propertyContainer.appendChild(projectButton_el);
 
 
@@ -220,6 +228,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._$operatorSelect.addEventListener(`change`, this._handleOperatorChange.bind(this));
 
         this._export.addEventListener(`click`, this._handleExportClick.bind(this));
+        this._exportSvg.addEventListener(`click`, this._handleExportSvgClick.bind(this));
         this._projectButton.addEventListener(`click`, this._handleProjectButtonClick.bind(this));
     }
 
@@ -361,6 +370,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         e.stopImmediatePropagation();
         const node = this._nodeModel;
         this.dispatchEvent(new CustomEvent(`event-export-jag`, {
+            bubbles: true,
+            composed: true,
+            detail: {node: this._nodeModel}
+        }));
+    }
+
+    _handleExportSvgClick(e) {
+        e.stopImmediatePropagation();
+        const node = this._nodeModel;
+        this.dispatchEvent(new CustomEvent(`event-exportsvg-jag`, {
             bubbles: true,
             composed: true,
             detail: {node: this._nodeModel}
@@ -1080,6 +1099,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._consumesMap.disabled = !enabled;
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
+        this._exportSvg.disabled = !enabled;
         this._projectButton.disabled = !enabled;
 
         if (this._nodeModel && (enabled)) {
