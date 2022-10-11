@@ -185,9 +185,12 @@ class AtPlayground extends Popupable {
 
     stopDraggingNode(e) {
         e.preventDefault();
+        const nodeModelId = Svg.fetchTargetId(e.target);
+        const nodeGroup = Svg.fetchNodeGroup(nodeModelId);
+        nodeGroup.setAttributeNS(null, `cursor`, `grab`);
         const nodesToMove = [];
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
-            const id = nodeItem.id.replace(`node-`, ``);
+            const id = Svg.fetchTargetId(nodeItem);
 
             const nodeModel = this._selectedActivityNodeMap.get(id);
 
@@ -220,7 +223,8 @@ class AtPlayground extends Popupable {
 
         this.svgSelectedItems.nodes.forEach((nodeGroup, key) => {
             // A static position can be found as x,y in the nodeModel in selectedItems map
-            const nodeModel = this._selectedActivityNodeMap.get(key.replace(`node-`, ``));
+            const id = Svg.fetchTargetId(nodeGroup);
+            const nodeModel = this._selectedActivityNodeMap.get(id);
             Svg.modifyTransform(nodeGroup, nodeModel, diffX, diffY);
         });
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
@@ -236,8 +240,9 @@ class AtPlayground extends Popupable {
     */
 
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
-        const rectangle = e.target;
-        const nodeModelId = rectangle.id.replace(`rect-`, ``);
+        const nodeModelId = Svg.fetchTargetId(e.target);
+        const rectangle = Svg.fetchRectangle(nodeModelId);
+        rectangle.setAttributeNS(null, `cursor`, `grabbing`);
         this.unselectAllNodes();
         const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
         if ((e.ctrlKey) || (!selectedNodeModel.isExpanded)) {
@@ -259,7 +264,7 @@ class AtPlayground extends Popupable {
         this._selectedActivityNodeMap.forEach((value, key) => {
             const incomingEdge = Svg.fetchEdgeTo(key);
             const outgoingEdges = Svg.fetchEdgesFrom(key);
-            const node = Svg.fetchNodeGroup(key);     //*
+            const node = Svg.fetchNodeGroup(key);
             if (incomingEdge) {
                 this.svgSelectedItems.incomingEdges.push(incomingEdge);
             }
@@ -275,8 +280,6 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.addEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.addEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.addEventListener(`mouseleave`, this._boundStopDraggingNode);
-
-        // e.stopPropagation();  // Don't let it bubble up to the playgroundClicker handler.
     }
 
     collapseAll(nodeModel) {
@@ -379,16 +382,15 @@ class AtPlayground extends Popupable {
         parentGroup.appendChild(subgroup);
         subgroup.insertBefore(nodeContentGroup, subgroupTop);
 
-        const labelElement = Svg.createTextElement(`${nodeModel.name}`, `text-${nodeModel.id}`);
+        const labelElement = Svg.createTextElement(nodeModel.name, nodeModel.id);
         const svgText = Svg.positionItem(labelElement, Svg.LABEL_INDENT, 0);
         const groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
         nodeBox.height = Svg.STANDARD_BOX_HEIGHT;
         nodeBox.width = Math.round(this.labelWidth(labelElement) + (Svg.LABEL_INDENT * 3) + Svg.BUTTON_SIZE);
-        const svgRect = Svg.createRectangle(nodeBox.width, nodeBox.height);
+        const svgRect = Svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         Svg.positionItem(svgRect, 0, 0);
 
-        svgRect.id = `rect-${nodeModel.id}`;
         Svg.applyDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
         nodeContentGroup.insertBefore(svgRect, svgText);
 
@@ -412,14 +414,8 @@ class AtPlayground extends Popupable {
 
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);
-            const svgEdge = Svg.createEdge(nodeBox, subNodeBox);
-            svgEdge.id = `edge-${nodeModel.id}:edge-${child.id}`;
-
+            const svgEdge = Svg.createEdge(nodeModel.id, child.id, nodeBox, subNodeBox);
             subgroup.appendChild(svgEdge);
-            // const edge = this._createEdge($newViewNode, child.id);         // this wants a jag-node - not a nodeModel
-            // const $childViewNode = this._buildNodeViewFromNodeModel(child);                          // first build child
-            // edge.setSubActivityNode($childViewNode);                                                       // then connect tail of edge to it.
-            // edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
         });
         return nodeBox;
     }
@@ -475,8 +471,7 @@ class AtPlayground extends Popupable {
             width: 0};
 
 
-        const edge = Svg.createEdge(sourceBox, destBox);
-        edge.id = `edge-${parentNodeModel.id}:cursor`;
+        const edge = Svg.createEdge(parentNodeModel.id, Svg.CURSOR, sourceBox, destBox);
         this._playgroundSvg.appendChild(edge);
         this.currentNodeModel = parentNodeModel;
         document.addEventListener(`mousemove`, this._boundLinkNodes);
@@ -796,23 +791,9 @@ class AtPlayground extends Popupable {
     // }
 
     deleteNodeModel(deadId) {
-        // The deadId is a node marked for deletion.  Death can either be
-        // annihilation or absorption into another project.  AtPlayground nodes
-        // with an ancestor matching deadId are removed.
-        // let deadIdModel = this._viewedProjectsMap.get(deadId)
         this._viewedProjectsMap.delete(deadId);
-        // for (const node of this._activeActivityNodeElementSet) {           // search through active elements
-        //     //        if (node.nodeModel.projectId === deadId) {         // is this node in the tree of the currentNodeModel?
-        //     if (!this._viewedProjectsMap.has(node.nodeModel.projectId)) {
-        //         node.removeAllEdges();
-        //         node.detachHandlers();
-        //         this._activeActivityNodeElementSet.delete(node);
-        //         this._playgroundSvg.removeChild(node);
-        //     }
-        // }
         this._refreshPlayground();
     }
-
 
     getNodeViewById(id) {
         for (const node of this._activeActivityNodeElementSet) {           // search through active elements
@@ -975,12 +956,6 @@ class AtPlayground extends Popupable {
             y: e.clientY
         };
 
-
-        // ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
-
-        // this.downloadSvg(this._playgroundSvg, "jag.png")
-        this.saveSvg(this._playgroundSvg, "jag.svg")
-
         this.addEventListener(`mousemove`, this._boundDragView);
         this.addEventListener(`mouseup`, this._boundStopDragView);
     }
@@ -1063,16 +1038,16 @@ class AtPlayground extends Popupable {
     }
 
 
-    triggerDownload (imgURI, fileName) {
-        let evt = new MouseEvent("click", {
+    triggerDownload(imgURI, fileName) {
+        const evt = new MouseEvent(`click`, {
             view: window,
             bubbles: false,
             cancelable: true
         });
-        let a = document.createElement("a");
-        a.setAttribute("download", fileName);
-        a.setAttribute("href", imgURI);
-        a.setAttribute("target", '_blank');
+        const a = document.createElement(`a`);
+        a.setAttribute(`download`, fileName);
+        a.setAttribute(`href`, imgURI);
+        a.setAttribute(`target`, `_blank`);
         a.dispatchEvent(evt);
     }
 
@@ -1102,25 +1077,17 @@ class AtPlayground extends Popupable {
             navigator.msSaveOrOpenBlob(blob, fileName);
         } else {
             const imgURI = canvas.
-            toDataURL(`image/png`).
-            replace(`image/png`, `image/octet-stream`);
+                toDataURL(`image/png`).
+                replace(`image/png`, `image/octet-stream`);
             this.triggerDownload(imgURI, fileName);
         }
         document.removeChild(canvas);
     }
 
 
-
-printSvg(name){
+    printSvg(name) {
         Svg.saveSvg(this._playgroundSvg, name);
-}
-
-
-
-
-
-
-
+    }
 
 
 }

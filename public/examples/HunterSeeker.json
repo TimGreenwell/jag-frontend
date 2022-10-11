@@ -16,21 +16,220 @@
       "id": "a54d77cf8ec4"
     },
     {
-      "urn": "tasks:hk:acquire-target",
-      "id": "b5e158abb041"
-    },
-    {
       "urn": "tasks:hk:hunt-target",
       "id": "77345d616a14"
     },
     {
       "urn": "tasks:hk:kill-target",
       "id": "3e45f3d5009b"
+    },
+    {
+      "urn": "tasks:hk:search-targetarea",
+      "id": "fec752b1"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
+},{
+  "urn": "tasks:hk:hunt-target",
+  "name": "Hunt Target",
+  "description": "Track, maintain control and corner.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:chase",
+      "id": "533d11d9"
+    },
+    {
+      "urn": "tasks:hk:contain",
+      "id": "b62c1ea0"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:chase",
+  "name": "Follow",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:determine-chaseparameters",
+      "id": "3480c762"
+    },
+    {
+      "urn": "tasks:hk:align",
+      "id": "9b943084"
+    },
+    {
+      "urn": "tasks:hk:determine-chaseintercepts",
+      "id": "c0bc8b8f"
+    },
+    {
+      "urn": "tasks:hk:control-support",
+      "id": "5a0f5355"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-chaseparameters",
+  "name": "Determine Chase Profile",
+  "description": "Use drone type, target movement, aggression, LOS availability to determine optimal chase position",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:align",
+  "name": "Align",
+  "description": "1) aiming\n2) constraints on aiming\n3)constraints on firing",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.parallel",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:determine-angle",
+      "id": "9299677d5bb9"
+    },
+    {
+      "urn": "tasks:hk:determine-altitude",
+      "id": "b5b936451ff1"
+    },
+    {
+      "urn": "tasks:hk:goto-relativexy",
+      "id": "92002dfce424"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-altitude",
+  "name": "Determine Altitude",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-angle",
+  "name": "Determine Angle",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:goto-relativexy",
+  "name": "Goto Relative XY",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:determine-chaseintercepts",
+  "name": "Determine Chase Intercepts",
+  "description": "Predict loss of sight or inoperability",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:control-support",
+  "name": "Control Support",
+  "description": "Command support to best position or change roles.",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:contain",
+  "name": "Contain",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
 },{
   "urn": "tasks:hk:prepare-mission",
   "name": "Prepare Mission",
@@ -65,41 +264,9 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:choose-plan",
-  "name": "Choose plan",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:flight-checks",
-  "name": "flight-checks",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
   "urn": "tasks:hk:config-target",
   "name": "Config Target",
-  "description": "",
+  "description": "Team leader defines target",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -122,6 +289,22 @@
   "isLocked": false,
   "collapsed": true
 },{
+  "urn": "tasks:hk:config-targetarea",
+  "name": "Config Target area",
+  "description": "Maps, weather, etc",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
   "urn": "tasks:hk:config-targetobject",
   "name": "Config Target object",
   "description": "attribute, behavior and common locales",
@@ -138,9 +321,25 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:config-targetarea",
-  "name": "Config Target area",
-  "description": "Maps, weather, etc",
+  "urn": "tasks:hk:flight-checks",
+  "name": "flight-checks",
+  "description": " ",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:choose-plan",
+  "name": "Choose plan",
+  "description": "",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -185,7 +384,7 @@
 },{
   "urn": "tasks:hk:analyze-maps",
   "name": "Analyze Maps",
-  "description": "",
+  "description": "Identify terrain, obstacles, shelter areas.",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -208,22 +407,6 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:plan-searchpattern",
-  "name": "Plan search Pattern",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
   "urn": "tasks:hk:plan-trackstrategy",
   "name": "Plan Track Strategy",
   "description": "",
@@ -240,9 +423,25 @@
   "isLocked": false,
   "collapsed": true
 },{
+  "urn": "tasks:hk:plan-searchpattern",
+  "name": "Plan search Pattern",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
   "urn": "tasks:hk:analyze-foe",
   "name": "Analyze Foe",
-  "description": "",
+  "description": "Estimate aggression, flight risk\n",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -293,88 +492,6 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:acquire-target",
-  "name": "Acquire target",
-  "description": "Fly to and search area for suspect",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:goto-searchstartpoint",
-      "id": "59f7d8137999"
-    },
-    {
-      "urn": "tasks:hk:search-targetarea",
-      "id": "abfbaf4eb929"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:goto-searchstartpoint",
-  "name": "Goto Search Start Point",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:goto-xy",
-      "id": "5fd03b3f60c7"
-    },
-    {
-      "urn": "tasks:hk:report-conditions",
-      "id": "70b270851408"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:goto-xy",
-  "name": "Goto XY",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:report-conditions",
-  "name": "Report Conditions",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
   "urn": "tasks:hk:search-targetarea",
   "name": "Search Target Area",
   "description": "",
@@ -388,21 +505,50 @@
   "outputs": [],
   "children": [
     {
-      "urn": "tasks:hk:fly-waypoints",
-      "id": "d02f716050fd"
+      "urn": "tasks:hk:develop-plans",
+      "id": "13e13bd9"
     },
     {
-      "urn": "tasks:hk:scan-fortarget",
-      "id": "bd71df0542e4"
+      "urn": "tasks:hk:choose-plan",
+      "id": "af784bb4"
+    },
+    {
+      "urn": "us:ihmc:implement-searchplan",
+      "id": "af3bd021"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
 },{
+  "urn": "us:ihmc:implement-searchplan",
+  "name": "Implement search plan",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:fly-waypoints",
+      "id": "b9c6b189"
+    },
+    {
+      "urn": "tasks:hk:scan-fortarget",
+      "id": "2c623f78"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
   "urn": "tasks:hk:fly-waypoints",
   "name": "Fly Waypoints",
-  "description": "",
+  "description": "Follow flight path",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -421,7 +567,7 @@
   "description": "",
   "type": "node.type.plan",
   "connector": {
-    "execution": "node.execution.none",
+    "execution": "node.execution.sequential",
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
@@ -435,38 +581,18 @@
     {
       "urn": "tasks:hk:id-target",
       "id": "70d6cb641d64"
-    },
-    {
-      "urn": "tasks:hk:assume-leadrole",
-      "id": "c06b80e4c85a"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:id-targettype",
-  "name": "ID Target Type",
-  "description": "%success for correct type (human).",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
   "urn": "tasks:hk:id-target",
   "name": "ID Target",
-  "description": "",
+  "description": "%success for target id",
   "type": "node.type.plan",
   "connector": {
-    "execution": "node.execution.none",
+    "execution": "node.execution.sequential",
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
@@ -486,38 +612,6 @@
       "id": "18e892842094"
     }
   ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:store-video",
-  "name": "Store Video",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:extract-features",
-  "name": "Extract Features",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
@@ -579,29 +673,8 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:assume-leadrole",
-  "name": "Assume Lead Role",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:assign-supportroles",
-      "id": "21cdb7730c81"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:assign-supportroles",
-  "name": "Assign Support Roles",
+  "urn": "tasks:hk:extract-features",
+  "name": "Extract Features",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -612,367 +685,6 @@
   "inputs": [],
   "outputs": [],
   "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:hunt-target",
-  "name": "Hunt Target",
-  "description": "Track, maintain control and corner.",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:control-target",
-      "id": "a33af48fcdf8"
-    },
-    {
-      "urn": "tasks:hk:reacquire-target",
-      "id": "52b5548bc7ff"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:control-target",
-  "name": "Control Target",
-  "description": "Maintain contact on target in lead or support roles.",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:lead-targetcontroll",
-      "id": "43c18c1d4eaa"
-    },
-    {
-      "urn": "tasks:hk:support-targetcontrol",
-      "id": "67593ce051f1"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:lead-targetcontroll",
-  "name": "Lead Target Control",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:chase",
-      "id": "9de98eb7e0a6"
-    },
-    {
-      "urn": "tasks:hk:surveil",
-      "id": "08467d08"
-    },
-    {
-      "urn": "tasks:hk:contain",
-      "id": "a5d6c2a0"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:chase",
-  "name": "Chase",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:surveil",
-  "name": "Surveil",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "tasks:hk:contain",
-  "name": "Contain",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "tasks:hk:support-targetcontrol",
-  "name": "Support Target Control",
-  "description": "[]",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:supprt-chase",
-      "id": "5bc9b08fe93e"
-    },
-    {
-      "urn": "tasks:hk:support-surveil",
-      "id": "8b828b56"
-    },
-    {
-      "urn": "tasks:hk:support-contain",
-      "id": "69d3e143"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:supprt-chase",
-  "name": "Supprt Chase",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:support-surveil",
-  "name": "Support Surveil",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "tasks:hk:support-contain",
-  "name": "Support Contain",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "tasks:hk:reacquire-target",
-  "name": "Reacquire Target",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:define-searcharea",
-      "id": "82722c73a6d5"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:define-searcharea",
-  "name": "Define Search Area",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:search-targetarea",
-      "id": "cd8835650697"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:search-targetarea",
-  "name": "Search Target Area",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:fly-waypoints",
-      "id": "d02f716050fd"
-    },
-    {
-      "urn": "tasks:hk:scan-fortarget",
-      "id": "bd71df0542e4"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:fly-waypoints",
-  "name": "Fly Waypoints",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:scan-fortarget",
-  "name": "Scan for Target",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:id-targettype",
-      "id": "3197675085c2"
-    },
-    {
-      "urn": "tasks:hk:id-target",
-      "id": "70d6cb641d64"
-    },
-    {
-      "urn": "tasks:hk:assume-leadrole",
-      "id": "c06b80e4c85a"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:id-targettype",
-  "name": "ID Target Type",
-  "description": "%success for correct type (human).",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:id-target",
-  "name": "ID Target",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:store-video",
-      "id": "1284bba48a8c"
-    },
-    {
-      "urn": "tasks:hk:extract-features",
-      "id": "49f86d75f20f"
-    },
-    {
-      "urn": "tasks:hk:match",
-      "id": "18e892842094"
-    }
-  ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
@@ -993,8 +705,24 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:extract-features",
-  "name": "Extract Features",
+  "urn": "tasks:hk:id-targettype",
+  "name": "ID Target Type",
+  "description": "%success for correct type (human).",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:choose-plan",
+  "name": "Choose plan",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1009,8 +737,8 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:match",
-  "name": "Match",
+  "urn": "tasks:hk:develop-plans",
+  "name": "Develop Plans",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1022,20 +750,24 @@
   "outputs": [],
   "children": [
     {
-      "urn": "tasks:hk:report",
-      "id": "cb31a44862a2"
+      "urn": "tasks:hk:analyze-maps",
+      "id": "d63bb8acfc1c"
     },
     {
-      "urn": "tasks:hk:await-verify",
-      "id": "206b527b5e64"
+      "urn": "tasks:hk:analyze-foe",
+      "id": "f3ead963f85b"
+    },
+    {
+      "urn": "tasks:hk:plan-abort",
+      "id": "2bbe9d9c0bf8"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:report",
-  "name": "Report",
+  "urn": "tasks:hk:plan-abort",
+  "name": "Plan Abort",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1050,25 +782,9 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:await-verify",
-  "name": "Await Verify",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:assume-leadrole",
-  "name": "Assume Lead Role",
-  "description": "",
+  "urn": "tasks:hk:analyze-maps",
+  "name": "Analyze Maps",
+  "description": "Identify terrain, obstacles, shelter areas.",
   "type": "node.type.plan",
   "connector": {
     "execution": "node.execution.none",
@@ -1079,16 +795,73 @@
   "outputs": [],
   "children": [
     {
-      "urn": "tasks:hk:assign-supportroles",
-      "id": "21cdb7730c81"
+      "urn": "tasks:hk:plan-searchpattern",
+      "id": "947e5a551c74"
+    },
+    {
+      "urn": "tasks:hk:plan-trackstrategy",
+      "id": "2470be3f7d23"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:assign-supportroles",
-  "name": "Assign Support Roles",
+  "urn": "tasks:hk:plan-trackstrategy",
+  "name": "Plan Track Strategy",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-searchpattern",
+  "name": "Plan search Pattern",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:analyze-foe",
+  "name": "Analyze Foe",
+  "description": "Estimate aggression, flight risk\n",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:plan-attackstrategy",
+      "id": "c52332675da3"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:plan-attackstrategy",
+  "name": "Plan Attack Strategy",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1108,17 +881,13 @@
   "description": "",
   "type": "node.type.plan",
   "connector": {
-    "execution": "node.execution.none",
+    "execution": "node.execution.sequential",
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
   "inputs": [],
   "outputs": [],
   "children": [
-    {
-      "urn": "tasks:hk:align",
-      "id": "f0869f56e02a"
-    },
     {
       "urn": "tasks:hk:verify",
       "id": "0ce2a8e369be"
@@ -1128,20 +897,20 @@
       "id": "00966f9cc913"
     },
     {
-      "urn": "tasks:hk:fire",
-      "id": "3ab8023c7faf"
+      "urn": "tasks:hk:determine-permissiblefiringenvelope",
+      "id": "bf1e75bc"
     },
     {
-      "urn": "tasks:hk:report",
-      "id": "070d39d6536f"
+      "urn": "tasks:hk:enter-permissiblefiringenvelope",
+      "id": "956fb77b"
     }
   ],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:align",
-  "name": "Align",
+  "urn": "tasks:hk:determine-permissiblefiringenvelope",
+  "name": "Determine permissible firing envelope",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1153,24 +922,24 @@
   "outputs": [],
   "children": [
     {
-      "urn": "tasks:hk:determine-angle",
-      "id": "9299677d5bb9"
-    },
-    {
       "urn": "tasks:hk:determine-altitude",
-      "id": "b5b936451ff1"
+      "id": "60e594c4"
     },
     {
       "urn": "tasks:hk:goto-relativexy",
-      "id": "92002dfce424"
+      "id": "0f9bb906"
+    },
+    {
+      "urn": "tasks:hk:determine-angle",
+      "id": "bae6c50a"
     }
   ],
   "bindings": [],
   "isLocked": false,
-  "collapsed": true
+  "collapsed": false
 },{
-  "urn": "tasks:hk:determine-angle",
-  "name": "Determine Angle",
+  "urn": "tasks:hk:determine-altitude",
+  "name": "Determine Altitude",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1185,8 +954,8 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:determine-altitude",
-  "name": "Determine Altitude",
+  "urn": "tasks:hk:determine-angle",
+  "name": "Determine Angle",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1217,12 +986,146 @@
   "isLocked": false,
   "collapsed": true
 },{
+  "urn": "tasks:hk:enter-permissiblefiringenvelope",
+  "name": "Enter permissible firing envelope",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:goto-altitude",
+      "id": "ecbc6055"
+    },
+    {
+      "urn": "tasks:hk:goto-angle",
+      "id": "49084671"
+    },
+    {
+      "urn": "tasks:hk:goto-relativexy",
+      "id": "7db15e06"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:goto-altitude",
+  "name": "Goto Altitude",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:goto-angle",
+  "name": "Goto angle",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "tasks:hk:goto-relativexy",
+  "name": "Goto Relative XY",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:engage",
+  "name": "Engage",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "tasks:hk:arm",
+      "id": "0b1632386219"
+    },
+    {
+      "urn": "tasks:hk:fire",
+      "id": "e319b46c"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:arm",
+  "name": "Arm",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:fire",
+  "name": "Fire",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
   "urn": "tasks:hk:verify",
   "name": "Verify",
   "description": "",
   "type": "node.type.plan",
   "connector": {
-    "execution": "node.execution.none",
+    "execution": "node.execution.sequential",
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
@@ -1246,38 +1149,6 @@
       "id": "f3dd21199b69"
     }
   ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:report",
-  "name": "Report",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:await-verify",
-  "name": "Await Verify",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
   "bindings": [],
   "isLocked": false,
   "collapsed": true
@@ -1314,81 +1185,24 @@
   "isLocked": false,
   "collapsed": true
 },{
-  "urn": "tasks:hk:engage",
-  "name": "Engage",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [
-    {
-      "urn": "tasks:hk:arm",
-      "id": "0b1632386219"
-    },
-    {
-      "urn": "tasks:hk:aim",
-      "id": "59353fa02e37"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:arm",
-  "name": "Arm",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:aim",
-  "name": "Aim",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
-  "urn": "tasks:hk:fire",
-  "name": "Fire",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": true
-},{
   "urn": "tasks:hk:report",
   "name": "Report",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": true
+},{
+  "urn": "tasks:hk:await-verify",
+  "name": "Await Verify",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -1408,8 +1222,8 @@
   "projectId": "6e3ed24e7a83",
   "isLocked": false,
   "isExpanded": true,
-  "x": 51,
-  "y": 160,
+  "x": 24,
+  "y": 201,
   "contextualName": "Kill Target",
   "contextualDescription": "First Draft",
   "subscriptions": [],
@@ -1419,15 +1233,15 @@
   "testReturnState": null,
   "children": [
     {
-      "id": "78d4bb3a18f2",
-      "urn": "tasks:hk:prepare-mission",
-      "childId": "a54d77cf8ec4",
+      "id": "04e427092b39",
+      "urn": "tasks:hk:hunt-target",
+      "childId": "77345d616a14",
       "parentId": "6e3ed24e7a83",
       "projectId": "6e3ed24e7a83",
       "isLocked": false,
       "isExpanded": true,
-      "x": 197,
-      "y": -156,
+      "x": 235,
+      "y": 63,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -1437,53 +1251,15 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "a12cc1205925",
-          "urn": "tasks:hk:choose-plan",
-          "childId": "c63fb4d76c5f",
-          "parentId": "78d4bb3a18f2",
+          "id": "10669712",
+          "urn": "tasks:hk:chase",
+          "childId": "533d11d9",
+          "parentId": "04e427092b39",
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 496,
-          "y": -166,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": []
-        },
-        {
-          "id": "6c6528365305",
-          "urn": "tasks:hk:flight-checks",
-          "childId": "58909691875a",
-          "parentId": "78d4bb3a18f2",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 498,
-          "y": -116,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": []
-        },
-        {
-          "id": "3ceb2af9bdc9",
-          "urn": "tasks:hk:config-target",
-          "childId": "7ea01e304957",
-          "parentId": "78d4bb3a18f2",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 505,
-          "y": -286,
+          "x": 454,
+          "y": 80,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -1493,15 +1269,15 @@
           "testReturnState": null,
           "children": [
             {
-              "id": "87b62f97473c",
-              "urn": "tasks:hk:config-targetobject",
-              "childId": "0d7e18e1c091",
-              "parentId": "3ceb2af9bdc9",
+              "id": "4fb9da84",
+              "urn": "tasks:hk:determine-chaseparameters",
+              "childId": "3480c762",
+              "parentId": "10669712",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 725,
-              "y": -333,
+              "x": 582,
+              "y": 0,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1512,16 +1288,112 @@
               "children": []
             },
             {
-              "id": "a869051aa7dc",
-              "urn": "tasks:hk:config-targetarea",
-              "childId": "05b8fc5668ca",
-              "parentId": "3ceb2af9bdc9",
+              "id": "46957317",
+              "urn": "tasks:hk:align",
+              "childId": "9b943084",
+              "parentId": "10669712",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 708,
-              "y": -291,
-              "contextualName": "Config Target area",
+              "x": 589,
+              "y": 55,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "e5b8acaa",
+                  "urn": "tasks:hk:determine-altitude",
+                  "childId": "b5b936451ff1",
+                  "parentId": "46957317",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 918,
+                  "y": 9,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "8c35aaad",
+                  "urn": "tasks:hk:determine-angle",
+                  "childId": "9299677d5bb9",
+                  "parentId": "46957317",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 907,
+                  "y": 57,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                },
+                {
+                  "id": "6eb31365",
+                  "urn": "tasks:hk:goto-relativexy",
+                  "childId": "92002dfce424",
+                  "parentId": "46957317",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 910,
+                  "y": 104,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "1f4efc62",
+              "urn": "tasks:hk:determine-chaseintercepts",
+              "childId": "c0bc8b8f",
+              "parentId": "10669712",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 569,
+              "y": 157,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "aa759782",
+              "urn": "tasks:hk:control-support",
+              "childId": "5a0f5355",
+              "parentId": "10669712",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 579,
+              "y": 104,
+              "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
@@ -1533,6 +1405,141 @@
           ]
         },
         {
+          "id": "f76be350",
+          "urn": "tasks:hk:contain",
+          "childId": "b62c1ea0",
+          "parentId": "04e427092b39",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 453,
+          "y": 19,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "78d4bb3a18f2",
+      "urn": "tasks:hk:prepare-mission",
+      "childId": "a54d77cf8ec4",
+      "parentId": "6e3ed24e7a83",
+      "projectId": "6e3ed24e7a83",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 209,
+      "y": 339,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "3ceb2af9bdc9",
+          "urn": "tasks:hk:config-target",
+          "childId": "7ea01e304957",
+          "parentId": "78d4bb3a18f2",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 404,
+          "y": 393,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "a869051aa7dc",
+              "urn": "tasks:hk:config-targetarea",
+              "childId": "05b8fc5668ca",
+              "parentId": "3ceb2af9bdc9",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 587,
+              "y": 448,
+              "contextualName": "Config Target area",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "87b62f97473c",
+              "urn": "tasks:hk:config-targetobject",
+              "childId": "0d7e18e1c091",
+              "parentId": "3ceb2af9bdc9",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 587,
+              "y": 388,
+              "contextualName": "Config Target object",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "6c6528365305",
+          "urn": "tasks:hk:flight-checks",
+          "childId": "58909691875a",
+          "parentId": "78d4bb3a18f2",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 409,
+          "y": 572,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "a12cc1205925",
+          "urn": "tasks:hk:choose-plan",
+          "childId": "c63fb4d76c5f",
+          "parentId": "78d4bb3a18f2",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 407,
+          "y": 537,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
           "id": "48f69f315adc",
           "urn": "tasks:hk:develop-plans",
           "childId": "8ebf2e2d0f0c",
@@ -1540,8 +1547,8 @@
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 508,
-          "y": -196,
+          "x": 404,
+          "y": 487,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -1558,8 +1565,8 @@
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 657,
-              "y": -226,
+              "x": 789,
+              "y": 529,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1569,15 +1576,15 @@
               "testReturnState": null,
               "children": [
                 {
-                  "id": "e12495da11c4",
-                  "urn": "tasks:hk:plan-searchpattern",
-                  "childId": "947e5a551c74",
+                  "id": "a0e3cd78f8b6",
+                  "urn": "tasks:hk:plan-trackstrategy",
+                  "childId": "2470be3f7d23",
                   "parentId": "4c17ce13ca48",
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 885,
-                  "y": -247,
+                  "x": 970,
+                  "y": 555,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1588,16 +1595,16 @@
                   "children": []
                 },
                 {
-                  "id": "a0e3cd78f8b6",
-                  "urn": "tasks:hk:plan-trackstrategy",
-                  "childId": "2470be3f7d23",
+                  "id": "e12495da11c4",
+                  "urn": "tasks:hk:plan-searchpattern",
+                  "childId": "947e5a551c74",
                   "parentId": "4c17ce13ca48",
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 885,
-                  "y": -217,
-                  "contextualName": "",
+                  "x": 968,
+                  "y": 596,
+                  "contextualName": "Plan search Pattern",
                   "contextualDescription": "",
                   "subscriptions": [],
                   "returnValue": null,
@@ -1616,8 +1623,8 @@
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 655,
-              "y": -186,
+              "x": 793,
+              "y": 486,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1634,8 +1641,8 @@
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 883,
-                  "y": -177,
+                  "x": 976,
+                  "y": 495,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1655,8 +1662,8 @@
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 654,
-              "y": -141,
+              "x": 799,
+              "y": 447,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1671,15 +1678,15 @@
       ]
     },
     {
-      "id": "6777d3ee7a37",
-      "urn": "tasks:hk:acquire-target",
-      "childId": "b5e158abb041",
+      "id": "a8d9dd3c",
+      "urn": "tasks:hk:search-targetarea",
+      "childId": "fec752b1",
       "parentId": "6e3ed24e7a83",
       "projectId": "6e3ed24e7a83",
       "isLocked": false,
       "isExpanded": true,
-      "x": 193,
-      "y": 23,
+      "x": 217,
+      "y": 202,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -1689,15 +1696,15 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "8a59d4976b23",
-          "urn": "tasks:hk:goto-searchstartpoint",
-          "childId": "59f7d8137999",
-          "parentId": "6777d3ee7a37",
+          "id": "32666a57",
+          "urn": "us:ihmc:implement-searchplan",
+          "childId": "af3bd021",
+          "parentId": "a8d9dd3c",
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 577,
-          "y": -80,
+          "x": 403,
+          "y": 301,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -1707,15 +1714,15 @@
           "testReturnState": null,
           "children": [
             {
-              "id": "0d98dd6eb323",
-              "urn": "tasks:hk:goto-xy",
-              "childId": "5fd03b3f60c7",
-              "parentId": "8a59d4976b23",
+              "id": "dd5efcd7",
+              "urn": "tasks:hk:fly-waypoints",
+              "childId": "b9c6b189",
+              "parentId": "32666a57",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 811,
-              "y": -114,
+              "isExpanded": false,
+              "x": 806,
+              "y": 324,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1726,54 +1733,209 @@
               "children": []
             },
             {
-              "id": "e4374426bbc4",
-              "urn": "tasks:hk:report-conditions",
-              "childId": "70b270851408",
-              "parentId": "8a59d4976b23",
+              "id": "fb01e37d",
+              "urn": "tasks:hk:scan-fortarget",
+              "childId": "2c623f78",
+              "parentId": "32666a57",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 806,
+              "y": 378,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": [
+                {
+                  "id": "ab0e6d6e",
+                  "urn": "tasks:hk:id-target",
+                  "childId": "70d6cb641d64",
+                  "parentId": "fb01e37d",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 993,
+                  "y": 434,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": [
+                    {
+                      "id": "4f8ab14a",
+                      "urn": "tasks:hk:match",
+                      "childId": "18e892842094",
+                      "parentId": "ab0e6d6e",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1180,
+                      "y": 474,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": [
+                        {
+                          "id": "7eb0f5f4",
+                          "urn": "tasks:hk:report",
+                          "childId": "cb31a44862a2",
+                          "parentId": "4f8ab14a",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1311,
+                          "y": 534,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": []
+                        },
+                        {
+                          "id": "6820ba44",
+                          "urn": "tasks:hk:await-verify",
+                          "childId": "206b527b5e64",
+                          "parentId": "4f8ab14a",
+                          "projectId": "6e3ed24e7a83",
+                          "isLocked": false,
+                          "isExpanded": true,
+                          "x": 1304,
+                          "y": 490,
+                          "contextualName": "",
+                          "contextualDescription": "",
+                          "subscriptions": [],
+                          "returnValue": null,
+                          "returnState": null,
+                          "testReturnValue": null,
+                          "testReturnState": null,
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "83be13e8",
+                      "urn": "tasks:hk:extract-features",
+                      "childId": "49f86d75f20f",
+                      "parentId": "ab0e6d6e",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1173,
+                      "y": 431,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    },
+                    {
+                      "id": "3d02e384",
+                      "urn": "tasks:hk:store-video",
+                      "childId": "1284bba48a8c",
+                      "parentId": "ab0e6d6e",
+                      "projectId": "6e3ed24e7a83",
+                      "isLocked": false,
+                      "isExpanded": true,
+                      "x": 1164,
+                      "y": 380,
+                      "contextualName": "",
+                      "contextualDescription": "",
+                      "subscriptions": [],
+                      "returnValue": null,
+                      "returnState": null,
+                      "testReturnValue": null,
+                      "testReturnState": null,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "id": "04aadc54",
+                  "urn": "tasks:hk:id-targettype",
+                  "childId": "3197675085c2",
+                  "parentId": "fb01e37d",
+                  "projectId": "6e3ed24e7a83",
+                  "isLocked": false,
+                  "isExpanded": true,
+                  "x": 986,
+                  "y": 366,
+                  "contextualName": "",
+                  "contextualDescription": "",
+                  "subscriptions": [],
+                  "returnValue": null,
+                  "returnState": null,
+                  "testReturnValue": null,
+                  "testReturnState": null,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "b60bdb2d",
+          "urn": "tasks:hk:choose-plan",
+          "childId": "af784bb4",
+          "parentId": "a8d9dd3c",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 431,
+          "y": 252,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "2000fb63",
+          "urn": "tasks:hk:develop-plans",
+          "childId": "13e13bd9",
+          "parentId": "a8d9dd3c",
+          "projectId": "6e3ed24e7a83",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 421,
+          "y": 206,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": [
+            {
+              "id": "c2d00483",
+              "urn": "tasks:hk:plan-abort",
+              "childId": "2bbe9d9c0bf8",
+              "parentId": "2000fb63",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
               "x": 807,
-              "y": -64,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "children": []
-            }
-          ]
-        },
-        {
-          "id": "03ba5e9ce705",
-          "urn": "tasks:hk:search-targetarea",
-          "childId": "abfbaf4eb929",
-          "parentId": "6777d3ee7a37",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 633,
-          "y": 10,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": [
-            {
-              "id": "6aa3388ed9d3",
-              "urn": "tasks:hk:fly-waypoints",
-              "childId": "d02f716050fd",
-              "parentId": "03ba5e9ce705",
-              "projectId": "6e3ed24e7a83",
-              "isLocked": false,
-              "isExpanded": true,
-              "x": 805,
-              "y": -16,
+              "y": 230,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1784,15 +1946,15 @@
               "children": []
             },
             {
-              "id": "468c911f9989",
-              "urn": "tasks:hk:scan-fortarget",
-              "childId": "bd71df0542e4",
-              "parentId": "03ba5e9ce705",
+              "id": "d787c6d0",
+              "urn": "tasks:hk:analyze-maps",
+              "childId": "d63bb8acfc1c",
+              "parentId": "2000fb63",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 803,
-              "y": 15,
+              "x": 790,
+              "y": 275,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -1802,15 +1964,15 @@
               "testReturnState": null,
               "children": [
                 {
-                  "id": "5fd8ae3b7685",
-                  "urn": "tasks:hk:id-targettype",
-                  "childId": "3197675085c2",
-                  "parentId": "468c911f9989",
+                  "id": "3f7217d5",
+                  "urn": "tasks:hk:plan-trackstrategy",
+                  "childId": "2470be3f7d23",
+                  "parentId": "d787c6d0",
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 1003,
-                  "y": -54,
+                  "x": 1129,
+                  "y": 251,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -1821,268 +1983,15 @@
                   "children": []
                 },
                 {
-                  "id": "da89942f6413",
-                  "urn": "tasks:hk:id-target",
-                  "childId": "70d6cb641d64",
-                  "parentId": "468c911f9989",
+                  "id": "cf5a44b1",
+                  "urn": "tasks:hk:plan-searchpattern",
+                  "childId": "947e5a551c74",
+                  "parentId": "d787c6d0",
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 1000,
-                  "y": 3,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": [
-                    {
-                      "id": "22fe930c042d",
-                      "urn": "tasks:hk:store-video",
-                      "childId": "1284bba48a8c",
-                      "parentId": "da89942f6413",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 1152,
-                      "y": -57,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": []
-                    },
-                    {
-                      "id": "89e76d0e82b6",
-                      "urn": "tasks:hk:extract-features",
-                      "childId": "49f86d75f20f",
-                      "parentId": "da89942f6413",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 1153,
-                      "y": -17,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": []
-                    },
-                    {
-                      "id": "6aae2c18349c",
-                      "urn": "tasks:hk:match",
-                      "childId": "18e892842094",
-                      "parentId": "da89942f6413",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 1149,
-                      "y": 23,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": [
-                        {
-                          "id": "a1d97240d218",
-                          "urn": "tasks:hk:report",
-                          "childId": "cb31a44862a2",
-                          "parentId": "6aae2c18349c",
-                          "projectId": "6e3ed24e7a83",
-                          "isLocked": false,
-                          "isExpanded": true,
-                          "x": 1319,
-                          "y": -17,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "children": []
-                        },
-                        {
-                          "id": "03494366350d",
-                          "urn": "tasks:hk:await-verify",
-                          "childId": "206b527b5e64",
-                          "parentId": "6aae2c18349c",
-                          "projectId": "6e3ed24e7a83",
-                          "isLocked": false,
-                          "isExpanded": true,
-                          "x": 1325,
-                          "y": 33,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "children": []
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "id": "b43ad17ce109",
-                  "urn": "tasks:hk:assume-leadrole",
-                  "childId": "c06b80e4c85a",
-                  "parentId": "468c911f9989",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": true,
-                  "x": 979,
-                  "y": 89,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": [
-                    {
-                      "id": "fa8e504f056d",
-                      "urn": "tasks:hk:assign-supportroles",
-                      "childId": "21cdb7730c81",
-                      "parentId": "b43ad17ce109",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 1193,
-                      "y": 93,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": []
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "04e427092b39",
-      "urn": "tasks:hk:hunt-target",
-      "childId": "77345d616a14",
-      "parentId": "6e3ed24e7a83",
-      "projectId": "6e3ed24e7a83",
-      "isLocked": false,
-      "isExpanded": true,
-      "x": 179,
-      "y": 297,
-      "contextualName": "",
-      "contextualDescription": "",
-      "subscriptions": [],
-      "returnValue": null,
-      "returnState": null,
-      "testReturnValue": null,
-      "testReturnState": null,
-      "children": [
-        {
-          "id": "2684c12ddb34",
-          "urn": "tasks:hk:control-target",
-          "childId": "a33af48fcdf8",
-          "parentId": "04e427092b39",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 341,
-          "y": 207,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": [
-            {
-              "id": "c89da2b49a7d",
-              "urn": "tasks:hk:lead-targetcontroll",
-              "childId": "43c18c1d4eaa",
-              "parentId": "2684c12ddb34",
-              "projectId": "6e3ed24e7a83",
-              "isLocked": false,
-              "isExpanded": true,
-              "x": 537,
-              "y": 121,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "children": [
-                {
-                  "id": "fa9e7aa2e7ca",
-                  "urn": "tasks:hk:chase",
-                  "childId": "9de98eb7e0a6",
-                  "parentId": "c89da2b49a7d",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": true,
-                  "x": 705,
-                  "y": 71,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": []
-                },
-                {
-                  "id": "44e3ae1f",
-                  "urn": "tasks:hk:surveil",
-                  "childId": "08467d08",
-                  "parentId": "c89da2b49a7d",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": false,
-                  "x": 700,
-                  "y": 111,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": []
-                },
-                {
-                  "id": "58b8c91d",
-                  "urn": "tasks:hk:contain",
-                  "childId": "a5d6c2a0",
-                  "parentId": "c89da2b49a7d",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": false,
-                  "x": 695,
-                  "y": 151,
+                  "x": 1147,
+                  "y": 294,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -2095,15 +2004,15 @@
               ]
             },
             {
-              "id": "ee6286fdab17",
-              "urn": "tasks:hk:support-targetcontrol",
-              "childId": "67593ce051f1",
-              "parentId": "2684c12ddb34",
+              "id": "af8e7929",
+              "urn": "tasks:hk:analyze-foe",
+              "childId": "f3ead963f85b",
+              "parentId": "2000fb63",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 528,
-              "y": 267,
+              "x": 822,
+              "y": 186,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -2113,15 +2022,15 @@
               "testReturnState": null,
               "children": [
                 {
-                  "id": "7b770f2f5b61",
-                  "urn": "tasks:hk:supprt-chase",
-                  "childId": "5bc9b08fe93e",
-                  "parentId": "ee6286fdab17",
+                  "id": "3f1cc558",
+                  "urn": "tasks:hk:plan-attackstrategy",
+                  "childId": "c52332675da3",
+                  "parentId": "af8e7929",
                   "projectId": "6e3ed24e7a83",
                   "isLocked": false,
                   "isExpanded": true,
-                  "x": 704,
-                  "y": 236,
+                  "x": 1069,
+                  "y": 193,
                   "contextualName": "",
                   "contextualDescription": "",
                   "subscriptions": [],
@@ -2130,317 +2039,6 @@
                   "testReturnValue": null,
                   "testReturnState": null,
                   "children": []
-                },
-                {
-                  "id": "fdf0d602",
-                  "urn": "tasks:hk:support-surveil",
-                  "childId": "8b828b56",
-                  "parentId": "ee6286fdab17",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": false,
-                  "x": 704,
-                  "y": 271,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": []
-                },
-                {
-                  "id": "5ba02848",
-                  "urn": "tasks:hk:support-contain",
-                  "childId": "69d3e143",
-                  "parentId": "ee6286fdab17",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": false,
-                  "x": 706,
-                  "y": 301,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": []
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "2a11936aba1d",
-          "urn": "tasks:hk:reacquire-target",
-          "childId": "52b5548bc7ff",
-          "parentId": "04e427092b39",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 328,
-          "y": 417,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": [
-            {
-              "id": "7353bbf671b6",
-              "urn": "tasks:hk:define-searcharea",
-              "childId": "82722c73a6d5",
-              "parentId": "2a11936aba1d",
-              "projectId": "6e3ed24e7a83",
-              "isLocked": false,
-              "isExpanded": true,
-              "x": 513,
-              "y": 423,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "children": [
-                {
-                  "id": "b064ac6d8878",
-                  "urn": "tasks:hk:search-targetarea",
-                  "childId": "cd8835650697",
-                  "parentId": "7353bbf671b6",
-                  "projectId": "6e3ed24e7a83",
-                  "isLocked": false,
-                  "isExpanded": true,
-                  "x": 703,
-                  "y": 421,
-                  "contextualName": "",
-                  "contextualDescription": "",
-                  "subscriptions": [],
-                  "returnValue": null,
-                  "returnState": null,
-                  "testReturnValue": null,
-                  "testReturnState": null,
-                  "children": [
-                    {
-                      "id": "98e1cd3e6b67",
-                      "urn": "tasks:hk:fly-waypoints",
-                      "childId": "d02f716050fd",
-                      "parentId": "b064ac6d8878",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 860,
-                      "y": 353,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": []
-                    },
-                    {
-                      "id": "0fa47a105021",
-                      "urn": "tasks:hk:scan-fortarget",
-                      "childId": "bd71df0542e4",
-                      "parentId": "b064ac6d8878",
-                      "projectId": "6e3ed24e7a83",
-                      "isLocked": false,
-                      "isExpanded": true,
-                      "x": 855,
-                      "y": 483,
-                      "contextualName": "",
-                      "contextualDescription": "",
-                      "subscriptions": [],
-                      "returnValue": null,
-                      "returnState": null,
-                      "testReturnValue": null,
-                      "testReturnState": null,
-                      "children": [
-                        {
-                          "id": "40b949606074",
-                          "urn": "tasks:hk:id-targettype",
-                          "childId": "3197675085c2",
-                          "parentId": "0fa47a105021",
-                          "projectId": "6e3ed24e7a83",
-                          "isLocked": false,
-                          "isExpanded": true,
-                          "x": 1020,
-                          "y": 333,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "children": []
-                        },
-                        {
-                          "id": "789d095755ed",
-                          "urn": "tasks:hk:id-target",
-                          "childId": "70d6cb641d64",
-                          "parentId": "0fa47a105021",
-                          "projectId": "6e3ed24e7a83",
-                          "isLocked": false,
-                          "isExpanded": true,
-                          "x": 1020,
-                          "y": 533,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "children": [
-                            {
-                              "id": "5997042784ad",
-                              "urn": "tasks:hk:store-video",
-                              "childId": "1284bba48a8c",
-                              "parentId": "789d095755ed",
-                              "projectId": "6e3ed24e7a83",
-                              "isLocked": false,
-                              "isExpanded": true,
-                              "x": 1210,
-                              "y": 473,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "children": []
-                            },
-                            {
-                              "id": "ae4ab3115106",
-                              "urn": "tasks:hk:extract-features",
-                              "childId": "49f86d75f20f",
-                              "parentId": "789d095755ed",
-                              "projectId": "6e3ed24e7a83",
-                              "isLocked": false,
-                              "isExpanded": true,
-                              "x": 1214,
-                              "y": 533,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "children": []
-                            },
-                            {
-                              "id": "d8ddbe485113",
-                              "urn": "tasks:hk:match",
-                              "childId": "18e892842094",
-                              "parentId": "789d095755ed",
-                              "projectId": "6e3ed24e7a83",
-                              "isLocked": false,
-                              "isExpanded": true,
-                              "x": 1181,
-                              "y": 603,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "children": [
-                                {
-                                  "id": "fde4a8a88e9c",
-                                  "urn": "tasks:hk:report",
-                                  "childId": "cb31a44862a2",
-                                  "parentId": "d8ddbe485113",
-                                  "projectId": "6e3ed24e7a83",
-                                  "isLocked": false,
-                                  "isExpanded": true,
-                                  "x": 1287,
-                                  "y": 583,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "children": []
-                                },
-                                {
-                                  "id": "e88e57f4fd70",
-                                  "urn": "tasks:hk:await-verify",
-                                  "childId": "206b527b5e64",
-                                  "parentId": "d8ddbe485113",
-                                  "projectId": "6e3ed24e7a83",
-                                  "isLocked": false,
-                                  "isExpanded": true,
-                                  "x": 1295,
-                                  "y": 633,
-                                  "contextualName": "",
-                                  "contextualDescription": "",
-                                  "subscriptions": [],
-                                  "returnValue": null,
-                                  "returnState": null,
-                                  "testReturnValue": null,
-                                  "testReturnState": null,
-                                  "children": []
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "id": "a544bc7fa1d0",
-                          "urn": "tasks:hk:assume-leadrole",
-                          "childId": "c06b80e4c85a",
-                          "parentId": "0fa47a105021",
-                          "projectId": "6e3ed24e7a83",
-                          "isLocked": false,
-                          "isExpanded": true,
-                          "x": 1036,
-                          "y": 703,
-                          "contextualName": "",
-                          "contextualDescription": "",
-                          "subscriptions": [],
-                          "returnValue": null,
-                          "returnState": null,
-                          "testReturnValue": null,
-                          "testReturnState": null,
-                          "children": [
-                            {
-                              "id": "e277bd1771fa",
-                              "urn": "tasks:hk:assign-supportroles",
-                              "childId": "21cdb7730c81",
-                              "parentId": "a544bc7fa1d0",
-                              "projectId": "6e3ed24e7a83",
-                              "isLocked": false,
-                              "isExpanded": true,
-                              "x": 1230,
-                              "y": 703,
-                              "contextualName": "",
-                              "contextualDescription": "",
-                              "subscriptions": [],
-                              "returnValue": null,
-                              "returnState": null,
-                              "testReturnValue": null,
-                              "testReturnState": null,
-                              "children": []
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
                 }
               ]
             }
@@ -2456,8 +2054,8 @@
       "projectId": "6e3ed24e7a83",
       "isLocked": false,
       "isExpanded": true,
-      "x": 175,
-      "y": 691,
+      "x": 188,
+      "y": 623,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -2467,15 +2065,15 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "3751317daf2a",
-          "urn": "tasks:hk:align",
-          "childId": "f0869f56e02a",
+          "id": "c544de7e",
+          "urn": "tasks:hk:determine-permissiblefiringenvelope",
+          "childId": "bf1e75bc",
           "parentId": "11716e89fd1b",
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 275,
-          "y": 549,
+          "x": 367,
+          "y": 761,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -2485,16 +2083,16 @@
           "testReturnState": null,
           "children": [
             {
-              "id": "77806f831a17",
-              "urn": "tasks:hk:determine-angle",
-              "childId": "9299677d5bb9",
-              "parentId": "3751317daf2a",
+              "id": "e69d56c2dc48",
+              "urn": "tasks:hk:determine-altitude",
+              "childId": "60e594c4",
+              "parentId": "c544de7e",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 464,
-              "y": 521,
-              "contextualName": "",
+              "isExpanded": false,
+              "x": 901,
+              "y": 707,
+              "contextualName": "Determine Altitude",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
@@ -2504,16 +2102,16 @@
               "children": []
             },
             {
-              "id": "e69d56c2dc48",
-              "urn": "tasks:hk:determine-altitude",
-              "childId": "b5b936451ff1",
-              "parentId": "3751317daf2a",
+              "id": "77806f831a17",
+              "urn": "tasks:hk:determine-angle",
+              "childId": "bae6c50a",
+              "parentId": "c544de7e",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 442,
-              "y": 581,
-              "contextualName": "",
+              "isExpanded": false,
+              "x": 899,
+              "y": 752,
+              "contextualName": "Determine Angle",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
@@ -2525,14 +2123,14 @@
             {
               "id": "9339a3f70337",
               "urn": "tasks:hk:goto-relativexy",
-              "childId": "92002dfce424",
-              "parentId": "3751317daf2a",
+              "childId": "0f9bb906",
+              "parentId": "c544de7e",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 446,
-              "y": 631,
-              "contextualName": "",
+              "isExpanded": false,
+              "x": 907,
+              "y": 798,
+              "contextualName": "Determine Relative XY",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
@@ -2544,15 +2142,15 @@
           ]
         },
         {
-          "id": "29375de409cf",
-          "urn": "tasks:hk:verify",
-          "childId": "0ce2a8e369be",
+          "id": "bfa7de7f",
+          "urn": "tasks:hk:enter-permissiblefiringenvelope",
+          "childId": "956fb77b",
           "parentId": "11716e89fd1b",
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 290,
-          "y": 681,
+          "x": 358,
+          "y": 816,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -2562,15 +2160,15 @@
           "testReturnState": null,
           "children": [
             {
-              "id": "208ed4bc1317",
-              "urn": "tasks:hk:report",
-              "childId": "6d012d9bfc47",
-              "parentId": "29375de409cf",
+              "id": "c067a96f",
+              "urn": "tasks:hk:goto-altitude",
+              "childId": "ecbc6055",
+              "parentId": "bfa7de7f",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 477,
-              "y": 761,
+              "isExpanded": false,
+              "x": 715,
+              "y": 815,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -2581,15 +2179,15 @@
               "children": []
             },
             {
-              "id": "d2c793cc5630",
-              "urn": "tasks:hk:await-verify",
-              "childId": "1075741a7782",
-              "parentId": "29375de409cf",
+              "id": "fadabb77",
+              "urn": "tasks:hk:goto-angle",
+              "childId": "49084671",
+              "parentId": "bfa7de7f",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 462,
-              "y": 791,
+              "isExpanded": false,
+              "x": 710,
+              "y": 861,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -2600,34 +2198,15 @@
               "children": []
             },
             {
-              "id": "2ac5e79cd710",
-              "urn": "tasks:hk:analyze-successprobability",
-              "childId": "9804dfe75549",
-              "parentId": "29375de409cf",
+              "id": "9df305e2",
+              "urn": "tasks:hk:goto-relativexy",
+              "childId": "7db15e06",
+              "parentId": "bfa7de7f",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 518,
-              "y": 681,
-              "contextualName": "",
-              "contextualDescription": "",
-              "subscriptions": [],
-              "returnValue": null,
-              "returnState": null,
-              "testReturnValue": null,
-              "testReturnState": null,
-              "children": []
-            },
-            {
-              "id": "9e5971bc054c",
-              "urn": "tasks:hk:analyze-collateraldamage",
-              "childId": "f3dd21199b69",
-              "parentId": "29375de409cf",
-              "projectId": "6e3ed24e7a83",
-              "isLocked": false,
-              "isExpanded": true,
-              "x": 513,
-              "y": 721,
+              "isExpanded": false,
+              "x": 704,
+              "y": 906,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -2647,10 +2226,10 @@
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 281,
-          "y": 791,
-          "contextualName": "",
-          "contextualDescription": "",
+          "x": 364,
+          "y": 626,
+          "contextualName": "Engage",
+          "contextualDescription": "permissible firing solution",
           "subscriptions": [],
           "returnValue": null,
           "returnState": null,
@@ -2665,8 +2244,8 @@
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
               "isExpanded": true,
-              "x": 411,
-              "y": 861,
+              "x": 478,
+              "y": 615,
               "contextualName": "",
               "contextualDescription": "",
               "subscriptions": [],
@@ -2677,16 +2256,16 @@
               "children": []
             },
             {
-              "id": "ad1dbdcb2438",
-              "urn": "tasks:hk:aim",
-              "childId": "59353fa02e37",
+              "id": "2a6fa72d9712",
+              "urn": "tasks:hk:fire",
+              "childId": "e319b46c",
               "parentId": "605dc6b5fd66",
               "projectId": "6e3ed24e7a83",
               "isLocked": false,
-              "isExpanded": true,
-              "x": 414,
-              "y": 891,
-              "contextualName": "",
+              "isExpanded": false,
+              "x": 468,
+              "y": 653,
+              "contextualName": "Fire",
               "contextualDescription": "",
               "subscriptions": [],
               "returnValue": null,
@@ -2698,15 +2277,15 @@
           ]
         },
         {
-          "id": "2a6fa72d9712",
-          "urn": "tasks:hk:fire",
-          "childId": "3ab8023c7faf",
+          "id": "29375de409cf",
+          "urn": "tasks:hk:verify",
+          "childId": "0ce2a8e369be",
           "parentId": "11716e89fd1b",
           "projectId": "6e3ed24e7a83",
           "isLocked": false,
           "isExpanded": true,
-          "x": 275,
-          "y": 913,
+          "x": 351,
+          "y": 691,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -2714,26 +2293,84 @@
           "returnState": null,
           "testReturnValue": null,
           "testReturnState": null,
-          "children": []
-        },
-        {
-          "id": "e6b6161b7c49",
-          "urn": "tasks:hk:report",
-          "childId": "070d39d6536f",
-          "parentId": "11716e89fd1b",
-          "projectId": "6e3ed24e7a83",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 275,
-          "y": 965,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": []
+          "children": [
+            {
+              "id": "2ac5e79cd710",
+              "urn": "tasks:hk:analyze-successprobability",
+              "childId": "9804dfe75549",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 562,
+              "y": 709,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "9e5971bc054c",
+              "urn": "tasks:hk:analyze-collateraldamage",
+              "childId": "f3dd21199b69",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 575,
+              "y": 670,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "208ed4bc1317",
+              "urn": "tasks:hk:report",
+              "childId": "6d012d9bfc47",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 613,
+              "y": 630,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            },
+            {
+              "id": "d2c793cc5630",
+              "urn": "tasks:hk:await-verify",
+              "childId": "1075741a7782",
+              "parentId": "29375de409cf",
+              "projectId": "6e3ed24e7a83",
+              "isLocked": false,
+              "isExpanded": true,
+              "x": 609,
+              "y": 595,
+              "contextualName": "",
+              "contextualDescription": "",
+              "subscriptions": [],
+              "returnValue": null,
+              "returnState": null,
+              "testReturnValue": null,
+              "testReturnState": null,
+              "children": []
+            }
+          ]
         }
       ]
     }
