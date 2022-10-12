@@ -118,6 +118,17 @@ customElements.define(`jag-menu`, class extends HTMLElement {
             this.dispatchEvent(new CustomEvent(`event-toggle-timeview`));
         }.bind(this));
 
+        const $colorize = document.createElement(`span`);
+        $colorize.id = `menu-toggle-colorize`;
+        $colorize.classList.add(`menu-item`);
+        $colorize.innerText = `demo\ncolor`;
+        $centerLiDiv.appendChild($colorize);
+        $colorize.addEventListener(`click`, function (e) {
+            console.log(`pressed`);
+            this.dispatchEvent(new CustomEvent(`event-toggle-colorize`));
+        }.bind(this));
+
+
         //
         // The right section containing the IHMC logo
         //

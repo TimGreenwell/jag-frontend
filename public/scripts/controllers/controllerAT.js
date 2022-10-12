@@ -116,7 +116,8 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener(`event-define-node`, this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
         this._menu.addEventListener(`event-redraw-nodes`, this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener(`event-popup-importer`, this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
-        // this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                     // menu item: call 'Import Jag' popup
+        // this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                // menu item: open timeview panel
+        this._menu.addEventListener(`event-toggle-colorize`, this.eventToggleColorizerHandler.bind(this));
 
         this._activityLibrary.addEventListener(`event-activity-selected`, this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
         this._activityLibrary.addEventListener(`event-activity-deleted`, this.eventActivityDeletedHandler.bind(this));      // Permanently delete Activity
@@ -391,6 +392,11 @@ export default class ControllerAT extends Controller {
     //     const selectedNodes = this._playground.selectedNodes;
     //     this._timeview.refreshTimeview(selectedNodes[0]);
     // }
+
+     eventToggleColorizerHandler() {
+        console.log(`going to toggle color`)
+        this._playground.toggleColor();
+     }
 
     /**   -- Activity Library --  */
 

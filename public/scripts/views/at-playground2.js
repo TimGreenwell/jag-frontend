@@ -48,6 +48,7 @@ class AtPlayground extends Popupable {
         this._selectedActivityNodeMap = new Map();         // set of ActivityNodes (selected)
         this._is_edge_being_created = false;
         this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
+        this.hasColor = false;
 
         // EVENTS
         // SVG Events
@@ -88,6 +89,12 @@ class AtPlayground extends Popupable {
         if (elementType === `background`) {
             this.svgMouseDownEvent(e);
         }
+    }
+
+    toggleColor(){
+        console.log(`toggling color`)
+        this.hasColor = !this.hasColor;
+        this._refreshPlayground();
     }
 
     shift() {
@@ -367,6 +374,7 @@ class AtPlayground extends Popupable {
             this.buildJointActivityGraph(svg, jagRoot);
             this.showExpand(jagRoot);
         });
+
     }
 
     buildJointActivityGraph(parentGroup, nodeModel) {
@@ -392,7 +400,13 @@ class AtPlayground extends Popupable {
         Svg.positionItem(svgRect, 0, 0);
 
         Svg.applyDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
+        if (this.hasColor) {
+            Svg.applyColorDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
+        }
         nodeContentGroup.insertBefore(svgRect, svgText);
+
+
+
 
         this.svgSize.width = Math.max(this.svgSize.width, nodeBox.x + nodeBox.width);
         this.svgSize.height = Math.max(this.svgSize.height, nodeBox.y + nodeBox.height);

@@ -180,7 +180,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         exportSvg_el.className = `directProperty`;
         exportSvg_el.appendChild(this._exportSvg);
 
-        // Create projt area
+        // Create project area
         const projectButton_el = FormUtils.createEmptyInputContainer(`export`);
         this._projectButton = document.createElement(`button`);
         this._projectButton.innerHTML = `Create New JAG`;

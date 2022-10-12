@@ -83,6 +83,17 @@ export default class Svg {
         item.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${stroke}%,1)`);
     }
 
+    static applyColorDepthEffect(item, depth, treeHeight) {
+        const hue = Math.round(360/treeHeight * depth);
+        const hsla = item.getAttributeNS(null, `fill`);
+        const newHsla = Svg.updateHue(hsla, hue);
+        item.setAttributeNS(null, `fill`, newHsla);
+        item.setAttributeNS(null, `stroke`, newHsla);
+    }
+
+
+
+
     static applyDepthEffect(item, depth, treeHeight) {
         const fillShading = Svg.fillDepthLightness(depth, treeHeight);
         const strokeShading = Svg.strokeDepthLightness(depth, treeHeight);
@@ -96,9 +107,7 @@ export default class Svg {
         return this.INITIAL_BRIGHTNESS - (treeHeight * this.STEP_BRIGHTNESS / 2) + (depthOfNode * this.STEP_BRIGHTNESS);
     }
 
-    static applyColorEffect(numOfLeaves) {
 
-    }
 
     static strokeDepthLightness(depthOfNode, treeHeight) {
         const fillShading = this.fillDepthLightness(depthOfNode, treeHeight);
@@ -223,7 +232,7 @@ export default class Svg {
         rectangle.setAttributeNS(null, `rx`, `7`);
         rectangle.setAttributeNS(null, `cursor`, `grab`);
         // rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
-        rectangle.id = `${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${id}`
+        rectangle.id = `${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${id}`;
         return rectangle;
     }
 
@@ -334,7 +343,8 @@ export default class Svg {
      * buildPath - use source and destination positions to form cubic pathing
      *
      */
-svgElement
+    svgElement;
+
     static followCursor(edge, cursor) {
         const origPath = edge.getAttributeNS(null, `d`);
         const splitOrigPath = origPath.split(` `);
@@ -546,3 +556,43 @@ svgElement
     }
 
 }
+
+
+
+
+// static applyColorEffect(nodeModel) {
+//     const numberOfLeaves = nodeModel.leafCount;
+//     console.log(numberOfLeaves)
+//     const colorDelta = Math.max(360 / numberOfLeaves, 5);
+//     console.log(`colorDelta = ${colorDelta}`)
+//     Svg.colorTree(nodeModel, 0, colorDelta);
+// }
+//
+// static colorTree(node, currentStep, colorDelta) {
+//     let colorValue;
+//     if (node.hasChildren()) {
+//         let colorTotal = 0;
+//         node.children.forEach((child) => {
+//             const returns = Svg.colorTree(child, currentStep, colorDelta);
+//             colorTotal = colorTotal + returns.colorValue;
+//             currentStep = returns.currentStep;
+//         });
+//         colorValue = colorTotal / node.children.length;
+//         const rectangle = Svg.fetchRectangle(node.id);
+//         const hsla = rectangle.getAttributeNS(null, `fill`);
+//         const newHsla = Svg.updateHue(hsla, colorValue);
+//         rectangle.setAttributeNS(null, `fill`, newHsla);
+//     } else {
+//         colorValue = currentStep * colorDelta;
+//         console.log(`${node.name} ---> ${colorValue}`);
+//         console.log(node.id)
+//         const rectangle = Svg.fetchRectangle(node.id);
+//         const hsla = rectangle.getAttributeNS(null, `fill`);
+//         const newHsla = Svg.updateHue(hsla, colorValue);
+//         rectangle.setAttributeNS(null, `fill`, newHsla);
+//         currentStep = currentStep + 1;
+//     }
+//     const changes = {colorValue,
+//         currentStep};
+//     return changes;
+// }
