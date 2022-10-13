@@ -17,7 +17,7 @@ class AtPlayground extends Popupable {
 
     constructor() {
         super();
-        this.svgParameters = {
+        this.leafHeight = {
             id: `jag`,
             HUE: 200,
             SELECTED_HUE: 150,
@@ -523,7 +523,6 @@ class AtPlayground extends Popupable {
         // if projectNodeModel is Root ->  add it to the list of viewed trees. (viewedProjectsMap)
         // if not - remove it from the list of viewed trees. (viewedProjectsMap)
         this._viewedProjectsMap.forEach((value, key) => {
-
             if (!value.isRoot()) {
                 this._viewedProjectsMap.delete(value.id);
             }
@@ -740,42 +739,82 @@ class AtPlayground extends Popupable {
      * deleteNodeModel
      */
 
-
-    redrawSelectedNodes() {
-        const nodesToMove = []
-        this.selectedNodes.forEach((node) => {
-            const newNode = this._redrawNodes(node, node.x, node.y);
-            nodesToMove.push(newNode);
-        });
-        this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
-            detail: {nodeModels: nodesToMove}
-        }));
+    findLongestAtEachDepth(rootNode) {
+        const depthToLengthArray = [];
+        const workStack = [];
+        workStack.push(rootNode);
+        while (workStack.length > 0) {
+            const currentNode = workStack.pop();
+            const currentRect = this.svg.fetchRectangle(currentNode.id);
+            const currentRectLength = Number(currentRect.getAttributeNS(null, `width`));
+            if ((depthToLengthArray[currentNode.treeDepth] === undefined) ||
+                (depthToLengthArray[currentNode.treeDepth] < currentRectLength)) {
+                depthToLengthArray[currentNode.treeDepth] = currentRectLength;
+            }
+            if (currentNode.isExpanded) {
+            currentNode.children.forEach((child) => {
+                workStack.push(child);
+            }); }
+        }
+        return depthToLengthArray;
     }
 
-    _redrawNodes(currentNodeModel, x = null, y = null) {
-        const margin = 25;
-        if (x && y) {
-            currentNodeModel.x = x;
-            currentNodeModel.y = y;
+    xIndentForDepth(longestAtEachDepthArray, margin) {
+        let indentArray=[];
+        indentArray[0] = margin;
+        for (let depth = 1; depth < longestAtEachDepthArray.length; depth++ ) {
+            indentArray[depth] = longestAtEachDepthArray[depth-1] + margin + indentArray[depth-1];
         }
-        const rectangle = this.svg.fetchRectangle(currentNodeModel.id);
-        const rectangleWidth = Number(rectangle.getAttributeNS(null, `width`))
-        const rectangleHeight = Number(rectangle.getAttributeNS(null, `height`))
+        console.log("longestAtEachDepthArray");
+        console.log(longestAtEachDepthArray);
+        console.log("indentArray");
+        console.log(indentArray);
+        return indentArray
+    }
 
-        const x_offset = Math.floor(currentNodeModel.x + rectangleWidth + margin);
-        const preferred_height = currentNodeModel.leafCount * (rectangleHeight + margin);
-        console.log(`y = ${currentNodeModel.y}`)
-        console.log(`preferred height = ${preferred_height}`);
-        let y_offset = Math.floor(currentNodeModel.y - (preferred_height ));
-        console.log(`First y_offset = ${y_offset}`);
-        currentNodeModel.children.forEach((child) => {
-
-            const local_preferred_size = child.leafCount * (rectangleHeight + margin);
-            y_offset = y_offset + (local_preferred_size );             // this wants a jag-node - not a nodeModel
-            console.log(`Second y_offset = ${y_offset}`);
-            this._redrawNodes(child, x_offset, y_offset);                          // first build child
+    redrawSelectedNodes() {
+        const horizontalMargin = 50;
+        const params = {
+            leafCounter: 0,
+            verticalMargin: 15,
+            xIndentArray: []
+        };
+        this.selectedNodes.forEach((node) => {
+            const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
+            params.xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
+            this.layoutTree(node, params);
         });
-        return currentNodeModel;
+    }
+
+    layoutTree(nodeModel, params) {
+        let x;
+        let y;
+        if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
+            const nodesToMove = [];
+            let totalY = 0;
+            const origCount = params.leafCounter;
+            nodeModel.children.forEach((child) => {
+                params.leafCounter = params.leafCounter + this.layoutTree(child, params);
+                totalY = totalY + child.y;
+            });
+            const localLeafs = params.leafCounter - origCount;
+            nodeModel.x = params.xIndentArray[nodeModel.treeDepth];
+            nodeModel.y = totalY / nodeModel.children.length;
+            nodesToMove.push(nodeModel);
+            this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
+                detail: {nodeModels: nodesToMove}
+            }));
+            return localLeafs;
+        } else {
+            const nodesToMove = [];
+            nodeModel.x = params.xIndentArray[nodeModel.treeDepth];
+            nodeModel.y = params.leafCounter * (this.svg.STANDARD_BOX_HEIGHT + params.verticalMargin);
+            nodesToMove.push(nodeModel);
+            this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
+                detail: {nodeModels: nodesToMove}
+            }));
+            return 1;
+        }
     }
 
     _handleNewActivityActivityPopup(e) {
