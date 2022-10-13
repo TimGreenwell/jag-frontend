@@ -63,7 +63,7 @@ export default class SharedObservable extends SharedService {
      * Local action to be propagated across SharedWorker for remote listeners.
      */
     static confirmStorageChange({topic, schema, id, description}) {
-        console.log(` {SHARING>} - - Database change confirmed, (${id}/${topic}) -- posting message across shared web worker`);
+        console.log(` {SHARING>} - (${id}/${topic})`);
         this.sharedWorker.port.postMessage({
             topic,
             schema,
@@ -77,7 +77,7 @@ export default class SharedObservable extends SharedService {
      * Callback functions were provided at initial subscription.js.
      */
     static notifySubscribers(topic, dataModel, id) {
-        console.log(`\n {COMMANDED} (${topic}) : (${id})`);
+        console.log(`\n {COMMAND OUT} (${topic}) : (${id})`);
         if (this._subscribers.has(topic)) {
             this._subscribers.get(topic).forEach(async (callBack) => {
                 if (dataModel == null) {

@@ -1,0 +1,273 @@
+{"activities" : [{
+  "urn": "us:ihmc:111",
+  "name": "111",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "us:ihmc:333",
+      "id": "8eaf9210"
+    },
+    {
+      "urn": "us:ihmc:222",
+      "id": "37b12009"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:333",
+  "name": "333",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "us:ihmc:777",
+      "id": "d9fedddd"
+    },
+    {
+      "urn": "us:ihmc:66",
+      "id": "74d97a36"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:777",
+  "name": "777",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:66",
+  "name": "66",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:222",
+  "name": "222",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [
+    {
+      "urn": "us:ihmc:555",
+      "id": "9d2016c8"
+    },
+    {
+      "urn": "us:ihmc:444",
+      "id": "e025776e"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:555",
+  "name": "555",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:444",
+  "name": "444",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+}], "jags" : [{
+  "id": "49b1cdf9",
+  "urn": "us:ihmc:111",
+  "projectId": "49b1cdf9",
+  "isLocked": false,
+  "isExpanded": true,
+  "x": 138,
+  "y": 278,
+  "contextualName": "",
+  "contextualDescription": "",
+  "subscriptions": [],
+  "returnValue": null,
+  "returnState": null,
+  "testReturnValue": null,
+  "testReturnState": null,
+  "children": [
+    {
+      "id": "f595ad95",
+      "urn": "us:ihmc:333",
+      "childId": "8eaf9210",
+      "parentId": "49b1cdf9",
+      "projectId": "49b1cdf9",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 424,
+      "y": 213,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "bbd6778d",
+          "urn": "us:ihmc:777",
+          "childId": "d9fedddd",
+          "parentId": "f595ad95",
+          "projectId": "49b1cdf9",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 898,
+          "y": 96,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "81dc3275",
+          "urn": "us:ihmc:66",
+          "childId": "74d97a36",
+          "parentId": "f595ad95",
+          "projectId": "49b1cdf9",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 919,
+          "y": 194,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "bfe3d925",
+      "urn": "us:ihmc:222",
+      "childId": "37b12009",
+      "parentId": "49b1cdf9",
+      "projectId": "49b1cdf9",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 442,
+      "y": 379,
+      "contextualName": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "e93623c2",
+          "urn": "us:ihmc:555",
+          "childId": "9d2016c8",
+          "parentId": "bfe3d925",
+          "projectId": "49b1cdf9",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 791,
+          "y": 357,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "6061d1dd",
+          "urn": "us:ihmc:444",
+          "childId": "e025776e",
+          "parentId": "bfe3d925",
+          "projectId": "49b1cdf9",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 797,
+          "y": 539,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        }
+      ]
+    }
+  ]
+}]}

@@ -523,7 +523,7 @@ export default class ControllerAT extends Controller {
     async commandActivityDeletedHandler(deletedActivityUrn) {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
-        console.log(`((COMMAND INCOMING)) >> Activity Deleted`);
+        console.log(`((COMMAND IN)) >> Activity Deleted`);
         // const deletedActivity = this.fetchActivity(deletedActivityUrn);
         this.uncacheActivity(deletedActivityUrn);
         const deletePromises = [];
@@ -577,11 +577,12 @@ export default class ControllerAT extends Controller {
     }
  // E
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
-        console.log(`((COMMAND INCOMING) >>  Node Updated ${updatedNodeModel.urn} / ${updatedNodeId}`);
+
         this.repopulateParent(updatedNodeModel);
         this.repopulateActivity(updatedNodeModel);
         this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
         this.repopulateDepth(updatedNodeModel);
+        console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
 
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);

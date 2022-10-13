@@ -1,20 +1,41 @@
+/**
+ * @file Node model for a specific analysis' JAG.
+ *
+ * @author mvignati
+ * @version 1.65
+ */
+
+'use strict';
+
+
 export default class Svg {
 
-    static {
+    constructor({
+        id,
+        HUE = 200,
+        SELECTED_HUE = 150,
+        POSSIBLE_HUE = 50,
+        HORIZONTAL_MARGIN = 10,
+        VERTICAL_MARGIN = 10,
+        LINE_WIDTH = 2,
+        STANDARD_FONT_SIZE = 17,
+        STEP_BRIGHTNESS = 5
+    } = {}) {
         this.SVGNS = `http://www.w3.org/2000/svg`;
-        this.HUE = 200;
-        this.SELECTED_HUE = 150;
-        this.POSSIBLE_HUE = 50;
-        // this.HORIZONTAL_MARGIN = 10;
-        this.VERTICAL_MARGIN = 10;
-        this.LINE_WIDTH = 2;
-        this.STANDARD_FONT_SIZE = 17;
+        this.HUE = HUE;
+        this.SELECTED_HUE = SELECTED_HUE;
+        this.POSSIBLE_HUE = POSSIBLE_HUE;
+        this.HORIZONTAL_MARGIN = HORIZONTAL_MARGIN;
+        this.VERTICAL_MARGIN = VERTICAL_MARGIN;
+        this.LINE_WIDTH = LINE_WIDTH;
+        this.STANDARD_FONT_SIZE = STANDARD_FONT_SIZE;
+        this.STEP_BRIGHTNESS = STEP_BRIGHTNESS;
+
         this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
         this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
         this.STANDARD_BOX_HEIGHT = (2 * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
-        this.BUTTON_SIZE = 8;
+        this.BUTTON_SIZE = this.STANDARD_FONT_SIZE / 2;
         this.INITIAL_BRIGHTNESS = 50;
-        this.STEP_BRIGHTNESS = 5;
 
         this.SVG = `svg`;
         this.BACKGROUND = `background`;
@@ -24,10 +45,21 @@ export default class Svg {
         this.EDGE = `edge`;
         this.EXPAND = `expand`;
         this.ADD = `add`;
-        this.ID_SEPERATOR = `-`;
-        this.EDGE_SEPERATOR = `:`;
+        this.ID_SEPARATOR = `-`;
+        this.EDGE_SEPARATOR = `:`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
+
+        this._customFilters = this.createCustomFilters();
+        this._id = id;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    get customFilters() {
+        return this._customFilters;
     }
 
     /**
@@ -44,7 +76,7 @@ export default class Svg {
      strokeDepthLightness - apply effect to stroke
     */
 
-    static updateHSLA(hslaString, hue, saturation, lightness, alpha) {
+    updateHSLA(hslaString, hue, saturation, lightness, alpha) {
         const components = hslaString.replace(`hsla(`, ``).replace(`)`, ``);
         const hslaArray = components.split(`,`);
         if (hue) {
@@ -62,54 +94,49 @@ export default class Svg {
         return `hsla(${hslaArray.join(`,`)})`;
     }
 
-    static updateHue(oldHSLA, newHue) {
+    updateHue(oldHSLA, newHue) {
         return this.updateHSLA(oldHSLA, newHue, null, null, null);
     }
 
-    static updateSaturation(oldHSLA, newSaturation) {
+    updateSaturation(oldHSLA, newSaturation) {
         return this.updateHSLA(oldHSLA, null, newSaturation, null, null);
     }
 
-    static updateLightness(oldHSLA, newLightness) {
+    updateLightness(oldHSLA, newLightness) {
         return this.updateHSLA(oldHSLA, null, null, newLightness, null);
     }
 
-    static updateAlpha(oldHSLA, newAlpha) {
+    updateAlpha(oldHSLA, newAlpha) {
         return this.updateHSLA(oldHSLA, null, null, null, newAlpha);
     }
 
-    static addColor(item, fill = `black`, stroke = `black`) {
+    addColor(item, fill = `black`, stroke = `black`) {
         item.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${fill}%,1)`);
         item.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${stroke}%,1)`);
     }
 
-    static applyColorDepthEffect(item, depth, treeHeight) {
-        const hue = Math.round(360/treeHeight * depth);
+    applyColorDepthEffect(item, depth, treeHeight) {
+        const hue = Math.round(360 / treeHeight * depth);
         const hsla = item.getAttributeNS(null, `fill`);
-        const newHsla = Svg.updateHue(hsla, hue);
+        const newHsla = this.updateHue(hsla, hue);
         item.setAttributeNS(null, `fill`, newHsla);
         item.setAttributeNS(null, `stroke`, newHsla);
     }
 
-
-
-
-    static applyDepthEffect(item, depth, treeHeight) {
-        const fillShading = Svg.fillDepthLightness(depth, treeHeight);
-        const strokeShading = Svg.strokeDepthLightness(depth, treeHeight);
+    applyDepthEffect(item, depth, treeHeight) {
+        const fillShading = this.fillDepthLightness(depth, treeHeight);
+        const strokeShading = this.strokeDepthLightness(depth, treeHeight);
         const fill = `hsla(${this.HUE},100%,${fillShading}%,1)`;
         const stroke = `hsla(${this.HUE},100%,${strokeShading}%,1)`;
         item.setAttributeNS(null, `fill`, fill);
         item.setAttributeNS(null, `stroke`, stroke);
     }
 
-    static fillDepthLightness(depthOfNode, treeHeight) {
+    fillDepthLightness(depthOfNode, treeHeight) {
         return this.INITIAL_BRIGHTNESS - (treeHeight * this.STEP_BRIGHTNESS / 2) + (depthOfNode * this.STEP_BRIGHTNESS);
     }
 
-
-
-    static strokeDepthLightness(depthOfNode, treeHeight) {
+    strokeDepthLightness(depthOfNode, treeHeight) {
         const fillShading = this.fillDepthLightness(depthOfNode, treeHeight);
         const strokeShading = fillShading - (this.STEP_BRIGHTNESS * 4);
         return strokeShading;
@@ -131,38 +158,38 @@ export default class Svg {
      * createTextElement - basic svg text components
      */
 
-    static buildSvg(id) {
-        const svg = document.createElementNS(Svg.SVGNS, `svg`);
-        svg.id = `${Svg.SVG}${Svg.ID_SEPERATOR}${id}`;
+    buildSvg() {
+        const svg = document.createElementNS(this.SVGNS, `svg`);
+        svg.id = `${this.SVG}${this.ID_SEPARATOR}${this._id}`;
         svg.setAttribute(`version`, `1.1`);
         svg.setAttribute(`xmlns`, this.SVGNS);
         svg.setAttribute(`pointer-events`, `none`);
         return svg;
     }
 
-    static createBackground(id) {
+    createBackground() {
         const group = document.createElementNS(this.SVGNS, `g`);
-        group.id = `${Svg.BACKGROUND}${Svg.ID_SEPERATOR}${id}`;
+        group.id = `${this.BACKGROUND}${this.ID_SEPARATOR}${this._id}`;
         group.setAttributeNS(null, `pointer-events`, `bounding-box`);
         group.setAttributeNS(null, `cursor`, `all-scroll`);
         return group;
     }
 
-    static createSubGroup(id) {
+    createSubGroup(subgroupId) {
         const group = document.createElementNS(this.SVGNS, `g`);
-        group.id = `${Svg.SUBGROUP}${Svg.ID_SEPERATOR}${id}`;
+        group.id = `${this.SUBGROUP}${this.ID_SEPARATOR}${subgroupId}${this.ID_SEPARATOR}${this._id}`;
         group.setAttributeNS(null, `pointer-events`, `none`);
         return group;
     }
 
-    static createNodeGroup(id) {
+    createNodeGroup(id) {
         const nodeGroup = document.createElementNS(this.SVGNS, `g`);
-        nodeGroup.id = `${Svg.NODEGROUP}${Svg.ID_SEPERATOR}${id}`;
+        nodeGroup.id = `${this.NODEGROUP}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         nodeGroup.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled by under rect -rethink
         return nodeGroup;
     }
 
-    static createCircle(x, y, radius) {
+    createCircle(x, y, radius) {
         const circle = document.createElementNS(this.SVGNS, `circle`);
         circle.setAttributeNS(null, `cx`, x);
         circle.setAttributeNS(null, `cy`, y);
@@ -170,7 +197,7 @@ export default class Svg {
         return circle;
     }
 
-    static createAddButton(id, width, height) {
+    createAddButton(id, width, height) {
         const halfFont = this.STANDARD_FONT_SIZE / 2;
         const addButton = document.createElementNS(this.SVGNS, `g`);
         const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
@@ -191,13 +218,13 @@ export default class Svg {
         addButton.appendChild(circle);
         addButton.appendChild(horizLine);
         addButton.appendChild(vertLine);
-        addButton.id = `${Svg.ADD}${Svg.ID_SEPERATOR}${id}`;
+        addButton.id = `${this.ADD}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         addButton.setAttributeNS(null, `cursor`, `pointer`);
         addButton.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled with classList?
         return addButton;
     }
 
-    static createExpandButton(id, width, height, isExpanded) {
+    createExpandButton(id, width, height, isExpanded) {
         let path;
         const expandButton = document.createElementNS(this.SVGNS, `g`);
         if (isExpanded) {
@@ -220,46 +247,62 @@ export default class Svg {
         const triangle = document.createElementNS(this.SVGNS, `path`);
         triangle.setAttributeNS(null, `d`, path);
         expandButton.appendChild(triangle);
-        expandButton.id = `${Svg.EXPAND}${Svg.ID_SEPERATOR}${id}`;
+        expandButton.id = `${this.EXPAND}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         expandButton.setAttributeNS(null, `cursor`, `pointer`);
         expandButton.setAttributeNS(null, `pointer-events`, `bounding-box`);    // handled with classlist?
         return expandButton;
     }
 
-    static createRectangle(width, height, id) {
+    createRectangle(width, height, id) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle = this.resizeRectangle(rectangle, height, width);
         rectangle.setAttributeNS(null, `rx`, `7`);
         rectangle.setAttributeNS(null, `cursor`, `grab`);
         // rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
-        rectangle.id = `${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${id}`;
+        rectangle.id = `${this.RECTANGLE}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         return rectangle;
     }
 
-    static resizeRectangle(rectangle, height, width) {
+    resizeRectangle(rectangle, height, width) {
         rectangle.setAttributeNS(null, `width`, width);
         rectangle.setAttributeNS(null, `height`, height);
         return rectangle;
     }
 
-    static createEdge(sourceId, destId, sourceBox, destBox) {
+    createEdge(sourceId, destId, sourceBox, destBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
         edge.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
         edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
         // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
-        const cubicCurve = Svg.buildPath(sourceBox, destBox);
+        const cubicCurve = this.buildPath(sourceBox, destBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
         edge.setAttributeNS(null, `pointer-events`, `none`);
-        const edgeSourceId = `${Svg.EDGE}${Svg.ID_SEPERATOR}${sourceId}`;
-        const edgeDestId = `${Svg.EDGE}${Svg.ID_SEPERATOR}${destId}`;
-        edge.id = `${edgeSourceId}${Svg.EDGE_SEPERATOR}${edgeDestId}`;
+        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this._id}`;
+        const edgeDestId = `${this.EDGE}${this.ID_SEPARATOR}${destId}${this.ID_SEPARATOR}${this._id}`;
+        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
         return edge;
     }
 
-    static createTextElement(text, id) {
+    createEdgeToCursor(sourceId, sourceBox) {
+        const edge = document.createElementNS(this.SVGNS, `path`);
+        edge.setAttributeNS(null, `stroke`, `hsla(${this.POSSIBLE_HUE},100%,0%,1)`);
+        edge.setAttributeNS(null, `fill`, `transparent`);
+        edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
+        // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
+        const cubicCurve = this.buildPath(sourceBox, sourceBox);
+        edge.setAttributeNS(null, `d`, cubicCurve);
+        edge.setAttributeNS(null, `pointer-events`, `none`);
+        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this._id}`;
+        const edgeDestId = `${this.CURSOR}`;
+        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
+        return edge;
+    }
+
+
+    createTextElement(text, id) {
         const svgText = document.createElementNS(this.SVGNS, `text`);
-        svgText.id = `${Svg.TEXT}${Svg.ID_SEPERATOR}${id}`;
+        svgText.id = `${this.TEXT}${this.ID_SEPARATOR}${id}${this.EDGE_SEPARATOR}${this._id}`;
         svgText.setAttributeNS(null, `font-size`, this.STANDARD_FONT_SIZE.toString());
         svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
         svgText.setAttributeNS(null, `pointer-events`, `none`);
@@ -275,16 +318,17 @@ export default class Svg {
      * positionItem - changing location of item in respect to its group
      */
 
-    static modifyTransform(nodeGroup, nodeModel, diffX, diffY) {
+    modifyTransform(nodeGroup, nodeModel, diffX, diffY) {
         const groupTransformX = nodeModel.x + diffX;
         const groupTransformY = nodeModel.y + diffY;
         const newTransform = `translate(${groupTransformX},${groupTransformY})`;
         nodeGroup.setAttributeNS(null, `transform`, `${newTransform}`);
     }
 
-    static positionItem(item, x, y) {
+    positionItem(item, x, y) {
         if (item.tagName.toLowerCase() === `g`) {
-            item.setAttributeNS(null, `transform`, `translate(${x},${y})`);
+            item.setAttributeNS(null, 'transform', `translate(${x},${y})`);
+            const xxx = item.getAttributeNS(null, `transform`);
         } else if (item.tagName.toLowerCase() === `circle`) {
             item.setAttributeNS(null, `cx`, x);
             item.setAttributeNS(null, `cy`, y);
@@ -304,34 +348,34 @@ export default class Svg {
      */
 
 
-    static selectNode(svg, node) {  // Apply 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${node.id}`);
-        // const text = svg.getElementById(`${Svg.TEXT}${Svg.ID_SEPERATOR}${node.id}`);
+    selectNode(svg, node) {  // Apply 'select' effect (highlight)
+        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
+        // const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.EDGE_SEPARATOR}${this.id}`);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.SELECTED_HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.SELECTED_HUE},100%,${shadeFill},1)`);
     }
 
-    static signalPossibleChild(svg, node) {  // Apply 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${node.id}`);
-        // const text = svg.getElementById(`${Svg.TEXT}${Svg.ID_SEPERATOR}${node.id}`);
+    signalPossibleChild(svg, node) {  // Apply 'select' effect (highlight)
+        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
+        // const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.EDGE_SEPARATOR}${this.id}`);
         const hslaFill = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hslaFill.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.POSSIBLE_HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.POSSIBLE_HUE},100%,${shadeFill},1)`);
         const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
         const shadeStroke = hslaStroke.split(`,`)[2];
-        rectangle.setAttributeNS(null, `stroke`, `hsla(${Svg.POSSIBLE_HUE},100%,${shadeStroke},1)`);
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.POSSIBLE_HUE},100%,${shadeStroke},1)`);
     }
 
-    static unselectNode(svg, node) {   // Remove 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${node.id}`);
-        const text = svg.getElementById(`${Svg.TEXT}${Svg.ID_SEPERATOR}${node.id}`);
+    unselectNode(svg, node) {   // Remove 'select' effect (highlight)
+        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
+        const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
         const hslaFill = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hslaFill.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${Svg.HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${shadeFill},1)`);
         const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
         const shadeStroke = hslaStroke.split(`,`)[2];
-        rectangle.setAttributeNS(null, `stroke`, `hsla(${Svg.HUE},100%,${shadeStroke},1)`);
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${shadeStroke},1)`);
     }
 
     /**
@@ -343,9 +387,9 @@ export default class Svg {
      * buildPath - use source and destination positions to form cubic pathing
      *
      */
-    svgElement;
+    // svgElement;
 
-    static followCursor(edge, cursor) {
+    followCursor(edge, cursor) {
         const origPath = edge.getAttributeNS(null, `d`);
         const splitOrigPath = origPath.split(` `);
         const ox = Math.round(Number(splitOrigPath[1]));
@@ -362,12 +406,12 @@ export default class Svg {
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
 
-    static changeDestination(svgSelectedItems, edge) {
+    changeDestination(svgSelectedItems, edge) {
         const origPath = edge.getAttributeNS(null, `d`);
         const splitOrigPath = origPath.split(` `);
         const ox = Math.round(Number(splitOrigPath[1]));
         const oy = Math.round(Number(splitOrigPath[2]));
-        const destinationNodeId = edge.id.split(Svg.EDGE_SEPERATOR)[1].replace(`${Svg.EDGE}${Svg.ID_SEPERATOR}`, ``);
+        const destinationNodeId = this.fetchEdgeDestinationId(edge);
         const destinationNode = svgSelectedItems.nodes.get(destinationNodeId);
 
         const transformString = destinationNode.getAttributeNS(null, `transform`);
@@ -385,12 +429,12 @@ export default class Svg {
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
 
-    static changeSource(svgSelectedItems, edge) {
+    changeSource(svgSelectedItems, edge) {
         const origPath = edge.getAttributeNS(null, `d`);
-        const sourceNodeId = edge.id.split(Svg.EDGE_SEPERATOR)[0].replace(`${Svg.EDGE}${Svg.ID_SEPERATOR}`, ``);
+        const sourceNodeId = this.fetchEdgeSourceId(edge);
         const sourceNode = svgSelectedItems.nodes.get(sourceNodeId);
-        const id = sourceNode.id.replace(`${Svg.NODEGROUP}${Svg.ID_SEPERATOR}`, ``);
-        const rect = document.getElementById(`${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${id}`);
+        const id = sourceNode.id.replace(`${this.NODEGROUP}${this.ID_SEPARATOR}`, ``);
+        const rect = document.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${id}`);
         const width = rect.getAttributeNS(null, `width`);
 
         const splitOrigPath = origPath.split(` `);
@@ -414,7 +458,7 @@ export default class Svg {
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
 
-    static buildPath(sourceBox, destBox) {
+    buildPath(sourceBox, destBox) {
         const ox = sourceBox.x + sourceBox.width;
         const oy = sourceBox.y + (sourceBox.height / 2);
         const ex = destBox.x;
@@ -447,71 +491,71 @@ export default class Svg {
      * fetchEdgesFrom - retrieve the edges leaving a given node
      */
 
-    static fetchBackground() {
-        return document.getElementById(`${Svg.BACKGROUND}-jag`);
+    fetchBackground() {
+        return document.getElementById(`${this.BACKGROUND}${this.ID_SEPARATOR}${this._id}`);
     }
 
-    static fetchNodeGroup(id) {
-        return document.getElementById(`${Svg.NODEGROUP}${Svg.ID_SEPERATOR}${id}`);
+    fetchNodeGroup(id) {
+        return document.getElementById(`${this.NODEGROUP}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
     }
 
-    static fetchExpandButton(id) {
-        return document.getElementById(`${Svg.EXPAND}${Svg.ID_SEPERATOR}${id}`);
+    fetchExpandButton(id) {
+        return document.getElementById(`${this.EXPAND}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
     }
 
-    static fetchAddButton(id) {
-        return document.getElementById(`${Svg.ADD}${Svg.ID_SEPERATOR}${id}`);
+    fetchAddButton(id) {
+        return document.getElementById(`${this.ADD}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
     }
 
-    static fetchRectangle(id) {
-        return document.getElementById(`${Svg.RECTANGLE}${Svg.ID_SEPERATOR}${id}`);
+    fetchRectangle(id) {
+        return document.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
     }
 
 
-    static fetchTargetId(svgElement) {
+    fetchTargetId(svgElement) {
         let id;
         if (svgElement.id) {
-            id = svgElement.id.split(Svg.ID_SEPERATOR)[1];
+            id = svgElement.id.split(this.ID_SEPARATOR)[1];
         } else {
-            id = Svg.fetchTargetId(svgElement.parentNode);
+            id = this.fetchTargetId(svgElement.parentNode);
         }
         return id;
     }
 
-    static fetchTargetElementType(svgElement) {
+    fetchTargetElementType(svgElement) {
         let id;
         if (svgElement.id) {
-            id = svgElement.id.split(Svg.ID_SEPERATOR)[0];
+            id = svgElement.id.split(this.ID_SEPARATOR)[0];
         } else {
-            id = Svg.fetchTargetElementType(svgElement.parentNode);
+            id = this.fetchTargetElementType(svgElement.parentNode);
         }
         return id;
     }
 
-    static fetchEdgeSourceId(edge) {
-        const sourceEdgeId = edge.id.split(Svg.EDGE_SEPERATOR)[0];
-        const sourceId = sourceEdgeId.split(Svg.ID_SEPERATOR)[1];
+    fetchEdgeSourceId(edge) {
+        const edgeSourceId = edge.id.split(this.EDGE_SEPARATOR)[0];
+        const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
         return sourceId;
     }
 
-    static fetchEdgeDestinationId(edge) {
-        const sourceDestinationId = edge.id.split(Svg.EDGE_SEPERATOR)[1];
-        const destinationId = sourceDestinationId.split(Svg.ID_SEPERATOR)[1];
+    fetchEdgeDestinationId(edge) {
+        const edgeDestinationId = edge.id.split(this.EDGE_SEPARATOR)[1];
+        const destinationId = edgeDestinationId.split(this.ID_SEPARATOR)[1];
         return destinationId;
     }
 
-    static fetchEdgeToCursor() {
-        const cursorEdge = document.querySelector(`[id$=${Svg.CURSOR}]`);
+    fetchEdgeToCursor() {
+        const cursorEdge = document.querySelector(`[id$=${this.CURSOR}]`);
         return cursorEdge;
     }
 
-    static fetchEdgeTo(nodeId) {
-        const incomingEdges = document.querySelector(`[id$=${Svg.EDGE}${Svg.ID_SEPERATOR}${nodeId}]`);
+    fetchEdgeTo(nodeId) {
+        const incomingEdges = document.querySelector(`[id$=${this.EDGE}${this.ID_SEPARATOR}${nodeId}${this.ID_SEPARATOR}${this._id}]`);
         return incomingEdges;
     }
 
-    static fetchEdgesFrom(nodeId) {
-        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${Svg.EDGE}${Svg.ID_SEPERATOR}${nodeId}]`));
+    fetchEdgesFrom(nodeId) {
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.EDGE}${this.ID_SEPARATOR}${nodeId}${this.ID_SEPARATOR}${this._id}]`));
         return outgoingEdges;
     }
 
@@ -523,7 +567,13 @@ export default class Svg {
      * saveSvg - downloads text version of the SVG object
      */
 
-    static parse(a) {    // shameless stolen from chernjie - stackoverflow
+    labelWidth(svgText) {
+        const bbox = svgText.getBBox();
+        const {width} = bbox;
+        return Math.round(width);
+    }
+
+    parse(a) {    // shameless stolen from chernjie - stackoverflow
         const b = {};
         for (const i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
             const c = a[i].match(/[\w\.\-]+/g);
@@ -532,8 +582,8 @@ export default class Svg {
         return b;
     }
 
-    static clearBackground(id) {
-        const background = Svg.fetchBackground(id);
+    clearBackground(id) {
+        const background = this.fetchBackground(id);
         background.childNodes.forEach((gNode) => {
             while (background.firstChild) {
                 // The list is LIVE so it will re-index each call
@@ -542,7 +592,7 @@ export default class Svg {
         });
     }
 
-    static saveSvg(svgEl, name = `jag`) {
+    saveSvg(svgEl, name = `jag`) {
         const svgData = svgEl.outerHTML;
         const preface = `<?xml version="1.0" standalone="no"?>\r\n`;
         const svgBlob = new Blob([preface, svgData], {type: `image/svg+xml;charset=utf-8`});
@@ -555,40 +605,84 @@ export default class Svg {
         document.body.removeChild(downloadLink);
     }
 
+    createDefinitionContainer() {
+        const defs = document.createElementNS(this.SVGNS, `defs`);
+        return defs;
+    }
+
+    createCustomFilters() {
+        const customFilterMap = new Map();
+        // 3d extrude // //////////////////////////////////////////////////////////////
+        const feConvolveMatrix = document.createElementNS(this.SVGNS, `feConvolveMatrix`);
+        feConvolveMatrix.setAttributeNS(null, `in`, `SourceAlpha`);
+        feConvolveMatrix.setAttributeNS(null, `result`, `Convolved`);
+        feConvolveMatrix.setAttributeNS(null, `order`, `4,4`);
+        feConvolveMatrix.setAttributeNS(
+            null, `kernelMatrix`,
+            `
+          1 0 0 0
+          0 1 0 0
+          0 0 1 0
+          0 0 0 1`
+        );
+        // //////////////////////////////////////////////////////////////////////////
+        const feOffset = document.createElementNS(this.SVGNS, `feOffset`);
+        feOffset.setAttributeNS(null, `in`, `Convolved`);
+        feOffset.setAttributeNS(null, `dx`, `-2`);
+        feOffset.setAttributeNS(null, `dy`, `-2`);
+        feOffset.setAttributeNS(null, `result`, `ConvolvedAndOffset`);
+        // //////////////////////////////////////////////////////////////////////////
+        const feComposite = document.createElementNS(this.SVGNS, `feComposite`);
+        feComposite.setAttributeNS(null, `operator`, `over`);
+        feComposite.setAttributeNS(null, `in`, `SourceGraphic`);
+        feComposite.setAttributeNS(null, `in2`, `ConvolvedAndOffset`);
+        feComposite.setAttributeNS(null, `result`, `outout`);
+        // //////////////////////////////////////////////////////////////////////////
+        const filter3dEffect = document.createElementNS(this.SVGNS, `filter`);
+        filter3dEffect.setAttributeNS(null, `id`, `blur-effect`);
+        filter3dEffect.setAttributeNS(null, `x`, `-20%`);
+        filter3dEffect.setAttributeNS(null, `y`, `-20%`);
+        filter3dEffect.setAttributeNS(null, `width`, `150%`);
+        filter3dEffect.setAttributeNS(null, `height`, `180%`);
+        filter3dEffect.appendChild(feConvolveMatrix);
+        filter3dEffect.appendChild(feOffset);
+        filter3dEffect.appendChild(feComposite);
+
+        customFilterMap.set(filter3dEffect.id, filter3dEffect);
+        return customFilterMap;
+    }
+
+    applyFilter(svgItem, filterId) {
+        svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
+    }
+
 }
 
-
-
-
-// static applyColorEffect(nodeModel) {
+//  applyColorEffect(nodeModel) {
 //     const numberOfLeaves = nodeModel.leafCount;
-//     console.log(numberOfLeaves)
 //     const colorDelta = Math.max(360 / numberOfLeaves, 5);
-//     console.log(`colorDelta = ${colorDelta}`)
-//     Svg.colorTree(nodeModel, 0, colorDelta);
+//     this.colorTree(nodeModel, 0, colorDelta);
 // }
 //
-// static colorTree(node, currentStep, colorDelta) {
+//  colorTree(node, currentStep, colorDelta) {
 //     let colorValue;
 //     if (node.hasChildren()) {
 //         let colorTotal = 0;
 //         node.children.forEach((child) => {
-//             const returns = Svg.colorTree(child, currentStep, colorDelta);
+//             const returns = this.colorTree(child, currentStep, colorDelta);
 //             colorTotal = colorTotal + returns.colorValue;
 //             currentStep = returns.currentStep;
 //         });
 //         colorValue = colorTotal / node.children.length;
-//         const rectangle = Svg.fetchRectangle(node.id);
+//         const rectangle = this.fetchRectangle(node.id);
 //         const hsla = rectangle.getAttributeNS(null, `fill`);
-//         const newHsla = Svg.updateHue(hsla, colorValue);
+//         const newHsla = this.updateHue(hsla, colorValue);
 //         rectangle.setAttributeNS(null, `fill`, newHsla);
 //     } else {
 //         colorValue = currentStep * colorDelta;
-//         console.log(`${node.name} ---> ${colorValue}`);
-//         console.log(node.id)
-//         const rectangle = Svg.fetchRectangle(node.id);
+//         const rectangle = this.fetchRectangle(node.id);
 //         const hsla = rectangle.getAttributeNS(null, `fill`);
-//         const newHsla = Svg.updateHue(hsla, colorValue);
+//         const newHsla = this.updateHue(hsla, colorValue);
 //         rectangle.setAttributeNS(null, `fill`, newHsla);
 //         currentStep = currentStep + 1;
 //     }
@@ -596,3 +690,18 @@ export default class Svg {
 //         currentStep};
 //     return changes;
 // }
+
+// ///////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
+// const feGaussianBlur = document.createElementNS(this.SVGNS, `feGaussianBlur`);
+// feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
+// feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
+// feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
+// //////////////////////////////////////////////////////////////////////////
+// const feBlend = document.createElementNS(this.SVGNS, `feBlend`);
+// feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
+// feBlend.setAttributeNS(null, `in2`, `blurOut`);
+// feBlend.setAttributeNS(null, `mode`, `normal`);
+
+// filter.appendChild(feGaussianBlur);
+// filter.appendChild(feBlend);

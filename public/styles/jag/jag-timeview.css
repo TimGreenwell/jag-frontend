@@ -13,7 +13,7 @@ jag-timeview {
     box-shadow: inset 0 0 3px darkgray;
 }
 
-jag-timeview #time-container-wrapper {
+jag-timeview #timeview-wrapper {
     display: flex;
     flex-grow: 1;
     flex-shrink: 1;
