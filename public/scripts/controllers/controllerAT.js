@@ -82,6 +82,8 @@ export default class ControllerAT extends Controller {
 
         // Event function (event parameter unused)
         window.onblur = function () {
+            console.log(`onblur() activated`);
+
         };
     }
 
@@ -94,6 +96,7 @@ export default class ControllerAT extends Controller {
     }
 
     initializeHandlers() {
+        this._playground.addEventListener(`event-promote-project`, this.eventPromoteProjectHandler.bind(this));             // button to promote node to Jag (root)
         this._playground.addEventListener(`event-activity-created`, this.eventActivityCreatedHandler.bind(this));           // 'Create Activity' Popup initiated by Menu
         this._playground.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Any structural change to nodes affects Activities
         this._playground.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node isExpanded property changed
@@ -108,8 +111,7 @@ export default class ControllerAT extends Controller {
         this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
         this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file as JSON
         this._properties.addEventListener(`event-exportsvg-jag`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
-        this._properties.addEventListener(`event-promote-project`, this.eventPromoteProjectHandler.bind(this));             // button to promote node to Jag (root)
-        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
+         this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
 
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
@@ -188,7 +190,6 @@ export default class ControllerAT extends Controller {
     async eventNodeUpdatedHandler(event) {
         let projectNode;
         const updatedNodeModel = event.detail.nodeModel;
-        //   if (updatedNodeModel.id === updatedNodeModel.projectId) {
         if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
             projectNode = this.fetchProject(updatedNodeModel.projectId);
             projectNode.replaceChild(updatedNodeModel);
@@ -273,9 +274,7 @@ export default class ControllerAT extends Controller {
             await this.eventProjectDeletedHandler(event);
         }
     }
-
-
-    async eventPlaygroundClickedHandler() {
+        async eventPlaygroundClickedHandler() {
         // const unselectedNodes = event.detail.unselectedNodeArray;
         // if (unselectedNodes.length > 0) {
         //     const projectNode = unselectedNodes[0].getAncestor();
@@ -343,11 +342,19 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         const newProject = event.detail.node;
-        const newNode = new NodeModel(newProject);
-        this.relocateProject(newNode, 0, 200);
-        this.repopulateProject(newNode, newProject.id);
-        this.repopulateParent(newNode);
-        await StorageService.create(newNode, `node`);
+  //      const newNode = new NodeModel(newProject);       //?
+      //  this.relocateProject(newNode, 0, 200);
+
+        this.repopulateParent(newProject);
+        this.repopulateActivity(newProject);
+        this.repopulateProject(newProject, newProject.id);
+        this.repopulateDepth(newProject);
+
+        // this.repopulateProject(newProject, newProject.id);
+        // this.repopulateParent(newProject);
+        await StorageService.create(newProject, `node`);
+
+        this._playground._rebuildNodeView(newProject);
     }
 
     /**   -- Menu --  */

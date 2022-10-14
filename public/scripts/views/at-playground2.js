@@ -17,7 +17,7 @@ class AtPlayground extends Popupable {
 
     constructor() {
         super();
-        this.leafHeight = {
+        this.svgParameters = {
             id: `jag`,
             HUE: 200,
             SELECTED_HUE: 150,
@@ -55,6 +55,7 @@ class AtPlayground extends Popupable {
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
         this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (all)
         this._selectedActivityNodeMap = new Map();         // set of ActivityNodes (selected)
+        this._selectedEdge;                                // single selected edge
         this._is_edge_being_created = false;
         this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
         this.hasColor = false;
@@ -64,7 +65,7 @@ class AtPlayground extends Popupable {
         document.addEventListener(`keydown`, this.onKeyDown.bind(this));                        // ctrl for select children
         this._playgroundSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));   // background clicked (start svg panning)
         this._playgroundSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));       // mousewheel (zooming)
-
+        // Bounded (events that require eventual removing)
         this._boundDragView = this.dragView.bind(this);                                              // pan svg
         this._boundStopDragView = this.stopDragView.bind(this);                                      // cease panning
         this._boundFinalizeEdge = this.finalizeEdge.bind(this);
@@ -107,6 +108,9 @@ class AtPlayground extends Popupable {
         }
         if (elementType === `background`) {
             this.svgMouseDownEvent(e);
+        }
+        if (elementType === `edge`) {
+            this.selectEdge(e);
         }
     }
 
@@ -166,7 +170,7 @@ class AtPlayground extends Popupable {
         const nodeModelId = this.svg.fetchTargetId(e.target);
         const rectangle = this.svg.fetchRectangle(nodeModelId);
         rectangle.setAttributeNS(null, `cursor`, `grabbing`);
-        this.unselectAllNodes();
+        this.unselectEverything();
         const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
         if ((e.ctrlKey) || (!selectedNodeModel.isExpanded)) {
             selectedNodeModel.gatherDescendents().forEach((descendant) => {
@@ -211,7 +215,7 @@ class AtPlayground extends Popupable {
         // 2) Prepare for panning
 
         const unselectedNodeArray = this.selectedNodes;
-        this.unselectAllNodes();
+        this.unselectEverything();
         const selectedNodeArray = this.selectedNodes;
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
             detail: {
@@ -237,8 +241,8 @@ class AtPlayground extends Popupable {
 
     dragNode(e) {
         e.preventDefault();
-        const diffX = Math.round(e.x - this.svgCursor.x);
-        const diffY = Math.round(e.y - this.svgCursor.y); // Diff between cursor start and now.
+        const diffX = this.applyZoom(Math.round(e.x - this.svgCursor.x));
+        const diffY = this.applyZoom(Math.round(e.y - this.svgCursor.y)); // Diff between cursor start and now.
 
         this.svgSelectedItems.nodes.forEach((nodeGroup, key) => {
             // A static position can be found as x,y in the nodeModel in selectedItems map
@@ -265,9 +269,13 @@ class AtPlayground extends Popupable {
     stopDraggingNode(e) {
         e.preventDefault();
         const nodeModelId = this.svg.fetchTargetId(e.target);
+        console.log(`00`);
+        console.log(nodeModelId);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModelId);
         nodeGroup.setAttributeNS(null, `cursor`, `grab`);
-        const nodesToMove = [];
+
+        const movedNode = this.retrieveNodeModel(nodeModelId);
+        const rootNode = this._viewedProjectsMap.get(movedNode.projectId);
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
             const id = this.svg.fetchTargetId(nodeItem);
 
@@ -282,14 +290,11 @@ class AtPlayground extends Popupable {
             if ((deltaX !== 0) || (deltaY !== 0)) {
                 nodeModel.x = groupTransformX;
                 nodeModel.y = groupTransformY;
-                nodesToMove.push(nodeModel);
             }
         });
-        if (nodesToMove.length > 0) {
-            this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
-                detail: {nodeModels: nodesToMove}
-            }));
-        }
+        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
+            detail: {nodeModel: rootNode}
+        }));
         this._playgroundWrapperDiv.removeEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseleave`, this._boundStopDraggingNode);
@@ -354,8 +359,35 @@ class AtPlayground extends Popupable {
 
     onKeyDown(event) {
         event.stopImmediatePropagation();
-        const $node = event.target;
+        // const $node = event.target;
         if (event.key === `Delete`) {
+            if (this._selectedEdge) {
+                // const sourceNodeId = this.svg.fetchEdgeSourceId(this._selectedEdge);
+                // const sourceNode = this.retrieveNodeModel(sourceNodeId);
+                const destinationNodeId = this.svg.fetchEdgeDestinationId(this._selectedEdge);
+
+                const destinationNode = this.retrieveNodeModel(destinationNodeId);
+                if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
+                    const parentActivity = destinationNode.parent.activity;
+                    const childActivityChildId = destinationNode.childId;
+                    const remainingChildren = parentActivity._children.filter((entry) => {
+                        return entry.id !== childActivityChildId;
+                    });
+                    parentActivity.children = remainingChildren;
+                    this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                        detail: {activity: parentActivity}
+                    }));
+                    this.dispatchEvent(new CustomEvent(`event-promote-project`, {
+                        detail: {node: destinationNode}
+                    }));
+
+                    // this._selectedActivityNodeMap.delete(selectedNodeModel.id);
+                    this.unselectEverything();
+                    this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
+                        detail: {}
+                    }));
+                }
+            } else
             if (this._selectedActivityNodeMap.size > 1) {
                 alert(`Can only clear/disconnect one selected item`);
             } else if (this._selectedActivityNodeMap.size < 1) {
@@ -377,7 +409,7 @@ class AtPlayground extends Popupable {
                         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                             detail: {activity: parentActivity}
                         }));
-                        this._selectedActivityNodeMap.delete(selectedNodeModel.id);
+                        this.unselectEverything();
                     }
                 }
                 this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
@@ -394,6 +426,24 @@ class AtPlayground extends Popupable {
         this.svg.unselectNode(this._playgroundSvg, nodeModel);
     }
 
+    saveNode(node) {
+        const projectId = node.projectId;
+        const project = this._viewedProjectsMap.get(projectId);
+        let projectNode;
+
+        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
+            detail: {nodeModel: node}
+        }));
+    }
+
+    translate(node, offset) {
+        node.x = node.x + offset.x;
+        node.y = node.y + offset.y;
+        node.children.forEach((child) => {
+            return this.translate(child, offset);
+        });
+        return node;
+    }
 
     shift() {
         this.viewedProjects.forEach((project) => {
@@ -465,11 +515,15 @@ class AtPlayground extends Popupable {
     }
 
 
-    unselectAllNodes() {
+    unselectEverything() {
         this._selectedActivityNodeMap.forEach((value, key) => {
-            this._selectedActivityNodeMap.delete(value.id);
+            this._selectedActivityNodeMap.delete(value.id);  // redundant with the clear below?
             this.svg.unselectNode(this._playgroundSvg, value);
         });
+        if (this._selectedEdge) {
+            this.svg.unselectEdge(this._playgroundSvg, this._selectedEdge);
+            this._selectedEdge = null;
+        }
         this._selectedActivityNodeMap.clear();
     }
 
@@ -601,11 +655,20 @@ class AtPlayground extends Popupable {
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);
             const svgEdge = this.svg.createEdge(nodeModel.id, child.id, nodeBox, subNodeBox);
+            svgEdge.addEventListener(`mousedown`, this.mousedownController.bind(this));
             subgroup.appendChild(svgEdge);
         });
         return nodeBox;
     }
 
+    selectEdge(e) {
+        this.unselectEverything();
+        const edge = e.target;
+        const edgeSourceId = this.svg.fetchEdgeSourceId(edge);
+        const edgeDestinationId = this.svg.fetchEdgeDestinationId(edge);
+        this._selectedEdge = edge;
+        edge.setAttributeNS(null, `stroke`, `orange`);
+    }
 
     // Definitely Used
     onEdgeInitialized(e, node) {
@@ -741,80 +804,75 @@ class AtPlayground extends Popupable {
 
     findLongestAtEachDepth(rootNode) {
         const depthToLengthArray = [];
+        const startingLevel = rootNode.treeDepth;
         const workStack = [];
         workStack.push(rootNode);
         while (workStack.length > 0) {
             const currentNode = workStack.pop();
             const currentRect = this.svg.fetchRectangle(currentNode.id);
             const currentRectLength = Number(currentRect.getAttributeNS(null, `width`));
-            if ((depthToLengthArray[currentNode.treeDepth] === undefined) ||
-                (depthToLengthArray[currentNode.treeDepth] < currentRectLength)) {
-                depthToLengthArray[currentNode.treeDepth] = currentRectLength;
+            if ((depthToLengthArray[currentNode.treeDepth - startingLevel] === undefined) ||
+                (depthToLengthArray[currentNode.treeDepth - startingLevel] < currentRectLength)) {
+                depthToLengthArray[currentNode.treeDepth - startingLevel] = currentRectLength;
             }
             if (currentNode.isExpanded) {
-            currentNode.children.forEach((child) => {
-                workStack.push(child);
-            }); }
+                currentNode.children.forEach((child) => {
+                    workStack.push(child);
+                });
+            }
         }
         return depthToLengthArray;
     }
 
     xIndentForDepth(longestAtEachDepthArray, margin) {
-        let indentArray=[];
+        const indentArray = [];
         indentArray[0] = margin;
-        for (let depth = 1; depth < longestAtEachDepthArray.length; depth++ ) {
-            indentArray[depth] = longestAtEachDepthArray[depth-1] + margin + indentArray[depth-1];
+        for (let depth = 1; depth < longestAtEachDepthArray.length; depth++) {
+            indentArray[depth] = longestAtEachDepthArray[depth - 1] + margin + indentArray[depth - 1];
         }
-        console.log("longestAtEachDepthArray");
-        console.log(longestAtEachDepthArray);
-        console.log("indentArray");
-        console.log(indentArray);
-        return indentArray
+        return indentArray;
     }
 
     redrawSelectedNodes() {
         const horizontalMargin = 50;
-        const params = {
-            leafCounter: 0,
-            verticalMargin: 15,
-            xIndentArray: []
-        };
+        let xIndentArray = [];
+        let startTreeDepth = 0;
+        let leafCount = 0;
+        const boxHeight = this.svg.STANDARD_BOX_HEIGHT;
+        const verticalMargin = 15;
+        const startPoint = new Point();
+        const offsetPoint = new Point();
+
+        function layoutTree(nodeModel) {
+            if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
+                let childrenVerticalRange = 0;
+                nodeModel.children.forEach((child) => {
+                    child = layoutTree(child);
+                    childrenVerticalRange = childrenVerticalRange + child.y;
+                });
+                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
+                nodeModel.y = (childrenVerticalRange / nodeModel.children.length);
+                return nodeModel;
+            } else {
+                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
+                nodeModel.y = (leafCount * (boxHeight + verticalMargin));
+                leafCount = leafCount + 1;
+                return nodeModel;
+            }
+        }
+
         this.selectedNodes.forEach((node) => {
             const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
-            params.xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
-            this.layoutTree(node, params);
+            xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
+            startTreeDepth = node.treeDepth;
+            startPoint.x = node.x;
+            startPoint.y = node.y;
+            node = layoutTree(node);
+            offsetPoint.x = startPoint.x - node.x;
+            offsetPoint.y = startPoint.y - node.y;
+            node = this.translate(node, offsetPoint);
+            this.saveNode(node);
         });
-    }
-
-    layoutTree(nodeModel, params) {
-        let x;
-        let y;
-        if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
-            const nodesToMove = [];
-            let totalY = 0;
-            const origCount = params.leafCounter;
-            nodeModel.children.forEach((child) => {
-                params.leafCounter = params.leafCounter + this.layoutTree(child, params);
-                totalY = totalY + child.y;
-            });
-            const localLeafs = params.leafCounter - origCount;
-            nodeModel.x = params.xIndentArray[nodeModel.treeDepth];
-            nodeModel.y = totalY / nodeModel.children.length;
-            nodesToMove.push(nodeModel);
-            this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
-                detail: {nodeModels: nodesToMove}
-            }));
-            return localLeafs;
-        } else {
-            const nodesToMove = [];
-            nodeModel.x = params.xIndentArray[nodeModel.treeDepth];
-            nodeModel.y = params.leafCounter * (this.svg.STANDARD_BOX_HEIGHT + params.verticalMargin);
-            nodesToMove.push(nodeModel);
-            this.dispatchEvent(new CustomEvent(`event-nodes-updated`, {    // event-nodes-updated (or send an array of updates)
-                detail: {nodeModels: nodesToMove}
-            }));
-            return 1;
-        }
     }
 
     _handleNewActivityActivityPopup(e) {
@@ -1177,45 +1235,45 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
     // skip: ?
 });
 
-AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
-    type: AtPlayground.POPUP_TYPES.NOTICE,
-    name: `Disconnect Child`,
-    description: `Disconnect this child JAG from parent JAG?`,
-    actions: [
-        {
-            text: `Yes`,
-            color: `black`,
-            bgColor: `red`,
-            action({inputs: {node}}) {
-                const edge = node.getParentEdge();
-                const id = edge.getChildId();
-                const parent = node.getParent();
-                const jagUrn = parent.nodeModel.urn;
-                const jagChild = {
-                    urn: node.nodeModel.urn,
-                    id: node.nodeModel.childId
-                };
-                const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
-                    // if (entry.id !== jagChild.id) {
-                    //     return entry;
-                    // }
-                    // xxxxx
-                    return entry.id !== jagChild.id;
-                });
-                parent.nodeModel.activity.children = remainingChildren;
-                this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                    detail: {activity: parent.nodeModel.activity}
-                }));
-            }
-        },
-        {
-            text: `No`,
-            color: `white`,
-            bgColor: `black`
-        }
-
-    ]
-});
+// AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
+//     type: AtPlayground.POPUP_TYPES.NOTICE,
+//     name: `Disconnect Child`,
+//     description: `Disconnect this child JAG from parent JAG?`,
+//     actions: [
+//         {
+//             text: `Yes`,
+//             color: `black`,
+//             bgColor: `red`,
+//             action({inputs: {node}}) {
+//                 const edge = node.getParentEdge();
+//                 const id = edge.getChildId();
+//                 const parent = node.getParent();
+//                 const jagUrn = parent.nodeModel.urn;
+//                 const jagChild = {
+//                     urn: node.nodeModel.urn,
+//                     id: node.nodeModel.childId
+//                 };
+//                 const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
+//                     // if (entry.id !== jagChild.id) {
+//                     //     return entry;
+//                     // }
+//                     // xxxxx
+//                     return entry.id !== jagChild.id;
+//                 });
+//                 parent.nodeModel.activity.children = remainingChildren;
+//                 this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+//                     detail: {activity: parent.nodeModel.activity}
+//                 }));
+//             }
+//         },
+//         {
+//             text: `No`,
+//             color: `white`,
+//             bgColor: `black`
+//         }
+//
+//     ]
+// });
 
 // why cant this go inside scope.? Does anyone else need it?
 AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({

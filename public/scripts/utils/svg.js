@@ -21,7 +21,7 @@ export default class Svg {
         STANDARD_FONT_SIZE = 17,
         STEP_BRIGHTNESS = 5
     } = {}) {
-        this.SVGNS = `http://www.w3.org/2000/svg`;
+        this._id = id;
         this.HUE = HUE;
         this.SELECTED_HUE = SELECTED_HUE;
         this.POSSIBLE_HUE = POSSIBLE_HUE;
@@ -49,7 +49,7 @@ export default class Svg {
         this.EDGE_SEPARATOR = `:`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
-
+        this.SVGNS = `http://www.w3.org/2000/svg`;
         this._customFilters = this.createCustomFilters();
         this._id = id;
     }
@@ -277,8 +277,9 @@ export default class Svg {
         // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
         const cubicCurve = this.buildPath(sourceBox, destBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
-        edge.setAttributeNS(null, `pointer-events`, `none`);
-        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this._id}`;
+        edge.setAttributeNS(null, `cursor`, `pointer`);
+        edge.setAttributeNS(null, `pointer-events`, `visibleStroke`);
+        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this.id}`;
         const edgeDestId = `${this.EDGE}${this.ID_SEPARATOR}${destId}${this.ID_SEPARATOR}${this._id}`;
         edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
         return edge;
@@ -378,7 +379,11 @@ export default class Svg {
         rectangle.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${shadeStroke},1)`);
     }
 
-    /**
+    unselectEdge(svg, edge) {
+        edge.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,0%,1)`);
+    }
+
+        /**
      * Pathing
      *
      * followCursor - destination end of edge attached to cursor position
