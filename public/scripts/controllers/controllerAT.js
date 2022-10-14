@@ -153,13 +153,14 @@ export default class ControllerAT extends Controller {
      * eventNodesConnectedHandler        (a)  - user connects two Nodes with an edge
      * eventPlaygroundClickedHandler     (a)  - user selects node
      * eventImportJagHandler             (a)  - popup import JAG JSON
+     * eventPromoteProjectHandler        (a)  - button to promote node to Jag (root)
      *
      *    -- properties --
      * eventUrnChangedHandler            (C)  - URN field is changed
      * eventActivityUpdatedHandler       (C)  - user updates an Activity related field
      * eventNodeUpdatedHandler   (Playground) - user updates a Node related field
      * eventExportJagHandler                  - button to export JAG and Activities to file
-     * eventPromoteProjectHandler        (a)  - button to promote node to Jag (root)
+
      * eventUrnChangedHandler         (a)(C)  - URN field is changed
      *
      *       -- menu --
@@ -342,18 +343,13 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         const newProject = event.detail.node;
-  //      const newNode = new NodeModel(newProject);       //?
-      //  this.relocateProject(newNode, 0, 200);
 
         this.repopulateParent(newProject);
         this.repopulateActivity(newProject);
         this.repopulateProject(newProject, newProject.id);
         this.repopulateDepth(newProject);
 
-        // this.repopulateProject(newProject, newProject.id);
-        // this.repopulateParent(newProject);
         await StorageService.create(newProject, `node`);
-
         this._playground._rebuildNodeView(newProject);
     }
 

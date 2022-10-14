@@ -180,14 +180,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         exportSvg_el.className = `directProperty`;
         exportSvg_el.appendChild(this._exportSvg);
 
-        // Create project area
-        const projectButton_el = FormUtils.createEmptyInputContainer(`export`);
-        this._projectButton = document.createElement(`button`);
-        this._projectButton.innerHTML = `Create New JAG`;
-        projectButton_el.appendChild(this._projectButton);
-        projectButton_el.className = `directProperty`;
-
-
         this._enableProperties(false);
         this.appendChild(propertyContainer);
         propertyContainer.appendChild(childOf_el);
@@ -205,7 +197,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         propertyContainer.appendChild(annotations_el);
         propertyContainer.appendChild(export_el);
         propertyContainer.appendChild(exportSvg_el);
-        propertyContainer.appendChild(projectButton_el);
 
 
         // this._$urnInput.addEventListener('keyup', e => {
@@ -229,7 +220,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         this._export.addEventListener(`click`, this._handleExportClick.bind(this));
         this._exportSvg.addEventListener(`click`, this._handleExportSvgClick.bind(this));
-        this._projectButton.addEventListener(`click`, this._handleProjectButtonClick.bind(this));
     }
 
     _handleNameChange(e) {
@@ -385,17 +375,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             detail: {node: this._nodeModel}
         }));
     }
-
-    _handleProjectButtonClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._nodeModel;
-        this.dispatchEvent(new CustomEvent(`event-promote-project`, {
-            bubbles: true,
-            composed: true,
-            detail: {node: this._nodeModel}
-        }));
-    }
-
 
     handleStorageUpdate(newActivity, newActivityUrn) {
         if (newActivityUrn === this._$urnInput) {
@@ -1100,7 +1079,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._export.disabled = !enabled;
         this._exportSvg.disabled = !enabled;
-        this._projectButton.disabled = !enabled;
 
         if (this._nodeModel && (enabled)) {
             if (this._nodeModel.parent) {

@@ -306,8 +306,8 @@ class AtPlayground extends Popupable {
         const canvasRect = this._playgroundSvg.getBoundingClientRect();
         // ...and transform clientX / clientY to be relative to that rectangle
         return {
-            x: Math.round(e.clientX - canvasRect.x),
-            y: Math.round(e.clientY - canvasRect.y)
+            x: this.applyZoom(Math.round(e.clientX - canvasRect.x)),
+            y: this.applyZoom(Math.round(e.clientY - canvasRect.y))
         };
     }
 
