@@ -173,7 +173,7 @@ export default class Node extends EventTarget {
     }
 
     set x(x) {
-        this._x = x;
+        this._x = Math.round(x);
     }
 
     get y() {
@@ -181,7 +181,7 @@ export default class Node extends EventTarget {
     }
 
     set y(y) {
-        this._y = y;
+        this._y = Math.round(y);
     }
 
     setPosition(x, y) {

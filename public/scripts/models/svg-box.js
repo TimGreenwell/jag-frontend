@@ -49,7 +49,7 @@ export default class Node extends EventTarget {
     }
 
     set topLeftX(value) {
-        this._topLeftX = value;
+        this._topLeftX = Math.round(value);
     }
 
     get topLeftY() {
@@ -57,7 +57,7 @@ export default class Node extends EventTarget {
     }
 
     set topLeftY(value) {
-        this._topLeftY = value;
+        this._topLeftY = Math.round(value);
     }
 
     get height() {
@@ -65,7 +65,7 @@ export default class Node extends EventTarget {
     }
 
     set height(value) {
-        this._height = value;
+        this._height = Math.round(value);
     }
 
     get width() {
@@ -73,7 +73,7 @@ export default class Node extends EventTarget {
     }
 
     set width(value) {
-        this._width = value;
+        this._width = Math.round(value);
     }
 
     get zoomStep() {

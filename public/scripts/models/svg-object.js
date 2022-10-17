@@ -7,35 +7,27 @@
 
 'use strict';
 
+// noinspection JSUnusedGlobalSymbols
+export default class SvgObject {
 
-export default class Svg {
-
-    constructor({
-        id,
-        HUE = 200,
-        SELECTED_HUE = 150,
-        POSSIBLE_HUE = 50,
-        HORIZONTAL_MARGIN = 10,
-        VERTICAL_MARGIN = 10,
-        LINE_WIDTH = 2,
-        STANDARD_FONT_SIZE = 17,
-        STEP_BRIGHTNESS = 5
-    } = {}) {
+    constructor(id) {
         this._id = id;
-        this.HUE = HUE;
-        this.SELECTED_HUE = SELECTED_HUE;
-        this.POSSIBLE_HUE = POSSIBLE_HUE;
-        this.HORIZONTAL_MARGIN = HORIZONTAL_MARGIN;
-        this.VERTICAL_MARGIN = VERTICAL_MARGIN;
-        this.LINE_WIDTH = LINE_WIDTH;
-        this.STANDARD_FONT_SIZE = STANDARD_FONT_SIZE;
-        this.STEP_BRIGHTNESS = STEP_BRIGHTNESS;
+        this._standardHue = 200;
+        this._selectedHue = 150;
+        this._possibleHue = 50;
+        this._horizontalMargin = 10;
+        this._verticalMargin = 10;
+        this._lineWidth = 2;
+        this._standardFontSize = 17;
+        this._stepBrightness = 5;
+        this._initialBrightness = 50;
 
-        this.LABEL_INDENT = this.VERTICAL_MARGIN / 2;
-        this.LABEL_HEIGHT = this.STANDARD_FONT_SIZE;
-        this.STANDARD_BOX_HEIGHT = (2 * this.VERTICAL_MARGIN) + this.LABEL_HEIGHT;
-        this.BUTTON_SIZE = this.STANDARD_FONT_SIZE / 2;
-        this.INITIAL_BRIGHTNESS = 50;
+        this._labelIndent = this.verticalMargin / 2;
+        this._labelHeight = this.standardFontSize;
+        this._standardBoxHeight = (2 * this.verticalMargin) + this.labelHeight;
+        this._buttonSize = this.standardFontSize / 2;
+
+        this._customFilters = this.createCustomFilters();
 
         this.SVG = `svg`;
         this.BACKGROUND = `background`;
@@ -50,20 +42,124 @@ export default class Svg {
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
         this.SVGNS = `http://www.w3.org/2000/svg`;
-        this._customFilters = this.createCustomFilters();
-        this._id = id;
     }
 
     get id() {
         return this._id;
     }
 
+    get standardHue() {
+        return this._standardHue;
+    }
+
+    set standardHue(value) {
+        this._standardHue = value;
+    }
+
+    get selectedHue() {
+        return this._selectedHue;
+    }
+
+    set selectedHue(value) {
+        this._selectedHue = value;
+    }
+
+    get possibleHue() {
+        return this._possibleHue;
+    }
+
+    set possibleHue(value) {
+        this._possibleHue = value;
+    }
+
+    get horizontalMargin() {
+        return this._horizontalMargin;
+    }
+
+    set horizontalMargin(value) {
+        this._horizontalMargin = value;
+    }
+
+    get verticalMargin() {
+        return this._verticalMargin;
+    }
+
+    set verticalMargin(value) {
+        this._verticalMargin = value;
+    }
+
+    get lineWidth() {
+        return this._lineWidth;
+    }
+
+    set lineWidth(value) {
+        this._lineWidth = value;
+    }
+
+    get standardFontSize() {
+        return this._standardFontSize;
+    }
+
+    set standardFontSize(value) {
+        this._standardFontSize = value;
+    }
+
+    get stepBrightness() {
+        return this._stepBrightness;
+    }
+
+    set stepBrightness(value) {
+        this._stepBrightness = value;
+    }
+
+    get labelIndent() {
+        return this._labelIndent;
+    }
+
+    set labelIndent(value) {
+        this._labelIndent = value;
+    }
+
+    get labelHeight() {
+        return this._labelHeight;
+    }
+
+    set labelHeight(value) {
+        this._labelHeight = value;
+    }
+
+    get standardBoxHeight() {
+        return this._standardBoxHeight;
+    }
+
+    set standardBoxHeight(value) {
+        this._standardBoxHeight = value;
+    }
+
+    get buttonSize() {
+        return this._buttonSize;
+    }
+
+    set buttonSize(value) {
+        this._buttonSize = value;
+    }
+
+    get initialBrightness() {
+        return this._initialBrightness;
+    }
+
+    set initialBrightness(value) {
+        this._initialBrightness = value;
+    }
+
+
     get customFilters() {
         return this._customFilters;
     }
 
+
     /**
-    Color and Shading Methods
+     Color and Shading Methods
 
      updateHSLA - modify current hsla
      updateHue  - adjust hue portion of current hsla (color wheel: 1-360)
@@ -74,7 +170,7 @@ export default class Svg {
      applyDepthEffect - adjust lightness based on depth in tree
      fillDepthLightness - apply effect to fill
      strokeDepthLightness - apply effect to stroke
-    */
+     */
 
     updateHSLA(hslaString, hue, saturation, lightness, alpha) {
         const components = hslaString.replace(`hsla(`, ``).replace(`)`, ``);
@@ -111,8 +207,8 @@ export default class Svg {
     }
 
     addColor(item, fill = `black`, stroke = `black`) {
-        item.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${fill}%,1)`);
-        item.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${stroke}%,1)`);
+        item.setAttributeNS(null, `fill`, `hsla(${this.standardHue},100%,${fill}%,1)`);
+        item.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,${stroke}%,1)`);
     }
 
     applyColorDepthEffect(item, depth, treeHeight) {
@@ -126,27 +222,27 @@ export default class Svg {
     applyDepthEffect(item, depth, treeHeight) {
         const fillShading = this.fillDepthLightness(depth, treeHeight);
         const strokeShading = this.strokeDepthLightness(depth, treeHeight);
-        const fill = `hsla(${this.HUE},100%,${fillShading}%,1)`;
-        const stroke = `hsla(${this.HUE},100%,${strokeShading}%,1)`;
+        const fill = `hsla(${this.standardHue},100%,${fillShading}%,1)`;
+        const stroke = `hsla(${this.standardHue},100%,${strokeShading}%,1)`;
         item.setAttributeNS(null, `fill`, fill);
         item.setAttributeNS(null, `stroke`, stroke);
     }
 
     fillDepthLightness(depthOfNode, treeHeight) {
-        return this.INITIAL_BRIGHTNESS - (treeHeight * this.STEP_BRIGHTNESS / 2) + (depthOfNode * this.STEP_BRIGHTNESS);
+        return this.initialBrightness - (treeHeight * this.stepBrightness / 2) + (depthOfNode * this.stepBrightness);
     }
 
     strokeDepthLightness(depthOfNode, treeHeight) {
         const fillShading = this.fillDepthLightness(depthOfNode, treeHeight);
-        const strokeShading = fillShading - (this.STEP_BRIGHTNESS * 4);
+        const strokeShading = fillShading - (this.stepBrightness * 4);
         return strokeShading;
     }
 
     /**
      * Object creation
      *
-     * buildSvg  - highest level object
-     * createBackground - group to hold all sub-groups
+     * buildSvg  - main svg container
+     * createBackground - group to hold all subgroups
      * createSubGroup - group to hold node groups and edges (and sub-subgroups, if exist)
      * createNodeGroup - group to hold node rectangle, text, button groups
      * createCircle - test circle for debugging points
@@ -177,14 +273,14 @@ export default class Svg {
 
     createSubGroup(subgroupId) {
         const group = document.createElementNS(this.SVGNS, `g`);
-        group.id = `${this.SUBGROUP}${this.ID_SEPARATOR}${subgroupId}${this.ID_SEPARATOR}${this._id}`;
+        group.id = this.buildId(this.SUBGROUP, subgroupId);
         group.setAttributeNS(null, `pointer-events`, `none`);
         return group;
     }
 
     createNodeGroup(id) {
         const nodeGroup = document.createElementNS(this.SVGNS, `g`);
-        nodeGroup.id = `${this.NODEGROUP}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
+        nodeGroup.id = this.buildId(this.NODEGROUP, id);
         nodeGroup.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled by under rect -rethink
         return nodeGroup;
     }
@@ -198,27 +294,23 @@ export default class Svg {
     }
 
     createAddButton(id, width, height) {
-        const halfFont = this.STANDARD_FONT_SIZE / 2;
+        const halfFont = this.standardFontSize / 2;
         const addButton = document.createElementNS(this.SVGNS, `g`);
+        addButton.id = this.buildId(this.ADD, id);
         const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
-        // circle.setAttributeNS(null, `fill`, `${fillShading}`);
         circle.setAttributeNS(null, `fill-opacity`, `1`);
-        // circle.setAttributeNS(null, `stroke`, `${strokeShading}`);
-        circle.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        circle.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         const horizLine = document.createElementNS(this.SVGNS, `path`);
 
-        horizLine.setAttributeNS(null, `d`, `M ${width - this.STANDARD_FONT_SIZE},${height - halfFont} L ${width},${height - halfFont}`);
-        // horizLine.setAttributeNS(null, `stroke`, `${strokeShading}`);
-        horizLine.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        horizLine.setAttributeNS(null, `d`, `M ${width - this.standardFontSize},${height - halfFont} L ${width},${height - halfFont}`);
+        horizLine.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         const vertLine = document.createElementNS(this.SVGNS, `path`);
 
-        vertLine.setAttributeNS(null, `d`, `M ${width - halfFont},${height - this.STANDARD_FONT_SIZE} L ${width - halfFont},${height}`);
-        // vertLine.setAttributeNS(null, `stroke`, `${strokeShading}`);
-        vertLine.setAttributeNS(null, `stroke-width`, `${this.LINE_WIDTH}`);
+        vertLine.setAttributeNS(null, `d`, `M ${width - halfFont},${height - this.standardFontSize} L ${width - halfFont},${height}`);
+        vertLine.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         addButton.appendChild(circle);
         addButton.appendChild(horizLine);
         addButton.appendChild(vertLine);
-        addButton.id = `${this.ADD}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         addButton.setAttributeNS(null, `cursor`, `pointer`);
         addButton.setAttributeNS(null, `pointer-events`, `bounding-box`);   // handled with classList?
         return addButton;
@@ -227,27 +319,27 @@ export default class Svg {
     createExpandButton(id, width, height, isExpanded) {
         let path;
         const expandButton = document.createElementNS(this.SVGNS, `g`);
+        expandButton.id = this.buildId(this.EXPAND, id);
         if (isExpanded) {
-            const x1 = width - this.LABEL_INDENT;
+            const x1 = width - this.labelIndent;
             const y1 = 3;
             const x2 = x1;
-            const y2 = y1 + this.STANDARD_FONT_SIZE;
-            const x3 = x2 - (this.STANDARD_FONT_SIZE / 2);
-            const y3 = y2 - (this.STANDARD_FONT_SIZE / 2);
+            const y2 = y1 + this.standardFontSize;
+            const x3 = x2 - (this.standardFontSize / 2);
+            const y3 = y2 - (this.standardFontSize / 2);
             path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`;
         } else {
-            const x1 = width - this.LABEL_INDENT;
-            const y1 = (this.STANDARD_FONT_SIZE / 2) + 3;
-            const x2 = x1 - (this.STANDARD_FONT_SIZE / 2);
-            const y2 = y1 - (this.STANDARD_FONT_SIZE / 2);
+            const x1 = width - this.labelIndent;
+            const y1 = (this.standardFontSize / 2) + 3;
+            const x2 = x1 - (this.standardFontSize / 2);
+            const y2 = y1 - (this.standardFontSize / 2);
             const x3 = x2;
-            const y3 = y2 + (this.STANDARD_FONT_SIZE);
+            const y3 = y2 + (this.standardFontSize);
             path = `M ${x1}, ${y1} L ${x2},${y2} ${x3},${y3} Z`;
         }
         const triangle = document.createElementNS(this.SVGNS, `path`);
         triangle.setAttributeNS(null, `d`, path);
         expandButton.appendChild(triangle);
-        expandButton.id = `${this.EXPAND}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         expandButton.setAttributeNS(null, `cursor`, `pointer`);
         expandButton.setAttributeNS(null, `pointer-events`, `bounding-box`);    // handled with classlist?
         return expandButton;
@@ -255,11 +347,11 @@ export default class Svg {
 
     createRectangle(width, height, id) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
+        rectangle.id = this.buildId(this.RECTANGLE, id);
         rectangle = this.resizeRectangle(rectangle, height, width);
         rectangle.setAttributeNS(null, `rx`, `7`);
         rectangle.setAttributeNS(null, `cursor`, `grab`);
         // rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
-        rectangle.id = `${this.RECTANGLE}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`;
         return rectangle;
     }
 
@@ -271,40 +363,38 @@ export default class Svg {
 
     createEdge(sourceId, destId, sourceBox, destBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
-        edge.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,0%,1)`);
+        const edgeSourceId = this.buildId(this.EDGE, sourceId);
+        const edgeDestId = this.buildId(this.EDGE, destId);
+        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
+        edge.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
-        edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
-        // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
+        edge.setAttributeNS(null, `stroke-width`, this.lineWidth);
         const cubicCurve = this.buildPath(sourceBox, destBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
         edge.setAttributeNS(null, `cursor`, `pointer`);
         edge.setAttributeNS(null, `pointer-events`, `visibleStroke`);
-        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this.id}`;
-        const edgeDestId = `${this.EDGE}${this.ID_SEPARATOR}${destId}${this.ID_SEPARATOR}${this._id}`;
-        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
         return edge;
     }
 
     createEdgeToCursor(sourceId, sourceBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
-        edge.setAttributeNS(null, `stroke`, `hsla(${this.POSSIBLE_HUE},100%,0%,1)`);
+        const edgeSourceId = this.buildId(this.EDGE, sourceId);
+        const edgeDestId = `${this.CURSOR}`;
+        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
+        edge.setAttributeNS(null, `stroke`, `hsla(${this.possibleHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
-        edge.setAttributeNS(null, `stroke-width`, this.LINE_WIDTH);
-        // edge.setAttributeNS(null, `stroke-dasharray`, `4`);
+        edge.setAttributeNS(null, `stroke-width`, this.lineWidth);
         const cubicCurve = this.buildPath(sourceBox, sourceBox);
         edge.setAttributeNS(null, `d`, cubicCurve);
         edge.setAttributeNS(null, `pointer-events`, `none`);
-        const edgeSourceId = `${this.EDGE}${this.ID_SEPARATOR}${sourceId}${this.ID_SEPARATOR}${this._id}`;
-        const edgeDestId = `${this.CURSOR}`;
-        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
         return edge;
     }
 
 
     createTextElement(text, id) {
         const svgText = document.createElementNS(this.SVGNS, `text`);
-        svgText.id = `${this.TEXT}${this.ID_SEPARATOR}${id}${this.EDGE_SEPARATOR}${this._id}`;
-        svgText.setAttributeNS(null, `font-size`, this.STANDARD_FONT_SIZE.toString());
+        svgText.id = this.buildId(this.TEXT, id);
+        svgText.setAttributeNS(null, `font-size`, this.standardFontSize.toString());
         svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
         svgText.setAttributeNS(null, `pointer-events`, `none`);
         const textNode = document.createTextNode(text);
@@ -328,8 +418,7 @@ export default class Svg {
 
     positionItem(item, x, y) {
         if (item.tagName.toLowerCase() === `g`) {
-            item.setAttributeNS(null, 'transform', `translate(${x},${y})`);
-            const xxx = item.getAttributeNS(null, `transform`);
+            item.setAttributeNS(null, `transform`, `translate(${x},${y})`);
         } else if (item.tagName.toLowerCase() === `circle`) {
             item.setAttributeNS(null, `cx`, x);
             item.setAttributeNS(null, `cy`, y);
@@ -349,41 +438,39 @@ export default class Svg {
      */
 
 
-    selectNode(svg, node) {  // Apply 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
-        // const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.EDGE_SEPARATOR}${this.id}`);
+    selectNode(node) {  // Apply 'select' effect (highlight)
+        const rectangle = this.fetchRectangle(node.id);
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${this.SELECTED_HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.selectedHue},100%,${shadeFill},1)`);
     }
 
-    signalPossibleChild(svg, node) {  // Apply 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
-        // const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.EDGE_SEPARATOR}${this.id}`);
+
+    signalPossibleChild(node) {  // Apply 'select' effect (highlight)
+        const rectangle = this.fetchRectangle(node.id);
         const hslaFill = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hslaFill.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${this.POSSIBLE_HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.possibleHue},100%,${shadeFill},1)`);
         const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
         const shadeStroke = hslaStroke.split(`,`)[2];
-        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.POSSIBLE_HUE},100%,${shadeStroke},1)`);
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.possibleHue},100%,${shadeStroke},1)`);
     }
 
-    unselectNode(svg, node) {   // Remove 'select' effect (highlight)
-        const rectangle = svg.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
-        const text = svg.getElementById(`${this.TEXT}${this.ID_SEPARATOR}${node.id}${this.ID_SEPARATOR}${this._id}`);
+    unselectNode(node) {   // Remove 'select' effect (highlight)
+        const rectangle = this.fetchRectangle(node.id);
         const hslaFill = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hslaFill.split(`,`)[2];
-        rectangle.setAttributeNS(null, `fill`, `hsla(${this.HUE},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `fill`, `hsla(${this.standardHue},100%,${shadeFill},1)`);
         const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
         const shadeStroke = hslaStroke.split(`,`)[2];
-        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,${shadeStroke},1)`);
+        rectangle.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,${shadeStroke},1)`);
     }
 
-    unselectEdge(svg, edge) {
-        edge.setAttributeNS(null, `stroke`, `hsla(${this.HUE},100%,0%,1)`);
+    unselectEdge(edge) {
+        edge.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
     }
 
-        /**
+    /**
      * Pathing
      *
      * followCursor - destination end of edge attached to cursor position
@@ -422,7 +509,7 @@ export default class Svg {
         const transformString = destinationNode.getAttributeNS(null, `transform`);
         const transformComponents = this.parse(transformString);
         const ex = Number(transformComponents.translate[0]);
-        const boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
+        const boxAdjustment = (this.standardBoxHeight / 2);
         const ey = Number(transformComponents.translate[1]) + boxAdjustment;
 
         const delta_x = (ex - ox) / 2.0;
@@ -438,8 +525,8 @@ export default class Svg {
         const origPath = edge.getAttributeNS(null, `d`);
         const sourceNodeId = this.fetchEdgeSourceId(edge);
         const sourceNode = svgSelectedItems.nodes.get(sourceNodeId);
-        const id = sourceNode.id.replace(`${this.NODEGROUP}${this.ID_SEPARATOR}`, ``);
-        const rect = document.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${id}`);
+        const id = this.fetchTargetId(sourceNode);
+        const rect = this.fetchRectangle(id);
         const width = rect.getAttributeNS(null, `width`);
 
         const splitOrigPath = origPath.split(` `);
@@ -448,7 +535,7 @@ export default class Svg {
         const transformComponents = this.parse(transformString);
         let boxAdjustment = width;
         const ox = Number(transformComponents.translate[0]) + Number(boxAdjustment);
-        boxAdjustment = (this.STANDARD_BOX_HEIGHT / 2);
+        boxAdjustment = (this.standardBoxHeight / 2);
         const oy = Number(transformComponents.translate[1]) + boxAdjustment;
 
         const ex = Math.round(Number(splitOrigPath[8]));
@@ -501,19 +588,19 @@ export default class Svg {
     }
 
     fetchNodeGroup(id) {
-        return document.getElementById(`${this.NODEGROUP}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
+        return document.getElementById(this.buildId(this.NODEGROUP, id));
     }
 
     fetchExpandButton(id) {
-        return document.getElementById(`${this.EXPAND}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
+        return document.getElementById(this.buildId(this.EXPAND, id));
     }
 
     fetchAddButton(id) {
-        return document.getElementById(`${this.ADD}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
+        return document.getElementById(this.buildId(this.ADD, id));
     }
 
     fetchRectangle(id) {
-        return document.getElementById(`${this.RECTANGLE}${this.ID_SEPARATOR}${id}${this.ID_SEPARATOR}${this._id}`);
+        return document.getElementById(this.buildId(this.RECTANGLE, id));
     }
 
 
@@ -538,7 +625,6 @@ export default class Svg {
     }
 
     fetchEdgeSourceId(edge) {
-        console.log(edge);
         const edgeSourceId = edge.id.split(this.EDGE_SEPARATOR)[0];
         const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
         return sourceId;
@@ -556,22 +642,28 @@ export default class Svg {
     }
 
     fetchEdgeTo(nodeId) {
-        const incomingEdges = document.querySelector(`[id$=${this.EDGE}${this.ID_SEPARATOR}${nodeId}${this.ID_SEPARATOR}${this._id}]`);
+        const incomingEdges = document.querySelector(`[id$=${this.buildId(this.EDGE, nodeId)}]`);
         return incomingEdges;
     }
 
     fetchEdgesFrom(nodeId) {
-        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.EDGE}${this.ID_SEPARATOR}${nodeId}${this.ID_SEPARATOR}${this._id}]`));
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.buildId(this.EDGE, nodeId)}]`));
         return outgoingEdges;
     }
 
     /**
      * Utilities
      *
+     * buildId - construct the element id -- 'elementType:elementId:svgId'
+     * labelWidth - return actual pixel width - based on string length and font and text attributes
      * parse - converts a group's transform string into an object (orig author:chernjie from stackoverflow)
      * clearBackground - completely wipe all elements from background
      * saveSvg - downloads text version of the SVG object
      */
+
+    buildId(itemType, itemId) {
+        return `${itemType}${this.ID_SEPARATOR}${itemId}${this.ID_SEPARATOR}${this._id}`;
+    }
 
     labelWidth(svgText) {
         const bbox = svgText.getBBox();
@@ -579,8 +671,9 @@ export default class Svg {
         return Math.round(width);
     }
 
-    parse(a) {    // shameless stolen from chernjie - stackoverflow
+    parse(a) {    // shamelessly stolen from chernjie - stackoverflow
         const b = {};
+        // eslint-disable-next-line require-unicode-regexp
         for (const i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
             const c = a[i].match(/[\w\.\-]+/g);
             b[c.shift()] = c;
@@ -625,8 +718,7 @@ export default class Svg {
         feConvolveMatrix.setAttributeNS(null, `order`, `4,4`);
         feConvolveMatrix.setAttributeNS(
             null, `kernelMatrix`,
-            `
-          1 0 0 0
+            `1 0 0 0
           0 1 0 0
           0 0 1 0
           0 0 0 1`
@@ -645,7 +737,7 @@ export default class Svg {
         feComposite.setAttributeNS(null, `result`, `outout`);
         // //////////////////////////////////////////////////////////////////////////
         const filter3dEffect = document.createElementNS(this.SVGNS, `filter`);
-        filter3dEffect.setAttributeNS(null, `id`, `blur-effect`);
+        filter3dEffect.setAttributeNS(null, `id`, `blur`);
         filter3dEffect.setAttributeNS(null, `x`, `-20%`);
         filter3dEffect.setAttributeNS(null, `y`, `-20%`);
         filter3dEffect.setAttributeNS(null, `width`, `150%`);
@@ -656,10 +748,12 @@ export default class Svg {
 
         customFilterMap.set(filter3dEffect.id, filter3dEffect);
         return customFilterMap;
+        // return filter3dEffect;
     }
 
     applyFilter(svgItem, filterId) {
-        svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
+        console.log(`url(#${filterId})`)
+         svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
     }
 
 }
@@ -692,11 +786,22 @@ export default class Svg {
 //         rectangle.setAttributeNS(null, `fill`, newHsla);
 //         currentStep = currentStep + 1;
 //     }
-//
-//     set svgParameters(svgParameters) {
-//     }
-//
-//     set svgLineWidth(lineWidth){
-//         this.svgParameters({lineWith : lineWidth});
-//     }
-//
+//     const changes = {colorValue,
+//         currentStep};
+//     return changes;
+// }
+
+// ///////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////
+// const feGaussianBlur = document.createElementNS(this.SVGNS, `feGaussianBlur`);
+// feGaussianBlur.setAttributeNS(null, `in`, `offOut`);
+// feGaussianBlur.setAttributeNS(null, `result`, `blurOut`);
+// feGaussianBlur.setAttributeNS(null, `stdDeviation`, `2`);
+// //////////////////////////////////////////////////////////////////////////
+// const feBlend = document.createElementNS(this.SVGNS, `feBlend`);
+// feBlend.setAttributeNS(null, `in`, `SourceGraphic`);
+// feBlend.setAttributeNS(null, `in2`, `blurOut`);
+// feBlend.setAttributeNS(null, `mode`, `normal`);
+
+// filter.appendChild(feGaussianBlur);
+// filter.appendChild(feBlend);

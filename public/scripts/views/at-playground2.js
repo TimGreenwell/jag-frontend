@@ -10,34 +10,31 @@
 import EdgeElement from './at-support/edge.js';
 import Popupable from '../utils/popupable.js';
 import UserPrefs from '../utils/user-prefs.js';
-import Svg from '../utils/svg.js';
+import SvgObject from '../models/svg-object.js';
 import Point from '../models/point.js';
 
 class AtPlayground extends Popupable {
 
     constructor() {
         super();
-        this.svgParameters = {
-            id: `jag`,
-            HUE: 200,
-            SELECTED_HUE: 150,
-            POSSIBLE_HUE: 50,
-            HORIZONTAL_MARGIN: 10,
-            VERTICAL_MARGIN: 10,
-            LINE_WIDTH: 2,
-            STANDARD_FONT_SIZE: 17,
-            STEP_BRIGHTNESS: 5
-        };
+
         this._playgroundWrapperDiv = document.createElement(`div`);
         this._playgroundWrapperDiv.id = `playground-wrapper`;
         this.setPopupBounds(this._playgroundWrapperDiv);
         this.appendChild(this._playgroundWrapperDiv);
-        this.svg = new Svg(this.svgParameters);
+        this.svg = new SvgObject(`jag`);
+        this.svg.standardHue = 200;
+        this.svg.selectedHue = 150;
+        this.svg.possibleHue = 50;
+        this.svg.horizontalMargin = 10;
+        this.svg.verticalMargin = 10;
+        this.svg.lineWidth = 2;
+        this.svg.standardFontSize = 17;
+        this.svg.stepBrightness = 5;
         this._playgroundSvg = this.svg.buildSvg();
-
-        this._background = this.svg.createBackground(`jag`);
+        this._background = this.svg.createBackground();
         this._playgroundSvg.appendChild(this._background);
-        this._playgroundSvg.addEventListener(`mousedown`, this.mousedownController.bind(this));
+
         this._playgroundWrapperDiv.appendChild(this._playgroundSvg);
 
 
@@ -55,7 +52,7 @@ class AtPlayground extends Popupable {
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
         this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (all)
         this._selectedActivityNodeMap = new Map();         // set of ActivityNodes (selected)
-        this._selectedEdge;                                // single selected edge
+        this._selectedEdge = null;                         // single selected edge
         this._is_edge_being_created = false;
         this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
         this.hasColor = false;
@@ -63,8 +60,8 @@ class AtPlayground extends Popupable {
         // EVENTS
         // SVG Events
         document.addEventListener(`keydown`, this.onKeyDown.bind(this));                        // ctrl for select children
-        this._playgroundSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));   // background clicked (start svg panning)
         this._playgroundSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));       // mousewheel (zooming)
+        this._playgroundSvg.addEventListener(`mousedown`, this.mousedownController.bind(this));
         // Bounded (events that require eventual removing)
         this._boundDragView = this.dragView.bind(this);                                              // pan svg
         this._boundStopDragView = this.stopDragView.bind(this);                                      // cease panning
@@ -77,6 +74,9 @@ class AtPlayground extends Popupable {
         this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
         this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
     }
+
+
+
 
     /**
      *  Events
@@ -139,7 +139,7 @@ class AtPlayground extends Popupable {
             }
         });
         // 2 light up some color0
-        this.svg.signalPossibleChild(this._playgroundSvg, parentNodeModel);
+        this.svg.signalPossibleChild(parentNodeModel);
         // 3 start edge following mouse
         const rect = this.svg.fetchRectangle(parentNodeModel.id);
         const height = Number(rect.getAttributeNS(null, `height`));
@@ -175,11 +175,11 @@ class AtPlayground extends Popupable {
         if ((e.ctrlKey) || (!selectedNodeModel.isExpanded)) {
             selectedNodeModel.gatherDescendents().forEach((descendant) => {
                 this._selectedActivityNodeMap.set(descendant.id, descendant);
-                this.svg.selectNode(this._playgroundSvg, descendant);
+                this.svg.selectNode(descendant);
             });
         }
         this._selectedActivityNodeMap.set(selectedNodeModel.id, selectedNodeModel);
-        this.svg.selectNode(this._playgroundSvg, selectedNodeModel);
+        this.svg.selectNode(selectedNodeModel);
         this.svgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
         this.svgCursor.x = Math.round(e.x);
@@ -227,8 +227,8 @@ class AtPlayground extends Popupable {
         // The background clicker - AS SEEN IN TIMEVIEW
         this.windowSize = this.getBoundingClientRect();
         this._initialMouse = {
-            x: e.clientX,
-            y: e.clientY
+            x: Math.round(e.clientX),
+            y: Math.round(e.clientY)
         };
 
         this.addEventListener(`mousemove`, this._boundDragView);
@@ -263,14 +263,12 @@ class AtPlayground extends Popupable {
         e.preventDefault();
         const id = this.svg.fetchTargetId(e.target);
         const nodeModel = this._viewedProjectsMap.get(id);
-        this.svg.signalPossibleChild(this._playgroundSvg, nodeModel);
+        this.svg.signalPossibleChild(nodeModel);
     }
 
     stopDraggingNode(e) {
         e.preventDefault();
         const nodeModelId = this.svg.fetchTargetId(e.target);
-        console.log(`00`);
-        console.log(nodeModelId);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModelId);
         nodeGroup.setAttributeNS(null, `cursor`, `grab`);
 
@@ -306,8 +304,8 @@ class AtPlayground extends Popupable {
         const canvasRect = this._playgroundSvg.getBoundingClientRect();
         // ...and transform clientX / clientY to be relative to that rectangle
         return {
-            x: this.applyZoom(Math.round(e.clientX - canvasRect.x)),
-            y: this.applyZoom(Math.round(e.clientY - canvasRect.y))
+            x: this.applyZoom(e.clientX - canvasRect.x),
+            y: this.applyZoom(e.clientY - canvasRect.y)
         };
     }
 
@@ -334,11 +332,11 @@ class AtPlayground extends Popupable {
                 nodeGroup.classList.remove(`possibleChild`);   // the other way
                 nodeGroup.removeEventListener(`mouseenter`, this._boundSignalPossibleChild);
                 nodeGroup.removeEventListener(`mouseleave`, this._boundRestoreNormalColor);
-                this.svg.unselectNode(this._playgroundSvg, project);
+                this.svg.unselectNode(project);
             }
         });
 
-        this.svg.unselectNode(this._playgroundSvg, parentNodeModel);
+        this.svg.unselectNode(parentNodeModel);
         edge.remove();
 
         if (this._viewedProjectsMap.has(childNodeId) && (childNodeId !== parentNodeId)) {
@@ -423,7 +421,7 @@ class AtPlayground extends Popupable {
     restoreNormalColor(e) {
         const id = this.svg.fetchTargetId(e.target);
         const nodeModel = this._viewedProjectsMap.get(id);
-        this.svg.unselectNode(this._playgroundSvg, nodeModel);
+        this.svg.unselectNode(nodeModel);
     }
 
     saveNode(node) {
@@ -518,10 +516,10 @@ class AtPlayground extends Popupable {
     unselectEverything() {
         this._selectedActivityNodeMap.forEach((value, key) => {
             this._selectedActivityNodeMap.delete(value.id);  // redundant with the clear below?
-            this.svg.unselectNode(this._playgroundSvg, value);
+            this.svg.unselectNode(value);
         });
         if (this._selectedEdge) {
-            this.svg.unselectEdge(this._playgroundSvg, this._selectedEdge);
+            this.svg.unselectEdge(this._selectedEdge);
             this._selectedEdge = null;
         }
         this._selectedActivityNodeMap.clear();
@@ -557,15 +555,11 @@ class AtPlayground extends Popupable {
     labelWidth(svgText) {
         const bbox = svgText.getBBox();
         const {width} = bbox;
-        return width;
+        return Math.round(width);
     }
 
     // Rename this to refreshPlayground (to match the timeview pattern)
     _rebuildNodeView(projectNodeModel) {
-        // if ((!projectNodeModel.x) || (!projectNodeModel.y)) {  // @todo find a decent x,y
-        //     projectNodeModel.x = 20;   // 30 + Math.floor(Math.random() * 20);
-        //     projectNodeModel.y = 20; // Math.floor((this.clientHeight / 2) + (Math.random() * 70));
-        // }
         this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);
         this._refreshPlayground();
     }
@@ -573,7 +567,7 @@ class AtPlayground extends Popupable {
     _refreshPlayground() {
         this.shift();
         // delete the svg
-        this.svg.clearBackground(this.svg.fetchBackground(`jag`));
+        this.svg.clearBackground(this.svg.fetchBackground());
         // if projectNodeModel is Root ->  add it to the list of viewed trees. (viewedProjectsMap)
         // if not - remove it from the list of viewed trees. (viewedProjectsMap)
         this._viewedProjectsMap.forEach((value, key) => {
@@ -586,11 +580,11 @@ class AtPlayground extends Popupable {
             this.treeHeight = value.findTreeHeight();
             // equiv to this._buildNodeViewFromNodeModel
         });
-        const background = this.svg.fetchBackground(`jag`);
+        const background = this.svg.fetchBackground();
         this.buildJointActivityGraphs(background, this._viewedProjectsMap);
         this._selectedActivityNodeMap.forEach((value, key) => {
             this._selectedActivityNodeMap.set(value.id, value); // ?
-            this.svg.selectNode(this._playgroundSvg, value);
+            this.svg.selectNode(value);
         });
         this.windowSize = this.getBoundingClientRect();  // I'd recommend getBBox (which is part of SVG 1.1) o
         this.redrawSvg();
@@ -614,16 +608,16 @@ class AtPlayground extends Popupable {
         const subgroup = this.svg.createSubGroup(nodeModel.id);
         const subgroupTop = subgroup.firstChild;
         const nodeContentGroup = this.svg.createNodeGroup(nodeModel.id);
-        this.svg.positionItem(nodeContentGroup, Math.round(nodeModel.x), Math.round(nodeModel.y));
+        this.svg.positionItem(nodeContentGroup, nodeModel.x, nodeModel.y);
         parentGroup.appendChild(subgroup);
         subgroup.insertBefore(nodeContentGroup, subgroupTop);
 
         const labelElement = this.svg.createTextElement(nodeModel.name, nodeModel.id);
-        const svgText = this.svg.positionItem(labelElement, this.svg.LABEL_INDENT, 0);
+        const svgText = this.svg.positionItem(labelElement, this.svg.labelIndent, 0);
         const groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
-        nodeBox.height = this.svg.STANDARD_BOX_HEIGHT;
-        nodeBox.width = Math.round(this.labelWidth(labelElement) + (this.svg.LABEL_INDENT * 3) + this.svg.BUTTON_SIZE);
+        nodeBox.height = this.svg.standardBoxHeight;
+        nodeBox.width = this.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
 
@@ -670,37 +664,10 @@ class AtPlayground extends Popupable {
         edge.setAttributeNS(null, `stroke`, `orange`);
     }
 
-    // Definitely Used
-    onEdgeInitialized(e, node) {
-        this.removeEventListener(`mousemove`, this._boundDragView);
-        this.removeEventListener(`mouseup`, this._boundStopDragView);
-        this.addEventListener(`mousemove`, this._boundOnEdgeUpdated);
-        this.addEventListener(`mouseup`, this._boundOnEdgeCanceled);
-
-        this._created_edge = this._createEdge(node);
-        this._is_edge_being_created = true;
-
-        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
-        this._created_edge.setEnd(x, y);
-    }
-
-    /**
-    Everything Edges - Definitely Used
-    */
-
-    _createEdge(origin, id = undefined) {
-        const edge = new EdgeElement(this._playgroundSvg);
-        edge.setLeadActivityNode(origin);
-        if (id) {
-            edge.setChildId(id);
-        }
-        edge.addEventListener(`keydown`, this.onKeyDown.bind(this));
-        return edge;
-    }
 
     fromClientToPlaygroundCoordinates(x, y) {
-        const px = x - this.offsetLeft;
-        const py = y - this.offsetTop;
+        const px = Math.round(x - this.offsetLeft);
+        const py = Math.round(y - this.offsetTop);
         return [px, py];
     }
 
@@ -712,49 +679,6 @@ class AtPlayground extends Popupable {
 
         const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
         this._created_edge.setEnd(x, y);
-    }
-
-    onEdgeFinalized(e) {
-        const node = e.target.offsetParent;
-
-        if (!this._is_edge_being_created) {
-            return;
-        }
-
-        if (window.confirm(`Are you sure you want to add this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
-            this._is_edge_being_created = false;
-            this._created_edge.setSubActivityNode(node);                // a lot happens in here
-            this._created_edge.addEventListener(`event-nodes-selected`, this._boundHandleEdgeSelected);
-
-            // identical issue below
-            // parentActivity.addChild(childActivity);       @TODO Where did this parent obtain the child.  It works but dont know where it came from.
-            // JAG.AddChild happens way down when jag-node.completeOutEdge finishes.
-            // @TODO consider bringing it up here (separation of functionality)
-
-            const parentNodeModel = this._created_edge._leadActivityNode.nodeModel;
-            const childNodeModel = this._created_edge._subActivityNode.nodeModel;
-
-            // childNodeModel.parent = parentNodeModel;
-            // childNodeModel.childId = this._created_edge._childId
-            // parentNodeModel.addChild(childNodeModel);
-
-            //  @TODO -- Maybe the 'join new project stuff should go here?' -- setAttribute(project,newAncestor)  +  reparent
-            //  @TODO -- half thought update Jag should come first - but now think the order is good... thoughts?
-
-            this.dispatchEvent(new CustomEvent(`event-nodes-connected`, {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    projectNodeId: parentNodeModel.projectId,
-                    parentNodeId: parentNodeModel.id,
-                    childNodeId: childNodeModel.id
-                }
-            }));
-
-            //   //      this._viewedProjectsMap.delete(childNodeModel.id)
-        } else {
-            this.cancelEdge();
-        }
     }
 
     cancelEdge() {
@@ -838,7 +762,7 @@ class AtPlayground extends Popupable {
         let xIndentArray = [];
         let startTreeDepth = 0;
         let leafCount = 0;
-        const boxHeight = this.svg.STANDARD_BOX_HEIGHT;
+        const boxHeight = this.svg.standardBoxHeight;
         const verticalMargin = 15;
         const startPoint = new Point();
         const offsetPoint = new Point();
@@ -917,57 +841,6 @@ class AtPlayground extends Popupable {
         });
     }
 
-
-    // replaceActivityNode(newActivity, deadUrn) {
-    //     this._activeActivityNodeElementSet.forEach((node) => {
-    //         if (node.nodeModel.activity.urn === deadUrn) {
-    //             node.nodeModel.activity = newActivity;
-    //         }
-    //     });
-    // }
-
-    // this is called when a new jag appears from above --- applies?
-    // note: creates a view based on Activity xxx now NodeModel
-    // createActivityNode(nodeModel) {
-    //     const $node = new ActivityNodeElement(nodeModel);
-    //     $node.addEventListener(`mousedown`, this.handlePlaygroundSelectedNodes.bind(this));
-    //
-    //     $node.addEventListener(`keydown`, this.onKeyDown.bind(this));
-    //
-    //     $node.addEventListener(`drag`, () => {
-    //         this._checkBounds();
-    //     });
-    //
-    //     $node.addEventListener(`toggle-visible`, (e) => {
-    //         if (e.detail) {
-    //             this._checkBounds($node.getTree());
-    //         } else {
-    //             this._checkBounds();
-    //         }
-    //     });
-    //
-    //     // //?? @TODO think about this.
-    //     $node.addEventListener(`refresh`, (e) => {
-    //         this.dispatchEvent(new CustomEvent(`refresh`, {detail: e.detail}));
-    //     });
-    //     // Are these two below not the same info.  activeNodeSet needed?
-    //
-    //     $node.addOnEdgeInitializedListener(this.onEdgeInitialized.bind(this));
-    //     $node.addOnEdgeFinalizedListener(this.onEdgeFinalized.bind(this));
-    //
-    //     this._activeActivityNodeElementSet.add($node);
-    //     this._playgroundSvg.appendChild($node);
-    //     return $node;
-    // }
-
-
-    // getNodeViewById(id) {
-    //     for (const node of this._activeActivityNodeElementSet) {           // search through active elements
-    //         if (node.nodeModel.id === id) {         // is this node in the tree of the currentNodeModel?
-    //             return node;
-    //         }
-    //     }
-    // }
 
     addNodeModel(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
