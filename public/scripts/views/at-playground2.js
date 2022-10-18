@@ -7,7 +7,6 @@
  * @version 0.80
  */
 
-import EdgeElement from './at-support/edge.js';
 import Popupable from '../utils/popupable.js';
 import UserPrefs from '../utils/user-prefs.js';
 import SvgObject from '../models/svg-object.js';
@@ -17,7 +16,6 @@ class AtPlayground extends Popupable {
 
     constructor() {
         super();
-
         this._playgroundWrapperDiv = document.createElement(`div`);
         this._playgroundWrapperDiv.id = `playground-wrapper`;
         this.setPopupBounds(this._playgroundWrapperDiv);
@@ -34,9 +32,7 @@ class AtPlayground extends Popupable {
         this._playgroundSvg = this.svg.buildSvg();
         this._background = this.svg.createBackground();
         this._playgroundSvg.appendChild(this._background);
-
         this._playgroundWrapperDiv.appendChild(this._playgroundSvg);
-
 
         // SVG control (panning, zooming)
         this.windowSize = null;
@@ -58,7 +54,6 @@ class AtPlayground extends Popupable {
         this.hasColor = false;
 
         // EVENTS
-        // SVG Events
         document.addEventListener(`keydown`, this.onKeyDown.bind(this));                        // ctrl for select children
         this._playgroundSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));       // mousewheel (zooming)
         this._playgroundSvg.addEventListener(`mousedown`, this.mousedownController.bind(this));
@@ -71,10 +66,7 @@ class AtPlayground extends Popupable {
         this._boundRestoreNormalColor = this.restoreNormalColor.bind(this);
         this._boundDragNode = this.dragNode.bind(this);
         this._boundStopDraggingNode = this.stopDraggingNode.bind(this);
-        // this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
-        // this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
     }
-
 
     get selectedNodes() {
         const selectedIdArray = Array.from(this._selectedActivityNodeMap.values());
@@ -86,38 +78,8 @@ class AtPlayground extends Popupable {
         return viewedRootNodes;
     }
 
-
-    //
-    // onEdgeUpdated(e) {
-    //     if (!this._is_edge_being_created) {
-    //         return;
-    //     }
-    //
-    //     const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
-    //     this._created_edge.setEnd(x, y);
-    // }
-    //
-    // cancelEdge() {
-    //     if (!this._is_edge_being_created) {
-    //         return;
-    //     }
-    //
-    //     this.removeEventListener(`mousemove`, this._boundOnEdgeUpdated);
-    //     this.removeEventListener(`mouseup`, this._boundOnEdgeCanceled);
-    //
-    //     this._created_edge.destroy();
-    //     this._created_edge = undefined;
-    //     this._is_edge_being_created = false;
-    // }
-    //
-    // onEdgeCanceled(e, node) {
-    //     this.cancelEdge();
-    // }
-    //
-
-
     /**
-     *  Events
+     *  EVENTS
      *
      * ---mousedown events
      * mousedownController (all mouse clicks)
@@ -314,7 +276,6 @@ class AtPlayground extends Popupable {
      * Timeview imported Events
      */
 
-
     dragView(e) {
         // The svg dragged by mouse - AS SEEN IN TIMEVIEW
         const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
@@ -349,16 +310,14 @@ class AtPlayground extends Popupable {
         this.redrawSvg();
     }
 
-
-
-
     /**
      *  Events
      *
      * ---mouseover / mouseenter / mouseleave / mousewheel events
      * signalPossibleChild (notify node is possible child during linking of nodes)
      * restoreNormalColor (cancel notification)
-     *
+     * svgWheelZoomEvent
+     * stopDragView
      */
 
     signalPossibleChild(e) {
@@ -368,7 +327,6 @@ class AtPlayground extends Popupable {
         const nodeModel = this._viewedProjectsMap.get(id);
         this.svg.signalPossibleChild(nodeModel);
     }
-
 
     restoreNormalColor(e) {
         const id = this.svg.fetchTargetId(e.target);
@@ -473,7 +431,6 @@ class AtPlayground extends Popupable {
     }
 
 
-
     /**
      *  Events
      *
@@ -550,9 +507,13 @@ class AtPlayground extends Popupable {
      *
      * --- external calls and events
      * toggleColor (complete dragging node)
+     * _handleNewActivityActivityPopup
+     * clearPlayground
+     * deleteNodeModel
+     * _eventImportJagHandler
+     * printSvg
      *
      */
-
 
     toggleColor() {
         this.hasColor = !this.hasColor;
@@ -560,8 +521,6 @@ class AtPlayground extends Popupable {
         this.unselectEverything();
         this._refreshPlayground();
     }
-
-
 
     _handleNewActivityActivityPopup(e) {
         const $initiator = document.getElementById(`menu-new`);
@@ -636,8 +595,6 @@ class AtPlayground extends Popupable {
     //     return [px, py];
     // }
 
-
-
     translate(node, offset) {
         node.x = node.x + offset.x;
         node.y = node.y + offset.y;
@@ -646,8 +603,6 @@ class AtPlayground extends Popupable {
         });
         return node;
     }
-
-
 
     shift() {
         this.viewedProjects.forEach((project) => {
@@ -773,6 +728,7 @@ class AtPlayground extends Popupable {
      * xIndentForDepth - determine x-indent to pretty display for each tree depth
      * redrawSelectedNodes - pretty display the chosen node and its children.  (This works best with the root node)
      * redrawSvg - handles the zoom and pan of viewport across the SVG content
+     * applyZoom
      */
 
 
@@ -1005,76 +961,6 @@ class AtPlayground extends Popupable {
     //     }, 0);
     // }
 
-
-    //
-    // copyStylesInline(destinationNode, sourceNode) {
-    //     const containerElements = [`svg`, `g`];
-    //     for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
-    //         const child = destinationNode.childNodes[cd];
-    //         if (containerElements.indexOf(child.tagName) != -1) {
-    //             this.copyStylesInline(child, sourceNode.childNodes[cd]);
-    //             continue;
-    //         }
-    //         const style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
-    //         if (style == `undefined` || style == null) {
-    //             continue;
-    //         }
-    //         for (let st = 0; st < style.length; st++) {
-    //             child.style.setProperty(style[st], style.getPropertyValue(style[st]));
-    //         }
-    //     }
-    // }
-
-    //
-    // triggerDownload(imgURI, fileName) {
-    //     const evt = new MouseEvent(`click`, {
-    //         view: window,
-    //         bubbles: false,
-    //         cancelable: true
-    //     });
-    //     const a = document.createElement(`a`);
-    //     a.setAttribute(`download`, fileName);
-    //     a.setAttribute(`href`, imgURI);
-    //     a.setAttribute(`target`, `_blank`);
-    //     a.dispatchEvent(evt);
-    // }
-
-    // downloadSvg(svg, fileName) {
-    //     const copy = svg.cloneNode(true);
-    //     this.copyStylesInline(copy, svg);
-    //     const canvas = document.createElement(`canvas`);
-    //     const bbox = svg.getBBox();
-    //     canvas.width = bbox.width;
-    //     canvas.height = bbox.height;
-    //     const ctx = canvas.getContext(`2d`);
-    //     ctx.clearRect(0, 0, bbox.width, bbox.height);
-    //     const data = (new XMLSerializer()).serializeToString(copy);
-    //     const DOMURL = window.URL || window.webkitURL || window;
-    //     const img = new Image();
-    //     const svgBlob = new Blob([data], {type: `image/svg+xml;charset=utf-8`});
-    //     const url = DOMURL.createObjectURL(svgBlob);
-    //     img.onload = this.printIt(ctx, img, DOMURL, canvas, url, fileName).bind(this);
-    //     img.src = url;
-    // }
-    //
-    // printIt(ctx, img, DOMURL, canvas, url, fileName) {
-    //     ctx.drawImage(img, 0, 0);
-    //     DOMURL.revokeObjectURL(url);
-    //     if (typeof navigator !== `undefined` && navigator.msSaveOrOpenBlob) {
-    //         const blob = canvas.msToBlob();
-    //         navigator.msSaveOrOpenBlob(blob, fileName);
-    //     } else {
-    //         const imgURI = canvas.
-    //             toDataURL(`image/png`).
-    //             replace(`image/png`, `image/octet-stream`);
-    //         this.triggerDownload(imgURI, fileName);
-    //     }
-    //     document.removeChild(canvas);
-    // }
-
-
-
-
 }
 
 // END OF CLASS
@@ -1121,8 +1007,8 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
             type: `textarea`,
             options() {
                 const paramMap = new Map();
-                paramMap.set(`cols`, 24);
-                paramMap.set(`rows`, 4);
+                paramMap.set(`cols`, 19);
+                paramMap.set(`rows`, 3);
                 return paramMap;
             }
         }
@@ -1131,7 +1017,7 @@ AtPlayground.NOTICE_CREATE_JAG = Popupable._createPopup({
         {
             text: `Create`,
             color: `black`,
-            bgColor: `red`,
+            bgColor: `green`,
             //         action: function ({inputs: {}, outputs: activityConstruct}) {
             action({outputs: activityConstruct}) {                             // or maybe {inputs = {}, outputs: activityConstruct}
                 this.dispatchEvent(new CustomEvent(`event-activity-created`, {
@@ -1206,7 +1092,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
             type: `textarea`,
             options() {
                 const paramMap = new Map();
-                paramMap.set(`cols`, 24);
+                paramMap.set(`cols`, 19);
                 paramMap.set(`rows`, 4);
                 return paramMap;
             }
@@ -1216,7 +1102,7 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
         {
             text: `Create`,
             color: `black`,
-            bgColor: `red`,
+            bgColor: `green`,
             action({outputs: json}) {
                 this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                     bubbles: true,
@@ -1272,11 +1158,11 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
 });
 
 
-AtPlayground.DEFAULT_CARDINAL_MULTIPLIER = 10;
-
-AtPlayground.DEFAULT_ARROW_MULTIPLIER = 10;
-
-AtPlayground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
+// AtPlayground.DEFAULT_CARDINAL_MULTIPLIER = 10;
+//
+// AtPlayground.DEFAULT_ARROW_MULTIPLIER = 10;
+//
+// AtPlayground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 
 customElements.define(`jag-playground`, AtPlayground);
 

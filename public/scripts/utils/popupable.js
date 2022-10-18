@@ -63,7 +63,7 @@ export default class Popupable extends HTMLElement {
 
 
     async _displayNextPopup() {
-        this._suggestedHeight = 140;
+        this._suggestedHeight = 160;
         if (this._popupCallback) {
             await this._popupCallback({outputs: this._popupOutputs});
         }
