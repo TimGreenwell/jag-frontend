@@ -71,25 +71,60 @@ class AtPlayground extends Popupable {
         this._boundRestoreNormalColor = this.restoreNormalColor.bind(this);
         this._boundDragNode = this.dragNode.bind(this);
         this._boundStopDraggingNode = this.stopDraggingNode.bind(this);
-        this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
-        this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
+        // this._boundOnEdgeUpdated = this.onEdgeUpdated.bind(this);
+        // this._boundOnEdgeCanceled = this.onEdgeCanceled.bind(this);
     }
 
 
+    get selectedNodes() {
+        const selectedIdArray = Array.from(this._selectedActivityNodeMap.values());
+        return selectedIdArray;
+    }
+
+    get viewedProjects() {
+        const viewedRootNodes = Array.from(this._viewedProjectsMap.values());
+        return viewedRootNodes;
+    }
+
+
+    //
+    // onEdgeUpdated(e) {
+    //     if (!this._is_edge_being_created) {
+    //         return;
+    //     }
+    //
+    //     const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
+    //     this._created_edge.setEnd(x, y);
+    // }
+    //
+    // cancelEdge() {
+    //     if (!this._is_edge_being_created) {
+    //         return;
+    //     }
+    //
+    //     this.removeEventListener(`mousemove`, this._boundOnEdgeUpdated);
+    //     this.removeEventListener(`mouseup`, this._boundOnEdgeCanceled);
+    //
+    //     this._created_edge.destroy();
+    //     this._created_edge = undefined;
+    //     this._is_edge_being_created = false;
+    // }
+    //
+    // onEdgeCanceled(e, node) {
+    //     this.cancelEdge();
+    // }
+    //
 
 
     /**
      *  Events
      *
      * ---mousedown events
-     * mousedownController (all mousedowns)
+     * mousedownController (all mouse clicks)
      * addNode (clicking add button)
      * toggleExpand (clicking expand button)
      * eventNodeSelected (clicking node)
      * svgMouseDownEvent (clicking background)
-     *
-     *
-     *
      *
      */
     mousedownController(e) {
@@ -106,19 +141,13 @@ class AtPlayground extends Popupable {
         if (elementType === `rect`) {
             this.eventNodeSelected(e);
         }
-        if (elementType === `background`) {
-            this.svgMouseDownEvent(e);
-        }
         if (elementType === `edge`) {
             this.selectEdge(e);
         }
-    }
+        if (elementType === `background`) {
+            this.svgMouseDownEvent(e);
+        }
 
-    linkNodes(e) {
-        e.stopPropagation();
-        const edge = this.svg.fetchEdgeToCursor();
-        const cursorPoint = this.screenToSVGCoords(e);
-        this.svg.followCursor(edge, cursorPoint);
     }
 
     addNode(e) {
@@ -209,6 +238,16 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.addEventListener(`mouseleave`, this._boundStopDraggingNode);
     }
 
+    selectEdge(e) {
+        this.unselectEverything();
+        const edge = e.target;
+        const edgeSourceId = this.svg.fetchEdgeSourceId(edge);
+        const edgeDestinationId = this.svg.fetchEdgeDestinationId(edge);
+        this._selectedEdge = edge;
+        edge.setAttributeNS(null, `stroke`, `orange`);
+    }
+
+
     svgMouseDownEvent(e) {
         // When background is clicked - few things happen:
         // 1) Everything is unselected - let controller know.
@@ -216,6 +255,7 @@ class AtPlayground extends Popupable {
 
         const unselectedNodeArray = this.selectedNodes;
         this.unselectEverything();
+        this._refreshPlayground();
         const selectedNodeArray = this.selectedNodes;
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
             detail: {
@@ -236,8 +276,20 @@ class AtPlayground extends Popupable {
     }
 
     /**
-     *    mousemove events
+     *  Events
+     *
+     * ---mousemove events
+     * linkNodes (drag edge to new child)
+     * dragNode (change position of node)
+     *
      */
+
+    linkNodes(e) {
+        e.stopPropagation();
+        const edge = this.svg.fetchEdgeToCursor();
+        const cursorPoint = this.screenToSVGCoords(e);
+        this.svg.followCursor(edge, cursorPoint);
+    }
 
     dragNode(e) {
         e.preventDefault();
@@ -258,6 +310,57 @@ class AtPlayground extends Popupable {
         });
     }
 
+    /**
+     * Timeview imported Events
+     */
+
+
+    dragView(e) {
+        // The svg dragged by mouse - AS SEEN IN TIMEVIEW
+        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
+        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
+        const svgViewSizeX = this.svgSize.width;
+        const svgViewSizeY = this.svgSize.height;
+
+        if (zoomedBoxWidth > svgViewSizeX) {
+            this.panPosition.x = 0;
+        } else {
+            const delta = this.applyZoom(this._initialMouse.x - e.clientX);
+            this.panPosition.x = Math.min(
+                this.svgLocation.x + delta,
+                svgViewSizeX - zoomedBoxWidth
+            );
+        }
+        if (zoomedBoxHeight > svgViewSizeY) {
+            this.panPosition.y = 0;
+        } else {
+            const delta = this.applyZoom(this._initialMouse.y - e.clientY);
+            this.panPosition.y = Math.min(
+                this.svgLocation.y + delta,
+                svgViewSizeY - zoomedBoxHeight
+            );
+        }
+        if (this.panPosition.x < 0) {
+            this.panPosition.x = 0;
+        }
+        if (this.panPosition.y < 0) {
+            this.panPosition.y = 0;
+        }
+        this.redrawSvg();
+    }
+
+
+
+
+    /**
+     *  Events
+     *
+     * ---mouseover / mouseenter / mouseleave / mousewheel events
+     * signalPossibleChild (notify node is possible child during linking of nodes)
+     * restoreNormalColor (cancel notification)
+     *
+     */
+
     signalPossibleChild(e) {
         e.stopPropagation();
         e.preventDefault();
@@ -265,6 +368,40 @@ class AtPlayground extends Popupable {
         const nodeModel = this._viewedProjectsMap.get(id);
         this.svg.signalPossibleChild(nodeModel);
     }
+
+
+    restoreNormalColor(e) {
+        const id = this.svg.fetchTargetId(e.target);
+        const nodeModel = this._viewedProjectsMap.get(id);
+        this.svg.unselectNode(nodeModel);
+    }
+
+    svgWheelZoomEvent(event) {
+        // The wheel of Zoom - AS SEEN IN TIMEVIEW
+        event.preventDefault();
+        if (event.deltaY > 0) {
+            this.zoomStep = this.zoomStep + 1;
+        } else {
+            this.zoomStep = this.zoomStep - 1;
+        }
+        this.redrawSvg();
+    }
+
+    stopDragView() {
+        // The svg not being dragged by mouse - AS SEEN IN TIMEVIEW
+        this.removeEventListener(`mousemove`, this._boundDragView);
+        this.svgLocation.x = this.panPosition.x;
+        this.svgLocation.y = this.panPosition.y;
+    }
+
+    /**
+     *  Events
+     *
+     * ---mouseup / mouseleave events
+     * stopDraggingNode (complete dragging node)
+     * finalizeEdge
+     *
+     */
 
     stopDraggingNode(e) {
         e.preventDefault();
@@ -298,25 +435,6 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.removeEventListener(`mouseleave`, this._boundStopDraggingNode);
     }
 
-
-    screenToSVGCoords(e) {
-        // Read the SVG's bounding rectangle...
-        const canvasRect = this._playgroundSvg.getBoundingClientRect();
-        // ...and transform clientX / clientY to be relative to that rectangle
-        return {
-            x: this.applyZoom(e.clientX - canvasRect.x),
-            y: this.applyZoom(e.clientY - canvasRect.y)
-        };
-    }
-
-    toggleColor() {
-        this.hasColor = !this.hasColor;
-        this._refreshPlayground();
-    }
-
-    /**
-     *    -- mouseup
-     */
 
     finalizeEdge(ev) {
         const edge = this.svg.fetchEdgeToCursor();
@@ -354,6 +472,15 @@ class AtPlayground extends Popupable {
         }
     }
 
+
+
+    /**
+     *  Events
+     *
+     * ---keydown events
+     * onKeyDown (key pressed - delete node or edge)
+     *
+     */
 
     onKeyDown(event) {
         event.stopImmediatePropagation();
@@ -418,21 +545,98 @@ class AtPlayground extends Popupable {
     }
 
 
-    restoreNormalColor(e) {
-        const id = this.svg.fetchTargetId(e.target);
-        const nodeModel = this._viewedProjectsMap.get(id);
-        this.svg.unselectNode(nodeModel);
+    /**
+     *  Events
+     *
+     * --- external calls and events
+     * toggleColor (complete dragging node)
+     *
+     */
+
+
+    toggleColor() {
+        this.hasColor = !this.hasColor;
+        console.log(`c`)
+        this.unselectEverything();
+        this._refreshPlayground();
     }
 
-    saveNode(node) {
-        const projectId = node.projectId;
-        const project = this._viewedProjectsMap.get(projectId);
-        let projectNode;
 
-        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
-            detail: {nodeModel: node}
-        }));
+
+    _handleNewActivityActivityPopup(e) {
+        const $initiator = document.getElementById(`menu-new`);
+        this.popup({
+            content: AtPlayground.NOTICE_CREATE_JAG,
+            trackEl: this,
+            inputs: {}, // event: e},
+            highlights: [$initiator]
+        });
     }
+
+    clearPlayground(projectId = undefined) {
+        this._viewedProjectsMap.delete(projectId);
+        console.log(`a`)
+        this._refreshPlayground();
+        for (const jagNode of this._activeActivityNodeElementSet) {
+            if ((projectId == undefined) || (jagNode.nodeModel.projectId === projectId)) {
+                this._activeActivityNodeElementSet.delete(jagNode);
+            }
+        }
+    }
+
+    deleteNodeModel(deadId) {
+        this._viewedProjectsMap.delete(deadId);
+        this._selectedActivityNodeMap.delete(deadId);
+        console.log(`b`)
+        // this._refreshPlayground();
+    }
+
+
+
+    _eventImportJagHandler(e) {
+        const $initiator = document.getElementById(`menu-new`);
+        this.popup({
+            content: AtPlayground.NOTICE_PASTE_JAG,
+            trackEl: this,
+            inputs: {}, // event: e},
+            highlights: [$initiator]
+        });
+    }
+
+    printSvg(name) {
+        this.svg.saveSvg(this._playgroundSvg, name);
+    }
+
+
+    /**
+     *  Utility
+     *
+     * --- coordinate conversion
+     * screenToSVGCoords - screen coords to svg coords (needed for exact placements at mouse location)
+     * translate - change in svg coords based on mouse deltas.  (exact placement not desired)
+     * shift - move viewed object completely on viewing space
+     */
+
+
+
+    screenToSVGCoords(e) {
+        // Read the SVG's bounding rectangle...
+        const canvasRect = this._playgroundSvg.getBoundingClientRect();
+        // ...and transform clientX / clientY to be relative to that rectangle
+        return {
+            x: this.applyZoom(e.clientX - canvasRect.x),
+            y: this.applyZoom(e.clientY - canvasRect.y)
+        };
+    }
+
+    //
+    // fromClientToPlaygroundCoordinates(x, y) {
+    //     const px = Math.round(x - this.offsetLeft);
+    //     const py = Math.round(y - this.offsetTop);
+    //     return [px, py];
+    // }
+
+
 
     translate(node, offset) {
         node.x = node.x + offset.x;
@@ -442,6 +646,8 @@ class AtPlayground extends Popupable {
         });
         return node;
     }
+
+
 
     shift() {
         this.viewedProjects.forEach((project) => {
@@ -490,17 +696,25 @@ class AtPlayground extends Popupable {
         });
     }
 
-    get selectedNodes() {
-        const selectedIdArray = Array.from(this._selectedActivityNodeMap.values());
-        return selectedIdArray;
+
+
+    /**
+     *  Utility
+     *
+     * ---
+     * saveNode - dispatch a event-node-updated    @TODO -- is this really necessary? possible using instances :3
+     * retrieveNodeModel  - Search all viewed JAGs for node matching particular id
+     * unselectEverything - very convenient.  Several events end by unselecting all items.
+     * showExpand & collapseAll - display (or not) depending on isExpanded flag
+     */
+
+    saveNode(node) {
+        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
+            detail: {nodeModel: node}
+        }));
     }
 
-    get viewedProjects() {
-        const viewedRootNodes = Array.from(this._viewedProjectsMap.values());
-        return viewedRootNodes;
-    }
 
-    // Find the equivalent Node Model if it exists as child of one of the displayed JAGS.
     retrieveNodeModel(id) {
         let nodeRetrieved;
         for (const project of this._viewedProjectsMap.values()) {
@@ -551,20 +765,123 @@ class AtPlayground extends Popupable {
         });
     }
 
+    /**
+     *  Utility
+     *
+     * --- pretty display
+     * findLongestAtEachDepth - find longest label at each depth in order to display pretty.
+     * xIndentForDepth - determine x-indent to pretty display for each tree depth
+     * redrawSelectedNodes - pretty display the chosen node and its children.  (This works best with the root node)
+     * redrawSvg - handles the zoom and pan of viewport across the SVG content
+     */
 
-    labelWidth(svgText) {
-        const bbox = svgText.getBBox();
-        const {width} = bbox;
-        return Math.round(width);
+
+    findLongestAtEachDepth(rootNode) {
+        const depthToLengthArray = [];
+        const startingLevel = rootNode.treeDepth;
+        const workStack = [];
+        workStack.push(rootNode);
+        while (workStack.length > 0) {
+            const currentNode = workStack.pop();
+            const currentRect = this.svg.fetchRectangle(currentNode.id);
+            const currentRectLength = Number(currentRect.getAttributeNS(null, `width`));
+            if ((depthToLengthArray[currentNode.treeDepth - startingLevel] === undefined) ||
+                (depthToLengthArray[currentNode.treeDepth - startingLevel] < currentRectLength)) {
+                depthToLengthArray[currentNode.treeDepth - startingLevel] = currentRectLength;
+            }
+            if (currentNode.isExpanded) {
+                currentNode.children.forEach((child) => {
+                    workStack.push(child);
+                });
+            }
+        }
+        return depthToLengthArray;
     }
 
-    // Rename this to refreshPlayground (to match the timeview pattern)
-    _rebuildNodeView(projectNodeModel) {
-        this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);
-        this._refreshPlayground();
+    xIndentForDepth(longestAtEachDepthArray, margin) {
+        const indentArray = [];
+        indentArray[0] = margin;
+        for (let depth = 1; depth < longestAtEachDepthArray.length; depth++) {
+            indentArray[depth] = longestAtEachDepthArray[depth - 1] + margin + indentArray[depth - 1];
+        }
+        return indentArray;
     }
 
-    _refreshPlayground() {
+
+    redrawSelectedNodes() {
+        const horizontalMargin = 50;
+        let xIndentArray = [];
+        let startTreeDepth = 0;
+        let leafCount = 0;
+        const boxHeight = this.svg.standardBoxHeight;
+        const verticalMargin = 15;
+        const startPoint = new Point();
+        const offsetPoint = new Point();
+
+        function layoutTree(nodeModel) {
+            if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
+                let childrenVerticalRange = 0;
+                nodeModel.children.forEach((child) => {
+                    child = layoutTree(child);
+                    childrenVerticalRange = childrenVerticalRange + child.y;
+                });
+                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
+                nodeModel.y = (childrenVerticalRange / nodeModel.children.length);
+                return nodeModel;
+            } else {
+                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
+                nodeModel.y = (leafCount * (boxHeight + verticalMargin));
+                leafCount = leafCount + 1;
+                return nodeModel;
+            }
+        }
+
+        this.selectedNodes.forEach((node) => {
+            const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
+            xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
+            startTreeDepth = node.treeDepth;
+            startPoint.x = node.x;
+            startPoint.y = node.y;
+            node = layoutTree(node);
+            offsetPoint.x = startPoint.x - node.x;
+            offsetPoint.y = startPoint.y - node.y;
+            node = this.translate(node, offsetPoint);
+            this.saveNode(node);
+        });
+    }
+
+    redrawSvg() {
+        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
+        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
+        if ((zoomedBoxWidth > 0) && (zoomedBoxHeight > 0)) {
+            this._playgroundSvg.setAttribute(
+                `viewBox`,
+                `${this.panPosition.x} ${this.panPosition.y}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
+            );
+        }
+    }
+
+
+    applyZoom(num) {
+        const zoomedNum = num + (num * this.zoomStep * 0.05);
+        return zoomedNum;
+    }
+
+
+    /**
+     *  Main Construction
+     *
+     * _refreshPlayground -
+     * buildJointActivityGraphs
+     * buildJointActivityGraph
+     */
+
+
+    _refreshPlayground(projectNodeModel) {
+        if (projectNodeModel) {
+            this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);        //@TODO not all refreshes have a new node to contribute.. maybe a ?addNode? can do a refresh after.
+        }
+
         this.shift();
         // delete the svg
         this.svg.clearBackground(this.svg.fetchBackground());
@@ -617,7 +934,7 @@ class AtPlayground extends Popupable {
         const groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
         nodeBox.height = this.svg.standardBoxHeight;
-        nodeBox.width = this.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
+        nodeBox.width = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
 
@@ -645,7 +962,6 @@ class AtPlayground extends Popupable {
             nodeContentGroup.insertBefore(addButton, svgText);
         }
 
-
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);
             const svgEdge = this.svg.createEdge(nodeModel.id, child.id, nodeBox, subNodeBox);
@@ -655,378 +971,108 @@ class AtPlayground extends Popupable {
         return nodeBox;
     }
 
-    selectEdge(e) {
-        this.unselectEverything();
-        const edge = e.target;
-        const edgeSourceId = this.svg.fetchEdgeSourceId(edge);
-        const edgeDestinationId = this.svg.fetchEdgeDestinationId(edge);
-        this._selectedEdge = edge;
-        edge.setAttributeNS(null, `stroke`, `orange`);
-    }
+    // deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
+    //     this._viewedProjectsMap.forEach((value, key) => {
+    //         const node = value;
+    //         if (node.isActivityInProject(deletedUrn)) {
+    //             this.dispatchEvent(new CustomEvent(`response-activity-deleted`, {
+    //                 detail: {
+    //                     projectModelId: node.id,
+    //                     activityUrn: deletedUrn
+    //                 }
+    //             })); // event-activity-created in playground uses node
+    //         }
+    //     });
+    // }
+
+    //
+    // addNodeModel(projectNodeModel) {
+    //     this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
+    //     const $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
+    //     return $rootNode;
+    // }
+    //
+
+    //
+    // _getNodePreferredHeight(jagNode, jagNodeMap) {
+    //     if (!jagNode.children || jagNode.children.length === 0) {
+    //         return 1;
+    //     }
+    //
+    //     return jagNode.children.reduce((cut_set_size, child) => {
+    //         const def = jagNodeMap.get(child.urn);
+    //         return cut_set_size + (def ? this._getNodePreferredHeight(def, jagNodeMap) : 0);
+    //     }, 0);
+    // }
 
 
-    fromClientToPlaygroundCoordinates(x, y) {
-        const px = Math.round(x - this.offsetLeft);
-        const py = Math.round(y - this.offsetTop);
-        return [px, py];
-    }
+    //
+    // copyStylesInline(destinationNode, sourceNode) {
+    //     const containerElements = [`svg`, `g`];
+    //     for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
+    //         const child = destinationNode.childNodes[cd];
+    //         if (containerElements.indexOf(child.tagName) != -1) {
+    //             this.copyStylesInline(child, sourceNode.childNodes[cd]);
+    //             continue;
+    //         }
+    //         const style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
+    //         if (style == `undefined` || style == null) {
+    //             continue;
+    //         }
+    //         for (let st = 0; st < style.length; st++) {
+    //             child.style.setProperty(style[st], style.getPropertyValue(style[st]));
+    //         }
+    //     }
+    // }
+
+    //
+    // triggerDownload(imgURI, fileName) {
+    //     const evt = new MouseEvent(`click`, {
+    //         view: window,
+    //         bubbles: false,
+    //         cancelable: true
+    //     });
+    //     const a = document.createElement(`a`);
+    //     a.setAttribute(`download`, fileName);
+    //     a.setAttribute(`href`, imgURI);
+    //     a.setAttribute(`target`, `_blank`);
+    //     a.dispatchEvent(evt);
+    // }
+
+    // downloadSvg(svg, fileName) {
+    //     const copy = svg.cloneNode(true);
+    //     this.copyStylesInline(copy, svg);
+    //     const canvas = document.createElement(`canvas`);
+    //     const bbox = svg.getBBox();
+    //     canvas.width = bbox.width;
+    //     canvas.height = bbox.height;
+    //     const ctx = canvas.getContext(`2d`);
+    //     ctx.clearRect(0, 0, bbox.width, bbox.height);
+    //     const data = (new XMLSerializer()).serializeToString(copy);
+    //     const DOMURL = window.URL || window.webkitURL || window;
+    //     const img = new Image();
+    //     const svgBlob = new Blob([data], {type: `image/svg+xml;charset=utf-8`});
+    //     const url = DOMURL.createObjectURL(svgBlob);
+    //     img.onload = this.printIt(ctx, img, DOMURL, canvas, url, fileName).bind(this);
+    //     img.src = url;
+    // }
+    //
+    // printIt(ctx, img, DOMURL, canvas, url, fileName) {
+    //     ctx.drawImage(img, 0, 0);
+    //     DOMURL.revokeObjectURL(url);
+    //     if (typeof navigator !== `undefined` && navigator.msSaveOrOpenBlob) {
+    //         const blob = canvas.msToBlob();
+    //         navigator.msSaveOrOpenBlob(blob, fileName);
+    //     } else {
+    //         const imgURI = canvas.
+    //             toDataURL(`image/png`).
+    //             replace(`image/png`, `image/octet-stream`);
+    //         this.triggerDownload(imgURI, fileName);
+    //     }
+    //     document.removeChild(canvas);
+    // }
 
 
-    onEdgeUpdated(e) {
-        if (!this._is_edge_being_created) {
-            return;
-        }
-
-        const [x, y] = this.fromClientToPlaygroundCoordinates(e.clientX, e.clientY);
-        this._created_edge.setEnd(x, y);
-    }
-
-    cancelEdge() {
-        if (!this._is_edge_being_created) {
-            return;
-        }
-
-        this.removeEventListener(`mousemove`, this._boundOnEdgeUpdated);
-        this.removeEventListener(`mouseup`, this._boundOnEdgeCanceled);
-
-        this._created_edge.destroy();
-        this._created_edge = undefined;
-        this._is_edge_being_created = false;
-    }
-
-    onEdgeCanceled(e, node) {
-        this.cancelEdge();
-    }
-
-
-    /**
-     *
-     * playgroundClicked
-     * cancelDefault
-     * onImport
-     */
-
-
-    // //////////////////////////////////////////////////////////////////////
-    // ///////////  Called from ControllerAT  ///////////////////////////////
-    // //////////////////////////////////////////////////////////////////////
-    /**
-     *
-     * Handlers for ControllerAT
-     *
-     * _buildNodeViewFromNodeModel
-     * _handleNewActivityActivityPopup
-     * clearPlayground                        - Clears project(s) from playground (@arg: project Id or 'undefined' for all active projects)
-     * handleClearSelected (@TODO)
-     * handleRefresh
-     * affectProjectView
-     * _addActivityNodeTree
-     * replaceActivityNode
-     * createActivityNode  - called on new Project message from above
-     * deleteNodeModel
-     */
-
-    findLongestAtEachDepth(rootNode) {
-        const depthToLengthArray = [];
-        const startingLevel = rootNode.treeDepth;
-        const workStack = [];
-        workStack.push(rootNode);
-        while (workStack.length > 0) {
-            const currentNode = workStack.pop();
-            const currentRect = this.svg.fetchRectangle(currentNode.id);
-            const currentRectLength = Number(currentRect.getAttributeNS(null, `width`));
-            if ((depthToLengthArray[currentNode.treeDepth - startingLevel] === undefined) ||
-                (depthToLengthArray[currentNode.treeDepth - startingLevel] < currentRectLength)) {
-                depthToLengthArray[currentNode.treeDepth - startingLevel] = currentRectLength;
-            }
-            if (currentNode.isExpanded) {
-                currentNode.children.forEach((child) => {
-                    workStack.push(child);
-                });
-            }
-        }
-        return depthToLengthArray;
-    }
-
-    xIndentForDepth(longestAtEachDepthArray, margin) {
-        const indentArray = [];
-        indentArray[0] = margin;
-        for (let depth = 1; depth < longestAtEachDepthArray.length; depth++) {
-            indentArray[depth] = longestAtEachDepthArray[depth - 1] + margin + indentArray[depth - 1];
-        }
-        return indentArray;
-    }
-
-    redrawSelectedNodes() {
-        const horizontalMargin = 50;
-        let xIndentArray = [];
-        let startTreeDepth = 0;
-        let leafCount = 0;
-        const boxHeight = this.svg.standardBoxHeight;
-        const verticalMargin = 15;
-        const startPoint = new Point();
-        const offsetPoint = new Point();
-
-        function layoutTree(nodeModel) {
-            if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
-                let childrenVerticalRange = 0;
-                nodeModel.children.forEach((child) => {
-                    child = layoutTree(child);
-                    childrenVerticalRange = childrenVerticalRange + child.y;
-                });
-                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
-                nodeModel.y = (childrenVerticalRange / nodeModel.children.length);
-                return nodeModel;
-            } else {
-                nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
-                nodeModel.y = (leafCount * (boxHeight + verticalMargin));
-                leafCount = leafCount + 1;
-                return nodeModel;
-            }
-        }
-
-        this.selectedNodes.forEach((node) => {
-            const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
-            xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
-            startTreeDepth = node.treeDepth;
-            startPoint.x = node.x;
-            startPoint.y = node.y;
-            node = layoutTree(node);
-            offsetPoint.x = startPoint.x - node.x;
-            offsetPoint.y = startPoint.y - node.y;
-            node = this.translate(node, offsetPoint);
-            this.saveNode(node);
-        });
-    }
-
-    _handleNewActivityActivityPopup(e) {
-        const $initiator = document.getElementById(`menu-new`);
-        this.popup({
-            content: AtPlayground.NOTICE_CREATE_JAG,
-            trackEl: this,
-            inputs: {}, // event: e},
-            highlights: [$initiator]
-        });
-    }
-
-
-    clearPlayground(projectId = undefined) {
-        this._viewedProjectsMap.delete(projectId);
-        this._refreshPlayground();
-        for (const jagNode of this._activeActivityNodeElementSet) {
-            if ((projectId == undefined) || (jagNode.nodeModel.projectId === projectId)) {
-                this._activeActivityNodeElementSet.delete(jagNode);
-            }
-        }
-    }
-
-    deleteNodeModel(deadId) {
-        this._viewedProjectsMap.delete(deadId);
-        this._selectedActivityNodeMap.delete(deadId);
-        this._refreshPlayground();
-    }
-
-
-    deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
-        this._viewedProjectsMap.forEach((value, key) => {
-            const node = value;
-            if (node.isActivityInProject(deletedUrn)) {
-                this.dispatchEvent(new CustomEvent(`response-activity-deleted`, {
-                    detail: {
-                        projectModelId: node.id,
-                        activityUrn: deletedUrn
-                    }
-                })); // event-activity-created in playground uses node
-            }
-        });
-    }
-
-
-    addNodeModel(projectNodeModel) {
-        this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
-        const $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
-        return $rootNode;
-    }
-
-
-    // //////////////////////////////////////////////////////////////////////
-    // ///////////  Support Functions  //////////////////////////////////////
-    // //////////////////////////////////////////////////////////////////////
-    /**
-     *
-     * Support Functions
-     *
-     * _traverseActivityNodeTree    : Required by : _buildNodeViewFromNodeModel, handleRefresh, _addActivityNodeTree
-     * deselectAll                  : Required by : playgroundClicked
-     * onKeyDown                    : Required by : createActivityNode
-     * _getNodePreferredHeight      : Required by : _traverseActivityNodeTree
-     *
-     */
-
-    _getNodePreferredHeight(jagNode, jagNodeMap) {
-        if (!jagNode.children || jagNode.children.length === 0) {
-            return 1;
-        }
-
-        return jagNode.children.reduce((cut_set_size, child) => {
-            const def = jagNodeMap.get(child.urn);
-            return cut_set_size + (def ? this._getNodePreferredHeight(def, jagNodeMap) : 0);
-        }, 0);
-    }
-
-
-    _eventImportJagHandler(e) {
-        const $initiator = document.getElementById(`menu-new`);
-        this.popup({
-            content: AtPlayground.NOTICE_PASTE_JAG,
-            trackEl: this,
-            inputs: {}, // event: e},
-            highlights: [$initiator]
-        });
-    }
-
-    /**
-     * Timeview imported Events
-     */
-    svgWheelZoomEvent(event) {
-        // The wheel of Zoom - AS SEEN IN TIMEVIEW
-        event.preventDefault();
-        if (event.deltaY > 0) {
-            this.zoomStep = this.zoomStep + 1;
-        } else {
-            this.zoomStep = this.zoomStep - 1;
-        }
-        this.redrawSvg();
-    }
-
-
-    dragView(e) {
-        // The svg dragged by mouse - AS SEEN IN TIMEVIEW
-        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
-        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
-        const svgViewSizeX = this.svgSize.width;
-        const svgViewSizeY = this.svgSize.height;
-
-        if (zoomedBoxWidth > svgViewSizeX) {
-            this.panPosition.x = 0;
-        } else {
-            const delta = this.applyZoom(this._initialMouse.x - e.clientX);
-            this.panPosition.x = Math.min(
-                this.svgLocation.x + delta,
-                svgViewSizeX - zoomedBoxWidth
-            );
-        }
-        if (zoomedBoxHeight > svgViewSizeY) {
-            this.panPosition.y = 0;
-        } else {
-            const delta = this.applyZoom(this._initialMouse.y - e.clientY);
-            this.panPosition.y = Math.min(
-                this.svgLocation.y + delta,
-                svgViewSizeY - zoomedBoxHeight
-            );
-        }
-        if (this.panPosition.x < 0) {
-            this.panPosition.x = 0;
-        }
-        if (this.panPosition.y < 0) {
-            this.panPosition.y = 0;
-        }
-        this.redrawSvg();
-    }
-
-    stopDragView() {
-        // The svg not being dragged by mouse - AS SEEN IN TIMEVIEW
-        this.removeEventListener(`mousemove`, this._boundDragView);
-        this.svgLocation.x = this.panPosition.x;
-        this.svgLocation.y = this.panPosition.y;
-    }
-
-    applyZoom(num) {
-        const zoomedNum = num + (num * this.zoomStep * 0.05);
-        return zoomedNum;
-    }
-
-    redrawSvg() {
-        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
-        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
-        if ((zoomedBoxWidth > 0) && (zoomedBoxHeight > 0)) {
-            this._playgroundSvg.setAttribute(
-                `viewBox`,
-                `${this.panPosition.x} ${this.panPosition.y}  ${zoomedBoxWidth}  ${zoomedBoxHeight}`
-            );
-        }
-    }
-
-
-    copyStylesInline(destinationNode, sourceNode) {
-        const containerElements = [`svg`, `g`];
-        for (let cd = 0; cd < destinationNode.childNodes.length; cd++) {
-            const child = destinationNode.childNodes[cd];
-            if (containerElements.indexOf(child.tagName) != -1) {
-                this.copyStylesInline(child, sourceNode.childNodes[cd]);
-                continue;
-            }
-            const style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
-            if (style == `undefined` || style == null) {
-                continue;
-            }
-            for (let st = 0; st < style.length; st++) {
-                child.style.setProperty(style[st], style.getPropertyValue(style[st]));
-            }
-        }
-    }
-
-
-    triggerDownload(imgURI, fileName) {
-        const evt = new MouseEvent(`click`, {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        });
-        const a = document.createElement(`a`);
-        a.setAttribute(`download`, fileName);
-        a.setAttribute(`href`, imgURI);
-        a.setAttribute(`target`, `_blank`);
-        a.dispatchEvent(evt);
-    }
-
-    downloadSvg(svg, fileName) {
-        const copy = svg.cloneNode(true);
-        this.copyStylesInline(copy, svg);
-        const canvas = document.createElement(`canvas`);
-        const bbox = svg.getBBox();
-        canvas.width = bbox.width;
-        canvas.height = bbox.height;
-        const ctx = canvas.getContext(`2d`);
-        ctx.clearRect(0, 0, bbox.width, bbox.height);
-        const data = (new XMLSerializer()).serializeToString(copy);
-        const DOMURL = window.URL || window.webkitURL || window;
-        const img = new Image();
-        const svgBlob = new Blob([data], {type: `image/svg+xml;charset=utf-8`});
-        const url = DOMURL.createObjectURL(svgBlob);
-        img.onload = this.printIt(ctx, img, DOMURL, canvas, url, fileName).bind(this);
-        img.src = url;
-    }
-
-    printIt(ctx, img, DOMURL, canvas, url, fileName) {
-        ctx.drawImage(img, 0, 0);
-        DOMURL.revokeObjectURL(url);
-        if (typeof navigator !== `undefined` && navigator.msSaveOrOpenBlob) {
-            const blob = canvas.msToBlob();
-            navigator.msSaveOrOpenBlob(blob, fileName);
-        } else {
-            const imgURI = canvas.
-                toDataURL(`image/png`).
-                replace(`image/png`, `image/octet-stream`);
-            this.triggerDownload(imgURI, fileName);
-        }
-        document.removeChild(canvas);
-    }
-
-
-    printSvg(name) {
-        this.svg.saveSvg(this._playgroundSvg, name);
-    }
 
 
 }

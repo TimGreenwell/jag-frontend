@@ -245,7 +245,7 @@ export default class ControllerAT extends Controller {
         const childNodeModel = this.fetchProject(childNodeId);
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
-            this._playground._rebuildNodeView(projectModel);
+            this._playground._refreshPlayground(projectModel);
         } else {
             // conn
             if (this._timeview) {
@@ -297,9 +297,13 @@ export default class ControllerAT extends Controller {
             activityPromises.push(StorageService.create(fullActivityModel, `activity`));
         }
         await Promise.all(activityPromises);
+
         const jagPromises = [];
         for (const jag of jags) {
+
             const jagModel = NodeModel.fromJSON(jag);
+            console.log(`repopulating --. ${jag.id}`)
+            this.repopulateActivity(jagModel);  // this is done in the hopes of having name information   (if no work - maybe remove name building durning contstruction.
             const fullJagModel = new NodeModel(jagModel);
             jagPromises.push(StorageService.create(fullJagModel, `node`));
         }
@@ -350,7 +354,7 @@ export default class ControllerAT extends Controller {
         this.repopulateDepth(newProject);
 
         await StorageService.create(newProject, `node`);
-        this._playground._rebuildNodeView(newProject);
+        this._playground._refreshPlayground(newProject);
     }
 
     /**   -- Menu --  */
@@ -446,7 +450,7 @@ export default class ControllerAT extends Controller {
 
         await StorageService.create(newProjectRootNode, `node`);
         // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
-        this._playground._rebuildNodeView(newProjectRootNode);
+        this._playground._refreshPlayground(newProjectRootNode);
     }
 
     /**   -- Project Library --  */
@@ -468,7 +472,7 @@ export default class ControllerAT extends Controller {
 
         projectSelected.leafCount = projectSelected.leafcounter();
 
-        this._playground._rebuildNodeView(projectSelected);
+        this._playground._refreshPlayground(projectSelected);
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
         //    let newProjectRootNode = this.buildNodeTreeFromActivity(projectSelected);
         //    await StorageService.create(newProjectRootNode, "node");
@@ -590,7 +594,7 @@ export default class ControllerAT extends Controller {
         updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
         this.cacheProject(updatedNodeModel);
 
-        this._playground._rebuildNodeView(updatedNodeModel);
+        this._playground._refreshPlayground(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel);
     }
 

@@ -21,6 +21,7 @@ export default class SvgObject {
         this._standardFontSize = 17;
         this._stepBrightness = 5;
         this._initialBrightness = 50;
+        this._chosenFilter = ``;
 
         this._labelIndent = this.verticalMargin / 2;
         this._labelHeight = this.standardFontSize;
@@ -152,6 +153,14 @@ export default class SvgObject {
         this._initialBrightness = value;
     }
 
+
+    get chosenFilter() {
+        return this._chosenFilter;
+    }
+
+    set chosenFilter(value) {
+        this._chosenFilter = value;
+    }
 
     get customFilters() {
         return this._customFilters;
@@ -752,7 +761,6 @@ export default class SvgObject {
     }
 
     applyFilter(svgItem, filterId) {
-        console.log(`url(#${filterId})`)
          svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
     }
 

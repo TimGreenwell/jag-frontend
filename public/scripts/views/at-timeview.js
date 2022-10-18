@@ -4,6 +4,9 @@
  * @author ihmc (tlg)
  * @copyright Copyright © 2019 IHMC, all rights reserved.
  * @version 0.80
+ *
+ *
+ * @TODO --- When showing a large SVG and scrolling to bottom.   Then switching to small SVG will leave viewer far from viewing area and unable to return.
  */
 
 import TimeviewBox from '../models/svg-box.js';
@@ -27,13 +30,14 @@ class AtTimeview extends HTMLElement {
         this.svg.lineWidth = 2;
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
+        this.svg.chosenFilter = `blur`;
 
         this._timeviewSvg = this.svg.buildSvg();
         this.$def = this.svg.createDefinitionContainer();
         this._timeviewSvg.appendChild(this.$def);
         this.filterMap = this.svg.createCustomFilters();
-        this.$blur3dFilter = this.filterMap.get(`blur`);
-        this.$def.appendChild(this.$blur3dFilter);
+        this.$chosenFilter = this.filterMap.get(this.svg.chosenFilter);
+        this.$def.appendChild(this.$chosenFilter);
         this.$background = this.svg.createBackground();
         this._timeviewSvg.appendChild(this.$background);
         this._timeContainerWrapperDiv.appendChild(this._timeviewSvg);
@@ -60,21 +64,6 @@ class AtTimeview extends HTMLElement {
     printSvg(name) {
         this.svg.saveSvg(this._timeviewSvg, name);
     }
-
-
-    // positionTextElement(svgText, x, y) {
-    //     svgText.setAttributeNS(null, `x`, x);
-    //     svgText.setAttributeNS(null, `y`, y);
-    //     return svgText;
-    // }
-
-    // clearSvg() {
-    //     this._timeviewSvg.childNodes.forEach((gNode) => {
-    //         if (gNode.nodeName === `g`) {
-    //             this._timeviewSvg.removeChild(gNode);
-    //         }
-    //     });
-    // }
 
     refreshTimeview(nodeModel = this.currentNodeModel) {
         if (this.currentNodeModel) {
@@ -184,13 +173,11 @@ class AtTimeview extends HTMLElement {
         }
         const svgBox = this.svg.createRectangle(box.width, box.height, nodeModel.id);
         this.svg.positionItem(svgBox, box.topLeftX, box.topLeftY);
-        this.svg.applyFilter(svgBox, this.$custom3dFilter.id);
+        this.svg.applyFilter(svgBox, this.svg.chosenFilter);
         this.svg.applyDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }
-        // const svgBox = this.drawRectangle(box.topLeftX, box.topLeftY, box.width, box.height, nodeModel.treeDepth);
-        // svgBox.id = `timebox:${nodeModel.id}`;
         group.insertBefore(svgBox, svgText);
         this.boxMap.set(box.id, box);
         return box;

@@ -48,10 +48,14 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     // noinspection JSUnusedGlobalSymbols
     updateItem(updatedActivity) {
-        const listItemElement = this.createListItemCollection(updatedActivity);
+        console.log(updatedActivity)
+        console.log(this._libraryList);
+        console.log(this._$list)
         for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }
+
+        const listItemElement = this.createListItemCollection(updatedActivity);
         for (const idx in this._libraryList) {
             if (this._libraryList[idx].activity.urn === updatedActivity.urn) {
                 this._libraryList[idx] = listItemElement;
