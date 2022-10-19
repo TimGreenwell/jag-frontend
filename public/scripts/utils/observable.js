@@ -60,19 +60,6 @@ export default class SharedObservable extends SharedService {
     }
 
     /**
-     * Local action to be propagated across SharedWorker for remote listeners.
-     */
-    static confirmStorageChange({topic, schema, id, description}) {
-        console.log(` {SHARING>} - (${id}/${topic})`);
-        this.sharedWorker.port.postMessage({
-            topic,
-            schema,
-            id,
-            description
-        });
-    }
-
-    /**
      * Final distribution of processed remote/local event messages
      * Callback functions were provided at initial subscription.js.
      */
@@ -91,6 +78,19 @@ export default class SharedObservable extends SharedService {
         } else {
             console.log(`{No subscribers to : ${topic}`);
         }
+    }
+
+    /**
+     * Local action to be propagated across SharedWorker for remote listeners.
+     */
+    static confirmStorageChange({topic, schema, id, description}) {
+        console.log(` {SHARING>} - (${id}/${topic})`);
+        this.sharedWorker.port.postMessage({
+            topic,
+            schema,
+            id,
+            description
+        });
     }
 
 }

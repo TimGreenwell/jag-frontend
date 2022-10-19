@@ -124,7 +124,6 @@ customElements.define(`jag-menu`, class extends HTMLElement {
         $colorize.innerText = `demo\ncolor`;
         $centerLiDiv.appendChild($colorize);
         $colorize.addEventListener(`click`, function (e) {
-            console.log(`pressed`);
             this.dispatchEvent(new CustomEvent(`event-toggle-colorize`));
         }.bind(this));
 

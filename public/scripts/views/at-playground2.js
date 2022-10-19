@@ -46,8 +46,7 @@ class AtPlayground extends Popupable {
 
         // Data objects displayed by the SVG
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
-        this._activeActivityNodeElementSet = new Set();    // set of ActivityNodes (all)
-        this._selectedActivityNodeMap = new Map();         // set of ActivityNodes (selected)
+        this._selectedNodesMap = new Map();         // set of ActivityNodes (selected)
         this._selectedEdge = null;                         // single selected edge
         this._is_edge_being_created = false;
         this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
@@ -69,7 +68,7 @@ class AtPlayground extends Popupable {
     }
 
     get selectedNodes() {
-        const selectedIdArray = Array.from(this._selectedActivityNodeMap.values());
+        const selectedIdArray = Array.from(this._selectedNodesMap.values());
         return selectedIdArray;
     }
 
@@ -109,7 +108,6 @@ class AtPlayground extends Popupable {
         if (elementType === `background`) {
             this.svgMouseDownEvent(e);
         }
-
     }
 
     addNode(e) {
@@ -152,10 +150,9 @@ class AtPlayground extends Popupable {
         const nodeModel = this.retrieveNodeModel(id);
         nodeModel.isExpanded = !nodeModel.isExpanded;
         this.showExpand(nodeModel);
-        this.dispatchEvent(new CustomEvent(`event-node-updated`, {
-            detail: {nodeModel}
-        }));
+        this.saveNode(nodeModel);
     }
+
 
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
         const nodeModelId = this.svg.fetchTargetId(e.target);
@@ -165,11 +162,11 @@ class AtPlayground extends Popupable {
         const selectedNodeModel = this.retrieveNodeModel(nodeModelId);
         if ((e.ctrlKey) || (!selectedNodeModel.isExpanded)) {
             selectedNodeModel.gatherDescendents().forEach((descendant) => {
-                this._selectedActivityNodeMap.set(descendant.id, descendant);
+                this._selectedNodesMap.set(descendant.id, descendant);
                 this.svg.selectNode(descendant);
             });
         }
-        this._selectedActivityNodeMap.set(selectedNodeModel.id, selectedNodeModel);
+        this._selectedNodesMap.set(selectedNodeModel.id, selectedNodeModel);
         this.svg.selectNode(selectedNodeModel);
         this.svgCursor = this.screenToSVGCoords(e);   // transform screen to svg
 
@@ -179,7 +176,7 @@ class AtPlayground extends Popupable {
         this.svgSelectedItems = {incomingEdges: [],
             outgoingEdges: [],
             nodes: new Map()};
-        this._selectedActivityNodeMap.forEach((value, key) => {
+        this._selectedNodesMap.forEach((value, key) => {
             const incomingEdge = this.svg.fetchEdgeTo(key);
             const outgoingEdges = this.svg.fetchEdgesFrom(key);
             const node = this.svg.fetchNodeGroup(key);
@@ -190,7 +187,7 @@ class AtPlayground extends Popupable {
             this.svgSelectedItems.nodes.set(key, node);
         });
 
-        const selectedNodeArray = Array.from(this._selectedActivityNodeMap.values());
+        const selectedNodeArray = Array.from(this._selectedNodesMap.values());
         this.dispatchEvent(new CustomEvent(`event-nodes-selected`, {
             detail: {selectedNodeArray}
         }));
@@ -217,7 +214,7 @@ class AtPlayground extends Popupable {
 
         const unselectedNodeArray = this.selectedNodes;
         this.unselectEverything();
-        this._refreshPlayground();
+        this._redrawPlayground();
         const selectedNodeArray = this.selectedNodes;
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
             detail: {
@@ -261,7 +258,7 @@ class AtPlayground extends Popupable {
         this.svgSelectedItems.nodes.forEach((nodeGroup, key) => {
             // A static position can be found as x,y in the nodeModel in selectedItems map
             const id = this.svg.fetchTargetId(nodeGroup);
-            const nodeModel = this._selectedActivityNodeMap.get(id);
+            const nodeModel = this._selectedNodesMap.get(id);
             this.svg.modifyTransform(nodeGroup, nodeModel, diffX, diffY);
         });
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
@@ -363,6 +360,7 @@ class AtPlayground extends Popupable {
 
     stopDraggingNode(e) {
         e.preventDefault();
+        console.log(`mouse uppers`)
         const nodeModelId = this.svg.fetchTargetId(e.target);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModelId);
         nodeGroup.setAttributeNS(null, `cursor`, `grab`);
@@ -372,7 +370,7 @@ class AtPlayground extends Popupable {
         this.svgSelectedItems.nodes.forEach((nodeItem) => {
             const id = this.svg.fetchTargetId(nodeItem);
 
-            const nodeModel = this._selectedActivityNodeMap.get(id);
+            const nodeModel = this._selectedNodesMap.get(id);
 
             const transformString = nodeItem.getAttributeNS(null, `transform`);
             const transformComponents = this.svg.parse(transformString);
@@ -385,9 +383,7 @@ class AtPlayground extends Popupable {
                 nodeModel.y = groupTransformY;
             }
         });
-        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
-            detail: {nodeModel: rootNode}
-        }));
+        this.saveNode(movedNode);
         this._playgroundWrapperDiv.removeEventListener(`mousemove`, this._boundDragNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseleave`, this._boundStopDraggingNode);
@@ -463,21 +459,21 @@ class AtPlayground extends Popupable {
                         detail: {node: destinationNode}
                     }));
 
-                    // this._selectedActivityNodeMap.delete(selectedNodeModel.id);
+                    // this._selectedNodesMap.delete(selectedNodeModel.id);
                     this.unselectEverything();
                     this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
                         detail: {}
                     }));
                 }
             } else
-            if (this._selectedActivityNodeMap.size > 1) {
+            if (this._selectedNodesMap.size > 1) {
                 alert(`Can only clear/disconnect one selected item`);
-            } else if (this._selectedActivityNodeMap.size < 1) {
+            } else if (this._selectedNodesMap.size < 1) {
                 alert(`Must select at least one item to clear/disconnect`);
             } else {
                 // if the selected node is a root - then clear the project from the tree (manually remove graphics in clearPlayground)
                 // if the selected node is a non-root node - then disconnect the jag from its parent (triggers DB update which auto redraws graphics)
-                const selectedNodeModel = [...this._selectedActivityNodeMap.values()][0];
+                const selectedNodeModel = [...this._selectedNodesMap.values()][0];
                 if (selectedNodeModel.isRoot()) {
                     this.deleteNodeModel(selectedNodeModel.projectId);
                 } else {
@@ -517,9 +513,9 @@ class AtPlayground extends Popupable {
 
     toggleColor() {
         this.hasColor = !this.hasColor;
-        console.log(`c`)
+        console.log(`c`);
         this.unselectEverything();
-        this._refreshPlayground();
+        this._redrawPlayground();
     }
 
     _handleNewActivityActivityPopup(e) {
@@ -533,23 +529,20 @@ class AtPlayground extends Popupable {
     }
 
     clearPlayground(projectId = undefined) {
-        this._viewedProjectsMap.delete(projectId);
-        console.log(`a`)
-        this._refreshPlayground();
-        for (const jagNode of this._activeActivityNodeElementSet) {
-            if ((projectId == undefined) || (jagNode.nodeModel.projectId === projectId)) {
-                this._activeActivityNodeElementSet.delete(jagNode);
-            }
+        if (projectId) {
+            this._viewedProjectsMap.delete(projectId);
+        } else {
+            this._viewedProjectsMap.clear();
         }
+        this.unselectEverything();
+        this._redrawPlayground();
     }
 
     deleteNodeModel(deadId) {
         this._viewedProjectsMap.delete(deadId);
-        this._selectedActivityNodeMap.delete(deadId);
-        console.log(`b`)
-        // this._refreshPlayground();
+        this._selectedNodesMap.delete(deadId);
+        // this._redrawPlayground();
     }
-
 
 
     _eventImportJagHandler(e) {
@@ -575,7 +568,6 @@ class AtPlayground extends Popupable {
      * translate - change in svg coords based on mouse deltas.  (exact placement not desired)
      * shift - move viewed object completely on viewing space
      */
-
 
 
     screenToSVGCoords(e) {
@@ -652,7 +644,6 @@ class AtPlayground extends Popupable {
     }
 
 
-
     /**
      *  Utility
      *
@@ -663,9 +654,9 @@ class AtPlayground extends Popupable {
      * showExpand & collapseAll - display (or not) depending on isExpanded flag
      */
 
-    saveNode(node) {
+    saveNode(nodeModel) { // @TODO --- saveNode/saveNodes
         this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
-            detail: {nodeModel: node}
+            detail: {nodeModel}
         }));
     }
 
@@ -675,6 +666,7 @@ class AtPlayground extends Popupable {
         for (const project of this._viewedProjectsMap.values()) {
             const findNode = project.findChildById(id);
             if (findNode) {
+                console.log(`found ${findNode.name}`)
                 nodeRetrieved = findNode;
             }
         }
@@ -683,15 +675,15 @@ class AtPlayground extends Popupable {
 
 
     unselectEverything() {
-        this._selectedActivityNodeMap.forEach((value, key) => {
-            this._selectedActivityNodeMap.delete(value.id);  // redundant with the clear below?
+        this._selectedNodesMap.forEach((value, key) => {
+            this._selectedNodesMap.delete(value.id);  // redundant with the clear below?
             this.svg.unselectNode(value);
         });
         if (this._selectedEdge) {
             this.svg.unselectEdge(this._selectedEdge);
             this._selectedEdge = null;
         }
-        this._selectedActivityNodeMap.clear();
+        this._selectedNodesMap.clear();
     }
 
 
@@ -764,7 +756,7 @@ class AtPlayground extends Popupable {
     }
 
 
-    redrawSelectedNodes() {
+    layoutNodes() {
         const horizontalMargin = 50;
         let xIndentArray = [];
         let startTreeDepth = 0;
@@ -834,29 +826,34 @@ class AtPlayground extends Popupable {
 
 
     _refreshPlayground(projectNodeModel) {
-        if (projectNodeModel) {
-            this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);        //@TODO not all refreshes have a new node to contribute.. maybe a ?addNode? can do a refresh after.
-        }
+        console.log(JSON.stringify(projectNodeModel))
+        this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);
+        this._redrawPlayground();
 
+        // this.svg.selectNode(projectNodeModel);
+        // if ((projectNodeModel.x === 0) || (!projectNodeModel.y === 0)) {
+        //     console.log(`laying them out`)
+        //     this.layoutNodes(projectNodeModel);
+        // }
+    }
+
+    _redrawPlayground() {
         this.shift();
         // delete the svg
         this.svg.clearBackground(this.svg.fetchBackground());
         // if projectNodeModel is Root ->  add it to the list of viewed trees. (viewedProjectsMap)
         // if not - remove it from the list of viewed trees. (viewedProjectsMap)
+        this.treeHeight = 0;
         this._viewedProjectsMap.forEach((value, key) => {
             if (!value.isRoot()) {
                 this._viewedProjectsMap.delete(value.id);
             }
-            // draw everything in the viewed trees (viewedProjectsMap)
-            // concerns: svg is a finite area - might have to grow svg
-            // timeview - this.treeHeight = nodeModel.findTreeHeight();  // not really needed if x-y are present
-            this.treeHeight = value.findTreeHeight();
-            // equiv to this._buildNodeViewFromNodeModel
+            this.treeHeight = Math.max(this.treeHeight, value.findTreeHeight())
         });
         const background = this.svg.fetchBackground();
         this.buildJointActivityGraphs(background, this._viewedProjectsMap);
-        this._selectedActivityNodeMap.forEach((value, key) => {
-            this._selectedActivityNodeMap.set(value.id, value); // ?
+        this._selectedNodesMap.forEach((value, key) => {
+            this._selectedNodesMap.set(value.id, value); // ?
             this.svg.selectNode(value);
         });
         this.windowSize = this.getBoundingClientRect();  // I'd recommend getBBox (which is part of SVG 1.1) o

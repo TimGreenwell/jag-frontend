@@ -116,7 +116,7 @@ export default class ControllerAT extends Controller {
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
         this._menu.addEventListener(`event-define-node`, this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
-        this._menu.addEventListener(`event-redraw-nodes`, this.eventRedrawNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
+        this._menu.addEventListener(`event-redraw-nodes`, this.eventLayoutNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener(`event-popup-importer`, this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
         // this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                // menu item: open timeview panel
         this._menu.addEventListener(`event-toggle-colorize`, this.eventToggleColorizerHandler.bind(this));
@@ -241,8 +241,9 @@ export default class ControllerAT extends Controller {
         const projectModel = this.fetchProject(projectNodeId);
         const parentNodeModel = this.searchTreeForId(projectModel, parentNodeId);
         parentNodeModel.isExpanded = true;
-
         const childNodeModel = this.fetchProject(childNodeId);
+        console.log(`Connecting ${JSON.stringify(childNodeModel)} to ${JSON.stringify(parentNodeModel)}`)
+
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
             this._playground._refreshPlayground(projectModel);
@@ -258,12 +259,14 @@ export default class ControllerAT extends Controller {
                 parentNodeModel.activity.connector.execution = `node.execution.sequential`;
             }
 
-            childNodeModel.parent = parentNodeModel;              //  useless as we are about to go into and out of storage -- which drops this
-            childNodeModel.parentId = parentNodeModel.id;  // /         This changed because of the extra reverse step in AddChild. Change that then fix this.  //??
+            childNodeModel.parent = parentNodeModel;              //  useless USELESS as we are about to go into and out of storage -- which drops this
+            childNodeModel.parentId = parentNodeModel.id;  // /   USELESS      This changed because of the extra reverse step in AddChild. Change that then fix this.  //??
             childNodeModel.projectId = parentNodeModel.projectId;  // this is actually covered in the next statement 'repopulateProject'-- no harm here
 
             this.repopulateProject(parentNodeModel, projectNodeId);
             childNodeModel.childId = childId;  // this could also be done later. ok here
+            this.cacheProject(childNodeModel);
+            this.cacheProject(parentNodeModel);
 
 //  IF WE NEED TO UNDO THIS -- IT WAS UPDATE NODE (CHILD) FOLLOWED BY UPDATE ACTIVITY(PARENT)
             // The problem was getting the adopted node to register as gone with playground.
@@ -302,9 +305,10 @@ export default class ControllerAT extends Controller {
         for (const jag of jags) {
 
             const jagModel = NodeModel.fromJSON(jag);
-            console.log(`repopulating --. ${jag.id}`)
+
             this.repopulateActivity(jagModel);  // this is done in the hopes of having name information   (if no work - maybe remove name building durning contstruction.
             const fullJagModel = new NodeModel(jagModel);
+            this.cacheProject(jagModel);
             jagPromises.push(StorageService.create(fullJagModel, `node`));
         }
 
@@ -352,6 +356,7 @@ export default class ControllerAT extends Controller {
         this.repopulateActivity(newProject);
         this.repopulateProject(newProject, newProject.id);
         this.repopulateDepth(newProject);
+        this.cacheProject(newProject);
 
         await StorageService.create(newProject, `node`);
         this._playground._refreshPlayground(newProject);
@@ -386,8 +391,8 @@ export default class ControllerAT extends Controller {
         });
     }
 
-    eventRedrawNodesHandler() {
-        this._playground.redrawSelectedNodes();
+    eventLayoutNodesHandler() {
+        this._playground.layoutNodes();
     }
 
     eventPopupImporterHandler() {
@@ -410,7 +415,7 @@ export default class ControllerAT extends Controller {
     async eventActivityDeletedHandler(event) {
         // Scan every activity to see if it contains a child which matches the deleted activity.
         // If match found, remove that child from the parent and signal update on the parent.
-        console.log(`Local>> (jag deleted) `);
+
         const deadActivityUrn = event.detail.activityUrn;
         const updatePromises = [];
         for (const [activityId, activity] of this._activityMap) {
@@ -446,7 +451,9 @@ export default class ControllerAT extends Controller {
         this.repopulateParent(newProjectRootNode);
         this.repopulateActivity(newProjectRootNode);
         this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
+        this.repopulateDepth(newProjectRootNode);
         newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
+        this.cacheProject(newProjectRootNode);
 
         await StorageService.create(newProjectRootNode, `node`);
         // this._playground._buildNodeViewFromNodeModel(newProjectRootNode)
@@ -469,8 +476,8 @@ export default class ControllerAT extends Controller {
         this.repopulateActivity(projectSelected);
         this.repopulateProject(projectSelected, projectSelected.id);
         this.repopulateDepth(projectSelected);
-
         projectSelected.leafCount = projectSelected.leafcounter();
+        this.cacheProject(projectSelected);
 
         this._playground._refreshPlayground(projectSelected);
         //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
@@ -566,15 +573,18 @@ export default class ControllerAT extends Controller {
         createdNodeModel.leafCount = createdNodeModel.leafcounter();
         this.cacheProject(createdNodeModel);
         this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
-        //   this._playground.addNodeModel(createdNodeModel)
+           // this._playground.addNodeModel(createdNodeModel)
     }
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
         this.cacheActivity(updatedActivity);
         const updatePromises = [];
+
         for (const viewedProject of this._playground.viewedProjects) {
-            if (viewedProject.isActivityInProject(updatedActivityUrn)) {
-                const updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
+            let cachedViewedProject = this.fetchProject(viewedProject.id);
+
+            if (cachedViewedProject.isActivityInProject(updatedActivityUrn)) {
+                const updatedProject = this.updateTreeWithActivityChange(updatedActivity, cachedViewedProject);
                 updatePromises.push(StorageService.update(updatedProject, `node`));
             }
         }
@@ -623,6 +633,7 @@ export default class ControllerAT extends Controller {
     }
 
     gatherAncestorUrns(projectModelId, parentModelId) {
+
         const urnStack = [];
         let nextParentId = parentModelId;
         const projectNode = this.fetchProject(projectModelId);

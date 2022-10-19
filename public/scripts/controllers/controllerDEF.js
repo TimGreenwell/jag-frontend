@@ -167,7 +167,6 @@ export default class ControllerDEF extends Controller {
 
     // marked for death
     // async localJagDisconnectedHandler(event){              //localActivityNodeCleared?
-    //     console.log("Local>> (local nodes disjoined) ")
     //     let changingActivity = event.detail.activityUrn
     //     let leavingJagChild = event.detail.activityChild
     //

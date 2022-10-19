@@ -6,7 +6,7 @@
 
 const browserInstances = [];
 
-onconnect = function (e) {
+onconnect = (e) => {
     const port = e.ports[0];
     browserInstances.push(port);
 

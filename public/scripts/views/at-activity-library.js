@@ -48,9 +48,6 @@ customElements.define(`jag-library`, class extends HTMLElement {
 
     // noinspection JSUnusedGlobalSymbols
     updateItem(updatedActivity) {
-        console.log(updatedActivity)
-        console.log(this._libraryList);
-        console.log(this._$list)
         for (const item of this._libraryList) {
             this._$list.removeChild(item.element);
         }

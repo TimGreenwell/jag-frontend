@@ -23,8 +23,9 @@ export default class Node extends EventTarget {
         isLocked = Boolean(false),
         contextualName = ``,
         contextualDescription = ``,
-        x = 30,
-        y = 30,
+        x = 0,        // this.unselectEverything();
+        // this._selectedNodesMap.set(projectNodeModel.id, projectNodeModel);
+        y = 0,
         subscriptions = [],        // still unknown implementation (hopefully observer)
         returnValue = null,
         returnState = null,
@@ -457,6 +458,7 @@ export default class Node extends EventTarget {
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
             if (checkNode.id === id) {
+                console.log("Find node in this tree")
                 return checkNode;
             } else {
                 checkNode.children.forEach((child) => {
@@ -464,11 +466,13 @@ export default class Node extends EventTarget {
                 });
             }
         }
-        this.children.forEach((child) => {
-            if (child.id === id) {
-                return child;
-            }
-        });
+        console.log("Didnt find node in this tree")
+        // this.children.forEach((child) => {
+        //     if (child.id === id) {
+        //         return child;
+        //     }
+        // });
+        return null;
     }
 
     getLastChild() {
@@ -517,17 +521,6 @@ export default class Node extends EventTarget {
         return json;
     }
 
-
-    // static async fromJSON(json) {
-    //     const childStack = [];
-    //     for (const child of json.children) {
-    //         childStack.push(await Node.fromJSON(child));
-    //     }
-    //     json.children = childStack;
-    //     const node = new Node(json);
-    //     return node;
-    // }
-
     static fromJSON(json) {
         const childStack = [];
         for (const child of json.children) {
@@ -540,20 +533,4 @@ export default class Node extends EventTarget {
 
 
 }
-
-// removeChildById(id) {  // this wont work - not recursing
-//     this.children.forEach((child) => {
-//         if (child.id === id) {
-//             this.removeChild(child);
-//         }
-//     });
-// }
-
-// toggleExpanded() {
-//     this._isExpanded = !this._isExpanded;
-//
-//     // 2 dispatches here - 1 listener in views/Analysis
-//     this.dispatchEvent(new CustomEvent(`layout`));
-// }
-
 

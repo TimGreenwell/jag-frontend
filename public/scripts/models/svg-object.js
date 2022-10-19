@@ -452,6 +452,7 @@ export default class SvgObject {
         const hsla = rectangle.getAttributeNS(null, `fill`);
         const shadeFill = hsla.split(`,`)[2];
         rectangle.setAttributeNS(null, `fill`, `hsla(${this.selectedHue},100%,${shadeFill},1)`);
+        rectangle.setAttributeNS(null, `cursor`, `grabbing`);
     }
 
 
