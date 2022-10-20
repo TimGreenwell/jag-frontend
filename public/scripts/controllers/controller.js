@@ -15,6 +15,7 @@ import NodeModel from "../models/node.js";
 import StorageService from "../services/storage-service.js";
 import InputValidator from "../utils/validation.js";
 import CellModel from "../models/cell.js";
+import Traversal from "../utils/traversal.js";
 
 // noinspection DuplicatedCode, JSUnusedGlobalSymbols
 export default class Controller extends EventTarget {
@@ -74,7 +75,6 @@ export default class Controller extends EventTarget {
         return cachedProject;
     }
 
-
     get analysisMap() {
         return this._analysisMap;
     }
@@ -103,7 +103,6 @@ export default class Controller extends EventTarget {
         this._currentAnalysis = value;
     }
 
-
     /**
      *                                   Upward Event Handlers
      * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
@@ -118,7 +117,6 @@ export default class Controller extends EventTarget {
      *   eventActivityUpdatedHandler       (C)  - structure change
      *   eventUrnChangedHandler            (C)  - URN field is changed
      */
-
 
     async eventActivityCreatedHandler(event) {
         const activityConstruct = event.detail.activityConstruct;
@@ -254,8 +252,6 @@ export default class Controller extends EventTarget {
             }
         }
         for (const orphanedRootNode of orphanedRootStack) {
-            // Assigning orphans to a separate tree.
-            // Save the tree to keep it, or don't to have it disappear.
             orphanedRootNode.parent = orphanedRootNode.id;
             orphanedRootNode.childId = null;
             this.repopulateProject(orphanedRootNode, orphanedRootNode.id);
@@ -350,34 +346,29 @@ export default class Controller extends EventTarget {
         return returnValue;
     }
 
-    searchTreeForId(treeNode, id) {
-        const workStack = [];
-        workStack.push(treeNode);
-        while (workStack.length > 0) {
-            const checkNode = workStack.pop();
-            if (checkNode.id === id) {
-                return checkNode;
+
+    searchTreeForId(node, id) {
+        const findIdCallback = (node) => {
+            if (node.id === id) {
+                return node;
             }
-            checkNode.children.forEach((child) => {
-                return workStack.push(child);
-            });
+        };
+        const foundNodes = Traversal.iterate(node, findIdCallback);
+        if ((foundNodes) && (foundNodes.length > 0)) {
+            return foundNodes[0];
         }
-        return null;
     }
 
-    searchTreeForChildId(treeNode, childId) {
-        const workStack = [];
-        workStack.push(treeNode);
-        while (workStack.length > 0) {
-            const checkNode = workStack.pop();
-            if (checkNode.childId === childId) {
-                return checkNode;
+    searchTreeForChildId(node, childId) {
+        const findChildIdCallback = (node) => {
+            if (node.childId === childId) {
+                return node;
             }
-            checkNode.children.forEach((child) => {
-                return workStack.push(child);
-            });
+        };
+        const foundNodes = Traversal.iterate(node, findChildIdCallback);
+        if ((foundNodes) && (foundNodes.length > 0)) {
+            return foundNodes[0];
         }
-        return null;
     }
 
     removeAllChildNodes(parent) {
@@ -386,50 +377,51 @@ export default class Controller extends EventTarget {
         }
     }
 
-    addDerivedProjectData(projectNode) {
-        this.repopulateActivity(projectNode);
-        this.repopulateProject(projectNode, projectNode.id);
-        this.repopulateParent(projectNode);
-        this.repopulateDepth(projectNode);
-        this.cacheProject(projectNode);
+    addDerivedProjectData(node, projectId = node.id) {       // only to be applied at the top.
+        this.repopulateParent(node);
+        this.repopulateActivity(node);
+        this.repopulateProject(node, projectId);      // top specific
+        this.repopulateDepth(node);                   // requires parent
+        node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leafcount?)
     }
 
-    repopulateActivity(currentNode) {
-        currentNode.activity = this.fetchActivity(currentNode.urn);
-        for (const child of currentNode.children) {
-            this.repopulateActivity(child);
-        }
+    repopulateParent(node) {
+        const assignParentCallback = (node) => {
+            node.children.forEach((child) => {
+                child.parent = node;
+                child.parentId = node.id;
+            });
+        };
+        Traversal.iterate(node, assignParentCallback);
     }
 
-    repopulateParent(currentNode) {
-        for (const child of currentNode.children) {
-            child.parent = currentNode;
-            child.parentId = currentNode.id;
-            this.repopulateParent(child);
-        }
+    repopulateActivity(node) {
+        const fetchActivitiesCallback = (node) => {
+            node.activity = this.fetchActivity(node.urn);
+        };
+        Traversal.recursePreorder(node, fetchActivitiesCallback);
     }
 
-    repopulateDepth(currentNode) {  // needs accurate parent info.
-        currentNode.setDepth();
-        currentNode.children.forEach((child) => {
-            this.repopulateDepth(child);
-        });
+    repopulateDepth(node) {  // needs accurate parent info.  @TODO rewrite to not require parent info
+        const assignDepthCallback = (node) => {
+            node.setDepth();
+        };
+        Traversal.recursePreorder(node, assignDepthCallback);
     }
 
-    repopulateProject(currentNode, projectId) {
-        // @TODO make these repopulate methods more efficient
-        currentNode.projectId = projectId;
-        for (const child of currentNode.children) {
-            this.repopulateProject(child, projectId);
-        }
+    repopulateProject(node, projectId) {
+        const assignProjectCallback = (node) => {
+            node.projectId = projectId;
+        };
+        Traversal.iterate(node, assignProjectCallback);
     }
 
-    relocateProject(currentNode, deltaX, deltaY) {
-        currentNode.x = currentNode.x + deltaX;
-        currentNode.y = currentNode.y + deltaY;
-        for (const child of currentNode.children) {
-            this.relocateProject(child, deltaX, deltaY);
-        }
+    relocateProject(node, deltaX, deltaY) {
+        const changeLocationCallback = (node) => {
+            node.x = node.x + deltaX;
+            node.y = node.y + deltaY;
+        };
+        Traversal.iterate(node, changeLocationCallback);
     }
 
 }

@@ -212,7 +212,7 @@ export default class Node extends EventTarget {
 
     get contextualName() {
         if ((this._contextualName === ``) || (this._contextualName == undefined)) {
-            return this._activity.name;
+            if (this._activity) {return this._activity.name;}
         } else {
             return this._contextualName;
         }
@@ -224,7 +224,8 @@ export default class Node extends EventTarget {
 
     get contextualDescription() {
         if ((this._contextualDescription === ``) || (this._contextualName == undefined)) {
-            return this.activity.description;
+            if (this._activity) {
+            return this.activity.description;}
         } else {
             return this._contextualDescription;
         }
@@ -458,7 +459,6 @@ export default class Node extends EventTarget {
         while (workStack.length > 0) {
             const checkNode = workStack.pop();
             if (checkNode.id === id) {
-                console.log("Find node in this tree")
                 return checkNode;
             } else {
                 checkNode.children.forEach((child) => {
@@ -466,12 +466,6 @@ export default class Node extends EventTarget {
                 });
             }
         }
-        console.log("Didnt find node in this tree")
-        // this.children.forEach((child) => {
-        //     if (child.id === id) {
-        //         return child;
-        //     }
-        // });
         return null;
     }
 

@@ -455,6 +455,11 @@ export default class SvgObject {
         rectangle.setAttributeNS(null, `cursor`, `grabbing`);
     }
 
+    selectEdge(edge) {  // Apply 'select' effect (highlight)
+        edge.setAttributeNS(null, `stroke`, `orange`);
+        edge.setAttributeNS(null, `cursor`, `grabbing`);
+    }
+
 
     signalPossibleChild(node) {  // Apply 'select' effect (highlight)
         const rectangle = this.fetchRectangle(node.id);

@@ -74,16 +74,13 @@ export default class ControllerAT extends Controller {
 
         const allNodes = await StorageService.all(`node`);
         allNodes.forEach((node) => {
-            // THE REPOPULATE COLLECTION FAILED HERE
-            this.repopulateActivity(node);
-            this.repopulateParent(node);
+            this.addDerivedProjectData(node);
             this.cacheProject(node);
         });
 
         // Event function (event parameter unused)
         window.onblur = function () {
             console.log(`onblur() activated`);
-
         };
     }
 
@@ -111,14 +108,14 @@ export default class ControllerAT extends Controller {
         this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
         this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file as JSON
         this._properties.addEventListener(`event-exportsvg-jag`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
-         this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
+        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
 
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
         this._menu.addEventListener(`event-define-node`, this.eventDefineNodeHandler.bind(this));                           // menu item: open Define Node tab(s) using selected node(s)
         this._menu.addEventListener(`event-redraw-nodes`, this.eventLayoutNodesHandler.bind(this));                         // menu item: auto-place nodes @todo still not pretty
         this._menu.addEventListener(`event-popup-importer`, this.eventPopupImporterHandler.bind(this));                     // menu item: call 'Import Jag' popup
-        // this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                // menu item: open timeview panel
+        // (handled upstairs at jag-at.js)  this._menu.addEventListener(`event-toggle-timeview`, this.eventToggleTimeviewHandler.bind(this));                // menu item: open timeview panel
         this._menu.addEventListener(`event-toggle-colorize`, this.eventToggleColorizerHandler.bind(this));
 
         this._activityLibrary.addEventListener(`event-activity-selected`, this.eventActivitySelectedHandler.bind(this));    // Clicking Activity instantiates Node in playground
@@ -213,7 +210,7 @@ export default class ControllerAT extends Controller {
                 projectNode = updatedNodeModel;
             }
             jagPromises.push(StorageService.update(projectNode, `node`));
-        })
+        });
         await Promise.all(jagPromises);
     }
 
@@ -242,7 +239,6 @@ export default class ControllerAT extends Controller {
         const parentNodeModel = this.searchTreeForId(projectModel, parentNodeId);
         parentNodeModel.isExpanded = true;
         const childNodeModel = this.fetchProject(childNodeId);
-        console.log(`Connecting ${JSON.stringify(childNodeModel)} to ${JSON.stringify(parentNodeModel)}`)
 
         if (this.loopDetection(projectModel, parentNodeModel, childNodeModel)) {
             alert(`That node join results in an infinite loop problem - please consider an alternative design`);
@@ -268,7 +264,7 @@ export default class ControllerAT extends Controller {
             this.cacheProject(childNodeModel);
             this.cacheProject(parentNodeModel);
 
-//  IF WE NEED TO UNDO THIS -- IT WAS UPDATE NODE (CHILD) FOLLOWED BY UPDATE ACTIVITY(PARENT)
+            //  IF WE NEED TO UNDO THIS -- IT WAS UPDATE NODE (CHILD) FOLLOWED BY UPDATE ACTIVITY(PARENT)
             // The problem was getting the adopted node to register as gone with playground.
 
             event.detail.activity = parentNodeModel.activity;
@@ -278,7 +274,8 @@ export default class ControllerAT extends Controller {
             await this.eventProjectDeletedHandler(event);
         }
     }
-        async eventPlaygroundClickedHandler() {
+
+    async eventPlaygroundClickedHandler() {
         // const unselectedNodes = event.detail.unselectedNodeArray;
         // if (unselectedNodes.length > 0) {
         //     const projectNode = unselectedNodes[0].getAncestor();
@@ -297,25 +294,24 @@ export default class ControllerAT extends Controller {
         for (const activity of activities) {
             const activityModel = Activity.fromJSON(activity);
             const fullActivityModel = new Activity(activityModel);
+            this.cacheActivity(fullActivityModel);
             activityPromises.push(StorageService.create(fullActivityModel, `activity`));
         }
         await Promise.all(activityPromises);
 
         const jagPromises = [];
+
+
         for (const jag of jags) {
-
             const jagModel = NodeModel.fromJSON(jag);
-
-            this.repopulateActivity(jagModel);  // this is done in the hopes of having name information   (if no work - maybe remove name building durning contstruction.
             const fullJagModel = new NodeModel(jagModel);
-            this.cacheProject(jagModel);
+            this.addDerivedProjectData(fullJagModel);
+            this.cacheProject(fullJagModel);
             jagPromises.push(StorageService.create(fullJagModel, `node`));
         }
 
 
         await Promise.all(jagPromises);
-
-
     }
 
 
@@ -351,13 +347,8 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         const newProject = event.detail.node;
-
-        this.repopulateParent(newProject);
-        this.repopulateActivity(newProject);
-        this.repopulateProject(newProject, newProject.id);
-        this.repopulateDepth(newProject);
-        this.cacheProject(newProject);
-
+        this.addDerivedProjectData(newProject);
+        this.cacheProject(newProject);        // updating and caching project just before a 'create' -useful?
         await StorageService.create(newProject, `node`);
         this._playground._refreshPlayground(newProject);
     }
@@ -405,10 +396,9 @@ export default class ControllerAT extends Controller {
     //     this._timeview.refreshTimeview(selectedNodes[0]);
     // }
 
-     eventToggleColorizerHandler() {
-        console.log(`going to toggle color`)
+    eventToggleColorizerHandler() {
         this._playground.toggleColor();
-     }
+    }
 
     /**   -- Activity Library --  */
 
@@ -448,11 +438,12 @@ export default class ControllerAT extends Controller {
         const activitySelected = event.detail.activity;
         const isExpanded = event.detail.isExpanded;
         const newProjectRootNode = this.buildNodeTreeFromActivity(activitySelected, isExpanded);
-        this.repopulateParent(newProjectRootNode);
-        this.repopulateActivity(newProjectRootNode);
-        this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
-        this.repopulateDepth(newProjectRootNode);
-        newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
+        this.addDerivedProjectData(newProjectRootNode);
+        // this.repopulateParent(newProjectRootNode);
+        // this.repopulateActivity(newProjectRootNode);
+        // this.repopulateProject(newProjectRootNode, newProjectRootNode.id);
+        // this.repopulateDepth(newProjectRootNode);
+        // newProjectRootNode.leafCount = newProjectRootNode.leafcounter();
         this.cacheProject(newProjectRootNode);
 
         await StorageService.create(newProjectRootNode, `node`);
@@ -467,22 +458,9 @@ export default class ControllerAT extends Controller {
         const projectSelected = event.detail.projectModel;
         const expandRequested = event.detail.isExpanded;
         projectSelected.isExpanded = expandRequested;
-         // THE REPOPULATE COLLECTION FAILED HERE
-        // this.repopulateActivity(projectSelected);
-        // this.repopulateProject(projectSelected, projectSelected.id);
-        // this.repopulateParent(projectSelected);
-        // this.repopulateDepth(projectSelected);
-        this.repopulateParent(projectSelected);
-        this.repopulateActivity(projectSelected);
-        this.repopulateProject(projectSelected, projectSelected.id);
-        this.repopulateDepth(projectSelected);
-        projectSelected.leafCount = projectSelected.leafcounter();
+        this.addDerivedProjectData(projectSelected);
         this.cacheProject(projectSelected);
-
         this._playground._refreshPlayground(projectSelected);
-        //  let childrenMap = this._getChildModels(activitySelected, new Map());  // @todo consider getChildArray (returns array/map) (one in parameter)
-        //    let newProjectRootNode = this.buildNodeTreeFromActivity(projectSelected);
-        //    await StorageService.create(newProjectRootNode, "node");
     }
 
     async eventProjectDeletedHandler(event) {
@@ -522,18 +500,6 @@ export default class ControllerAT extends Controller {
         this.cacheActivity(createdActivity);
     }
 
-    // async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
-    //     this.cacheActivity(updatedActivity)
-    //     for (let viewedProject of this._playground.viewedProjects) {
-    //         if (viewedProject.isActivityInProject(updatedActivityUrn)) {
-    //             let updatedProject = this.updateTreeWithActivityChange(updatedActivity, viewedProject);
-    //             await StorageService.update(updatedProject, 'node');
-    //         }
-    //     }
-    //     this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
-    //     this.activityLibrary.updateItem(updatedActivity);
-    // }
-
     async commandActivityDeletedHandler(deletedActivityUrn) {
         // If the deleted Activity is the Project's root, then the Project is deleted.
         // @TODO is this a good rule?  Deleting a project for Activity delete is severe.
@@ -559,21 +525,12 @@ export default class ControllerAT extends Controller {
         this._playground.replaceActivityNode(newActivity, replacedActivityUrn);
         this._activityLibrary.replaceItem(newActivity, replacedActivityUrn);                   // Replace Activity list item in activityLibrary
     }
-    // D
-    commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
-        // this.repopulateActivity(createdNodeModel);
-        // this.repopulateProject(createdNodeModel, createdNodeModel.id);
-        // this.repopulateParent(createdNodeModel);
-        // this.repopulateDepth(createdNodeModel);
-        this.repopulateParent(createdNodeModel);
-        this.repopulateActivity(createdNodeModel);
-        this.repopulateProject(createdNodeModel, createdNodeModel.id);
-        this.repopulateDepth(createdNodeModel);
 
-        createdNodeModel.leafCount = createdNodeModel.leafcounter();
+    commandNodeCreatedHandler(createdNodeModel, createdNodeId) {
+        this.addDerivedProjectData(createdNodeModel);
         this.cacheProject(createdNodeModel);
-        this._projectLibrary.addListItem(createdNodeModel);                                        // Add Activity list item to Library
-           // this._playground.addNodeModel(createdNodeModel)
+        this._projectLibrary.addListItem(createdNodeModel);       // Add Activity list item to Library
+        // this._playground.addNodeModel(createdNodeModel)
     }
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
@@ -581,7 +538,7 @@ export default class ControllerAT extends Controller {
         const updatePromises = [];
 
         for (const viewedProject of this._playground.viewedProjects) {
-            let cachedViewedProject = this.fetchProject(viewedProject.id);
+            const cachedViewedProject = this.fetchProject(viewedProject.id);
 
             if (cachedViewedProject.isActivityInProject(updatedActivityUrn)) {
                 const updatedProject = this.updateTreeWithActivityChange(updatedActivity, cachedViewedProject);
@@ -592,18 +549,11 @@ export default class ControllerAT extends Controller {
         this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
- // E
+
     commandNodeUpdatedHandler(updatedNodeModel, updatedNodeId) {
-
-        this.repopulateParent(updatedNodeModel);
-        this.repopulateActivity(updatedNodeModel);
-        this.repopulateProject(updatedNodeModel, updatedNodeModel.id);
-        this.repopulateDepth(updatedNodeModel);
-        console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
-
-        updatedNodeModel.leafCount = updatedNodeModel.leafcounter();
+        this.addDerivedProjectData(updatedNodeModel);
         this.cacheProject(updatedNodeModel);
-
+        console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
         this._playground._refreshPlayground(updatedNodeModel);
         this._projectLibrary.updateItem(updatedNodeModel);
     }
@@ -633,7 +583,6 @@ export default class ControllerAT extends Controller {
     }
 
     gatherAncestorUrns(projectModelId, parentModelId) {
-
         const urnStack = [];
         let nextParentId = parentModelId;
         const projectNode = this.fetchProject(projectModelId);

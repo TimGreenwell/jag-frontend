@@ -10,6 +10,7 @@
 import Popupable from '../utils/popupable.js';
 import UserPrefs from '../utils/user-prefs.js';
 import SvgObject from '../models/svg-object.js';
+import Area from '../models/area.js';
 import Point from '../models/point.js';
 
 class AtPlayground extends Popupable {
@@ -39,8 +40,7 @@ class AtPlayground extends Popupable {
         this.svgCursor = new Point();
         this.panPosition = new Point();
         this.svgLocation = new Point();
-        this.svgSize = {height: 0,
-            width: 0};
+        this.svgSize = new Area();
         this.zoomStep = 0;
         this._zoomFactor = 1.00;   //  PROB NOT NECESSARY
 
@@ -199,13 +199,9 @@ class AtPlayground extends Popupable {
 
     selectEdge(e) {
         this.unselectEverything();
-        const edge = e.target;
-        const edgeSourceId = this.svg.fetchEdgeSourceId(edge);
-        const edgeDestinationId = this.svg.fetchEdgeDestinationId(edge);
-        this._selectedEdge = edge;
-        edge.setAttributeNS(null, `stroke`, `orange`);
+        this._selectedEdge = e.target;
+        this.svg.selectEdge(this._selectedEdge);
     }
-
 
     svgMouseDownEvent(e) {
         // When background is clicked - few things happen:
@@ -216,12 +212,7 @@ class AtPlayground extends Popupable {
         this.unselectEverything();
         this._redrawPlayground();
         const selectedNodeArray = this.selectedNodes;
-        this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
-            detail: {
-                // selectedNodeArray,
-                // unselectedNodeArray
-            }
-        }));
+        this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
 
         // The background clicker - AS SEEN IN TIMEVIEW
         this.windowSize = this.getBoundingClientRect();
@@ -252,14 +243,14 @@ class AtPlayground extends Popupable {
 
     dragNode(e) {
         e.preventDefault();
-        const diffX = this.applyZoom(Math.round(e.x - this.svgCursor.x));
-        const diffY = this.applyZoom(Math.round(e.y - this.svgCursor.y)); // Diff between cursor start and now.
+        const changeX = this.applyZoom(Math.round(e.x - this.svgCursor.x));
+        const changeY = this.applyZoom(Math.round(e.y - this.svgCursor.y)); // Diff between cursor start and now.
 
         this.svgSelectedItems.nodes.forEach((nodeGroup, key) => {
             // A static position can be found as x,y in the nodeModel in selectedItems map
             const id = this.svg.fetchTargetId(nodeGroup);
             const nodeModel = this._selectedNodesMap.get(id);
-            this.svg.modifyTransform(nodeGroup, nodeModel, diffX, diffY);
+            this.svg.modifyTransform(nodeGroup, nodeModel, changeX, changeY);
         });
         this.svgSelectedItems.incomingEdges.forEach((edge) => {
             this.svg.changeDestination(this.svgSelectedItems, edge);
@@ -275,27 +266,28 @@ class AtPlayground extends Popupable {
 
     dragView(e) {
         // The svg dragged by mouse - AS SEEN IN TIMEVIEW
-        const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
-        const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
+        const zoomedBox = new Area();
+        zoomedBox.width = this.applyZoom(this.windowSize.width);
+        zoomedBox.height = this.applyZoom(this.windowSize.height);
         const svgViewSizeX = this.svgSize.width;
         const svgViewSizeY = this.svgSize.height;
 
-        if (zoomedBoxWidth > svgViewSizeX) {
+        if (zoomedBox.width > svgViewSizeX) {
             this.panPosition.x = 0;
         } else {
             const delta = this.applyZoom(this._initialMouse.x - e.clientX);
             this.panPosition.x = Math.min(
                 this.svgLocation.x + delta,
-                svgViewSizeX - zoomedBoxWidth
+                svgViewSizeX - zoomedBox.width
             );
         }
-        if (zoomedBoxHeight > svgViewSizeY) {
+        if (zoomedBox.height > svgViewSizeY) {
             this.panPosition.y = 0;
         } else {
             const delta = this.applyZoom(this._initialMouse.y - e.clientY);
             this.panPosition.y = Math.min(
                 this.svgLocation.y + delta,
-                svgViewSizeY - zoomedBoxHeight
+                svgViewSizeY - zoomedBox.height
             );
         }
         if (this.panPosition.x < 0) {
@@ -360,7 +352,6 @@ class AtPlayground extends Popupable {
 
     stopDraggingNode(e) {
         e.preventDefault();
-        console.log(`mouse uppers`)
         const nodeModelId = this.svg.fetchTargetId(e.target);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModelId);
         nodeGroup.setAttributeNS(null, `cursor`, `grab`);
@@ -461,9 +452,7 @@ class AtPlayground extends Popupable {
 
                     // this._selectedNodesMap.delete(selectedNodeModel.id);
                     this.unselectEverything();
-                    this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
-                        detail: {}
-                    }));
+                    this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
                 }
             } else
             if (this._selectedNodesMap.size > 1) {
@@ -490,9 +479,7 @@ class AtPlayground extends Popupable {
                         this.unselectEverything();
                     }
                 }
-                this.dispatchEvent(new CustomEvent(`event-playground-clicked`, {
-                    detail: {}
-                }));
+                this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
             }
         }
     }
@@ -666,7 +653,6 @@ class AtPlayground extends Popupable {
         for (const project of this._viewedProjectsMap.values()) {
             const findNode = project.findChildById(id);
             if (findNode) {
-                console.log(`found ${findNode.name}`)
                 nodeRetrieved = findNode;
             }
         }
@@ -809,12 +795,10 @@ class AtPlayground extends Popupable {
         }
     }
 
-
     applyZoom(num) {
         const zoomedNum = num + (num * this.zoomStep * 0.05);
         return zoomedNum;
     }
-
 
     /**
      *  Main Construction
@@ -826,10 +810,9 @@ class AtPlayground extends Popupable {
 
 
     _refreshPlayground(projectNodeModel) {
-        console.log(JSON.stringify(projectNodeModel))
         this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);
         this._redrawPlayground();
-
+        // get this working vvvvvvvv
         // this.svg.selectNode(projectNodeModel);
         // if ((projectNodeModel.x === 0) || (!projectNodeModel.y === 0)) {
         //     console.log(`laying them out`)
