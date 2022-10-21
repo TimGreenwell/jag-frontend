@@ -63,7 +63,6 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     const centerGutter = document.createElement(`div`);
     centerGutter.setAttribute(`id`, `center-gutter`);
 
-
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
 
@@ -76,7 +75,6 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     timeview.classList.toggle(`hidden`);
     centerGutter.classList.toggle(`hidden`);
-
 
     body.appendChild(allPanels);
     allPanels.appendChild(menu);
@@ -102,25 +100,6 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     controller.timeview = timeview;
     controller.properties = properties;
     await controller.initialize();
-
-    // The below really belong in the AT Controller - but I need to understand them better
-
-    // ////////////////////////////////////////////////////////////////////
-    // Event: 'refresh' (storage-sync-requested)(?)
-    playground.addEventListener(`refresh`, (e) => {
-        library.refreshItem(e.detail.activity, e.detail.refreshed);
-    });
-    // ////////////////////////////////////////////////////////////////////
-    // Event: 'resources' (???)
-    // graph_service.addEventListener('resources', (e) => {
-    //     library.handleResourceUpdate(e.detail);
-    // });
-    // ////////////////////////////////////////////////////////////////////
-    // Event: 'refresh' (storage-sync-requested)(?)
-    library.addEventListener(`refresh`, (e) => {
-        playground.handleRefresh(e.detail);
-    });
-
 
     function eventToggleTimeviewHandler() {
         centerGutter.classList.toggle(`hidden`);

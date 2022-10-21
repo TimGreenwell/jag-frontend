@@ -42,13 +42,11 @@ class AtPlayground extends Popupable {
         this.svgLocation = new Point();
         this.svgSize = new Area();
         this.zoomStep = 0;
-        this._zoomFactor = 1.00;   //  PROB NOT NECESSARY
 
         // Data objects displayed by the SVG
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
         this._selectedNodesMap = new Map();         // set of ActivityNodes (selected)
         this._selectedEdge = null;                         // single selected edge
-        this._is_edge_being_created = false;
         this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
         this.hasColor = false;
 
@@ -85,6 +83,7 @@ class AtPlayground extends Popupable {
      * addNode (clicking add button)
      * toggleExpand (clicking expand button)
      * eventNodeSelected (clicking node)
+     * selectEdge  (clicking edge)
      * svgMouseDownEvent (clicking background)
      *
      */
@@ -149,10 +148,12 @@ class AtPlayground extends Popupable {
         const id = this.svg.fetchTargetId(e.target);
         const nodeModel = this.retrieveNodeModel(id);
         nodeModel.isExpanded = !nodeModel.isExpanded;
+        if ((nodeModel.isExpanded) && (this._isStacked(nodeModel))) {
+            this.layoutNodes([nodeModel]);
+        }
         this.showExpand(nodeModel);
         this.saveNode(nodeModel);
     }
-
 
     eventNodeSelected(e) {           // on mousedown  applied during jag-node create
         const nodeModelId = this.svg.fetchTargetId(e.target);
@@ -204,17 +205,10 @@ class AtPlayground extends Popupable {
     }
 
     svgMouseDownEvent(e) {
-        // When background is clicked - few things happen:
-        // 1) Everything is unselected - let controller know.
-        // 2) Prepare for panning
-
-        const unselectedNodeArray = this.selectedNodes;
         this.unselectEverything();
         this._redrawPlayground();
-        const selectedNodeArray = this.selectedNodes;
         this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
 
-        // The background clicker - AS SEEN IN TIMEVIEW
         this.windowSize = this.getBoundingClientRect();
         this._initialMouse = {
             x: Math.round(e.clientX),
@@ -231,6 +225,7 @@ class AtPlayground extends Popupable {
      * ---mousemove events
      * linkNodes (drag edge to new child)
      * dragNode (change position of node)
+     * dragView (moving entire graph)
      *
      */
 
@@ -259,10 +254,6 @@ class AtPlayground extends Popupable {
             this.svg.changeSource(this.svgSelectedItems, edge);
         });
     }
-
-    /**
-     * Timeview imported Events
-     */
 
     dragView(e) {
         // The svg dragged by mouse - AS SEEN IN TIMEVIEW
@@ -302,11 +293,13 @@ class AtPlayground extends Popupable {
     /**
      *  Events
      *
-     * ---mouseover / mouseenter / mouseleave / mousewheel events
+     * ---mouseover / mouseenter / mouseleave / mousewheel / mouseup events
      * signalPossibleChild (notify node is possible child during linking of nodes)
      * restoreNormalColor (cancel notification)
      * svgWheelZoomEvent
      * stopDragView
+     * stopDraggingNode (complete dragging node)
+     * finalizeEdge
      */
 
     signalPossibleChild(e) {
@@ -341,15 +334,6 @@ class AtPlayground extends Popupable {
         this.svgLocation.y = this.panPosition.y;
     }
 
-    /**
-     *  Events
-     *
-     * ---mouseup / mouseleave events
-     * stopDraggingNode (complete dragging node)
-     * finalizeEdge
-     *
-     */
-
     stopDraggingNode(e) {
         e.preventDefault();
         const nodeModelId = this.svg.fetchTargetId(e.target);
@@ -379,7 +363,6 @@ class AtPlayground extends Popupable {
         this._playgroundWrapperDiv.removeEventListener(`mouseup`, this._boundStopDraggingNode);
         this._playgroundWrapperDiv.removeEventListener(`mouseleave`, this._boundStopDraggingNode);
     }
-
 
     finalizeEdge(ev) {
         const edge = this.svg.fetchEdgeToCursor();
@@ -417,13 +400,11 @@ class AtPlayground extends Popupable {
         }
     }
 
-
     /**
      *  Events
      *
      * ---keydown events
      * onKeyDown (key pressed - delete node or edge)
-     *
      */
 
     onKeyDown(event) {
@@ -460,11 +441,11 @@ class AtPlayground extends Popupable {
             } else if (this._selectedNodesMap.size < 1) {
                 alert(`Must select at least one item to clear/disconnect`);
             } else {
-                // if the selected node is a root - then clear the project from the tree (manually remove graphics in clearPlayground)
+                // if the selected node is a root - then clear the project from the playground
                 // if the selected node is a non-root node - then disconnect the jag from its parent (triggers DB update which auto redraws graphics)
                 const selectedNodeModel = [...this._selectedNodesMap.values()][0];
                 if (selectedNodeModel.isRoot()) {
-                    this.deleteNodeModel(selectedNodeModel.projectId);
+                    this.clearPlayground(selectedNodeModel.projectId);
                 } else {
                     if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                         const parentActivity = selectedNodeModel.parent.activity;
@@ -490,7 +471,7 @@ class AtPlayground extends Popupable {
      *
      * --- external calls and events
      * toggleColor (complete dragging node)
-     * _handleNewActivityActivityPopup
+     * _handleNewActivityPopup
      * clearPlayground
      * deleteNodeModel
      * _eventImportJagHandler
@@ -500,12 +481,11 @@ class AtPlayground extends Popupable {
 
     toggleColor() {
         this.hasColor = !this.hasColor;
-        console.log(`c`);
         this.unselectEverything();
         this._redrawPlayground();
     }
 
-    _handleNewActivityActivityPopup(e) {
+    _handleNewActivityPopup(e) {
         const $initiator = document.getElementById(`menu-new`);
         this.popup({
             content: AtPlayground.NOTICE_CREATE_JAG,
@@ -528,16 +508,15 @@ class AtPlayground extends Popupable {
     deleteNodeModel(deadId) {
         this._viewedProjectsMap.delete(deadId);
         this._selectedNodesMap.delete(deadId);
-        // this._redrawPlayground();
+        this.clearPlayground(deadId);
     }
-
 
     _eventImportJagHandler(e) {
         const $initiator = document.getElementById(`menu-new`);
         this.popup({
             content: AtPlayground.NOTICE_PASTE_JAG,
             trackEl: this,
-            inputs: {}, // event: e},
+            inputs: {},
             highlights: [$initiator]
         });
     }
@@ -545,7 +524,6 @@ class AtPlayground extends Popupable {
     printSvg(name) {
         this.svg.saveSvg(this._playgroundSvg, name);
     }
-
 
     /**
      *  Utility
@@ -556,7 +534,6 @@ class AtPlayground extends Popupable {
      * shift - move viewed object completely on viewing space
      */
 
-
     screenToSVGCoords(e) {
         // Read the SVG's bounding rectangle...
         const canvasRect = this._playgroundSvg.getBoundingClientRect();
@@ -566,13 +543,6 @@ class AtPlayground extends Popupable {
             y: this.applyZoom(e.clientY - canvasRect.y)
         };
     }
-
-    //
-    // fromClientToPlaygroundCoordinates(x, y) {
-    //     const px = Math.round(x - this.offsetLeft);
-    //     const py = Math.round(y - this.offsetTop);
-    //     return [px, py];
-    // }
 
     translate(node, offset) {
         node.x = node.x + offset.x;
@@ -594,21 +564,11 @@ class AtPlayground extends Popupable {
             workStack.push(project);
             while (workStack.length > 0) {
                 const currentNode = workStack.pop();
-                if (currentNode.x < lowX) {
-                    lowX = currentNode.x;
-                }
-                if (currentNode.x > highX) {
-                    highX = currentNode.x;
-                }
-                if (currentNode.y < lowY) {
-                    lowY = currentNode.y;
-                }
-                if (currentNode.y > highY) {
-                    highY = currentNode.y;
-                }
-                currentNode.children.forEach((child) => {
-                    workStack.push(child);
-                });
+                lowX = Math.min(currentNode.x, lowX);
+                highX = Math.max(currentNode.x, highX);
+                lowY = Math.min(currentNode.y, lowY);
+                highY = Math.max(currentNode.y, highY);
+                workStack.push(...currentNode.children);
             }
 
             if ((lowX < 0) || (lowY < 0)) {
@@ -642,11 +602,10 @@ class AtPlayground extends Popupable {
      */
 
     saveNode(nodeModel) { // @TODO --- saveNode/saveNodes
-        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // event-nodes-updated (or send an array of updates)
+        this.dispatchEvent(new CustomEvent(`event-node-updated`, {    // (or send an array of updates)
             detail: {nodeModel}
         }));
     }
-
 
     retrieveNodeModel(id) {
         let nodeRetrieved;
@@ -658,7 +617,6 @@ class AtPlayground extends Popupable {
         }
         return nodeRetrieved;
     }
-
 
     unselectEverything() {
         this._selectedNodesMap.forEach((value, key) => {
@@ -672,7 +630,6 @@ class AtPlayground extends Popupable {
         this._selectedNodesMap.clear();
     }
 
-
     collapseAll(nodeModel) {
         const edge = this.svg.fetchEdgeTo(nodeModel.id);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
@@ -682,7 +639,6 @@ class AtPlayground extends Popupable {
             this.collapseAll(child);
         });
     }
-
 
     showExpand(nodeModel) {
         nodeModel.children.forEach((child) => {
@@ -704,11 +660,11 @@ class AtPlayground extends Popupable {
      * --- pretty display
      * findLongestAtEachDepth - find longest label at each depth in order to display pretty.
      * xIndentForDepth - determine x-indent to pretty display for each tree depth
-     * redrawSelectedNodes - pretty display the chosen node and its children.  (This works best with the root node)
+     * isStacked - if all children occupy same spot (new and have no location)
+     * layoutNodes - auto-find pretty locations for node and children. Label width -> x ; leafs -> y
      * redrawSvg - handles the zoom and pan of viewport across the SVG content
      * applyZoom
      */
-
 
     findLongestAtEachDepth(rootNode) {
         const depthToLengthArray = [];
@@ -741,8 +697,20 @@ class AtPlayground extends Popupable {
         return indentArray;
     }
 
+    _isStacked(projectNodeModel) {
+        const workStack = [];
+        workStack.push(...projectNodeModel.children);
+        while (workStack.length > 0) {
+            const currentItem = workStack.pop();
+            if ((currentItem.x !== projectNodeModel.x) || (currentItem.y !== projectNodeModel.y)) {
+                return false;
+            }
+            workStack.push(...currentItem.children);
+        }
+        return true;
+    }
 
-    layoutNodes() {
+    layoutNodes(nodeArray = [...this.selectedNodes.values()]) {
         const horizontalMargin = 50;
         let xIndentArray = [];
         let startTreeDepth = 0;
@@ -770,7 +738,9 @@ class AtPlayground extends Popupable {
             }
         }
 
-        this.selectedNodes.forEach((node) => {
+        nodeArray.forEach((node) => {
+            node.x = node.x ? node.x : 0;
+            node.y = node.y ? node.y : 0;
             const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
             xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
             startTreeDepth = node.treeDepth;
@@ -808,16 +778,13 @@ class AtPlayground extends Popupable {
      * buildJointActivityGraph
      */
 
-
     _refreshPlayground(projectNodeModel) {
         this._viewedProjectsMap.set(projectNodeModel.id, projectNodeModel);
         this._redrawPlayground();
-        // get this working vvvvvvvv
-        // this.svg.selectNode(projectNodeModel);
-        // if ((projectNodeModel.x === 0) || (!projectNodeModel.y === 0)) {
-        //     console.log(`laying them out`)
-        //     this.layoutNodes(projectNodeModel);
-        // }
+        if ((projectNodeModel.isExpanded) && (this._isStacked(projectNodeModel))) {
+            this.layoutNodes([projectNodeModel]);
+            this._redrawPlayground();
+        }
     }
 
     _redrawPlayground() {
@@ -831,7 +798,7 @@ class AtPlayground extends Popupable {
             if (!value.isRoot()) {
                 this._viewedProjectsMap.delete(value.id);
             }
-            this.treeHeight = Math.max(this.treeHeight, value.findTreeHeight())
+            this.treeHeight = Math.max(this.treeHeight, value.findTreeHeight());
         });
         const background = this.svg.fetchBackground();
         this.buildJointActivityGraphs(background, this._viewedProjectsMap);
@@ -893,7 +860,6 @@ class AtPlayground extends Popupable {
         if (this._viewedProjectsMap.size > 1) {
             const addButton = this.svg.createAddButton(nodeModel.id, nodeBox.width, nodeBox.height);
             this.svg.applyDepthEffect(addButton, nodeModel.treeDepth, this.treeHeight);
-            // addButton.addEventListener(`mousedown`, this.addNode.bind(this));
             addButton.classList.add(`button`);
             nodeContentGroup.insertBefore(addButton, svgText);
         }
@@ -906,40 +872,6 @@ class AtPlayground extends Popupable {
         });
         return nodeBox;
     }
-
-    // deleteActivity(deletedUrn) {             // Activity got updated - does it affect our projects?
-    //     this._viewedProjectsMap.forEach((value, key) => {
-    //         const node = value;
-    //         if (node.isActivityInProject(deletedUrn)) {
-    //             this.dispatchEvent(new CustomEvent(`response-activity-deleted`, {
-    //                 detail: {
-    //                     projectModelId: node.id,
-    //                     activityUrn: deletedUrn
-    //                 }
-    //             })); // event-activity-created in playground uses node
-    //         }
-    //     });
-    // }
-
-    //
-    // addNodeModel(projectNodeModel) {
-    //     this._viewedProjectsMap.set(projectNodeModel.projectId, projectNodeModel);
-    //     const $rootNode = this._buildNodeViewFromNodeModel(projectNodeModel);
-    //     return $rootNode;
-    // }
-    //
-
-    //
-    // _getNodePreferredHeight(jagNode, jagNodeMap) {
-    //     if (!jagNode.children || jagNode.children.length === 0) {
-    //         return 1;
-    //     }
-    //
-    //     return jagNode.children.reduce((cut_set_size, child) => {
-    //         const def = jagNodeMap.get(child.urn);
-    //         return cut_set_size + (def ? this._getNodePreferredHeight(def, jagNodeMap) : 0);
-    //     }, 0);
-    // }
 
 }
 
@@ -1125,10 +1057,6 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
 
                 const selectedFile = selectedFiles[0];
                 reader.readAsText(selectedFile);
-
-                // for (let file of selectedFiles) {
-                //     reader.readAsText(file);
-                // }
             }
         }
     ]
@@ -1136,13 +1064,6 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
     // fallback: ?
     // skip: ?
 });
-
-
-// AtPlayground.DEFAULT_CARDINAL_MULTIPLIER = 10;
-//
-// AtPlayground.DEFAULT_ARROW_MULTIPLIER = 10;
-//
-// AtPlayground.DEFAULT_ZOOM_MULTIPLIER = 0.9;
 
 customElements.define(`jag-playground`, AtPlayground);
 

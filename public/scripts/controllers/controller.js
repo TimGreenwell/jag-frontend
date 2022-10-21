@@ -4,6 +4,11 @@
  * The common controller contains the code that would normally be present in two or more of the other controllers.
  * This generally includes event-initiated handlers and a few support methods.
  *
+ * The supported controllers include:
+ * controllerAT - The Authoring Tool Controller
+ * controllerDEF - The DefineNode Controller (assigning node operations)
+ * controllerIA - The Interdependency Analysis Controller
+ *
  * @author IHMC
  * @version 0.02
  */
@@ -17,13 +22,13 @@ import InputValidator from "../utils/validation.js";
 import CellModel from "../models/cell.js";
 import Traversal from "../utils/traversal.js";
 
-// noinspection DuplicatedCode, JSUnusedGlobalSymbols
+// noinspection JSUnusedGlobalSymbols
 export default class Controller extends EventTarget {
 
     constructor() {
         super();
         this._activityMap = new Map();       // Activity cache
-        this._projectMap = new Map();        // Node cache
+        this._projectMap = new Map();        // Node cache (By node! Not by JAG)
         this._analysisMap = new Map();       // Analysis cache
         this._currentAnalysis = undefined;   // type: AnalysisModel
     }
@@ -146,7 +151,6 @@ export default class Controller extends EventTarget {
         const newUrn = event.detail.newUrn;
         const URL_RENAME_WARNING_POPUP = `The new URN (${newUrn}) is already associated with a model. Would you like to update the URN to this model? (If not, save will be cancelled.)`;
         // Changing a URN is either a rename/move or a copy or just not allowed.
-        // Proposing we have a 'isLocked' tag.
         // URN changes are renames until the Activity is marked as 'isLocked'.
         // After 'isLocked', URN changes are copies.
 
@@ -155,15 +159,12 @@ export default class Controller extends EventTarget {
         if (isValid) {
             const originalActivity = await StorageService.get(originalUrn, `activity`);  // needed to check if 'isLocked'
             const urnAlreadyBeingUsed = await StorageService.has(newUrn, `activity`);
-            // Is the URN already taken?
             if (urnAlreadyBeingUsed) {
-                // Does user confirm an over-write??
                 if (window.confirm(URL_RENAME_WARNING_POPUP)) {  // @TODO switch userConfirm with checking isLocked ?? ? idk
                     const newActivity = await StorageService.get(originalUrn, `activity`);
 
-                    // is the target Activity locked?
                     if (newActivity.isLocked) {
-                        // FAIL  - CANT OVERWRITE LOCKED Activity
+                        // FAIL  - can not overwrite LOCKED Activity
                     } else { // target Activity is NOT locked
                         // is the original Activity locked?
                         if (originalActivity.isLocked) {
@@ -173,7 +174,7 @@ export default class Controller extends EventTarget {
                         }
                     }
                 } else {  // user says 'no' to overwrite
-                    // FAIL -- NOT OVERWRITING EXISTING Activity
+                    // FAIL -- not overwriting existing Activity
                 }
             } else {  // urn not already being used
                 // is the original Activity locked?
@@ -200,10 +201,12 @@ export default class Controller extends EventTarget {
      *      searchTreeForChildId         - return node by childID
      *
      *      removeAllChildNodes          - generic tree - remove children from parent (1 level deep)
-     *      repopulateActivity           - attach Activity Object (@todo maybe better to just use repeated cache/storage access)
+     *      addDerivedProjectData        - conglomeration of `repopulates`
      *      repopulateParent             - re-parent nodes after structure change
+     *      repopulateActivity           - attach Activity Object (@todo maybe better to just use repeated cache/storage access)
      *      relocateProject              - re-assign projectId after structure change
-     *
+     *      repopulateDepth              - re-assign depth in tree after structure change
+     *      relocateProject              - change all node locations after move
      */
 
 
@@ -382,7 +385,7 @@ export default class Controller extends EventTarget {
         this.repopulateActivity(node);
         this.repopulateProject(node, projectId);      // top specific
         this.repopulateDepth(node);                   // requires parent
-        node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leafcount?)
+        node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leaf count?)
     }
 
     repopulateParent(node) {
@@ -402,18 +405,18 @@ export default class Controller extends EventTarget {
         Traversal.recursePreorder(node, fetchActivitiesCallback);
     }
 
-    repopulateDepth(node) {  // needs accurate parent info.  @TODO rewrite to not require parent info
-        const assignDepthCallback = (node) => {
-            node.setDepth();
-        };
-        Traversal.recursePreorder(node, assignDepthCallback);
-    }
-
     repopulateProject(node, projectId) {
         const assignProjectCallback = (node) => {
             node.projectId = projectId;
         };
         Traversal.iterate(node, assignProjectCallback);
+    }
+
+    repopulateDepth(node) {  // needs accurate parent info.  @TODO rewrite to not require parent info
+        const assignDepthCallback = (node) => {
+            node.setDepth();
+        };
+        Traversal.recursePreorder(node, assignDepthCallback);
     }
 
     relocateProject(node, deltaX, deltaY) {

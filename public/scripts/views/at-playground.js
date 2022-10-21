@@ -458,7 +458,7 @@ class AtPlayground extends Popupable {
      * Handlers for ControllerAT
      *
      * _buildNodeViewFromNodeModel
-     * _handleNewActivityActivityPopup
+     * _handleNewActivityPopup
      * clearPlayground                        - Clears project(s) from playground (@arg: project Id or 'undefined' for all active projects)
      * handleClearSelected (@TODO)
      * handleRefresh
@@ -527,7 +527,7 @@ class AtPlayground extends Popupable {
         return $newViewNode;
     }
 
-    _handleNewActivityActivityPopup(e) {
+    _handleNewActivityPopup(e) {
         const $initiator = document.getElementById(`menu-new`);
         this.popup({
             content: AtPlayground.NOTICE_CREATE_JAG,

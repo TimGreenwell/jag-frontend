@@ -18,6 +18,7 @@ import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
 import ControllerIA from "./controllers/controllerIA.js";
 import UserPrefs from "./utils/user-prefs.js";
+import TimeView from "./views/at-timeview.js";
 
 
 document.addEventListener(`DOMContentLoaded`, async () => {
@@ -41,25 +42,50 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     // Load DOM outer skeleton for Authoring Tool
     const body = document.querySelector(`body`);
+
+    const allPanels = document.createElement(`div`);
+    allPanels.setAttribute(`id`, `all-panels`);
+
     const mainPanels = document.createElement(`div`);
     mainPanels.setAttribute(`id`, `main-panels`);
+
     const leftPanel = document.createElement(`div`);
     leftPanel.setAttribute(`id`, `left-panel`);
+
+    const centerPanel = document.createElement(`div`);
+    centerPanel.setAttribute(`id`, `center-panel`);
+
+    const centerGutter = document.createElement(`div`);
+    centerGutter.setAttribute(`id`, `center-gutter`);
+
     const rightPanel = document.createElement(`div`);
     rightPanel.setAttribute(`id`, `right-panel`);
-    const iaMenu = new IAMenu();
+
     const analysisLibrary = new IAAnalysisLibrary();
     const agentLibrary = new IAAgentLibrary();
+    const iaMenu = new IAMenu();
     const iaTable = new IATable();
     const iaProperties = new IAProperties();
-    body.appendChild(iaMenu);
+    const timeview = new TimeView();
+
+    timeview.classList.toggle(`hidden`);
+    centerGutter.classList.toggle(`hidden`);
+
+    body.appendChild(allPanels);
+    allPanels.appendChild(iaMenu);
+    allPanels.appendChild(mainPanels);
+
     mainPanels.appendChild(leftPanel);
-    leftPanel.appendChild(analysisLibrary);
-    mainPanels.appendChild(iaTable);
+    mainPanels.appendChild(centerPanel);
     mainPanels.appendChild(rightPanel);
+
+    leftPanel.appendChild(analysisLibrary);
+    leftPanel.appendChild(agentLibrary);
+
+    centerPanel.appendChild(iaTable);
+
     rightPanel.appendChild(iaProperties);
-    rightPanel.appendChild(agentLibrary);
-    body.appendChild(mainPanels);
+
 
     controller.analysisLibrary = analysisLibrary;
     controller.iaTable = iaTable;
@@ -72,4 +98,43 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     iaTable.addEventListener(`create-analysis`, () => {
         console.log(`Obsolete?`);
     });
+
+
+    function eventToggleTimeviewHandler() {
+        centerGutter.classList.toggle(`hidden`);
+        timeview.classList.toggle(`hidden`);
+        if (!iaTable.style.height) {
+            iaTable.style.height = `50%`;
+        }
+        const selectedNodes = iaTable.selectedNodes;
+        timeview.refreshTimeview(selectedNodes[0]);
+    }
+    iaMenu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
+
+
+    let isMouseDown = false;
+    function mV(event) {
+        if (isMouseDown) {
+            const change = event.clientY - iaMenu.getBoundingClientRect().height - 35;
+            iaTable.style.height = `${change}px`;
+        } else {
+            // eslint-disable-next-line no-use-before-define
+            end();
+        }
+    }
+    const end = (e) => {
+        isMouseDown = false;
+        document.body.removeEventListener(`mouseup`, end);
+        document.body.removeEventListener(`mousemove`, mV);
+        timeview.refreshTimeview();
+    };
+    function mD(event) {
+        isMouseDown = true;
+        document.body.addEventListener(`mousemove`, mV);
+        document.body.addEventListener(`mouseup`, end);
+    }
+    centerGutter.addEventListener(`mousedown`, mD);
+
+
+
 });

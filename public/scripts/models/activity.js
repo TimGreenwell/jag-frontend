@@ -52,10 +52,6 @@ export default class Activity extends EventTarget {
         this._isLocked = isLocked;
         this._collapsed = collapsed;
 
-        //  this._execution = connector.execution;
-        //  this._returns = connector.returns;
-        //  this._operator = connector.operator;
-
         // The below has not been looked at.
         for (const child of this._children) {
             if (child.annotations) {
@@ -67,7 +63,6 @@ export default class Activity extends EventTarget {
             }
         }
     }
-
 
     get urn() {
         return this._urn;
@@ -169,10 +164,6 @@ export default class Activity extends EventTarget {
     get children() {
         return [...this._children];
     }
-
-    // id: id = uuidV4(),
-    // urn: child.urn,
-    // activity: child
 
     hasChildren() {
         return (this._children.length > 0);

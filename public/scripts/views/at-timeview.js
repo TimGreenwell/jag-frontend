@@ -80,13 +80,10 @@ class AtTimeview extends HTMLElement {
             this.treeHeight = nodeModel.findTreeHeight();
             this.svgSize = this.buildBoxSet(this.svg.fetchBackground(this.id), nodeModel, this.START_X, this.START_Y);
             this.windowSize = this.getBoundingClientRect();
-            // this.syncSizes(nodeModel);
-            // this.createSVG();
             this.redrawSvg();
             this.boxMap.clear(); // ?
         }
     }
-
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
         let svgText;
@@ -97,8 +94,6 @@ class AtTimeview extends HTMLElement {
         box.label = nodeModel.name;
         const labelElement = this.svg.createTextElement(box.label, nodeModel.id);
         const group = this.svg.createSubGroup(nodeModel.id);
-        // const group = document.createElementNS(`http://www.w3.org/2000/svg`, `g`);
-        // group.id = `timegroup:${nodeModel.id}`;
         parentGroup.appendChild(group);
 
         if (nodeModel.hasChildren()) {
@@ -264,49 +259,4 @@ class AtTimeview extends HTMLElement {
 customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);
 
-
-// syncSizes(nodeModel) {  // attempt to size all boxes to maximum.
-//     const box = this.boxMap.get(nodeModel.id);
-//     if (!nodeModel.isRoot()) {
-//         if ((nodeModel.parent._activity.connector.execution === `node.execution.parallel`) ||
-//         (nodeModel.parent._activity.connector.execution === `node.execution.none`) ||
-//         (nodeModel.parent._activity.connector.execution !== `node.execution.sequential`)) {
-//             nodeModel.parent.children.forEach((sibling) => {
-//                 if ((this.boxMap.has(sibling.id))) {    // (nodeModel.id !== sibling.id) &&
-//                     const boxOfSibling = this.boxMap.get(sibling.id);
-//                     console.log(`Comparing ${nodeModel.name} (${box.width}) and ${sibling.name} (${boxOfSibling.width})`);
-//                     if (boxOfSibling.width > box.width) {
-//                         console.log(`Sibling is bigger than me`);
-//                         box.width = boxOfSibling.width;
-//                         this.boxMap.set(nodeModel.id, box);
-//                         const updatedBox = document.getElementById(`timebox:${nodeModel.id}`);
-//                         updatedBox.setAttributeNS(null, `width`, box.width);
-//                     } else if (box.width > boxOfSibling.width) {
-//                         console.log(`I am bigger than sibling`);
-//                         boxOfSibling.width = box.width;
-//                         this.boxMap.set(sibling.id, boxOfSibling);
-//                         const updatedBox = document.getElementById(`timebox:${sibling.id}`);
-//                         updatedBox.setAttributeNS(null, `width`, box.width);
-//                     }
-//                 }
-//             });
-//         }
-//     }
-//     nodeModel.children.forEach((child) => {
-//         if ((nodeModel._activity.connector.execution === `node.execution.parallel`) ||
-//             (nodeModel._activity.connector.execution === `node.execution.none`) ||
-//             (nodeModel._activity.connector.execution !== `node.execution.sequential`)) {
-//             if (this.boxMap.has(child.id)) {
-//                 const boxOfChild = this.boxMap.get(child.id);
-//                 if (boxOfChild.width < box.width - (2 * this.svgParameters.HORIZONTAL_MARGIN)) {
-//                     boxOfChild.width = box.width - (2 * this.svgParameters.HORIZONTAL_MARGIN);
-//                     this.boxMap.set(child.id, boxOfChild);
-//                     const updatedBox = document.getElementById(`timebox:${child.id}`);
-//                     updatedBox.setAttributeNS(null, `width`, box.width);
-//                 }
-//             }
-//         }
-//         this.syncSizes(child);
-//     });
-// }
 

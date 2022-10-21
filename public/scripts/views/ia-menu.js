@@ -80,6 +80,15 @@ customElements.define(`jag-menu`, class extends HTMLElement {
         }.bind(this));
 
 
+        const $timeview = document.createElement(`span`);
+        $timeview.id = `menu-toggle-timeview`;
+        $timeview.classList.add(`menu-item`);
+        $timeview.innerText = `toggle\ntimeview`;
+        $centerLiDiv.appendChild($timeview);
+        $timeview.addEventListener(`click`, function (e) {
+            this.dispatchEvent(new CustomEvent(`event-toggle-timeview`));
+        }.bind(this));
+
         //
         // The right section containing the IHMC logo
         //

@@ -369,7 +369,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _handleExportSvgClick(e) {
         e.stopImmediatePropagation();
         const node = this._nodeModel;
-        this.dispatchEvent(new CustomEvent(`event-exportsvg-jag`, {
+        this.dispatchEvent(new CustomEvent(`event-export-svg`, {
             bubbles: true,
             composed: true,
             detail: {node: this._nodeModel}

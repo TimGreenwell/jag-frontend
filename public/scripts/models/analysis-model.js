@@ -30,8 +30,6 @@ export default class AnalysisModel extends EventTarget {
 
         this._team = undefined;
         this._rootCellModel = undefined;
-        this._teamId = teamId;  //  created when analysis built by user. ControllerIA.buildAnalysisActivityNodes(rootUrn);
-        //  or when click in analysis library
     }
 
 
@@ -132,20 +130,5 @@ export default class AnalysisModel extends EventTarget {
     }
 
 }
-
 AnalysisModel.DEFAULT_NAME = ``;
 AnalysisModel.DEFAULT_DESCRIPTION = ``;
-
-// findNode(id) {
-//     const searchStack = [];
-//     searchStack.push(this._rootCellModel);
-//     while (searchStack.length !== 0) {
-//         const currentNode = searchStack.pop();
-//         if (currentNode.id === id) {
-//             return currentNode;
-//         }
-//         currentNode.children.forEach((child) => {
-//             return searchStack.push(child);
-//         });
-//     }
-// }

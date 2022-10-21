@@ -45,6 +45,16 @@ export default class Cell extends EventTarget {
         this._id = value;
     }
 
+
+    get urn() {
+        return this._urn;
+    }
+
+    set urn(value) {
+        this._urn = value;
+    }
+
+
     get jag() {            // Convenience -- jag matching urn
         return this._jag;
     }
@@ -53,28 +63,12 @@ export default class Cell extends EventTarget {
         this._jag = value;
     }
 
-    get children() {
-        return this._children;
-    }
-
-    set children(childrenArray) {
-        this._children = childrenArray;
-    }
-
     get childId() {
         return this._childId;
     }
 
     set childId(value) {
         this._childId = value;
-    }
-
-    get urn() {
-        return this._urn;
-    }
-
-    set urn(value) {
-        this._urn = value;
     }
 
     get parentUrn() {
@@ -93,6 +87,13 @@ export default class Cell extends EventTarget {
         this._rootUrn = value;
     }
 
+    get children() {
+        return this._children;
+    }
+
+    set children(childrenArray) {
+        this._children = childrenArray;
+    }
 
     get leafCount() {
         return this._leafCount;
@@ -118,6 +119,7 @@ export default class Cell extends EventTarget {
         this._collapsed = value;
     }
 
+
     // /////////////////////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////// Supporting Functions  ////////////////////////////////
     // /////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +129,7 @@ export default class Cell extends EventTarget {
         const matchStack = [];
         const workStack = [];
 
-        workStack.push(this);
+        workStack.push(this);                            // is a cell a nodemodel
         while (workStack.length > 0) {
             const nodeModel = workStack.pop();
             if (nodeModel._urn === urn) {

@@ -48,10 +48,17 @@ export default class TeamModel extends EventTarget {
         this._agentIds = value;
     }
 
+    get performerIds() {
+        return this._performerIds;
+    }
+
+    set performerIds(value) {
+        this._performerIds = value;
+    }
+
     get agents() {
         return this._agents;
     }
-
 
     set agents(value) {
         this._agents = value;
