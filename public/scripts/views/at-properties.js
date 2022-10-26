@@ -844,6 +844,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         });
 
         // We can also opt to accept any output with a matching name based on all available outputs.
+
         if (this._nodeModel.activity.inputs.length > 0 && this._nodeModel.activity.children.length > 0) {
             const output_properties = new Set();
             const any_outputs = new Set();
@@ -851,10 +852,24 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             for (const input of this._nodeModel.activity.inputs) {
                 output_properties.add(input.name);
             }
+            //
+            //  need to include this -- tlg
+            //
+            // for (const child of this._nodeModel.activity.children) {
+            //     if (child.nodeModel.activity) {
+            //         child.nodeModel.activity.outputs.forEach((child_output) => {
+            //             if (output_properties.has(child_output.name)) {
+            //                 any_outputs.add(child_output);
+            //             } else {
+            //                 output_properties.add(child_output.name);
+            //             }
+            //         });
+            //     }
+            // }
 
-            for (const child of this._nodeModel.activity.children) {
-                if (child.nodeModel.activity) {
-                    child.nodeModel.activity.outputs.forEach((child_output) => {
+            for (const child of this._nodeModel.children) {
+                if (child.activity) {
+                    child.activity.outputs.forEach((child_output) => {
                         if (output_properties.has(child_output.name)) {
                             any_outputs.add(child_output);
                         } else {
@@ -863,6 +878,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     });
                 }
             }
+////////////////////// above is experimental ..........
+
 
             if (any_outputs.size > 0) {
                 options.push({
