@@ -15,9 +15,37 @@ jag-properties {
 
 jag-properties #property-container {
     flex-basis: auto;
+    flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
 }
+jag-properties #activity-container {
+    flex-basis: auto;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    padding-bottom: 0.5em;
+    border: 1px solid black;
+
+}
+jag-properties #node-container {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    padding-bottom: 0.5em;
+    border: 1px solid black;
+}
+
+jag-properties .property-item {
+    flex-direction: column;
+    /*padding-left: 0.2em;*/
+    /*padding-right: 0.2em;*/
+    /*padding-bottom: 0.5em;*/
+    }
 
 jag-properties textarea {
     width: 100%;
@@ -25,7 +53,7 @@ jag-properties textarea {
 
 /*the space between items*/
 jag-properties div {
-    padding: 0.75em;
+
 }
 
 jag-properties .special {
@@ -39,29 +67,11 @@ jag-properties #childOf {
     color: white;
 }
 
-/*jag-properties  #undefined-jag{  !* was #undefinedJAG *!*/
-/*    background-color: red;*/
-/*    color: white;*/
-/*}*/
-
-/*jag-properties #leaf-node {*/
-/*    background-color: green;*/
-/*    color: white;*/
-/*}*/
-
 /*jag-properties div {*/
 /*    display: flex;*/
 /*    flex: 1;*/
 /*}*/
 
-/*jag-properties .direct-property .special-wrapper {*/
-/*    display: flex;*/
-/*    flex: 1;*/
-/*}*/
-
-/*jag-properties:not(.defined-model) .direct-property {*/
-/*    box-shadow: 0px 0px 5px red;*/
-/*}*/
 
 jag-properties:not(.root-node) input.contextual {
     box-shadow: 0px 3px 5px blue;
@@ -70,14 +80,6 @@ jag-properties:not(.root-node) input.contextual {
 jag-properties.root-node .child-of-notice {
     display: none;
 }
-
-/*jag-properties.defined-model .undefined-jag-notice {*/
-/*    display: none;*/
-/*}*/
-
-/*jag-properties.non-leaf-node .leaf-node-notice {*/
-/*    display: none;*/
-/*}*/
 
 jag-properties div label {
     width: 8em;

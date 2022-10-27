@@ -8,6 +8,7 @@ class FormUtils {
 
     static createPropertyElement(id, name) {
         const element = document.createElement(`div`);
+        element.className = `proptery-item`;
         const label = document.createElement(`label`);
         label.setAttribute(`for`, id);
         label.innerHTML = name;
