@@ -22,7 +22,9 @@ export default class Activity extends EventTarget {
             operator: Activity.OPERATOR.NONE.name,
             onfail: Activity.RETURNS.NONE.name
         },
+        inConnectors = [],
         inputs = [],
+        outConnectors = [],
         outputs = [],
         children = [],
         bindings = [],
@@ -39,8 +41,9 @@ export default class Activity extends EventTarget {
         this._name = name;
         this._description = description;
         this._connector = connector;
-
+        this._inConnectors = inConnectors,
         this._inputs = inputs ? [...inputs] : [];
+        this._outConnectors = outConnectors,
         this._outputs = outputs ? [...outputs] : [];
         this._children = children ? [...children] : [];
         this._bindings = new Set(bindings);
@@ -62,6 +65,7 @@ export default class Activity extends EventTarget {
                 child.annotations = annotations;
             }
         }
+        this._inConnectors = inConnectors;
     }
 
     get urn() {
@@ -142,6 +146,18 @@ export default class Activity extends EventTarget {
         this._inputs.push(input);
     }
 
+    set inConnectors(value) {
+        this._inConnectors = value;
+    }
+
+    get inConnectors() {
+        return this._inConnectors;
+    }
+
+    addInConnector(inConnector) {
+        this._inConnectors.push(inConnector);
+    }
+
     set outputs(value) {
         this._outputs = value;
     }
@@ -153,6 +169,19 @@ export default class Activity extends EventTarget {
     addOutput(output) {
         this._outputs.push(output);
     }
+
+    set outConnectors(value) {
+        this._outConnectors = value;
+    }
+
+    get outConnectors() {
+        return this._outConnectors;
+    }
+
+    addOutConnector(outConnector) {
+        this._outConnectors.push(outConnector);
+    }
+
 
     set children(value) {
         this._children = value;
@@ -316,13 +345,16 @@ export default class Activity extends EventTarget {
             };
         });
 
+
+        console.log(`looking for input options --------------------`)
         if (this.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
             for (const child of this._children) {
                 if (child.id === id) {
                     break;
                 }
-
+console.log(`well,`)
                 if (child.activity) {
+                    console.log(`good`)
                     const child_outputs = child.activity.outputs;
 
                     for (const child_output of child_outputs) {
@@ -333,6 +365,9 @@ export default class Activity extends EventTarget {
                             type: child_output.type
                         });
                     }
+                }
+                else {
+                    console.log(`crap`)
                 }
             }
         }

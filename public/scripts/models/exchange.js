@@ -9,14 +9,16 @@
 
 import RouteEndpoint from "./route-endpoint";
 
-export default class Message extends EventTarget {
+export default class Exchange extends EventTarget {
 
     constructor({
         body,
         messageType,                           // command, document
+        mep,                                   // fireAndForget or waitForReply   ??
         callback,                              // function to run on command - or unmarshalling function
         senderId,                              // from
         destinationId,                         // to
+        priority,                               // use-specific
         dateCreated = new Date(),         // when first created (mostly for tracking/monitoring)
         lastRedirection = new Date(),     // lastTimeSent -- might switch to sequenceNumber
         dateExpiration = new Date(),      // time to invalidate and error
@@ -30,6 +32,7 @@ export default class Message extends EventTarget {
         this._callback = callback;
         this._senderId = senderId;
         this._destinationId = destinationId;
+        this._priority = priority;
         this._dateCreated = dateCreated;
         this._lastRedirection = lastRedirection;
         this._dateExpiration = dateExpiration;
@@ -78,6 +81,15 @@ export default class Message extends EventTarget {
 
     set destinationId(value) {
         this._destinationId = value;
+    }
+
+
+    get priority() {
+        return this._priority;
+    }
+
+    set priority(value) {
+        this._priority = value;
     }
 
     get dateCreated() {

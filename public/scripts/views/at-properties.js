@@ -367,7 +367,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     handleStorageUpdate(newActivity, newActivityUrn) {
-        if (newActivityUrn === this._$urnInput) {
+        // if (newActivityUrn === this._$urnInput) {
+        if (newActivityUrn === this._focusNode.activity.urn) {
             this._focusNode.activity = newActivity;
             this._updateProperties();
         }
@@ -449,7 +450,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _updateIO() {
         this._clearIO();
 
-        // Create node input panel
+        // Creates the list of inputs under `Inputs   +`
         for (const input of this._focusNode.activity.inputs) {
             const input_id = `${input.name}-inputs-property`;
             this._addInputElement(input_id, input.name);
@@ -514,6 +515,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             // Add handler for change in output select element
             output_select_el.addEventListener(`change`, function (e) {
+                console.log("DETECTED CHANGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 const output_option = e.target.selectedOptions[0];
 
                 const valid_input_values_for_output = new Set();
@@ -685,32 +687,35 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _addInput(e) {
-        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
+        if (this._focusNode) {
             const name = window.prompt(`Input name`);
-            if (name === null) {
+            if (name === ``) {
                 return;
             }
-
             const type = window.prompt(`Input type`);
-            if (type === null) {
+            if (type === ``) {
                 return;
             }
-
             const input = {name,
                 type};
             this._focusNode.activity.addInput(input);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
         }
     }
 
     _addOutput(e) {
         if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
             const name = window.prompt(`Output name`);
-            if (name === null) {
+            if (name === ``) {
                 return;
             }
 
             const type = window.prompt(`Output type`);
-            if (type === null) {
+            if (type === ``) {
                 return;
             }
 
@@ -718,6 +723,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 type};
 
             this._focusNode.activity.addOutput(output);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
         }
     }
 
