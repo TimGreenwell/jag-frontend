@@ -19,7 +19,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode = undefined;
         this._producesMap = new Map();  // ?
         this._consumesMap = new Map();  // ?
-
         this._initUI();
     }
 
@@ -212,6 +211,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._exportSvg.addEventListener(`click`, this._handleExportSvgClick.bind(this));
     }
 
+
     _handleNameChange(e) {
         e.stopImmediatePropagation();
         if (this._focusNode) {
@@ -269,7 +269,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-
     _handleDescriptionChange(e) {
         e.stopImmediatePropagation();
         if ((this._focusNode) && (this._focusNode.activity)) {
@@ -321,6 +320,106 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
+    _handleExportClick(e) {
+        e.stopImmediatePropagation();
+        const node = this._focusNode;
+        this.dispatchEvent(new CustomEvent(`event-export-jag`, {
+            bubbles: true,
+            composed: true,
+            detail: {node: this._focusNode}
+        }));
+    }
+
+    _handleExportSvgClick(e) {
+        e.stopImmediatePropagation();
+        const node = this._focusNode;
+        this.dispatchEvent(new CustomEvent(`event-export-svg`, {
+            bubbles: true,
+            composed: true,
+            detail: {node: this._focusNode}
+        }));
+    }
+
+    /**
+     *  _updateProperties
+     *  _enableProperties - Property entries are turned on and flags displayed
+     *  _clearProperties
+     */
+
+
+    _updateProperties() {
+        this._$urnInput.value = this._focusNode.activity.urn;
+        this._$nameInput.value = this._focusNode.activity.name;
+        this._$executionSelect.value = this._focusNode.activity.connector.execution || `none`;
+        this._$operatorSelect.value = this._focusNode.activity.operator || `none`;
+        this._$descInput.value = this._focusNode.activity.description;
+        this._$name_ctxInput.value = this._focusNode.contextualName;
+        this._$desc_ctxInput.value = this._focusNode.contextualDescription;
+        this._enableProperties(true);
+        this._updateIO();
+        this._updateAnnotations();
+        for (const input of this.querySelectorAll(`input`)) {
+            input.title = input.value;
+            input.onchange = () => {
+                input.title = input.value;
+                return input.title;
+            };
+        }
+    }
+
+    _enableProperties(enabled) {
+        this._$urnInput.disabled = !enabled;
+        this._$nameInput.disabled = !enabled;
+        this._$descInput.disabled = !enabled;
+        this._$name_ctxInput.disabled = !enabled;
+        this._$desc_ctxInput.disabled = !enabled;
+        this._$executionSelect.disabled = !enabled;
+        this._$operatorSelect.disabled = !enabled;
+
+        this._consumesMap.disabled = !enabled;
+        this._producesMap.disabled = !enabled;
+        this._export.disabled = !enabled;
+        this._exportSvg.disabled = !enabled;
+
+        if (this._focusNode && (enabled)) {
+            // if (this._focusNode.parent) {
+            //     this._childOf.innerHTML = `As child of ${this._focusNode.parent.urn}`;
+            // }
+            this.classList.toggle(`root-node`, false);
+            this._$name_ctxInput.disabled = false;
+            this._$desc_ctxInput.disabled = false;
+        } else {
+            this.classList.toggle(`root-node`, true);
+            this._$name_ctxInput.disabled = true;
+            this._$desc_ctxInput.disabled = true;
+        }
+        // tlg 9 sep
+        // if (enabled || (!enabled && !this._focusNode)) {
+        //     this.classList.toggle(`defined-model`, true);   // This block useful?
+        //     this.classList.toggle(`non-leaf-node`, true);
+        // }
+    }
+
+    _clearProperties() {
+        this._$urnInput.value = ``;
+        this._$nameInput.value = ``;
+        this._$descInput.value = ``;
+        this._$name_ctxInput.value = ``;
+        this._$desc_ctxInput.value = ``;
+        this._$executionSelect.value = Activity.EXECUTION.NONE.name;
+        this._$operatorSelect.value = Activity.OPERATOR.NONE.name;
+
+        this._$urnInput.classList.toggle(`edited`, false);
+
+        this._clearIO();
+        this._clearAnnotations();
+
+        for (const input of this.querySelectorAll(`input`)) {
+            input.title = ``;
+        }
+    }
+
+
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
         if (this._focusNode) {
@@ -346,26 +445,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
 
-    _handleExportClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._focusNode;
-        this.dispatchEvent(new CustomEvent(`event-export-jag`, {
-            bubbles: true,
-            composed: true,
-            detail: {node: this._focusNode}
-        }));
-    }
-
-    _handleExportSvgClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._focusNode;
-        this.dispatchEvent(new CustomEvent(`event-export-svg`, {
-            bubbles: true,
-            composed: true,
-            detail: {node: this._focusNode}
-        }));
-    }
-
     handleStorageUpdate(newActivity, newActivityUrn) {
         // if (newActivityUrn === this._$urnInput) {
         if (newActivityUrn === this._focusNode.activity.urn) {
@@ -374,63 +453,51 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-
-    // Called by user selecting one or more Nodes in the playground
-
     // noinspection JSUnusedGlobalSymbols
-    handleSelectionUpdate(selection) {       // (selectedNodeArray)
-        // if (this._focusNode) {
-        //     this._focusNode.removeEventListener(`update`, this._boundUpdate);
-        //     //  this._node = undefined;
-        //     this._focusNode = undefined;
-        // }
+    handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
+        console.log(selection);
         this._clearProperties();
         if (selection.length === 1) {
             const selectedNodeModel = selection[0];
             this._focusNode = selectedNodeModel;
             this._updateProperties();
-            // this._focusNode.addEventListener(`update`, this._boundUpdate);
-            //    }
         } else {
             this._enableProperties(false);
         }
     }
 
-    handleSelectionUnselected() {
+    handleSelectionUnselected() {              // ===> Called my ControllerAT
         this._clearProperties();
         this._enableProperties(false);
     }
 
 
-    // @TODO Add a button to properties to delete the Jag. --
-    // @TODO Same for 'publish'/'lock'
-    deleteActivity(deadActivity) {
-        this._focusNode.activity = undefined;
-        this._$urnInput.classList.toggle(`edited`, false);
-        this._clearProperties();
-        this.dispatchEvent(new CustomEvent(`event-activity-deleted`, {
-            detail: {urn: deadActivity.urn}
-        }));
-    }
+    // // @TODO Add a button to properties to delete the Jag. --
+    // // @TODO Same for 'publish'/'lock'
+    // deleteActivity(deadActivity) {
+    //     this._focusNode.activity = undefined;
+    //     this._$urnInput.classList.toggle(`edited`, false);
+    //     this._clearProperties();
+    //     this.dispatchEvent(new CustomEvent(`event-activity-deleted`, {
+    //         detail: {urn: deadActivity.urn}
+    //     }));
+    // }
 
-    cloneActivity(sourceActivity, newURN) {
-        const description = sourceActivity.toJSON();
-        description.urn = newURN;
-        const newActivity = Activity.fromJSON(description);
-        // Update activity references.
-        this._node.activity = newActivity; // ?
-        this._focusNode.activity = newActivity;
-        this.dispatchEvent(new CustomEvent(`event-activity-created`, {
-            bubbles: true,
-            composed: true,
-            detail: {activityConstruct: newActivity}
-        }));    // event-activity-created in playground uses components
-        // await StorageService.create(newActivity, 'activity');
-        // Remove unsaved box shadow on URN property input.
-        this._$urnInput.classList.toggle(`edited`, false);
-
-        //  WHEN GOOD -->             this._focusNode.activity.url = this._$urnInput.value;
-    }
+    // cloneActivity(sourceActivity, newURN) {
+    //     const description = sourceActivity.toJSON();
+    //     description.urn = newURN;
+    //     const newActivity = Activity.fromJSON(description);
+    //     // Update activity references.
+    //     this._node.activity = newActivity; // ?
+    //     this._focusNode.activity = newActivity;
+    //     this.dispatchEvent(new CustomEvent(`event-activity-created`, {
+    //         bubbles: true,
+    //         composed: true,
+    //         detail: {activityConstruct: newActivity}
+    //     }));    // event-activity-created in playground uses components
+    //     // Remove unsaved box shadow on URN property input.
+    //     this._$urnInput.classList.toggle(`edited`, false);
+    // }
 
 
     /**
@@ -515,7 +582,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             // Add handler for change in output select element
             output_select_el.addEventListener(`change`, function (e) {
-                console.log("DETECTED CHANGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                console.log(`DETECTED CHANGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
                 const output_option = e.target.selectedOptions[0];
 
                 const valid_input_values_for_output = new Set();
@@ -686,6 +753,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
+
     _addInput(e) {
         if (this._focusNode) {
             const name = window.prompt(`Input name`);
@@ -810,8 +878,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _findInputOptions() {
-        // We can "input" a value into any of this node's children's inputs.
-        const options = this._focusNode.activity.getAvailableInputs();
+        // We can "input" a value into any of this node's (actually activity's) children's inputs.
+        const options = this.getAvailableInputs(this._focusNode);
 
         // We can also "input" a value to this node's outputs.
         if (this._focusNode.activity.outputs.length > 0) {
@@ -823,6 +891,27 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
 
         return options;
+    }
+
+
+    /**
+     * Gets the ID, Activity, property name and type of all inputs of children of this Activity.
+     *
+     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
+     */
+    getAvailableInputs(node) {
+        const availableInputs = [];
+
+        this._focusNode.children.forEach((child) => {
+            if (child.activity.inputs.length > 0) {
+                availableInputs.push({
+                    id: child.id,
+                    activity: child.activity,
+                    inputs: child.activity.inputs
+                });
+            }
+        });
+        return availableInputs;
     }
 
     _findOutputOptions() {
@@ -877,7 +966,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     });
                 }
             }
-////////////////////// above is experimental ..........
+            // //////////////////// above is experimental ..........
 
 
             if (any_outputs.size > 0) {
@@ -1052,85 +1141,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _clearAnnotations() {
         while (this._annotations.firstChild) {
             this._annotations.removeChild(this._annotations.firstChild);
-        }
-    }
-
-    /**
-     *  _updateProperties
-     *  _enableProperties - Property entries are turned on and flags displayed
-     *  _clearProperties
-     */
-
-
-    _updateProperties() {
-        this._$urnInput.value = this._focusNode.activity.urn;
-        this._$nameInput.value = this._focusNode.activity.name;
-        this._$executionSelect.value = this._focusNode.activity.connector.execution || `none`;
-        this._$operatorSelect.value = this._focusNode.activity.operator || `none`;
-        this._$descInput.value = this._focusNode.activity.description;
-        this._$name_ctxInput.value = this._focusNode.contextualName;
-        this._$desc_ctxInput.value = this._focusNode.contextualDescription;
-        this._enableProperties(true);
-        this._updateIO();
-        this._updateAnnotations();
-        for (const input of this.querySelectorAll(`input`)) {
-            input.title = input.value;
-            input.onchange = () => {
-                input.title = input.value;
-                return input.title;
-            };
-        }
-    }
-
-    _enableProperties(enabled) {
-        this._$urnInput.disabled = !enabled;
-        this._$nameInput.disabled = !enabled;
-        this._$descInput.disabled = !enabled;
-        this._$name_ctxInput.disabled = !enabled;
-        this._$desc_ctxInput.disabled = !enabled;
-        this._$executionSelect.disabled = !enabled;
-        this._$operatorSelect.disabled = !enabled;
-
-        this._consumesMap.disabled = !enabled;
-        this._producesMap.disabled = !enabled;
-        this._export.disabled = !enabled;
-        this._exportSvg.disabled = !enabled;
-
-        if (this._focusNode && (enabled)) {
-            // if (this._focusNode.parent) {
-            //     this._childOf.innerHTML = `As child of ${this._focusNode.parent.urn}`;
-            // }
-            this.classList.toggle(`root-node`, false);
-            this._$name_ctxInput.disabled = false;
-            this._$desc_ctxInput.disabled = false;
-        } else {
-            this.classList.toggle(`root-node`, true);
-            this._$name_ctxInput.disabled = true;
-            this._$desc_ctxInput.disabled = true;
-        }
-        // tlg 9 sep
-        // if (enabled || (!enabled && !this._focusNode)) {
-        //     this.classList.toggle(`defined-model`, true);   // This block useful?
-        //     this.classList.toggle(`non-leaf-node`, true);
-        // }
-    }
-
-    _clearProperties() {
-        this._$urnInput.value = ``;
-        this._$nameInput.value = ``;
-        this._$descInput.value = ``;
-        this._$name_ctxInput.value = ``;
-        this._$desc_ctxInput.value = ``;
-        this._$executionSelect.value = Activity.EXECUTION.NONE.name;
-        this._$operatorSelect.value = Activity.OPERATOR.NONE.name;
-
-        this._$urnInput.classList.toggle(`edited`, false);
-
-        this._clearIO();
-        this._clearAnnotations();
-
-        for (const input of this.querySelectorAll(`input`)) {
-            input.title = ``;
         }
     }
 

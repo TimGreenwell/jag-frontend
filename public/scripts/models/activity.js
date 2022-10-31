@@ -375,27 +375,7 @@ console.log(`well,`)
         return availableInputs;
     }
 
-    /**
-     * Gets the ID, Activity, property name and type of all inputs of children of this Activity.
-     *
-     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
-     */
-    getAvailableInputs() {
-        const availableInputs = [];
 
-        for (const child of this._children) {
-            if (child.activity) {
-                if (child.activity.inputs.length > 0) {
-                    availableInputs.push({
-                        id: child.id,
-                        activity: child.activity,
-                        inputs: child.activity.inputs
-                    });
-                }
-            }
-        }
-        return availableInputs;
-    }
 
     /**
      * Gets the ID, Activity, property name and type of all outputs of children of this Activity.

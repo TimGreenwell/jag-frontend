@@ -105,11 +105,11 @@ export default class ControllerAT extends Controller {
         this._playground.addEventListener(`event-playground-clicked`, this.eventPlaygroundClickedHandler.bind(this));       // user deselects by clicking background
         this._playground.addEventListener(`event-import-jag`, this.eventImportJagHandler.bind(this));                       // popup to import JAG JSON
 
-        this._properties.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
-        this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
-        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file as JSON
+        this._properties.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this)); //          // Activity property updates
+        this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this)); //                  // Node property updates (contextual)
+        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));  //                     // button to export JAG and Activities to file as JSON
         this._properties.addEventListener(`event-export-svg`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
-        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
+        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this)); //                    // URN changed - rename or clone actions
 
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
