@@ -116,7 +116,7 @@ jag-properties div > input.binding, jag-properties .annotation.descriptor input 
 }
 
 jag-properties #bindings-property select, jag-properties div:not(.descriptor) > input.annotation {
-    width: 45%;
+    width: 100%;
 }
 
 jag-properties #annotations-property input[type="checkbox"] {

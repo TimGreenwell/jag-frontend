@@ -377,28 +377,7 @@ console.log(`well,`)
 
 
 
-    /**
-     * Gets the ID, Activity, property name and type of all outputs of children of this Activity.
-     *
-     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Outputs of children of this Activity.
-     */
-    getAvailableOutputs() {
-        const availableOutputs = [];
 
-        for (const child of this._children) {
-            if (child.activity) {
-                if (child.activity.outputs.length > 0) {
-                    availableOutputs.push({
-                        id: child.id,
-                        activity: child.activity,
-                        outputs: child.activity.outputs
-                    });
-                }
-            }
-        }
-
-        return availableOutputs;
-    }
 
 
     /**

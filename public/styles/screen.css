@@ -75,8 +75,8 @@ body #left-panel {
     flex-shrink: 0;
     flex-basis: content;
     max-height: 100%;
-    width: 160px;
-    max-width: 160px;
+    width: 240px;
+    max-width: 240px;
 }
 
 body #center-panel {
@@ -96,8 +96,8 @@ body #right-panel {
     flex-shrink: 0;
     flex-basis: content;
     height: 100%;
-    max-width: 160px;
-    width: 160px;
+    max-width: 240px;
+    width: 240px;
 }
 
 h1, h2, h3, h4, span, p, input, select, ol, ul, li {

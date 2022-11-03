@@ -457,7 +457,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
         console.log(selection);
         this._clearProperties();
-        if (selection.length === 1) {
+        if (selection.length > 0) {
             const selectedNodeModel = selection[0];
             this._focusNode = selectedNodeModel;
             this._updateProperties();
@@ -508,9 +508,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      *  _addInputElement
      *  _addOutputElement
      *  _createBindingInputs
-     *  _createBindingOutputs
-     *  _findInputOptions
-     *  _findOutputOptions
+     *  _createRouteStart
+     *  _findAllInputOptions
+     *  _findAllOutputOptions
+     *  _findFilteredInputOptions
+     *  _findFilteredOutputOptions
      */
 
 
@@ -530,31 +532,38 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
 
         // Create binding panel
-        const output_options = this._findOutputOptions();
-        const input_options = this._findInputOptions();
+        const outputOptions = this._findAllOutputOptions();
+        const inputOptions = this._findAllInputOptions();
+        const startEndpointOptions = [...inputOptions, ...outputOptions];
 
-        if (output_options.length > 0 && input_options.length > 0) {
-            // Create input and output select elements
-            const output_select_el = this._createBindingOutputs(output_options);
-            const input_select_el = this._createBindingInputs(input_options);
-
+        if (outputOptions.length > 0 && inputOptions.length > 0) {
             // Create new binding panel
-            const newBindingPanel = document.createElement(`div`);
+            const $bindingPanel = document.createElement(`div`);
+            // Create input and output select elements
 
-            const arrow_el = document.createElement(`span`);
-            arrow_el.innerHTML = `&#x2192;`;
-            arrow_el.className = `binding arrow`;
+            const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
+            const $destinationEndpointSelect = this._createBindingInputs(startEndpointOptions);
 
-            newBindingPanel.appendChild(output_select_el);
-            newBindingPanel.appendChild(arrow_el);
-            newBindingPanel.appendChild(input_select_el);
+            const $arrow = document.createElement(`span`);
+            $arrow.innerHTML = `&#x2192;`;
+            $arrow.className = `binding arrow`;
 
-            const newButton = document.createElement(`button`);
-            newButton.id = `new-binding`;
-            newButton.innerHTML = `Bind`;
-            newButton.addEventListener(`click`, function (e) {
-                const output_option = output_select_el.selectedOptions[0];
-                const input_option = input_select_el.selectedOptions[0];
+
+            const $bindButton = document.createElement(`button`);
+            $bindButton.id = `new-binding`;
+            $bindButton.innerHTML = `Bind`;
+
+
+            $bindingPanel.appendChild($startEndpointSelect);
+            // $bindingPanel.appendChild($arrow);
+            // $bindingPanel.appendChild($destinationEndpointSelect);
+            $bindingPanel.appendChild($bindButton);
+            this._bindings.appendChild($bindingPanel);
+
+            // Binding Events - bindButton, selectChanges
+            $bindButton.addEventListener(`click`, function (e) {
+                const output_option = $destinationEndpointSelect.selectedOptions[0];
+                const input_option = $startEndpointSelect.selectedOptions[0];
 
                 if (output_option && input_option) {
                     const provider = output_option.value.split(`:`);
@@ -571,17 +580,36 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         }
                     });
 
-                    output_select_el.value = undefined;
-                    input_select_el.value = undefined;
+                    $destinationEndpointSelect.value = undefined;
+                    $startEndpointSelect.value = undefined;
                 }
             }.bind(this));
 
-            newBindingPanel.appendChild(newButton);
 
-            this._bindings.appendChild(newBindingPanel);
+            $startEndpointSelect.addEventListener(`change`, function (e) {
+                console.log(`I see a change MAMMA`);
+                const input_option = Array.from(e.target.selectedOptions);  // HTMLCollection
+                console.log(input_option);
+                input_option.forEach((selectedOption) => {
+                    if (selectedOption) {
+                        const startEndpointName =  selectedOption.value.split(`:`)[0];
+                        const startEndpointType = selectedOption.value.split(`:`)[1];
+                        console.log(startEndpointName)
+                        console.log(startEndpointType)
+
+
+
+                        // TODO: Check if types match selected output type (probably as a .filter before .map)
+                        const valid_for_input = new Set(this._focusNode.activity.inputsTo(consumer[0]).map((output) => {
+                            return `${output.id}:${output.property}`;
+                        }));
+                        FormUtils.toggleSelectValues($destinationEndpointSelect, valid_for_input);
+                    }
+                });
+            }.bind(this));
 
             // Add handler for change in output select element
-            output_select_el.addEventListener(`change`, function (e) {
+            $destinationEndpointSelect.addEventListener(`change`, function (e) {
                 console.log(`DETECTED CHANGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
                 const output_option = e.target.selectedOptions[0];
 
@@ -597,7 +625,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
                     // TODO: Check if type matches selected output type (probably need to get output type first)
                     if (provider[0] == `this`) {
-                        for (const option of input_select_el.options) {
+                        for (const option of $startEndpointSelect.options) {
                             valid_input_values_for_output.add(option.value);
                         }
                     } else {
@@ -648,24 +676,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         }
                     }
 
-                    FormUtils.toggleSelectValues(input_select_el, valid_input_values_for_output);
+                    FormUtils.toggleSelectValues($startEndpointSelect, valid_input_values_for_output);
                 }
 
                 this._previous_value = output_option.value;
-            }.bind(this));
-
-            input_select_el.addEventListener(`change`, function (e) {
-                const input_option = e.target.selectedOptions[0];
-
-                if (input_option) {
-                    const consumer = input_option.value.split(`:`);
-
-                    // TODO: Check if types match selected output type (probably as a .filter before .map)
-                    const valid_for_input = new Set(this._focusNode.activity.inputsTo(consumer[0]).map((output) => {
-                        return `${output.id}:${output.property}`;
-                    }));
-                    FormUtils.toggleSelectValues(output_select_el, valid_for_input);
-                }
             }.bind(this));
         }
 
@@ -812,23 +826,25 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _createBindingInputs(options) {
-        const select_el = FormUtils.createSelect(`binding-inputs`, options.map((node) => {
+        console.log(`options:`);
+        console.log(options);
+        const $bindingSelect = FormUtils.createSelect(`binding-inputs`, options.map((node) => {
             let label = node.id;
-            if (node.id != `this`) {
-                label = node.nodeModel.activity.name;
-                const order = this._focusNode.activity.getOrderForId(node.id);
-                if (order !== 0) {
-                    label = `${label} (${order})`;
-                }
+            if (node.id !== `this`) {
+                label = node.name;
+                // const order = this._focusNode.activity.getOrderForId(node.id);
+                // if (order !== 0) {
+                //     label = `${label} (${order})`;
+                // }
             }
 
             return [
                 {
                     label,
-                    options: node.inputs.map((input) => {
+                    options: node.endpoints.map((endpoint) => {
                         return {
-                            text: input.name,
-                            value: `${node.id}:${input.name}`
+                            text: endpoint.name,
+                            value: `${node.id}:${endpoint.name}`
                         };
                     })
                 }
@@ -837,147 +853,102 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             return c.concat(n);
         }));
 
-        select_el.onfocus = function (e) {
+        $bindingSelect.onfocus = function (e) {
             this._previous_value = this.value;
-        }.bind(select_el);
+        }.bind($bindingSelect);
 
-        return select_el;
+        return $bindingSelect;
     }
 
-    _createBindingOutputs(options) {
-        const select_el = FormUtils.createSelect(`binding-outputs`, options.map((node) => {
-            let label = node.id;
+    _createRouteStart(options) {
+        const $bindingSelect = FormUtils.createSelect(`binding-outputs`, options.map((node) => {
+            let label = `${node.id}`;
             if (node.id !== `this` && node.id !== `any`) {
-                label = node.nodeModel.activity.name;
-                const order = this._focusNode.activity.getOrderForId(node.id);
-                if (order !== 0) {
-                    label = `${label} (${order})`;
-                }
+                label = `${node.name}`;
             }
-
             return [
                 {
                     label,
-                    options: node.outputs.map((output) => {
+                    options: node.endpoints.map((endpoint) => {
                         return {
-                            text: output.name,
-                            value: `${node.id}:${output.name}`
+                            text: endpoint.name,
+                            value: `${node.id}:${node.type}`
                         };
                     })
                 }
             ];
-        }).reduce((c, n) => {
-            return c.concat(n);
+        }).reduce((prev, current) => {
+            return prev.concat(current);
         }));
 
-        select_el.onfocus = function (e) {
-            this._previous_value = this.value;
-        }.bind(select_el);
+        $bindingSelect.multiple = true;
 
-        return select_el;
+        $bindingSelect.onfocus = function (e) {
+            this._previous_value = this.value;
+        }.bind($bindingSelect);
+
+        return $bindingSelect;
     }
 
-    _findInputOptions() {
-        // We can "input" a value into any of this node's (actually activity's) children's inputs.
-        const options = this.getAvailableInputs(this._focusNode);
+    _findAllInputOptions() {                      // places an OUTPUT can go (focusNode's IN or childrens' IN)
+        const availableInputs = [];
+        // To what can we associate our outgoing ports to
+        // 1) any of our children's inputs.
+        // const options = this.getAvailableInputs(this._focusNode);
 
-        // We can also "input" a value to this node's outputs.
-        if (this._focusNode.activity.outputs.length > 0) {
-            options.push({
+
+        // We can also send this to our own inputs.
+        if (this._focusNode.activity.inputs.length > 0) {
+            availableInputs.push({
                 id: `this`,
-                activity: this._focusNode.activity,
-                inputs: this._focusNode.activity.outputs
+                name: this._focusNode.activity.name,
+                type: `in`,
+                endpoints: this._focusNode.activity.inputs
             });
         }
-
-        return options;
-    }
-
-
-    /**
-     * Gets the ID, Activity, property name and type of all inputs of children of this Activity.
-     *
-     * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs of children of this Activity.
-     */
-    getAvailableInputs(node) {
-        const availableInputs = [];
 
         this._focusNode.children.forEach((child) => {
             if (child.activity.inputs.length > 0) {
                 availableInputs.push({
                     id: child.id,
-                    activity: child.activity,
-                    inputs: child.activity.inputs
+                    name: child.activity.name,
+                    type: `in`,
+                    endpoints: child.activity.inputs
                 });
             }
         });
+
+
         return availableInputs;
     }
 
-    _findOutputOptions() {
-        const options = [];
+    _findAllOutputOptions() {                  // places an INPUT can go (only to own outputs? - i think so)
+        const availableOutputs = [];
 
-        // We can "output" a value from this node's inputs.
-        if (this._focusNode.activity.inputs.length > 0) {
-            options.push({
+        if (this._focusNode.activity.outputs.length > 0) {
+            availableOutputs.push({
                 id: `this`,
-                activity: this._focusNode.activity,
-                outputs: this._focusNode.activity.inputs
+                name: this._focusNode.activity.name,
+                type: `out`,
+                endpoints: this._focusNode.activity.outputs
             });
         }
 
-        // We can also "output" a value from this node's children's outputs.
-        this._focusNode.activity.getAvailableOutputs().forEach((node) => {
-            return options.push(node);
+        this._focusNode.children.forEach((child) => {
+            if (child.activity.outputs.length > 0) {
+                availableOutputs.push({
+                    id: child.id,
+                    name: child.activity.name,
+                    type: `out`,
+                    endpoints: child.activity.outputs
+                });
+            }
         });
 
         // We can also opt to accept any output with a matching name based on all available outputs.
+        //  I yanked this until further clarification
 
-        if (this._focusNode.activity.inputs.length > 0 && this._focusNode.activity.children.length > 0) {
-            const output_properties = new Set();
-            const any_outputs = new Set();
-
-            for (const input of this._focusNode.activity.inputs) {
-                output_properties.add(input.name);
-            }
-            //
-            //  need to include this -- tlg
-            //
-            // for (const child of this._focusNode.activity.children) {
-            //     if (child.nodeModel.activity) {
-            //         child.nodeModel.activity.outputs.forEach((child_output) => {
-            //             if (output_properties.has(child_output.name)) {
-            //                 any_outputs.add(child_output);
-            //             } else {
-            //                 output_properties.add(child_output.name);
-            //             }
-            //         });
-            //     }
-            // }
-
-            for (const child of this._focusNode.children) {
-                if (child.activity) {
-                    child.activity.outputs.forEach((child_output) => {
-                        if (output_properties.has(child_output.name)) {
-                            any_outputs.add(child_output);
-                        } else {
-                            output_properties.add(child_output.name);
-                        }
-                    });
-                }
-            }
-            // //////////////////// above is experimental ..........
-
-
-            if (any_outputs.size > 0) {
-                options.push({
-                    id: `any`,
-                    outputs: Array.from(any_outputs)
-                });
-            }
-        }
-
-        return options;
+        return availableOutputs;
     }
 
 
@@ -991,7 +962,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._clearAnnotations();
         if (this._focusNode.children.length > 0) {
             for (const child of this._focusNode.children) {
-                //        child.nodeModel(child.nodeModel)
                 let child_name = child.id;
                 if (child.activity) {
                     child_name = child.activity.name;

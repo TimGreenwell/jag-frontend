@@ -8,7 +8,7 @@ class FormUtils {
 
     static createPropertyElement(id, name) {
         const element = document.createElement(`div`);
-        element.className = `proptery-item`;
+        element.className = `property-item`;
         const label = document.createElement(`label`);
         label.setAttribute(`for`, id);
         label.innerHTML = name;
@@ -25,6 +25,7 @@ class FormUtils {
 
     static createSelect(id, options, selected = undefined) {
         const input = document.createElement(`select`);
+      //  input.multiple = true;
         input.setAttribute(`id`, id);
 
         options.forEach((item) => {

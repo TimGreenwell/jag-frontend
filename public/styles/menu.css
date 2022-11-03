@@ -19,13 +19,13 @@ jag-menu li, def-menu li, ia-menu li {
 
 jag-menu li:first-child, def-menu li:first-child, ia-menu li:first-child {
     border-right: 1px solid darkgray;
-    width: 160px;
+    width: 240px;
 }
 
 jag-menu li:last-child, def-menu li:last-child, ia-menu li:last-child {
     float: right;
     border-left: 1px solid darkgray;
-    width: 160px;
+    width: 240px;
 }
 
 jag-menu li div, def-menu li div, ia-menu li div {
