@@ -455,7 +455,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     // noinspection JSUnusedGlobalSymbols
     handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
-        console.log(selection);
         this._clearProperties();
         if (selection.length > 0) {
             const selectedNodeModel = selection[0];
@@ -507,7 +506,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      *  _addOutput
      *  _addInputElement
      *  _addOutputElement
-     *  _createBindingInputs
+     *  _createRouteDestinations
      *  _createRouteStart
      *  _findAllInputOptions
      *  _findAllOutputOptions
@@ -532,156 +531,162 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
 
         // Create binding panel
-        const outputOptions = this._findAllOutputOptions();
-        const inputOptions = this._findAllInputOptions();
-        const startEndpointOptions = [...inputOptions, ...outputOptions];
-
-        if (outputOptions.length > 0 && inputOptions.length > 0) {
-            // Create new binding panel
-            const $bindingPanel = document.createElement(`div`);
-            // Create input and output select elements
-
-            const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
-            const $destinationEndpointSelect = this._createBindingInputs(startEndpointOptions);
-
-            const $arrow = document.createElement(`span`);
-            $arrow.innerHTML = `&#x2192;`;
-            $arrow.className = `binding arrow`;
+        const selfIns = this._getSelfIns();
+        const selfOuts = this._getSelfOuts();
+        const childOuts = this._getChildOuts();
+        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts];
+        const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
+        const $destinationEndpointSelect = FormUtils.createSelect(`binding-destination`, []);
+        $destinationEndpointSelect.multiple = true;
+        $destinationEndpointSelect.classList.add(`hidden`);
 
 
-            const $bindButton = document.createElement(`button`);
-            $bindButton.id = `new-binding`;
-            $bindButton.innerHTML = `Bind`;
+        // const $destinationEndpointSelect = this._createRouteDestinations(startEndpointOptions);
+
+        const $arrow = document.createElement(`span`);
+        $arrow.innerHTML = `&#x2192;`;
+        $arrow.className = `binding arrow`;
 
 
-            $bindingPanel.appendChild($startEndpointSelect);
-            // $bindingPanel.appendChild($arrow);
-            // $bindingPanel.appendChild($destinationEndpointSelect);
-            $bindingPanel.appendChild($bindButton);
-            this._bindings.appendChild($bindingPanel);
-
-            // Binding Events - bindButton, selectChanges
-            $bindButton.addEventListener(`click`, function (e) {
-                const output_option = $destinationEndpointSelect.selectedOptions[0];
-                const input_option = $startEndpointSelect.selectedOptions[0];
-
-                if (output_option && input_option) {
-                    const provider = output_option.value.split(`:`);
-                    const consumer = input_option.value.split(`:`);
-
-                    this._focusNode.activity.addBinding({
-                        consumer: {
-                            id: consumer[0],
-                            property: consumer[1]
-                        },
-                        provider: {
-                            id: provider[0],
-                            property: provider[1]
-                        }
-                    });
-
-                    $destinationEndpointSelect.value = undefined;
-                    $startEndpointSelect.value = undefined;
-                }
-            }.bind(this));
+        const $bindButton = document.createElement(`button`);
+        $bindButton.id = `new-binding`;
+        $bindButton.innerHTML = `Bind`;
 
 
-            $startEndpointSelect.addEventListener(`change`, function (e) {
-                console.log(`I see a change MAMMA`);
-                const input_option = Array.from(e.target.selectedOptions);  // HTMLCollection
-                console.log(input_option);
-                input_option.forEach((selectedOption) => {
-                    if (selectedOption) {
-                        const startEndpointName =  selectedOption.value.split(`:`)[0];
-                        const startEndpointType = selectedOption.value.split(`:`)[1];
-                        console.log(startEndpointName)
-                        console.log(startEndpointType)
+        this._bindings.appendChild($startEndpointSelect);
+        this._bindings.appendChild($destinationEndpointSelect);
+        // this._bindings.appendChild($arrow);
+        // this._bindings.appendChild($destinationEndpointSelect);
+        this._bindings.appendChild($bindButton);
+        // this._bindings.appendChild($bindingPanel);
 
+        // Binding Events - bindButton, selectChanges
+        $bindButton.addEventListener(`click`, function (e) {
+            const output_option = $destinationEndpointSelect.selectedOptions[0];
+            const input_option = $startEndpointSelect.selectedOptions[0];
 
+            if (output_option && input_option) {
+                const provider = output_option.value.split(`:`);
+                const consumer = input_option.value.split(`:`);
 
-                        // TODO: Check if types match selected output type (probably as a .filter before .map)
-                        const valid_for_input = new Set(this._focusNode.activity.inputsTo(consumer[0]).map((output) => {
-                            return `${output.id}:${output.property}`;
-                        }));
-                        FormUtils.toggleSelectValues($destinationEndpointSelect, valid_for_input);
+                this._focusNode.activity.addBinding({
+                    consumer: {
+                        id: consumer[0],
+                        property: consumer[1]
+                    },
+                    provider: {
+                        id: provider[0],
+                        property: provider[1]
                     }
                 });
-            }.bind(this));
 
-            // Add handler for change in output select element
-            $destinationEndpointSelect.addEventListener(`change`, function (e) {
-                console.log(`DETECTED CHANGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-                const output_option = e.target.selectedOptions[0];
+                $destinationEndpointSelect.value = undefined;
+                $startEndpointSelect.value = undefined;
+            }
+        }.bind(this));
 
-                const valid_input_values_for_output = new Set();
 
-                if (output_option) {
-                    const provider = output_option.value.split(`:`);
+        $startEndpointSelect.addEventListener(`change`, function (e) {
+            const input_option = Array.from(e.target.selectedOptions);  // HTMLCollection
+            if (input_option.length > 1) {
+                $destinationEndpointSelect.classList.remove(`hidden`);
+            }
 
-                    const this_inputs_names = new Set();
-                    this._focusNode.activity.inputs.forEach((input) => {
-                        return this_inputs_names.add(input.name);
+
+            if (input_option.length === 1) {
+                const selectedOption = input_option[0];
+                const startEndpointType = selectedOption.value.split(`/`)[0];
+                const startEndpointUrn = selectedOption.value.split(`/`)[1];
+                const startEndpointName = selectedOption.label;
+                let allowedEndpointDestination;
+                if (startEndpointType === `in`) {
+                    allowedEndpointDestination = this._getSelfOuts();
+                } else if (startEndpointType === `out`) {
+                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
+                }
+                $destinationEndpointSelect.classList.remove(`hidden`);
+                this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
+            }
+
+            if (input_option.length < 1) {
+                $destinationEndpointSelect.classList.add(`hidden`);
+                $destinationEndpointSelect.size = 0;
+            }
+        }.bind(this));
+
+        // Add handler for change in output select element
+        $destinationEndpointSelect.addEventListener(`change`, function (e) {
+            const output_option = e.target.selectedOptions[0];
+
+            const valid_input_values_for_output = new Set();
+
+            if (output_option) {
+                const provider = output_option.value.split(`:`);
+
+                const this_inputs_names = new Set();
+                this._focusNode.activity.inputs.forEach((input) => {
+                    return this_inputs_names.add(input.name);
+                });
+
+                // TODO: Check if type matches selected output type (probably need to get output type first)
+                if (provider[0] == `this`) {
+                    for (const option of $startEndpointSelect.options) {
+                        valid_input_values_for_output.add(option.value);
+                    }
+                } else {
+                    // TODO: Check if type matches selected output type (probably need to get output type first)
+                    this._focusNode.activity.outputs.forEach((output) => {
+                        return valid_input_values_for_output.add(`this:${output.name}`);
                     });
 
-                    // TODO: Check if type matches selected output type (probably need to get output type first)
-                    if (provider[0] == `this`) {
-                        for (const option of $startEndpointSelect.options) {
-                            valid_input_values_for_output.add(option.value);
-                        }
-                    } else {
-                        // TODO: Check if type matches selected output type (probably need to get output type first)
-                        this._focusNode.activity.outputs.forEach((output) => {
-                            return valid_input_values_for_output.add(`this:${output.name}`);
-                        });
+                    if (this._focusNode.activity.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
+                        if (provider[0] === `any`) {
+                            const all_cumulative_outputs = new Set();
 
-                        if (this._focusNode.activity.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
-                            if (provider[0] === `any`) {
-                                const all_cumulative_outputs = new Set();
+                            this._focusNode.activity.inputs.forEach((input) => {
+                                return all_cumulative_outputs.add(input.name);
+                            });
 
-                                this._focusNode.activity.inputs.forEach((input) => {
-                                    return all_cumulative_outputs.add(input.name);
-                                });
+                            const valid_any_outputs_from_children = new Set();
 
-                                const valid_any_outputs_from_children = new Set();
-
-                                for (const child of this._focusNode.activity.children) {
-                                    if (valid_any_outputs_from_children.has(provider[1])) {
-                                        child.nodeModel.activity.inputs.forEach((input) => {
-                                            return valid_input_values_for_output.add(`${child.id}:${input.name}`);
-                                        });
-                                    }
-
-                                    child.nodeModel.activity.outputs.forEach((output) => {
-                                        if (all_cumulative_outputs.has(output.name)) {
-                                            valid_any_outputs_from_children.add(output.name);
-                                        } else {
-                                            all_cumulative_outputs.add(output.name);
-                                        }
+                            for (const child of this._focusNode.activity.children) {
+                                if (valid_any_outputs_from_children.has(provider[1])) {
+                                    child.nodeModel.activity.inputs.forEach((input) => {
+                                        return valid_input_values_for_output.add(`${child.id}:${input.name}`);
                                     });
                                 }
-                            } else {
-                                const order = this._focusNode.activity.getOrderForId(provider[0]);
 
-                                for (const child of this._focusNode.activity.children) {
-                                    if (child.nodeModel.activity) {
-                                        if (this._focusNode.activity.getOrderForId(child.id) > order) {
-                                            for (const input of child.nodeModel.activity.inputs) {
-                                                // TODO: Check if type matches selected output type (probably need to get output type first)
-                                                valid_input_values_for_output.add(`${child.id}:${input.name}`);
-                                            }
+                                child.nodeModel.activity.outputs.forEach((output) => {
+                                    if (all_cumulative_outputs.has(output.name)) {
+                                        valid_any_outputs_from_children.add(output.name);
+                                    } else {
+                                        all_cumulative_outputs.add(output.name);
+                                    }
+                                });
+                            }
+                        } else {
+                            const order = this._focusNode.activity.getOrderForId(provider[0]);
+
+                            for (const child of this._focusNode.activity.children) {
+                                if (child.nodeModel.activity) {
+                                    if (this._focusNode.activity.getOrderForId(child.id) > order) {
+                                        for (const input of child.nodeModel.activity.inputs) {
+                                            // TODO: Check if type matches selected output type (probably need to get output type first)
+                                            valid_input_values_for_output.add(`${child.id}:${input.name}`);
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
-                    FormUtils.toggleSelectValues($startEndpointSelect, valid_input_values_for_output);
                 }
 
-                this._previous_value = output_option.value;
-            }.bind(this));
-        }
+                FormUtils.toggleSelectValues($startEndpointSelect, valid_input_values_for_output);
+            }
+
+            this._previous_value = output_option.value;
+        }.bind(this));
+        //     }
 
         for (const binding of this._focusNode.activity.bindings) {
             const binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
@@ -825,17 +830,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._outputs.appendChild(output_el);
     }
 
-    _createBindingInputs(options) {
-        console.log(`options:`);
-        console.log(options);
+    _createRouteDestinations(options) {
         const $bindingSelect = FormUtils.createSelect(`binding-inputs`, options.map((node) => {
             let label = node.id;
             if (node.id !== `this`) {
                 label = node.name;
-                // const order = this._focusNode.activity.getOrderForId(node.id);
-                // if (order !== 0) {
-                //     label = `${label} (${order})`;
-                // }
             }
 
             return [
@@ -860,97 +859,115 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return $bindingSelect;
     }
 
-    _createRouteStart(options) {
-        const $bindingSelect = FormUtils.createSelect(`binding-outputs`, options.map((node) => {
-            let label = `${node.id}`;
-            if (node.id !== `this` && node.id !== `any`) {
-                label = `${node.name}`;
+
+    _rebuildSelectList(endpointOptions) {
+        const options = endpointOptions.map((endpointOption) => {
+            let label;
+            if (endpointOption.id === this._focusNode.id) {
+                label = `(${endpointOption.type}) this`;
+            } else {
+                label = `(${endpointOption.type}) ${endpointOption.name}`;
             }
+
             return [
                 {
                     label,
-                    options: node.endpoints.map((endpoint) => {
+                    options: endpointOption.endpoints.map((endpoint) => {
                         return {
                             text: endpoint.name,
-                            value: `${node.id}:${node.type}`
+                            value: `${endpointOption.type}/${endpointOption.id}`
                         };
                     })
                 }
             ];
         }).reduce((prev, current) => {
             return prev.concat(current);
-        }));
+        });
+        return options;
+    }
 
+    _getSelectListSize(endpointOptions) {
+        return endpointOptions.reduce((prev, curr) => {
+            return prev + 1 + Number(curr.endpoints.length);
+        }, 0);
+    }
+
+    _updateSelectList($selectList, endpointOptions) {
+        const numRows = this._getSelectListSize(endpointOptions);
+        const options = this._rebuildSelectList(endpointOptions);
+        FormUtils.updateSelect($selectList, options);
+        $selectList.multiple = true;
+        $selectList.size = numRows;
+    }
+
+
+    _createRouteStart(endpointOptions) {
+        const numRows = this._getSelectListSize(endpointOptions);
+        const $bindingSelect = FormUtils.createSelect(`binding-outputs`, this._rebuildSelectList(endpointOptions));
         $bindingSelect.multiple = true;
-
-        $bindingSelect.onfocus = function (e) {
-            this._previous_value = this.value;
-        }.bind($bindingSelect);
-
+        $bindingSelect.size = numRows;
+        // $bindingSelect.onfocus = function (e) {
+        //     this._previous_value = this.value;
+        // }.bind($bindingSelect);
         return $bindingSelect;
     }
 
-    _findAllInputOptions() {                      // places an OUTPUT can go (focusNode's IN or childrens' IN)
+
+    _getSelfIns() {
         const availableInputs = [];
-        // To what can we associate our outgoing ports to
-        // 1) any of our children's inputs.
-        // const options = this.getAvailableInputs(this._focusNode);
-
-
-        // We can also send this to our own inputs.
         if (this._focusNode.activity.inputs.length > 0) {
             availableInputs.push({
-                id: `this`,
+                id: this._focusNode.activity.urn,
                 name: this._focusNode.activity.name,
                 type: `in`,
                 endpoints: this._focusNode.activity.inputs
             });
         }
+        return availableInputs;
+    }
 
+    _getSelfOuts() {
+        const availableOutputs = [];
+        if (this._focusNode.activity.outputs.length > 0) {
+            availableOutputs.push({
+                id: this._focusNode.activity.urn,
+                name: this._focusNode.activity.name,
+                type: `out`,
+                endpoints: this._focusNode.activity.outputs
+            });
+        }
+        return availableOutputs;
+    }
+
+    _getChildIns() {
+        const availableInputs = [];
         this._focusNode.children.forEach((child) => {
             if (child.activity.inputs.length > 0) {
                 availableInputs.push({
-                    id: child.id,
+                    id: child.activity.urn,
                     name: child.activity.name,
                     type: `in`,
                     endpoints: child.activity.inputs
                 });
             }
         });
-
-
         return availableInputs;
     }
 
-    _findAllOutputOptions() {                  // places an INPUT can go (only to own outputs? - i think so)
+    _getChildOuts() {
         const availableOutputs = [];
-
-        if (this._focusNode.activity.outputs.length > 0) {
-            availableOutputs.push({
-                id: `this`,
-                name: this._focusNode.activity.name,
-                type: `out`,
-                endpoints: this._focusNode.activity.outputs
-            });
-        }
-
         this._focusNode.children.forEach((child) => {
             if (child.activity.outputs.length > 0) {
                 availableOutputs.push({
-                    id: child.id,
+                    id: child.activity.urn,
                     name: child.activity.name,
                     type: `out`,
                     endpoints: child.activity.outputs
                 });
             }
         });
-
-        // We can also opt to accept any output with a matching name based on all available outputs.
-        //  I yanked this until further clarification
-
         return availableOutputs;
     }
-
 
     /**
      *  _updateAnnotations - @TODO understand this

@@ -14,13 +14,13 @@ jag-properties {
 }
 
 jag-properties #property-container {
-    flex-basis: auto;
+    flex-basis: 0;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
 }
 jag-properties #activity-container {
-    flex-basis: auto;
+    flex-basis: 0;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
@@ -41,7 +41,10 @@ jag-properties #node-container {
 }
 
 jag-properties .property-item {
+    flex-basis: content;
     flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
     /*padding-left: 0.2em;*/
     /*padding-right: 0.2em;*/
     /*padding-bottom: 0.5em;*/
@@ -115,9 +118,36 @@ jag-properties div > input.binding, jag-properties .annotation.descriptor input 
     width: 40%;
 }
 
-jag-properties #bindings-property select, jag-properties div:not(.descriptor) > input.annotation {
-    width: 100%;
+jag-properties #bindings-property  {
+    flex-basis: content;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+
+
 }
+
+jag-properties #binding-outputs {
+    flex-basis: content;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+jag-properties #binding-destination  {
+    flex-basis: content;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    visibility: visible;
+    /*experiment with display:none*/
+}
+
+jag-properties #binding-destination .hidden {
+    visibility: hidden;
+    /*experiment with display:none*/
+}
+
 
 jag-properties #annotations-property input[type="checkbox"] {
     margin-right: 10px;
