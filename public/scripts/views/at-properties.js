@@ -20,44 +20,90 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._producesMap = new Map();  // ?
         this._consumesMap = new Map();  // ?
         this._initUI();
+
+        this.FORWARD = [
+            {
+                id: `forwardRouter`,
+                name: `Forward Router`,
+                type: `out`,
+                endpoints: [
+                    {
+                        name: `General Broadcast`,
+                        type: `na`
+                    },
+                    {
+                        name: `Content Based`,
+                        type: `na`
+                    },
+                    {
+                        name: `Competitive Customers`,
+                        type: `na`
+                    }
+                ]
+            }
+        ];
+        this.REVERSE = [
+            {
+                id: `reverseRouter`,
+                name: `Reverse Router`,
+                type: `in`,
+                endpoints: [
+                    {
+                        name: `General Aggregate`,
+                        type: `na`
+                    },
+                    {
+                        name: `Round Robin`,
+                        type: `na`
+                    },
+                    {
+                        name: `Priority Based`,
+                        type: `na`
+                    },
+                    {
+                        name: `First Come`,
+                        type: `na`
+                    }
+                ]
+            }
+        ];
     }
 
 
     _initUI() {
         // The "Child-Of" banner
-        const propertyContainer = document.createElement(`div`);
-        propertyContainer.id = `property-container`;
-        const activityContainer = document.createElement(`div`);
-        activityContainer.id = `activity-container`;
-        const nodeContainer = document.createElement(`div`);
-        nodeContainer.id = `node-container`;
+        const $propertyDiv = document.createElement(`div`);
+        $propertyDiv.id = `property-container`;
+        const $activityPropertiesDiv = document.createElement(`div`);
+        $activityPropertiesDiv.id = `activity-container`;
+        const $nodePropertiesDiv = document.createElement(`div`);
+        $nodePropertiesDiv.id = `node-container`;
 
-
-        const urn_el = FormUtils.createPropertyElement(`urn-property`, `URN`);
+        const $urnDiv = FormUtils.createPropertyElement(`urn-property`, `URN`);
         this._$urnInput = FormUtils.createTextInput(`urn-property`);
         this._$urnInput.setAttribute(`tabIndex`, `1`);
         this._$urnInput.className = `direct-property`;
-        urn_el.appendChild(this._$urnInput);
-        activityContainer.appendChild(urn_el);
+        $urnDiv.appendChild(this._$urnInput);
+        $activityPropertiesDiv.appendChild($urnDiv);
 
-        const name_el = FormUtils.createPropertyElement(`name-property`, `Name`);
-        this._$nameInput = FormUtils.createTextInput(`name-property`);
-        this._$nameInput.setAttribute(`placeholder`, `display name`);
-        this._$nameInput.setAttribute(`tabIndex`, `0`);
-        this._$nameInput.className = `direct-property`;
-        name_el.appendChild(this._$nameInput);
-        activityContainer.appendChild(name_el);
+        const $activityNameDiv = FormUtils.createPropertyElement(`name-property`, `Name`);
+        this._$activityNameInput = FormUtils.createTextInput(`name-property`);
+        this._$activityNameInput.setAttribute(`placeholder`, `display name`);
+        this._$activityNameInput.setAttribute(`tabIndex`, `0`);
+        this._$activityNameInput.className = `direct-property`;
+        $activityNameDiv.appendChild(this._$activityNameInput);
+        $activityPropertiesDiv.appendChild($activityNameDiv);
 
-        const desc_el = FormUtils.createPropertyElement(`desc-property`, `Description`);
-        this._$descInput = document.createElement(`textarea`);
-        this._$descInput.setAttribute(`id`, `desc-property`);
-        this._$descInput.setAttribute(`width`, `100%`);
-        this._$descInput.setAttribute(`rows`, `3`);
-        this._$descInput.setAttribute(`placeholder`, `...`);
-        this._$descInput.setAttribute(`tabIndex`, `2`);
-        this._$descInput.className = `direct-property`;
-        desc_el.appendChild(this._$descInput);
-        activityContainer.appendChild(desc_el);
+        const $activityDescDiv = FormUtils.createPropertyElement(`desc-property`, `Description`);
+        this._$activityDescInput = document.createElement(`textarea`);
+        this._$activityDescInput.setAttribute(`id`, `desc-property`);
+        this._$activityDescInput.setAttribute(`width`, `100%`);
+        this._$activityDescInput.setAttribute(`rows`, `3`);
+        this._$activityDescInput.setAttribute(`placeholder`, `...`);
+        this._$activityDescInput.setAttribute(`tabIndex`, `2`);
+        this._$activityDescInput.className = `direct-property`;
+        $activityDescDiv.appendChild(this._$activityDescInput);
+        $activityPropertiesDiv.appendChild($activityDescDiv);
 
         const executionOptions = [];
         const execution = Activity.EXECUTION;
@@ -67,12 +113,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 text: execution[step].text
             });
         }
-
-        const execution_el = FormUtils.createPropertyElement(`execution-property`, `Execution`);
+        const $executionDiv = FormUtils.createPropertyElement(`execution-property`, `Execution`);
         this._$executionSelect = FormUtils.createSelect(`execution-property`, executionOptions);
         this._$executionSelect.className = `direct-property`;
-        execution_el.appendChild(this._$executionSelect);
-        activityContainer.appendChild(execution_el);
+        $executionDiv.appendChild(this._$executionSelect);
+        $activityPropertiesDiv.appendChild($executionDiv);
 
 
         const operatorOptions = [];
@@ -83,139 +128,114 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 text: operator[step].text
             });
         }
-
-        const operator_el = FormUtils.createPropertyElement(`operator-property`, `Operator`);             // @TODO Map this from original structure
+        const $operationDiv = FormUtils.createPropertyElement(`operator-property`, `Operator`);             // @TODO Map this from original structure
         this._$operatorSelect = FormUtils.createSelect(`operator-property`, operatorOptions);
         this._$operatorSelect.className = `direct-property`;
-        operator_el.appendChild(this._$operatorSelect);
-        activityContainer.appendChild(operator_el);
+        $operationDiv.appendChild(this._$operatorSelect);
+        $activityPropertiesDiv.appendChild($operationDiv);
 
         // Create inputs area
-        const inputs_el = FormUtils.createPropertyElement(`inputs-property`, `Inputs`);
-
-        const input_add = document.createElement(`span`);
-        input_add.innerHTML = `+`;
-        input_add.className = `io-add`;
-        input_add.addEventListener(`click`, this._addInput.bind(this));
-        inputs_el.appendChild(input_add);
-
-
-        this._inputs = FormUtils.createEmptyInputContainer(`inputs-property`);
-        this._inputs.className = `directProperty`;
-        inputs_el.appendChild(this._inputs);
-        activityContainer.appendChild(inputs_el);
+        const $endpointsInDiv = FormUtils.createPropertyElement(`inputs-property`, `Inputs`);
+        const $endpointInAdd = document.createElement(`span`);
+        $endpointInAdd.innerHTML = `+`;
+        $endpointInAdd.className = `io-add`;
+        $endpointInAdd.addEventListener(`click`, this._handleAddEndpointIn.bind(this));
+        $endpointsInDiv.appendChild($endpointInAdd);
+        this._$endpointsInListDiv = FormUtils.createEmptyInputContainer(`inputs-property`);
+        this._$endpointsInListDiv.className = `directProperty`;
+        $endpointsInDiv.appendChild(this._$endpointsInListDiv);
+        $activityPropertiesDiv.appendChild($endpointsInDiv);
 
         // Create outputs area
-        const outputs_el = FormUtils.createPropertyElement(`outputs-property`, `Outputs`);
-
-        const output_add = document.createElement(`span`);
-        output_add.innerHTML = `+`;
-        output_add.className = `io-add`;
-        output_add.addEventListener(`click`, this._addOutput.bind(this));
-        outputs_el.appendChild(output_add);
-
-        this._outputs = FormUtils.createEmptyInputContainer(`outputs-property`);
-        this._outputs.className = `directProperty`;
-        outputs_el.appendChild(this._outputs);
-        activityContainer.appendChild(outputs_el);
+        const $endpointsOutDiv = FormUtils.createPropertyElement(`outputs-property`, `Outputs`);
+        const $endpointOutAdd = document.createElement(`span`);
+        $endpointOutAdd.innerHTML = `+`;
+        $endpointOutAdd.className = `io-add`;
+        $endpointOutAdd.addEventListener(`click`, this._handleAddEndpointOut.bind(this));
+        $endpointsOutDiv.appendChild($endpointOutAdd);
+        this._$endpointsOutListDiv = FormUtils.createEmptyInputContainer(`outputs-property`);
+        this._$endpointsOutListDiv.className = `directProperty`;
+        $endpointsOutDiv.appendChild(this._$endpointsOutListDiv);
+        $activityPropertiesDiv.appendChild($endpointsOutDiv);
 
         // Create bindings area
-        const bindings_el = FormUtils.createPropertyElement(`bindings-property`, `Bindings`);
-
-        this._bindings = FormUtils.createEmptyInputContainer(`bindings-property`);
-        this._bindings.className = `directProperty`;
-        bindings_el.appendChild(this._bindings);
-        activityContainer.appendChild(bindings_el);
+        const $bindingsDiv = FormUtils.createPropertyElement(`bindings-property`, `Bindings`);
+        this.$bindingActionsDiv = FormUtils.createEmptyInputContainer(`bindings-property`);
+        this.$bindingActionsDiv.className = `directProperty`;
+        $bindingsDiv.appendChild(this.$bindingActionsDiv);
+        $activityPropertiesDiv.appendChild($bindingsDiv);
 
         // Create annotation area
         const annotations_el = FormUtils.createPropertyElement(`annotations-property`, `Annotations`);
-
         this._annotations = FormUtils.createEmptyInputContainer(`annotations-property`);
         this._annotations.className = `directProperty`;
         annotations_el.appendChild(this._annotations);
+        $activityPropertiesDiv.appendChild(annotations_el);
 
-        activityContainer.appendChild(annotations_el);
+        /**
+         *   Node Properties
+         *
+         */
+        const $nodeNameDiv = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
+        this._$nodeNameInput = FormUtils.createTextInput(`name-ctx-property`);
+        this._$nodeNameInput.className = `direct-property contextual`;
+        $nodeNameDiv.appendChild(this._$nodeNameInput);
+        $nodePropertiesDiv.appendChild($nodeNameDiv);
 
-
-        const name_ctx_el = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
-        this._$name_ctxInput = FormUtils.createTextInput(`name-ctx-property`);
-        this._$name_ctxInput.className = `direct-property contextual`;
-        name_ctx_el.appendChild(this._$name_ctxInput);
-        nodeContainer.appendChild(name_ctx_el);
-
-        const desc_ctx_el = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
-        this._$desc_ctxInput = FormUtils.createTextInput(`desc-ctx-property`);
-        this._$desc_ctxInput.className = `direct-property contextual`;
-        desc_ctx_el.appendChild(this._$desc_ctxInput);
-        nodeContainer.appendChild(desc_ctx_el);
-
+        const $nodeDescDiv = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
+        this._$nodeDescInput = FormUtils.createTextInput(`desc-ctx-property`);
+        this._$nodeDescInput.className = `direct-property contextual`;
+        $nodeDescDiv.appendChild(this._$nodeDescInput);
+        $nodePropertiesDiv.appendChild($nodeDescDiv);
 
         // Create JSON export area
-        const export_el = FormUtils.createEmptyInputContainer(`export`);
-        this._export = document.createElement(`button`);
-        this._export.innerHTML = `Export to JSON`;
-        export_el.className = `directProperty`;
-        export_el.appendChild(this._export);
-        nodeContainer.appendChild(export_el);
+        const $exportJsonDiv = FormUtils.createEmptyInputContainer(`export`);
+        this._$exportJsonButton = document.createElement(`button`);
+        this._$exportJsonButton.innerHTML = `Export to JSON`;
+        $exportJsonDiv.className = `directProperty`;
+        $exportJsonDiv.appendChild(this._$exportJsonButton);
+        $nodePropertiesDiv.appendChild($exportJsonDiv);
 
         // Create SVG export area
-        const exportSvg_el = FormUtils.createEmptyInputContainer(`export-svg`);
-        this._exportSvg = document.createElement(`button`);
-        this._exportSvg.innerHTML = `Export to SVG`;
-        exportSvg_el.className = `directProperty`;
-        exportSvg_el.appendChild(this._exportSvg);
-        nodeContainer.appendChild(exportSvg_el);
+        const $exportSvgDiv = FormUtils.createEmptyInputContainer(`export-svg`);
+        this._$exportSvgButton = document.createElement(`button`);
+        this._$exportSvgButton.innerHTML = `Export to SVG`;
+        $exportSvgDiv.className = `directProperty`;
+        $exportSvgDiv.appendChild(this._$exportSvgButton);
+        $nodePropertiesDiv.appendChild($exportSvgDiv);
 
         this._enableProperties(false);
-        this.appendChild(propertyContainer);
-        propertyContainer.appendChild(activityContainer);
-        propertyContainer.appendChild(nodeContainer);
-
-        // propertyContainer.appendChild(childOf_el);
-        // propertyContainer.appendChild(leafNode_el);
-        // propertyContainer.appendChild(name_el);
-        // propertyContainer.appendChild(urn_el);
-        // propertyContainer.appendChild(desc_el);
-        // propertyContainer.appendChild(name_ctx_el);
-        // propertyContainer.appendChild(desc_ctx_el);
-        // propertyContainer.appendChild(execution_el);
-        // propertyContainer.appendChild(operator_el);
-        // propertyContainer.appendChild(inputs_el);
-        // propertyContainer.appendChild(outputs_el);
-        // propertyContainer.appendChild(bindings_el);
-        // propertyContainer.appendChild(annotations_el);
-        // propertyContainer.appendChild(export_el);
-        // propertyContainer.appendChild(exportSvg_el);
-
+        this.appendChild($propertyDiv);
+        $propertyDiv.appendChild($activityPropertiesDiv);
+        $propertyDiv.appendChild($nodePropertiesDiv);
 
         // this._$urnInput.addEventListener('keyup', e => {
         //     this._$urnInput.classList.toggle('edited', this._$urnInput.value !== this._focusNode.activity.urn);
         // });
 
-        this._$nameInput.addEventListener(`blur`, this._handleNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
-        this._$nameInput.addEventListener(`keyup`, this._handleNameEdit.bind(this));
+        this._$activityNameInput.addEventListener(`blur`, this._handleActivityNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._$activityNameInput.addEventListener(`keyup`, this._handleActivityNameEdit.bind(this));
 
-        this._$urnInput.addEventListener(`focusout`, this._handleURNChange.bind(this));  // pass urn change to ControllerIA.updateURN
+        this._$urnInput.addEventListener(`focusout`, this._handleUrnChange.bind(this));  // pass urn change to ControllerIA.updateURN
         this._$urnInput.addEventListener(`keyup`, this._handleUrnEdit.bind(this));  // pass urn change to ControllerIA.updateURN
 
-        this._$descInput.addEventListener(`blur`, this._handleDescriptionChange.bind(this));
-        this._$descInput.addEventListener(`keyup`, this._handleDescriptionEdit.bind(this));
+        this._$activityDescInput.addEventListener(`blur`, this._handleActivityDescChange.bind(this));
+        this._$activityDescInput.addEventListener(`keyup`, this._handleActivityDescEdit.bind(this));
 
-        this._$name_ctxInput.addEventListener(`blur`, this._handleContextualNameChange.bind(this));
-        this._$desc_ctxInput.addEventListener(`blur`, this._handleContextualDescriptionChange.bind(this));
+        this._$nodeNameInput.addEventListener(`blur`, this._handleNodeNameChange.bind(this));
+        this._$nodeDescInput.addEventListener(`blur`, this._handleNodeDescChange.bind(this));
 
         this._$executionSelect.addEventListener(`change`, this._handleExecutionChange.bind(this));
         this._$operatorSelect.addEventListener(`change`, this._handleOperatorChange.bind(this));
 
-        this._export.addEventListener(`click`, this._handleExportClick.bind(this));
-        this._exportSvg.addEventListener(`click`, this._handleExportSvgClick.bind(this));
+        this._$exportJsonButton.addEventListener(`click`, this._handleExportJsonClick.bind(this));
+        this._$exportSvgButton.addEventListener(`click`, this._handleExportSvgClick.bind(this));
     }
 
-
-    _handleNameChange(e) {
+    _handleActivityNameChange(e) {
         e.stopImmediatePropagation();
         if (this._focusNode) {
-            this._focusNode.activity.name = this._$nameInput.value;
+            this._focusNode.activity.name = this._$activityNameInput.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -224,22 +244,22 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleNameEdit(e) {
+    _handleActivityNameEdit(e) {
         if (e.key === `Enter`) {
             e.preventDefault();
             const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            const currentPosition = this._$nameInput.tabIndex;
+            const currentPosition = this._$activityNameInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
             } else {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._focusNode.activity.name = `[${this._$nameInput.value}]`;
+            this._focusNode.activity.name = `[${this._$activityNameInput.value}]`;
         }
     }
 
-    _handleURNChange(e) {
+    _handleUrnChange(e) {
         if (this._focusNode.activity.urn !== this._$urnInput.value) {
             if (Validator.isValidUrn(this._$urnInput.value)) {        // && entered urn is valid...
                 this.dispatchEvent(new CustomEvent(`event-urn-changed`, {
@@ -269,10 +289,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleDescriptionChange(e) {
+    _handleActivityDescChange(e) {
         e.stopImmediatePropagation();
         if ((this._focusNode) && (this._focusNode.activity)) {
-            this._focusNode.activity.description = this._$descInput.value;
+            this._focusNode.activity.description = this._$activityDescInput.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -281,144 +301,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleDescriptionEdit(e) {
+    _handleActivityDescEdit(e) {
         if (e.key === `Enter`) {
             e.preventDefault();
             const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            const currentPosition = this._$descInput.tabIndex;
+            const currentPosition = this._$activityDescInput.tabIndex;
             if (currentPosition < inputs.length - 1) {
                 inputs.item(currentPosition + 1).focus();
             } else {
                 inputs.item(currentPosition).blur();
             }
         } else {
-            this._focusNode.activity.description = `[${this._$descInput.value}]`;
+            this._focusNode.activity.description = `[${this._$activityDescInput.value}]`;
         }
     }
-
-    _handleContextualNameChange(e) {
-        e.stopImmediatePropagation();
-        if (this._focusNode) {
-            this._focusNode.contextualName = this._$name_ctxInput.value;
-            this.dispatchEvent(new CustomEvent(`event-node-updated`, {   //
-                bubbles: true,
-                composed: true,
-                detail: {nodeModel: this._focusNode}
-            }));
-        }
-    }
-
-    _handleContextualDescriptionChange(e) {
-        e.stopImmediatePropagation();
-        if (this._focusNode) {
-            this._focusNode.contextualDescription = this._$desc_ctxInput.value;
-            this.dispatchEvent(new CustomEvent(`event-node-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {nodeModel: this._focusNode}
-            }));
-        }
-    }
-
-    _handleExportClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._focusNode;
-        this.dispatchEvent(new CustomEvent(`event-export-jag`, {
-            bubbles: true,
-            composed: true,
-            detail: {node: this._focusNode}
-        }));
-    }
-
-    _handleExportSvgClick(e) {
-        e.stopImmediatePropagation();
-        const node = this._focusNode;
-        this.dispatchEvent(new CustomEvent(`event-export-svg`, {
-            bubbles: true,
-            composed: true,
-            detail: {node: this._focusNode}
-        }));
-    }
-
-    /**
-     *  _updateProperties
-     *  _enableProperties - Property entries are turned on and flags displayed
-     *  _clearProperties
-     */
-
-
-    _updateProperties() {
-        this._$urnInput.value = this._focusNode.activity.urn;
-        this._$nameInput.value = this._focusNode.activity.name;
-        this._$executionSelect.value = this._focusNode.activity.connector.execution || `none`;
-        this._$operatorSelect.value = this._focusNode.activity.operator || `none`;
-        this._$descInput.value = this._focusNode.activity.description;
-        this._$name_ctxInput.value = this._focusNode.contextualName;
-        this._$desc_ctxInput.value = this._focusNode.contextualDescription;
-        this._enableProperties(true);
-        this._updateIO();
-        this._updateAnnotations();
-        for (const input of this.querySelectorAll(`input`)) {
-            input.title = input.value;
-            input.onchange = () => {
-                input.title = input.value;
-                return input.title;
-            };
-        }
-    }
-
-    _enableProperties(enabled) {
-        this._$urnInput.disabled = !enabled;
-        this._$nameInput.disabled = !enabled;
-        this._$descInput.disabled = !enabled;
-        this._$name_ctxInput.disabled = !enabled;
-        this._$desc_ctxInput.disabled = !enabled;
-        this._$executionSelect.disabled = !enabled;
-        this._$operatorSelect.disabled = !enabled;
-
-        this._consumesMap.disabled = !enabled;
-        this._producesMap.disabled = !enabled;
-        this._export.disabled = !enabled;
-        this._exportSvg.disabled = !enabled;
-
-        if (this._focusNode && (enabled)) {
-            // if (this._focusNode.parent) {
-            //     this._childOf.innerHTML = `As child of ${this._focusNode.parent.urn}`;
-            // }
-            this.classList.toggle(`root-node`, false);
-            this._$name_ctxInput.disabled = false;
-            this._$desc_ctxInput.disabled = false;
-        } else {
-            this.classList.toggle(`root-node`, true);
-            this._$name_ctxInput.disabled = true;
-            this._$desc_ctxInput.disabled = true;
-        }
-        // tlg 9 sep
-        // if (enabled || (!enabled && !this._focusNode)) {
-        //     this.classList.toggle(`defined-model`, true);   // This block useful?
-        //     this.classList.toggle(`non-leaf-node`, true);
-        // }
-    }
-
-    _clearProperties() {
-        this._$urnInput.value = ``;
-        this._$nameInput.value = ``;
-        this._$descInput.value = ``;
-        this._$name_ctxInput.value = ``;
-        this._$desc_ctxInput.value = ``;
-        this._$executionSelect.value = Activity.EXECUTION.NONE.name;
-        this._$operatorSelect.value = Activity.OPERATOR.NONE.name;
-
-        this._$urnInput.classList.toggle(`edited`, false);
-
-        this._clearIO();
-        this._clearAnnotations();
-
-        for (const input of this.querySelectorAll(`input`)) {
-            input.title = ``;
-        }
-    }
-
 
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
@@ -444,22 +340,181 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-
-    handleStorageUpdate(newActivity, newActivityUrn) {
-        // if (newActivityUrn === this._$urnInput) {
-        if (newActivityUrn === this._focusNode.activity.urn) {
-            this._focusNode.activity = newActivity;
-            this._updateProperties();
+    _handleNodeNameChange(e) {
+        e.stopImmediatePropagation();
+        if (this._focusNode) {
+            this._focusNode.contextualName = this._$nodeNameInput.value;
+            this.dispatchEvent(new CustomEvent(`event-node-updated`, {   //
+                bubbles: true,
+                composed: true,
+                detail: {nodeModel: this._focusNode}
+            }));
         }
     }
 
-    // noinspection JSUnusedGlobalSymbols
+    _handleNodeDescChange(e) {
+        e.stopImmediatePropagation();
+        if (this._focusNode) {
+            this._focusNode.contextualDescription = this._$nodeDescInput.value;
+            this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {nodeModel: this._focusNode}
+            }));
+        }
+    }
+
+    _handleExportJsonClick(e) {
+        e.stopImmediatePropagation();
+        const node = this._focusNode;
+        this.dispatchEvent(new CustomEvent(`event-export-jag`, {
+            bubbles: true,
+            composed: true,
+            detail: {node: this._focusNode}
+        }));
+    }
+
+    _handleExportSvgClick(e) {
+        e.stopImmediatePropagation();
+        const node = this._focusNode;
+        this.dispatchEvent(new CustomEvent(`event-export-svg`, {
+            bubbles: true,
+            composed: true,
+            detail: {node: this._focusNode}
+        }));
+    }
+
+    _handleAddEndpointIn(e) {
+        if (this._focusNode) {
+            const name = window.prompt(`Input name`);
+            if (name === ``) {
+                return;
+            }
+            const type = window.prompt(`Input type`);
+            if (type === ``) {
+                return;
+            }
+            const input = {name,
+                type};
+            this._focusNode.activity.addInput(input);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+        }
+    }
+
+    _handleAddEndpointOut(e) {
+        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
+            const name = window.prompt(`Output name`);
+            if (name === ``) {
+                return;
+            }
+
+            const type = window.prompt(`Output type`);
+            if (type === ``) {
+                return;
+            }
+
+            const output = {name,
+                type};
+
+            this._focusNode.activity.addOutput(output);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+        }
+    }
+
+    /**
+     *  _refreshProperties - fill property values according to reflect this._focusNode (on Activity update or new _focusNode)
+     *  _enableProperties - Property entries are turned on and flags displayed
+     *  _clearProperties
+     */
+
+    _refreshProperties() {
+        this._$urnInput.value = this._focusNode.activity.urn;
+        this._$activityNameInput.value = this._focusNode.activity.name;
+        this._$executionSelect.value = this._focusNode.activity.connector.execution || `none`;
+        this._$operatorSelect.value = this._focusNode.activity.operator || `none`;
+        this._$activityDescInput.value = this._focusNode.activity.description;
+        this._$nodeNameInput.value = this._focusNode.contextualName;
+        this._$nodeDescInput.value = this._focusNode.contextualDescription;
+        this._enableProperties(true);
+        this._refreshEndpoints();
+        this._refreshAnnotations();
+        for (const input of this.querySelectorAll(`input`)) {
+            input.title = input.value;
+            input.onchange = () => {
+                input.title = input.value;
+                return input.title;
+            };
+        }
+    }
+
+    _enableProperties(enabled) {
+        this._$urnInput.disabled = !enabled;
+        this._$activityNameInput.disabled = !enabled;
+        this._$activityDescInput.disabled = !enabled;
+        this._$nodeNameInput.disabled = !enabled;
+        this._$nodeDescInput.disabled = !enabled;
+        this._$executionSelect.disabled = !enabled;
+        this._$operatorSelect.disabled = !enabled;
+
+        this._consumesMap.disabled = !enabled;
+        this._producesMap.disabled = !enabled;
+        this._$exportJsonButton.disabled = !enabled;
+        this._$exportSvgButton.disabled = !enabled;
+
+        // if (this._focusNode && (enabled)) {
+        //     this.classList.toggle(`root-node`, false);
+        //     this._$nodeNameInput.disabled = false;
+        //     this._$nodeDescInput.disabled = false;
+        // } else {
+        //     this.classList.toggle(`root-node`, true);
+        //     this._$nodeNameInput.disabled = true;
+        //     this._$nodeDescInput.disabled = true;
+        // }
+    }
+
+    _clearProperties() {
+        this._$urnInput.value = ``;
+        this._$activityNameInput.value = ``;
+        this._$activityDescInput.value = ``;
+        this._$nodeNameInput.value = ``;
+        this._$nodeDescInput.value = ``;
+        this._$executionSelect.value = Activity.EXECUTION.NONE.name;
+        this._$operatorSelect.value = Activity.OPERATOR.NONE.name;
+        this._$urnInput.classList.toggle(`edited`, false);
+        this._clearEndpoints();
+        this._clearAnnotations();
+        for (const input of this.querySelectorAll(`input`)) {
+            input.title = ``;
+        }
+    }
+
+    /**
+     *
+     * External calls
+     *
+     */
+
+    handleExternalActivityUpdate(newActivity, newActivityUrn) {   // ===> Called my ControllerAT
+        if (newActivityUrn === this._focusNode.activity.urn) {
+            this._focusNode.activity = newActivity;
+            this._refreshProperties();
+        }
+    }
+
     handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
         this._clearProperties();
         if (selection.length > 0) {
             const selectedNodeModel = selection[0];
             this._focusNode = selectedNodeModel;
-            this._updateProperties();
+            this._refreshProperties();
         } else {
             this._enableProperties(false);
         }
@@ -470,40 +525,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._enableProperties(false);
     }
 
-
-    // // @TODO Add a button to properties to delete the Jag. --
-    // // @TODO Same for 'publish'/'lock'
-    // deleteActivity(deadActivity) {
-    //     this._focusNode.activity = undefined;
-    //     this._$urnInput.classList.toggle(`edited`, false);
-    //     this._clearProperties();
-    //     this.dispatchEvent(new CustomEvent(`event-activity-deleted`, {
-    //         detail: {urn: deadActivity.urn}
-    //     }));
-    // }
-
-    // cloneActivity(sourceActivity, newURN) {
-    //     const description = sourceActivity.toJSON();
-    //     description.urn = newURN;
-    //     const newActivity = Activity.fromJSON(description);
-    //     // Update activity references.
-    //     this._node.activity = newActivity; // ?
-    //     this._focusNode.activity = newActivity;
-    //     this.dispatchEvent(new CustomEvent(`event-activity-created`, {
-    //         bubbles: true,
-    //         composed: true,
-    //         detail: {activityConstruct: newActivity}
-    //     }));    // event-activity-created in playground uses components
-    //     // Remove unsaved box shadow on URN property input.
-    //     this._$urnInput.classList.toggle(`edited`, false);
-    // }
-
-
     /**
-     * _updateIO
-     *  _clearIO - Wipes the Consume/Input and Produce/Output and Binding -- both map and displays
-     *  _addInput
-     *  _addOutput
+     * _refreshEndpoints
+     *  _clearEndpoints - Wipes the Consume/Input and Produce/Output and Binding -- both map and displays
+     *  _handleAddEndpointIn
+     *  _handleAddEndpointOut
      *  _addInputElement
      *  _addOutputElement
      *  _createRouteDestinations
@@ -515,8 +541,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      */
 
 
-    _updateIO() {
-        this._clearIO();
+    _refreshEndpoints() {                // (when properties update)
+        this._clearEndpoints();
 
         // Creates the list of inputs under `Inputs   +`
         for (const input of this._focusNode.activity.inputs) {
@@ -534,88 +560,90 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const selfIns = this._getSelfIns();
         const selfOuts = this._getSelfOuts();
         const childOuts = this._getChildOuts();
+        console.log(JSON.stringify(childOuts));
         const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts];
         const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
+
         const $destinationEndpointSelect = FormUtils.createSelect(`binding-destination`, []);
         $destinationEndpointSelect.multiple = true;
         $destinationEndpointSelect.classList.add(`hidden`);
 
-
-        // const $destinationEndpointSelect = this._createRouteDestinations(startEndpointOptions);
-
         const $arrow = document.createElement(`span`);
         $arrow.innerHTML = `&#x2192;`;
         $arrow.className = `binding arrow`;
-
 
         const $bindButton = document.createElement(`button`);
         $bindButton.id = `new-binding`;
         $bindButton.innerHTML = `Bind`;
 
 
-        this._bindings.appendChild($startEndpointSelect);
-        this._bindings.appendChild($destinationEndpointSelect);
-        // this._bindings.appendChild($arrow);
-        // this._bindings.appendChild($destinationEndpointSelect);
-        this._bindings.appendChild($bindButton);
-        // this._bindings.appendChild($bindingPanel);
+        this.$bindingActionsDiv.appendChild($startEndpointSelect);
+        this.$bindingActionsDiv.appendChild($destinationEndpointSelect);
+        // this.$bindingActionsDiv.appendChild($arrow);
+        // this.$bindingActionsDiv.appendChild($destinationEndpointSelect);
+        this.$bindingActionsDiv.appendChild($bindButton);
+        // this.$bindingActionsDiv.appendChild($bindingPanel);
 
         // Binding Events - bindButton, selectChanges
-        $bindButton.addEventListener(`click`, function (e) {
-            const output_option = $destinationEndpointSelect.selectedOptions[0];
-            const input_option = $startEndpointSelect.selectedOptions[0];
-
-            if (output_option && input_option) {
-                const provider = output_option.value.split(`:`);
-                const consumer = input_option.value.split(`:`);
-
-                this._focusNode.activity.addBinding({
-                    consumer: {
-                        id: consumer[0],
-                        property: consumer[1]
-                    },
-                    provider: {
-                        id: provider[0],
-                        property: provider[1]
-                    }
-                });
-
-                $destinationEndpointSelect.value = undefined;
-                $startEndpointSelect.value = undefined;
-            }
-        }.bind(this));
-
 
         $startEndpointSelect.addEventListener(`change`, function (e) {
-            const input_option = Array.from(e.target.selectedOptions);  // HTMLCollection
-            if (input_option.length > 1) {
-                $destinationEndpointSelect.classList.remove(`hidden`);
+            const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+
+            if (selectedStartEndpoints.length < 1) {
+                $destinationEndpointSelect.classList.add(`hidden`);
+                $destinationEndpointSelect.size = 0;
             }
 
-
-            if (input_option.length === 1) {
-                const selectedOption = input_option[0];
+            if (selectedStartEndpoints.length === 1) {
+                const selectedOption = selectedStartEndpoints[0];
                 const startEndpointType = selectedOption.value.split(`/`)[0];
                 const startEndpointUrn = selectedOption.value.split(`/`)[1];
-                const startEndpointName = selectedOption.label;
+                const startEndpointName = selectedOption.label.split(` `)[0];
                 let allowedEndpointDestination;
                 if (startEndpointType === `in`) {
                     allowedEndpointDestination = this._getSelfOuts();
                 } else if (startEndpointType === `out`) {
-                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
+                    if (startEndpointUrn === this._focusNode.activity.urn) {
+                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this.FORWARD];
+                    } else {
+                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
+                    }
                 }
                 $destinationEndpointSelect.classList.remove(`hidden`);
                 this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
             }
 
-            if (input_option.length < 1) {
-                $destinationEndpointSelect.classList.add(`hidden`);
-                $destinationEndpointSelect.size = 0;
+            if (selectedStartEndpoints.length > 1) {
+                const groupType = selectedStartEndpoints[0].value.split(`/`)[0];
+                let groupTypeValid = true;
+                selectedStartEndpoints.forEach((endpoint) => {
+                    const startEndpointType = endpoint.value.split(`/`)[0];
+                    const startEndpointUrn = endpoint.value.split(`/`)[1];
+                    const startEndpointName = endpoint.label.split(` `)[0];
+                    if (startEndpointType !== groupType) {
+                        groupTypeValid = false;
+                    }
+                });
+                let allowedEndpointDestination;
+                if (groupType === `in`) {
+                    allowedEndpointDestination = this._getSelfOuts();
+                } else if (groupType === `out`) {
+                        allowedEndpointDestination = [...this.REVERSE];
+                }
+                $destinationEndpointSelect.classList.remove(`hidden`);
+                this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
             }
         }.bind(this));
 
         // Add handler for change in output select element
         $destinationEndpointSelect.addEventListener(`change`, function (e) {
+            const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+
+            if (selectedStartEndpoints.length < 1) {
+                $destinationEndpointSelect.classList.add(`hidden`);
+                $destinationEndpointSelect.size = 0;
+            }
+
             const output_option = e.target.selectedOptions[0];
 
             const valid_input_values_for_output = new Set();
@@ -688,6 +716,31 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }.bind(this));
         //     }
 
+        $bindButton.addEventListener(`click`, function (e) {
+            const selectedDestination = $destinationEndpointSelect.selectedOptions[0];
+            const selectedStart = $startEndpointSelect.selectedOptions[0];
+
+            if (selectedDestination && selectedStart) {
+                const provider = selectedDestination.value.split(`:`);
+                const consumer = selectedStart.value.split(`:`);
+
+                this._focusNode.activity.addBinding({
+                    consumer: {
+                        id: consumer[0],
+                        property: consumer[1]
+                    },
+                    provider: {
+                        id: provider[0],
+                        property: provider[1]
+                    }
+                });
+
+                $destinationEndpointSelect.value = undefined;
+                $startEndpointSelect.value = undefined;
+            }
+        }.bind(this));
+
+
         for (const binding of this._focusNode.activity.bindings) {
             const binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
 
@@ -752,82 +805,37 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             binding_box.appendChild(remove);
 
-            this._bindings.appendChild(binding_box);
+            this.$bindingActionsDiv.appendChild(binding_box);
         }
     }
 
-    _clearIO() {
+    _clearEndpoints() {
         this._consumesMap.clear();
-        while (this._inputs.firstChild) {
-            this._inputs.removeChild(this._inputs.firstChild);
+        while (this._$endpointsInListDiv.firstChild) {
+            this._$endpointsInListDiv.removeChild(this._$endpointsInListDiv.firstChild);
         }
 
         this._producesMap.clear();
-        while (this._outputs.firstChild) {
-            this._outputs.removeChild(this._outputs.firstChild);
+        while (this._$endpointsOutListDiv.firstChild) {
+            this._$endpointsOutListDiv.removeChild(this._$endpointsOutListDiv.firstChild);
         }
 
-        while (this._bindings.firstChild) {
-            this._bindings.removeChild(this._bindings.firstChild);
-        }
-    }
-
-
-    _addInput(e) {
-        if (this._focusNode) {
-            const name = window.prompt(`Input name`);
-            if (name === ``) {
-                return;
-            }
-            const type = window.prompt(`Input type`);
-            if (type === ``) {
-                return;
-            }
-            const input = {name,
-                type};
-            this._focusNode.activity.addInput(input);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
+        while (this.$bindingActionsDiv.firstChild) {
+            this.$bindingActionsDiv.removeChild(this.$bindingActionsDiv.firstChild);
         }
     }
 
-    _addOutput(e) {
-        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
-            const name = window.prompt(`Output name`);
-            if (name === ``) {
-                return;
-            }
-
-            const type = window.prompt(`Output type`);
-            if (type === ``) {
-                return;
-            }
-
-            const output = {name,
-                type};
-
-            this._focusNode.activity.addOutput(output);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
-        }
-    }
 
     _addInputElement(id, input) {
         const input_el = FormUtils.createPropertyElement(id, input);
 
-        this._inputs.appendChild(input_el);
+        this._$endpointsInListDiv.appendChild(input_el);
     }
 
     _addOutputElement(id, output) {
         const output_el = FormUtils.createPropertyElement(id, output);
 
-        this._outputs.appendChild(output_el);
+        this._$endpointsOutListDiv.appendChild(output_el);
     }
 
     _createRouteDestinations(options) {
@@ -861,28 +869,33 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
 
     _rebuildSelectList(endpointOptions) {
-        const options = endpointOptions.map((endpointOption) => {
-            let label;
-            if (endpointOption.id === this._focusNode.id) {
-                label = `(${endpointOption.type}) this`;
-            } else {
-                label = `(${endpointOption.type}) ${endpointOption.name}`;
-            }
-
-            return [
-                {
-                    label,
-                    options: endpointOption.endpoints.map((endpoint) => {
-                        return {
-                            text: endpoint.name,
-                            value: `${endpointOption.type}/${endpointOption.id}`
-                        };
-                    })
+        let options;
+        if (endpointOptions.length > 0) {
+            options = endpointOptions.map((endpointOption) => {
+                let label;
+                if (endpointOption.id === this._focusNode.id) {
+                    label = `(${endpointOption.type}) this`;
+                } else {
+                    label = `(${endpointOption.type}) ${endpointOption.name}`;
                 }
-            ];
-        }).reduce((prev, current) => {
-            return prev.concat(current);
-        });
+
+                return [
+                    {
+                        label,
+                        options: endpointOption.endpoints.map((endpoint) => {
+                            return {
+                                text: endpoint.name,
+                                value: `${endpointOption.type}/${endpointOption.id}`
+                            };
+                        })
+                    }
+                ];
+            }).reduce((prev, current) => {
+                return prev.concat(current);
+            });
+        } else {
+            options = [];
+        }
         return options;
     }
 
@@ -903,7 +916,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _createRouteStart(endpointOptions) {
         const numRows = this._getSelectListSize(endpointOptions);
-        const $bindingSelect = FormUtils.createSelect(`binding-outputs`, this._rebuildSelectList(endpointOptions));
+        const $bindingSelect = FormUtils.createSelect(`binding-start`, this._rebuildSelectList(endpointOptions));
         $bindingSelect.multiple = true;
         $bindingSelect.size = numRows;
         // $bindingSelect.onfocus = function (e) {
@@ -970,12 +983,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     /**
-     *  _updateAnnotations - @TODO understand this
+     *  _refreshAnnotations - @TODO understand this
      *  _addAnnotation
      *  _clearAnnotations
      */
 
-    _updateAnnotations() {
+    _refreshAnnotations() {
         this._clearAnnotations();
         if (this._focusNode.children.length > 0) {
             for (const child of this._focusNode.children) {
@@ -1135,3 +1148,21 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 });
 
 export default customElements.get(`jag-properties`);
+
+
+// cloneActivity(sourceActivity, newURN) {
+//     const description = sourceActivity.toJSON();
+//     description.urn = newURN;
+//     const newActivity = Activity.fromJSON(description);
+//     // Update activity references.
+//     this._node.activity = newActivity; // ?
+//     this._focusNode.activity = newActivity;
+//     this.dispatchEvent(new CustomEvent(`event-activity-created`, {
+//         bubbles: true,
+//         composed: true,
+//         detail: {activityConstruct: newActivity}
+//     }));    // event-activity-created in playground uses components
+//     // Remove unsaved box shadow on URN property input.
+//     this._$urnInput.classList.toggle(`edited`, false);
+// }
+

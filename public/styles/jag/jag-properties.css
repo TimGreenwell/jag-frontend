@@ -127,7 +127,7 @@ jag-properties #bindings-property  {
 
 }
 
-jag-properties #binding-outputs {
+jag-properties #binding-start {
     flex-basis: content;
     flex-direction: column;
     flex-grow: 1;

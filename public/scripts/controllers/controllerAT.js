@@ -505,7 +505,7 @@ export default class ControllerAT extends Controller {
             }
         }
         await Promise.all(updatePromises);
-        this._properties.handleStorageUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
+        this._properties.handleExternalActivityUpdate(updatedActivity, updatedActivityUrn);   // change property window values if that one is changed in IA
         this._activityLibrary.updateItem(updatedActivity);
     }
 
