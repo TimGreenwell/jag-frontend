@@ -143,32 +143,32 @@ export default class JAGATValidation {
             throw new Error(`Input must be an object with name and type strings.`);
         }
 
-        if (input.name == undefined) {
+        if (input.identity == undefined) {
             throw new Error(`Input does not have a name.`);
         }
 
-        if (typeof input.name !== `string`) {
+        if (typeof input.identity !== `string`) {
             throw new Error(`Input must have a name which is a string.`);
         }
 
-        if (input.name.length === 0) {
+        if (input.identity.length === 0) {
             throw new Error(`Input must have a name at least 1 character long.`);
         }
 
-        if (input.type == undefined) {
-            throw new Error(`Input (${input.name}) does not have a type.`);
+        if (input.format == undefined) {
+            throw new Error(`Input (${input.identity}) does not have a type.`);
         }
 
-        if (typeof input.type !== `string`) {
-            throw new Error(`Input (${input.name}) must have a type which is a string.`);
+        if (typeof input.format !== `string`) {
+            throw new Error(`Input (${input.identity}) must have a type which is a string.`);
         }
 
-        if (input.type.length === 0) {
-            throw new Error(`Input (${input.name}) must have a type at least 1 character long.`);
+        if (input.format.length === 0) {
+            throw new Error(`Input (${input.identity}) must have a type at least 1 character long.`);
         }
 
         if (Object.keys(input).length !== 2) {
-            throw new Error(`Input (${input.name}) contains unknown properties: only accepts name and type strings.`);
+            throw new Error(`Input (${input.identity}) contains unknown properties: only accepts name and type strings.`);
         }
     }
 
@@ -193,32 +193,32 @@ export default class JAGATValidation {
             throw new Error(`Output must be an object with name and type strings.`);
         }
 
-        if (output.name == undefined) {
+        if (output.identity == undefined) {
             throw new Error(`Output does not have a name.`);
         }
 
-        if (typeof output.name !== `string`) {
+        if (typeof output.identity !== `string`) {
             throw new Error(`Output must have a name which is a string.`);
         }
 
-        if (output.name.length === 0) {
+        if (output.identity.length === 0) {
             throw new Error(`Output must have a name at least 1 character long.`);
         }
 
-        if (output.type == undefined) {
-            throw new Error(`Output (${output.name}) does not have a type.`);
+        if (output.format == undefined) {
+            throw new Error(`Output (${output.identity}) does not have a type.`);
         }
 
-        if (typeof output.type !== `string`) {
-            throw new Error(`Output (${output.name}) must have a type which is a string.`);
+        if (typeof output.format !== `string`) {
+            throw new Error(`Output (${output.identity}) must have a type which is a string.`);
         }
 
-        if (output.type.length === 0) {
-            throw new Error(`Output (${output.name}) must have a type at least 1 character long.`);
+        if (output.format.length === 0) {
+            throw new Error(`Output (${output.identity}) must have a type at least 1 character long.`);
         }
 
         if (Object.keys(output).length !== 2) {
-            throw new Error(`Output (${output.name}) contains unknown properties: only accepts name and type strings.`);
+            throw new Error(`Output (${output.identity}) contains unknown properties: only accepts name and type strings.`);
         }
     }
 
@@ -320,9 +320,7 @@ export default class JAGATValidation {
 
         for (let i = 0; i < bindings.length; ++i) {
             const binding = bindings[i];
-            console.log(`fromJSON - validation`);
             try {
-                console.log(binding);
                 JAGATValidation.validateBinding(binding);
             } catch (e) {
                 throw new Error(`Failed to validate binding ${i}: ${e.message}`);

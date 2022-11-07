@@ -200,7 +200,6 @@ export default class ControllerAT extends Controller {
 
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
-        console.log(selectedNodeArray);
         this._properties.handleSelectionUpdate(selectedNodeArray);
         this._timeview.refreshTimeview(selectedNodeArray[0]);
         // ide.handleSelectionUpdate(e.detail);

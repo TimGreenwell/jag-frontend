@@ -50,7 +50,7 @@ export default class Activity extends EventTarget {
        // this._bindings = new Set(bindings);
         this._bindings = bindings;
 
-            this._author = author;
+        this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._lockedBy = lockedBy;
@@ -213,10 +213,7 @@ export default class Activity extends EventTarget {
     }
 
     addBinding(value) {
-        console.log("adding a Binding")
-        console.log(value)
         this._bindings.push(value);
-        console.log(this._bindings)
     }
 
     set execution(type) {
@@ -349,8 +346,8 @@ export default class Activity extends EventTarget {
             return {
                 id: `this`,
                 activity: this,
-                property: input.name,
-                type: input.type
+                property: input.identity,
+                type: input.format
             };
         });
 
@@ -361,17 +358,15 @@ export default class Activity extends EventTarget {
                 if (child.id === id) {
                     break;
                 }
-console.log(`well,`)
                 if (child.activity) {
-                    console.log(`good`)
                     const child_outputs = child.activity.outputs;
 
                     for (const child_output of child_outputs) {
                         availableInputs.push({
                             id: child.id,
                             activity: child.activity,
-                            property: child_output.name,
-                            type: child_output.type
+                            property: child_output.identity,
+                            type: child_output.format
                         });
                     }
                 }
@@ -600,10 +595,6 @@ console.log(`well,`)
         // this._bindings.forEach((binding) => {
         //     json.bindings.push(binding);
         // });
-
-        console.log(`here it is:`)
-
-
 
         const bindingStack = [];
         for (const binding of this._bindings) {

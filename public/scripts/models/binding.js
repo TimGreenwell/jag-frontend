@@ -26,7 +26,6 @@ export default class Binding {
     }
 
     addFrom(value) {
-        console.log(`adding to from`)
         this._from.push(value);
     }
 
@@ -46,8 +45,8 @@ export default class Binding {
 
     toJSON() {
         const json = {
-            from: this._from,
-            to: this._to}
+            from: this.from,
+            to: this.to}
         return json;
     }
 

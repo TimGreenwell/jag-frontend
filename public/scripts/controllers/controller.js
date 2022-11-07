@@ -228,9 +228,9 @@ export default class Controller extends EventTarget {
                 });
                 const validNodeChildren = changedActivity.children;
                 const kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
-                console.log(`Kids to add: ${kidsToAdd.length}`);
+                // console.log(`Kids to add: ${kidsToAdd.length}`);
                 const kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-                console.log(`Kids to remove: ${kidsToRemove.length}`);
+                // console.log(`Kids to remove: ${kidsToRemove.length}`);
 
                 kidsToAdd.forEach((child) => {
                     // 1) get newly created activity from map. 2) Create Node

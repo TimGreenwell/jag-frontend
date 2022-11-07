@@ -123,9 +123,20 @@ jag-properties #bindings-property  {
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-
-
 }
+
+jag-properties #adders-property  {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+jag-properties #binding-buttons  {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
 
 jag-properties #binding-start {
     flex-basis: content;

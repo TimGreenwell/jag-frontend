@@ -63,34 +63,6 @@ class FormUtils {
         let input = document.createElement(`select`);
         input.setAttribute(`id`, id);
         input = FormUtils.updateSelect(input, options, selected);
-
-        // options.forEach((item) => {
-        //     if (item.label) {
-        //         const opgr_el = document.createElement(`optgroup`);
-        //         opgr_el.setAttribute(`label`, item.label);
-        //
-        //         item.options.forEach((option) => {
-        //             const opt_el = document.createElement(`option`);
-        //             opt_el.value = option.value;
-        //             opt_el.text = option.text;
-        //             opgr_el.appendChild(opt_el);
-        //         });
-        //
-        //         input.add(opgr_el);
-        //     } else {
-        //         const opt_el = document.createElement(`option`);
-        //         opt_el.value = item.value;
-        //         opt_el.text = item.text;
-        //         input.add(opt_el);
-        //     }
-        // });
-        //
-        // if (selected) {
-        //     input.value = selected;
-        // } else {
-        //     input.value = undefined;
-        // }
-
         return input;
     }
 

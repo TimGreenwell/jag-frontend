@@ -8,8 +8,26 @@
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
-  "inputs": [],
-  "outputs": [],
+  "inputs": [
+    {
+      "identity": "111in1",
+      "format": "111"
+    },
+    {
+      "identity": "111in2",
+      "format": "11"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "111ou1",
+      "format": "dd"
+    },
+    {
+      "identity": "111out2",
+      "format": "ee"
+    }
+  ],
   "children": [
     {
       "urn": "us:ihmc:333",
@@ -33,8 +51,26 @@
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
-  "inputs": [],
-  "outputs": [],
+  "inputs": [
+    {
+      "identity": "333in1",
+      "format": "3"
+    },
+    {
+      "identity": "333in2",
+      "format": "3333"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "333out1",
+      "format": "22"
+    },
+    {
+      "identity": "333out2",
+      "format": "3333"
+    }
+  ],
   "children": [
     {
       "urn": "us:ihmc:777",
@@ -90,8 +126,26 @@
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
-  "inputs": [],
-  "outputs": [],
+  "inputs": [
+    {
+      "identity": "222in1",
+      "format": "44243"
+    },
+    {
+      "identity": "222in2",
+      "format": "345"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "222out1",
+      "format": "54"
+    },
+    {
+      "identity": "222out2",
+      "format": "543"
+    }
+  ],
   "children": [
     {
       "urn": "us:ihmc:555",
@@ -161,8 +215,8 @@
       "projectId": "fdd19366",
       "isLocked": false,
       "isExpanded": true,
-      "x": 603,
-      "y": 51,
+      "x": 148,
+      "y": 206,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -179,8 +233,8 @@
           "projectId": "fdd19366",
           "isLocked": false,
           "isExpanded": true,
-          "x": 306,
-          "y": 401,
+          "x": 249,
+          "y": 180,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -198,8 +252,8 @@
           "projectId": "fdd19366",
           "isLocked": false,
           "isExpanded": true,
-          "x": 240,
-          "y": 165,
+          "x": 249,
+          "y": 232,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -219,8 +273,8 @@
       "projectId": "fdd19366",
       "isLocked": false,
       "isExpanded": true,
-      "x": 125,
-      "y": 408,
+      "x": 148,
+      "y": 310,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -237,8 +291,8 @@
           "projectId": "fdd19366",
           "isLocked": false,
           "isExpanded": true,
-          "x": 282,
-          "y": 459,
+          "x": 249,
+          "y": 284,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -256,8 +310,8 @@
           "projectId": "fdd19366",
           "isLocked": false,
           "isExpanded": true,
-          "x": 442,
-          "y": 279,
+          "x": 249,
+          "y": 336,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
