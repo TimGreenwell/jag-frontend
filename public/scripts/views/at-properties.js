@@ -10,6 +10,7 @@
 import Activity from '../models/activity.js';
 import FormUtils from '../utils/forms.js';
 import Validator from "../utils/validation.js";
+import Binding from "../models/binding.js";
 
 
 customElements.define(`jag-properties`, class extends HTMLElement {
@@ -19,13 +20,21 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode = undefined;
         this._producesMap = new Map();  // ?
         this._consumesMap = new Map();  // ?
+        this._newBinding = new Binding();
         this._initUI();
+        this.ROUTERS = [];
+        this.SORTERS = []
 
-        this.FORWARD = [
+
+    }
+
+
+    _getRouterDefinitions() {
+        const definition = [
             {
-                id: `forwardRouter`,
-                name: `Forward Router`,
-                type: `out`,
+                groupId: this._focusNode.activity.urn,
+                groupName: ``,
+                groupType: `router`,
                 endpoints: [
                     {
                         name: `General Broadcast`,
@@ -42,14 +51,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 ]
             }
         ];
-        this.REVERSE = [
+        return definition;
+    }
+
+    _getSorterDefinitions() {
+        const definition = [
             {
-                id: `reverseRouter`,
-                name: `Reverse Router`,
-                type: `in`,
+                groupId: this._focusNode.activity.urn,
+                groupName: ``,
+                groupType: `sorter`,
                 endpoints: [
                     {
-                        name: `General Aggregate`,
+                        name: `Aggregate`,
                         type: `na`
                     },
                     {
@@ -61,14 +74,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         type: `na`
                     },
                     {
-                        name: `First Come`,
+                        name: `Real Time`,
+                        type: `na`
+                    },
+                    {
+                        name: `Queued`,
                         type: `na`
                     }
                 ]
             }
         ];
+        return definition;
     }
-
 
     _initUI() {
         // The "Child-Of" banner
@@ -134,7 +151,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $operationDiv.appendChild(this._$operatorSelect);
         $activityPropertiesDiv.appendChild($operationDiv);
 
-        // Create inputs area
+        // Inputs --- Add & List
         const $endpointsInDiv = FormUtils.createPropertyElement(`inputs-property`, `Inputs`);
         const $endpointInAdd = document.createElement(`span`);
         $endpointInAdd.innerHTML = `+`;
@@ -146,7 +163,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $endpointsInDiv.appendChild(this._$endpointsInListDiv);
         $activityPropertiesDiv.appendChild($endpointsInDiv);
 
-        // Create outputs area
+        // Outputs --- Add & List
         const $endpointsOutDiv = FormUtils.createPropertyElement(`outputs-property`, `Outputs`);
         const $endpointOutAdd = document.createElement(`span`);
         $endpointOutAdd.innerHTML = `+`;
@@ -158,7 +175,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $endpointsOutDiv.appendChild(this._$endpointsOutListDiv);
         $activityPropertiesDiv.appendChild($endpointsOutDiv);
 
-        // Create bindings area
+        // Bindings area - built as selections made.
         const $bindingsDiv = FormUtils.createPropertyElement(`bindings-property`, `Bindings`);
         this.$bindingActionsDiv = FormUtils.createEmptyInputContainer(`bindings-property`);
         this.$bindingActionsDiv.className = `directProperty`;
@@ -543,6 +560,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _refreshEndpoints() {                // (when properties update)
         this._clearEndpoints();
+        const oldBindings = this._focusNode.activity.bindings;
+        console.log(`bindings`);
+        console.log(oldBindings);
 
         // Creates the list of inputs under `Inputs   +`
         for (const input of this._focusNode.activity.inputs) {
@@ -584,10 +604,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this.$bindingActionsDiv.appendChild($bindButton);
         // this.$bindingActionsDiv.appendChild($bindingPanel);
 
-        // Binding Events - bindButton, selectChanges
-
+        // Binding Events -  selectChanges, bindButton,
+        // User changes 1st Select (the `from` selection)
         $startEndpointSelect.addEventListener(`change`, function (e) {
             const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+            this._newBinding.from.length = 0;
 
             if (selectedStartEndpoints.length < 1) {
                 $destinationEndpointSelect.classList.add(`hidden`);
@@ -604,16 +625,22 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     allowedEndpointDestination = this._getSelfOuts();
                 } else if (startEndpointType === `out`) {
                     if (startEndpointUrn === this._focusNode.activity.urn) {
-                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this.FORWARD];
+                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
                     } else {
                         allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
                     }
                 }
                 $destinationEndpointSelect.classList.remove(`hidden`);
+                this._newBinding.addFrom({urn: startEndpointUrn,
+                    id: startEndpointName,
+                    property: startEndpointType});
+                console.log(`first go:`)
+                console.log(JSON.stringify(this._newBinding))
                 this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
             }
 
             if (selectedStartEndpoints.length > 1) {
+                // 1) Check if all selected are of same type -  all in-type or all out-type (can not have a mix)
                 const groupType = selectedStartEndpoints[0].value.split(`/`)[0];
                 let groupTypeValid = true;
                 selectedStartEndpoints.forEach((endpoint) => {
@@ -623,190 +650,173 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     if (startEndpointType !== groupType) {
                         groupTypeValid = false;
                     }
+                    this._newBinding.addFrom({urn: startEndpointUrn,
+                        id: startEndpointName,
+                        property: startEndpointType});
                 });
-                let allowedEndpointDestination;
-                if (groupType === `in`) {
-                    allowedEndpointDestination = this._getSelfOuts();
-                } else if (groupType === `out`) {
-                        allowedEndpointDestination = [...this.REVERSE];
+                // 2) create 2nd $select of allowed endpoints to end the route.
+                let allowedEndpointDestination = [];
+                if (groupTypeValid) {
+                    if (groupType === `in`) {
+                        allowedEndpointDestination = this._getSelfOuts();
+                    } else if (groupType === `out`) {
+                        allowedEndpointDestination = [...this._getSorterDefinitions()];
+                    }
+                    $destinationEndpointSelect.classList.remove(`hidden`);
+                    this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
                 }
-                $destinationEndpointSelect.classList.remove(`hidden`);
-                this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
+                else {
+                    $destinationEndpointSelect.classList.add(`hidden`);
+                }
             }
         }.bind(this));
 
         // Add handler for change in output select element
         $destinationEndpointSelect.addEventListener(`change`, function (e) {
-            const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+            const selectedDestinationEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+            this._newBinding.to.length = 0;
+            console.log(JSON.stringify(this._newBinding.from))
 
-            if (selectedStartEndpoints.length < 1) {
+
+            if (selectedDestinationEndpoints.length < 1) {
                 $destinationEndpointSelect.classList.add(`hidden`);
                 $destinationEndpointSelect.size = 0;
             }
 
-            const output_option = e.target.selectedOptions[0];
-
-            const valid_input_values_for_output = new Set();
-
-            if (output_option) {
-                const provider = output_option.value.split(`:`);
-
-                const this_inputs_names = new Set();
-                this._focusNode.activity.inputs.forEach((input) => {
-                    return this_inputs_names.add(input.name);
-                });
-
-                // TODO: Check if type matches selected output type (probably need to get output type first)
-                if (provider[0] == `this`) {
-                    for (const option of $startEndpointSelect.options) {
-                        valid_input_values_for_output.add(option.value);
-                    }
-                } else {
-                    // TODO: Check if type matches selected output type (probably need to get output type first)
-                    this._focusNode.activity.outputs.forEach((output) => {
-                        return valid_input_values_for_output.add(`this:${output.name}`);
-                    });
-
-                    if (this._focusNode.activity.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
-                        if (provider[0] === `any`) {
-                            const all_cumulative_outputs = new Set();
-
-                            this._focusNode.activity.inputs.forEach((input) => {
-                                return all_cumulative_outputs.add(input.name);
-                            });
-
-                            const valid_any_outputs_from_children = new Set();
-
-                            for (const child of this._focusNode.activity.children) {
-                                if (valid_any_outputs_from_children.has(provider[1])) {
-                                    child.nodeModel.activity.inputs.forEach((input) => {
-                                        return valid_input_values_for_output.add(`${child.id}:${input.name}`);
-                                    });
-                                }
-
-                                child.nodeModel.activity.outputs.forEach((output) => {
-                                    if (all_cumulative_outputs.has(output.name)) {
-                                        valid_any_outputs_from_children.add(output.name);
-                                    } else {
-                                        all_cumulative_outputs.add(output.name);
-                                    }
-                                });
-                            }
-                        } else {
-                            const order = this._focusNode.activity.getOrderForId(provider[0]);
-
-                            for (const child of this._focusNode.activity.children) {
-                                if (child.nodeModel.activity) {
-                                    if (this._focusNode.activity.getOrderForId(child.id) > order) {
-                                        for (const input of child.nodeModel.activity.inputs) {
-                                            // TODO: Check if type matches selected output type (probably need to get output type first)
-                                            valid_input_values_for_output.add(`${child.id}:${input.name}`);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            if (selectedDestinationEndpoints.length === 1) {
+                // wake up buttons to click
+                const selectedOption = selectedDestinationEndpoints[0];
+                const destinationEndpointType = selectedOption.value.split(`/`)[0];
+                const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
+                const destinationEndpointName = selectedOption.label.split(` `)[0];
+                console.log(`adding to binding`)
+                this._newBinding.addTo({urn: destinationEndpointUrn,
+                    id: destinationEndpointName,
+                    property: destinationEndpointType});
+                console.log(this._newBinding.to)
+                if (this._newBinding.to[0].type === `router`) {
+                    console.log(`routere alete`)
                 }
-
-                FormUtils.toggleSelectValues($startEndpointSelect, valid_input_values_for_output);
             }
 
-            this._previous_value = output_option.value;
+
+            if (selectedDestinationEndpoints.length > 1) {
+                // wake up buttons to click --
+
+                selectedDestinationEndpoints.forEach((selectedOption) => {
+                    const destinationEndpointType = selectedOption.value.split(`/`)[0];
+                    const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
+                    const destinationEndpointName = selectedOption.label.split(` `)[0];
+                    this._newBinding.addTo({urn: destinationEndpointUrn,
+                        id: destinationEndpointName,
+                        property: destinationEndpointType});
+                });
+            }
         }.bind(this));
         //     }
 
         $bindButton.addEventListener(`click`, function (e) {
-            const selectedDestination = $destinationEndpointSelect.selectedOptions[0];
-            const selectedStart = $startEndpointSelect.selectedOptions[0];
+            console.log(`checking`);
+            console.log(this._newBinding);
+            this._focusNode.activity.addBinding(this._newBinding);
+            console.log(`committing`);
+            console.log(JSON.stringify(this._focusNode.activity.bindings));
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
 
-            if (selectedDestination && selectedStart) {
-                const provider = selectedDestination.value.split(`:`);
-                const consumer = selectedStart.value.split(`:`);
 
-                this._focusNode.activity.addBinding({
-                    consumer: {
-                        id: consumer[0],
-                        property: consumer[1]
-                    },
-                    provider: {
-                        id: provider[0],
-                        property: provider[1]
-                    }
-                });
-
-                $destinationEndpointSelect.value = undefined;
-                $startEndpointSelect.value = undefined;
-            }
+            // const selectedDestination = $destinationEndpointSelect.selectedOptions[0];
+            // const selectedStart = $startEndpointSelect.selectedOptions[0];
+            // if (selectedDestination && selectedStart) {
+            //     const provider = selectedDestination.value.split(`:`);
+            //     const consumer = selectedStart.value.split(`:`);
+            //
+            //     this._focusNode.activity.addBinding({
+            //         consumer: {
+            //             id: consumer[0],
+            //             property: consumer[1]
+            //         },
+            //         provider: {
+            //             id: provider[0],
+            //             property: provider[1]
+            //         }
+            //     });
+            //
+            //     $destinationEndpointSelect.value = undefined;
+            //     $startEndpointSelect.value = undefined;
+            // }
         }.bind(this));
 
 
-        for (const binding of this._focusNode.activity.bindings) {
-            const binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
-
-            const output_label = document.createElement(`input`);
-            output_label.disabled = true;
-
-            if (binding.provider.id == `this` || binding.provider.id == `any`) {
-                output_label.value = `${binding.provider.id}:${binding.provider.property}`;
-            } else {
-                const provider_node = this._focusNode.activity.getCanonicalNode(binding.provider.id);
-
-                let provider_name = binding.provider.id;
-
-                if (provider_node.name) {
-                    provider_name = provider_node.name;
-                } else if (provider_node.nodeModel.activity) {
-                    provider_name = provider_node.nodeModel.activity.name;
-                }
-
-                output_label.value = `${provider_name}:${binding.provider.property}`;
-            }
-
-            output_label.className = `binding output`;
-
-            binding_box.appendChild(output_label);
-
-            const arrow = document.createElement(`span`);
-            arrow.innerHTML = `&#x2192;`;
-            arrow.className = `binding arrow`;
-            binding_box.appendChild(arrow);
-
-            const input_label = document.createElement(`input`);
-            input_label.disabled = true;
-
-            if (binding.consumer.id == `this` || binding.consumer.id == `any`) {
-                input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
-            } else {
-                const consumer_node = this._focusNode.activity.getCanonicalNode(binding.consumer.id);
-
-                let consumer_name = binding.consumer.id;
-
-                if (consumer_node.name) {
-                    consumer_name = consumer_node.name;
-                } else if (consumer_node.nodeModel.activity) {
-                    consumer_name = consumer_node.nodeModel.activity.name;
-                }
-
-                input_label.value = `${consumer_name}:${binding.consumer.property}`;
-            }
-
-            input_label.className = `binding input`;
-
-            binding_box.appendChild(input_label);
-
-            const remove = document.createElement(`span`);
-            remove.innerHTML = `-`;
-            remove.className = `binding remove`;
-
-            remove.addEventListener(`click`, function (e) {
-                this._focusNode.activity.removeBinding(binding);
-            }.bind(this));
-
-            binding_box.appendChild(remove);
-
-            this.$bindingActionsDiv.appendChild(binding_box);
-        }
+        // for (const binding of this._focusNode.activity.bindings) {
+        //     const binding_box = FormUtils.createEmptyInputContainer(`binding-${binding.consumer.id}-${binding.consumer.property}`);
+        //
+        //     const output_label = document.createElement(`input`);
+        //     output_label.disabled = true;
+        //
+        //     if (binding.provider.id == `this` || binding.provider.id == `any`) {
+        //         output_label.value = `${binding.provider.id}:${binding.provider.property}`;
+        //     } else {
+        //         const provider_node = this._focusNode.activity.getCanonicalNode(binding.provider.id);
+        //
+        //         let provider_name = binding.provider.id;
+        //
+        //         if (provider_node.name) {
+        //             provider_name = provider_node.name;
+        //         } else if (provider_node.nodeModel.activity) {
+        //             provider_name = provider_node.nodeModel.activity.name;
+        //         }
+        //
+        //         output_label.value = `${provider_name}:${binding.provider.property}`;
+        //     }
+        //
+        //     output_label.className = `binding output`;
+        //
+        //     binding_box.appendChild(output_label);
+        //
+        //     const arrow = document.createElement(`span`);
+        //     arrow.innerHTML = `&#x2192;`;
+        //     arrow.className = `binding arrow`;
+        //     binding_box.appendChild(arrow);
+        //
+        //     const input_label = document.createElement(`input`);
+        //     input_label.disabled = true;
+        //
+        //     if (binding.consumer.id == `this` || binding.consumer.id == `any`) {
+        //         input_label.value = `${binding.consumer.id}:${binding.consumer.property}`;
+        //     } else {
+        //         const consumer_node = this._focusNode.activity.getCanonicalNode(binding.consumer.id);
+        //
+        //         let consumer_name = binding.consumer.id;
+        //
+        //         if (consumer_node.name) {
+        //             consumer_name = consumer_node.name;
+        //         } else if (consumer_node.nodeModel.activity) {
+        //             consumer_name = consumer_node.nodeModel.activity.name;
+        //         }
+        //
+        //         input_label.value = `${consumer_name}:${binding.consumer.property}`;
+        //     }
+        //
+        //     input_label.className = `binding input`;
+        //
+        //     binding_box.appendChild(input_label);
+        //
+        //     const remove = document.createElement(`span`);
+        //     remove.innerHTML = `-`;
+        //     remove.className = `binding remove`;
+        //
+        //     remove.addEventListener(`click`, function (e) {
+        //         this._focusNode.activity.removeBinding(binding);
+        //     }.bind(this));
+        //
+        //     binding_box.appendChild(remove);
+        //
+        //     this.$bindingActionsDiv.appendChild(binding_box);
+        // }
     }
 
     _clearEndpoints() {
@@ -838,34 +848,34 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._$endpointsOutListDiv.appendChild(output_el);
     }
 
-    _createRouteDestinations(options) {
-        const $bindingSelect = FormUtils.createSelect(`binding-inputs`, options.map((node) => {
-            let label = node.id;
-            if (node.id !== `this`) {
-                label = node.name;
-            }
-
-            return [
-                {
-                    label,
-                    options: node.endpoints.map((endpoint) => {
-                        return {
-                            text: endpoint.name,
-                            value: `${node.id}:${endpoint.name}`
-                        };
-                    })
-                }
-            ];
-        }).reduce((c, n) => {
-            return c.concat(n);
-        }));
-
-        $bindingSelect.onfocus = function (e) {
-            this._previous_value = this.value;
-        }.bind($bindingSelect);
-
-        return $bindingSelect;
-    }
+    // _createRouteDestinations(options) {
+    //     const $bindingSelect = FormUtils.createSelect(`binding-inputs`, options.map((node) => {
+    //         let label = node.id;
+    //         if (node.id !== `this`) {
+    //             label = node.name;
+    //         }
+    //
+    //         return [
+    //             {
+    //                 label,
+    //                 options: node.endpoints.map((endpoint) => {
+    //                     return {
+    //                         text: endpoint.name,
+    //                         value: `${node.id}:${endpoint.name}`
+    //                     };
+    //                 })
+    //             }
+    //         ];
+    //     }).reduce((c, n) => {
+    //         return c.concat(n);
+    //     }));
+    //
+    //     $bindingSelect.onfocus = function (e) {
+    //         this._previous_value = this.value;
+    //     }.bind($bindingSelect);
+    //
+    //     return $bindingSelect;
+    // }
 
 
     _rebuildSelectList(endpointOptions) {
@@ -873,19 +883,27 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (endpointOptions.length > 0) {
             options = endpointOptions.map((endpointOption) => {
                 let label;
-                if (endpointOption.id === this._focusNode.id) {
-                    label = `(${endpointOption.type}) this`;
+                if (endpointOption.groupId === this._focusNode.activity.urn) {
+                    label = `(${endpointOption.groupType}) this`;
                 } else {
-                    label = `(${endpointOption.type}) ${endpointOption.name}`;
+                    label = `(${endpointOption.groupType}) ${endpointOption.groupName}`;
                 }
 
                 return [
                     {
                         label,
                         options: endpointOption.endpoints.map((endpoint) => {
+                            if (endpointOption.groupType === `in`){
+                                console.log(`labeling an in`)
+                                this._focusNode.activity.bindings.forEach((binding) => {
+                                    if (binding.from.name === endpoint.name) {
+                                        console.log(`Already bound!!!!!!!`);
+                                    }
+                                });
+                            }
                             return {
                                 text: endpoint.name,
-                                value: `${endpointOption.type}/${endpointOption.id}`
+                                value: `${endpointOption.groupType}/${endpointOption.groupId}`
                             };
                         })
                     }
@@ -930,9 +948,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const availableInputs = [];
         if (this._focusNode.activity.inputs.length > 0) {
             availableInputs.push({
-                id: this._focusNode.activity.urn,
-                name: this._focusNode.activity.name,
-                type: `in`,
+                groupId: this._focusNode.activity.urn,
+                groupName: this._focusNode.activity.name,
+                groupType: `in`,
                 endpoints: this._focusNode.activity.inputs
             });
         }
@@ -943,9 +961,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const availableOutputs = [];
         if (this._focusNode.activity.outputs.length > 0) {
             availableOutputs.push({
-                id: this._focusNode.activity.urn,
-                name: this._focusNode.activity.name,
-                type: `out`,
+                groupId: this._focusNode.activity.urn,
+                groupName: this._focusNode.activity.name,
+                groupType: `out`,
                 endpoints: this._focusNode.activity.outputs
             });
         }
@@ -957,9 +975,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode.children.forEach((child) => {
             if (child.activity.inputs.length > 0) {
                 availableInputs.push({
-                    id: child.activity.urn,
-                    name: child.activity.name,
-                    type: `in`,
+                    groupId: child.activity.urn,
+                    groupName: child.activity.name,
+                    groupType: `in`,
                     endpoints: child.activity.inputs
                 });
             }
@@ -972,9 +990,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode.children.forEach((child) => {
             if (child.activity.outputs.length > 0) {
                 availableOutputs.push({
-                    id: child.activity.urn,
-                    name: child.activity.name,
-                    type: `out`,
+                    groupId: child.activity.urn,
+                    groupName: child.activity.name,
+                    groupType: `out`,
                     endpoints: child.activity.outputs
                 });
             }

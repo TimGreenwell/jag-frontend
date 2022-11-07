@@ -8,6 +8,7 @@
 
 import {uuidV4} from '../utils/uuid.js';
 import Validation from "../utils/validation.js";
+import Binding from "./binding.js";
 
 
 export default class Activity extends EventTarget {
@@ -27,7 +28,7 @@ export default class Activity extends EventTarget {
         outConnectors = [],
         outputs = [],
         children = [],
-        bindings = [],
+        bindings = [],   // list of Binding
         author,
         createdDate,
         modifiedDate,
@@ -46,9 +47,10 @@ export default class Activity extends EventTarget {
         this._outConnectors = outConnectors,
         this._outputs = outputs ? [...outputs] : [];
         this._children = children ? [...children] : [];
-        this._bindings = new Set(bindings);
+       // this._bindings = new Set(bindings);
+        this._bindings = bindings;
 
-        this._author = author;
+            this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
         this._lockedBy = lockedBy;
@@ -208,6 +210,13 @@ export default class Activity extends EventTarget {
 
     get bindings() {
         return [...this._bindings];
+    }
+
+    addBinding(value) {
+        console.log("adding a Binding")
+        console.log(value)
+        this._bindings.push(value);
+        console.log(this._bindings)
     }
 
     set execution(type) {
@@ -387,15 +396,15 @@ console.log(`well,`)
      *
      * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding Binding to add.
      */
-    addBinding(binding) {
-        const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
-
-        if (existing_binding !== undefined) {
-            this._bindings.delete(existing_binding);
-        }
-
-        this._bindings.add(binding);
-    }
+    // addBinding(binding) {
+    //     const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
+    //
+    //     if (existing_binding !== undefined) {
+    //         this._bindings.delete(existing_binding);
+    //     }
+    //
+    //     this._bindings.add(binding);
+    // }
 
     /**
      * Check if a binding exists for the given consumer ID and property.
@@ -588,18 +597,35 @@ console.log(`well,`)
         this._outputs.forEach((output) => {
             json.outputs.push(output);
         });
-        this._bindings.forEach((binding) => {
-            json.bindings.push({
-                consumer: {
-                    id: binding.consumer.id,
-                    property: binding.consumer.property
-                },
-                provider: {
-                    id: binding.provider.id,
-                    property: binding.provider.property
-                }
-            });
-        });
+        // this._bindings.forEach((binding) => {
+        //     json.bindings.push(binding);
+        // });
+
+        console.log(`here it is:`)
+
+
+
+        const bindingStack = [];
+        for (const binding of this._bindings) {
+            console.log(binding)
+            bindingStack.push(binding.toJSON());
+        }
+        json.bindings = bindingStack;
+
+
+
+        // this._bindings.forEach((binding) => {
+        //     json.bindings.push({
+        //         consumer: {
+        //             id: binding.consumer.id,
+        //             property: binding.consumer.property
+        //         },
+        //         provider: {
+        //             id: binding.provider.id,
+        //             property: binding.provider.property
+        //         }
+        //     });
+        // });
         return json;
     }
 
@@ -622,7 +648,11 @@ console.log(`well,`)
             } catch (e) {
                 throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
-
+            const bindingStack = [];
+            for (const binding of json.bindings) {
+                bindingStack.push(Binding.fromJSON(binding));
+            }
+            json.bindings = bindingStack;
 
             const returnValue = new Activity(json);
             return returnValue;

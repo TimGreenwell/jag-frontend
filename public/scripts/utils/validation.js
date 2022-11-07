@@ -320,8 +320,9 @@ export default class JAGATValidation {
 
         for (let i = 0; i < bindings.length; ++i) {
             const binding = bindings[i];
-
+            console.log(`fromJSON - validation`);
             try {
+                console.log(binding);
                 JAGATValidation.validateBinding(binding);
             } catch (e) {
                 throw new Error(`Failed to validate binding ${i}: ${e.message}`);
@@ -330,75 +331,82 @@ export default class JAGATValidation {
     }
 
     static validateBinding(binding) {
-        if (binding == undefined) {
-            throw new Error(`Binding must be an object with provider and consumer ID and property strings.`);
-        }
+        // rewrite these to make sense
 
-        if (binding.consumer == undefined) {
-            throw new Error(`Binding must have a consumer with ID and property strings.`);
-        }
+        // bindings-> binding-> to endpoints  and from endpoints   endpoints -> id,type,name
 
-        if (binding.consumer.id == undefined) {
-            throw new Error(`Binding must have a ID string for its consumer.`);
-        }
 
-        if (typeof binding.consumer.id !== `string`) {
-            throw new Error(`Binding must have a ID for its consumer which is a string.`);
-        }
 
-        // if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-        //     throw new Error(`Binding must have an id for its consumer which is a v4 UUID conforming string, "any" or "this".`);
-
-        if (binding.consumer.property == undefined) {
-            throw new Error(`Binding must have a property string for its consumer.`);
-        }
-
-        if (typeof binding.consumer.property !== `string`) {
-            throw new Error(`Binding must have a property for its consumer which is a string.`);
-        }
-
-        if (binding.consumer.property.length === 0) {
-            throw new Error(`Binding must have a property string for its consumer which is at least 1 character.`);
-        }
-
-        if (Object.keys(binding.consumer).length !== 2) {
-            throw new Error(`Binding has a consumer with unknown properties: only accepts ID and property strings.`);
-        }
-
-        if (binding.provider == undefined) {
-            throw new Error(`Binding must have a provider with ID and property strings.`);
-        }
-
-        if (binding.provider.id == undefined) {
-            throw new Error(`Binding must have a ID string for its provider.`);
-        }
-
-        if (typeof binding.provider.id !== `string`) {
-            throw new Error(`Binding must have a ID for its provider which is a string.`);
-        }
-
-        // if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
-        //     throw new Error(`Binding must have an id for its provider which is a v4 UUID conforming string, "any" or "this".`);
-
-        if (binding.provider.property == undefined) {
-            throw new Error(`Binding must have a property string for its provider.`);
-        }
-
-        if (typeof binding.provider.property !== `string`) {
-            throw new Error(`Binding must have a property for its provider which is a string.`);
-        }
-
-        if (binding.provider.property.length === 0) {
-            throw new Error(`Binding must have a property string for its provider which is at least 1 character.`);
-        }
-
-        if (Object.keys(binding.provider).length !== 2) {
-            throw new Error(`Binding has a provider with unknown properties: only accepts ID and property strings.`);
-        }
-
-        if (Object.keys(binding).length !== 2) {
-            throw new Error(`Binding has unknown properties: only accepts provider and consumer with ID and property strings.`);
-        }
+        // if (binding == undefined) {
+        //     throw new Error(`Binding must be an object with provider and consumer ID and property strings.`);
+        // }
+        //
+        // if (binding.from == undefined) {
+        //     throw new Error(`Binding must have a consumer with ID and property strings.`);
+        // }
+        //
+        // if (binding.to.id == undefined) {
+        //     throw new Error(`Binding must have a ID string for its consumer.`);
+        // }
+        //
+        // if (typeof binding.to.id !== `string`) {
+        //     throw new Error(`Binding must have a ID for its consumer which is a string.`);
+        // }
+        //
+        // // if (!binding.consumer.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
+        // //     throw new Error(`Binding must have an id for its consumer which is a v4 UUID conforming string, "any" or "this".`);
+        //
+        // if (binding.consumer.property == undefined) {
+        //     throw new Error(`Binding must have a property string for its consumer.`);
+        // }
+        //
+        // if (typeof binding.consumer.property !== `string`) {
+        //     throw new Error(`Binding must have a property for its consumer which is a string.`);
+        // }
+        //
+        // if (binding.consumer.property.length === 0) {
+        //     throw new Error(`Binding must have a property string for its consumer which is at least 1 character.`);
+        // }
+        //
+        // if (Object.keys(binding.consumer).length !== 2) {
+        //     throw new Error(`Binding has a consumer with unknown properties: only accepts ID and property strings.`);
+        // }
+        //
+        // if (binding.provider == undefined) {
+        //     throw new Error(`Binding must have a provider with ID and property strings.`);
+        // }
+        //
+        // if (binding.provider.id == undefined) {
+        //     throw new Error(`Binding must have a ID string for its provider.`);
+        // }
+        //
+        // if (typeof binding.provider.id !== `string`) {
+        //     throw new Error(`Binding must have a ID for its provider which is a string.`);
+        // }
+        //
+        // // if (!binding.provider.id.match(/^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|any|this)$/))
+        // //     throw new Error(`Binding must have an id for its provider which is a v4 UUID conforming string, "any" or "this".`);
+        //
+        // if (binding.provider.property == undefined) {
+        //     throw new Error(`Binding must have a property string for its provider.`);
+        // }
+        //
+        // if (typeof binding.provider.property !== `string`) {
+        //     throw new Error(`Binding must have a property for its provider which is a string.`);
+        // }
+        //
+        // if (binding.provider.property.length === 0) {
+        //     throw new Error(`Binding must have a property string for its provider which is at least 1 character.`);
+        // }
+        //
+        // if (Object.keys(binding.provider).length !== 2) {
+        //     throw new Error(`Binding has a provider with unknown properties: only accepts ID and property strings.`);
+        // }
+        //
+        // if (Object.keys(binding).length !== 2) {
+        //     throw new Error(`Binding has unknown properties: only accepts provider and consumer with ID and property strings.`);
+        // }
     }
+
 
 }
