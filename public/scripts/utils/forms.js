@@ -24,9 +24,8 @@ class FormUtils {
     }
 
     static updateSelect($selectElement, options, selected = undefined) {
-
         while ($selectElement.firstChild) {
-            $selectElement.removeChild($selectElement.firstChild)
+            $selectElement.removeChild($selectElement.firstChild);
         }
         options.forEach((item) => {
             if (item.label) {
@@ -59,10 +58,14 @@ class FormUtils {
     }
 
 
-    static createSelect(id, options, selected = undefined) {
+    static createSelect(id, options = undefined, selected = undefined) {
         let input = document.createElement(`select`);
         input.setAttribute(`id`, id);
-        input = FormUtils.updateSelect(input, options, selected);
+        if (options) {
+            input = FormUtils.updateSelect(input, options, selected);
+        }
+        console.log("my select...")
+        console.log(input)
         return input;
     }
 

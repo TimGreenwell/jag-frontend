@@ -17,8 +17,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     constructor() {
         super();
         this._focusNode = undefined;
-        this._producesMap = new Map();  // ?
-        this._consumesMap = new Map();  // ?
         this._newBinding = new Binding();
         this._initUI();
         this.ARROW = `\u21D2`;
@@ -98,7 +96,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         const $urnDiv = FormUtils.createPropertyElement(`urn-property`, `URN`);
         this._$urnInput = FormUtils.createTextInput(`urn-property`);
-        this._$urnInput.setAttribute(`tabIndex`, `1`);
+        this._$urnInput.setAttribute(`tabIndex`, `0`);
         this._$urnInput.className = `direct-property`;
         $urnDiv.appendChild(this._$urnInput);
         $activityPropertiesDiv.appendChild($urnDiv);
@@ -106,7 +104,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const $activityNameDiv = FormUtils.createPropertyElement(`name-property`, `Name`);
         this._$activityNameInput = FormUtils.createTextInput(`name-property`);
         this._$activityNameInput.setAttribute(`placeholder`, `display name`);
-        this._$activityNameInput.setAttribute(`tabIndex`, `0`);
+        this._$activityNameInput.setAttribute(`tabIndex`, `1`);
         this._$activityNameInput.className = `direct-property`;
         $activityNameDiv.appendChild(this._$activityNameInput);
         $activityPropertiesDiv.appendChild($activityNameDiv);
@@ -152,15 +150,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $activityPropertiesDiv.appendChild($operatorDiv);
 
 
-        // Bindings area - built in this.$bindingFlexibleDiv as selections are made.
+        // Bindings area - built in this.$bindingBuilderDiv as selections are made.
         const $bindingsDiv = FormUtils.createEmptyInputContainer(`bindings-property`);
         const $bindingAddersDiv = FormUtils.createEmptyInputContainer(`adders-property`);
         $bindingAddersDiv.className = `row-spread`;
-        this.$bindingFlexibleDiv = FormUtils.createEmptyInputContainer(`binding-builder-property`);
-        this.$bindingFlexibleDiv.className = `directProperty`;
-        $bindingsDiv.appendChild($bindingAddersDiv);
-        $bindingsDiv.appendChild(this.$bindingFlexibleDiv);
-        $activityPropertiesDiv.appendChild($bindingsDiv);
 
         // Inputs --- Add & List
         // const $endpointsInDiv = FormUtils.createPropertyElement(`inputs-property`, `Inputs`);
@@ -175,6 +168,54 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $endpointOutAddButton.className = `directProperty`;
         $endpointOutAddButton.addEventListener(`click`, this._handleAddEndpointOut.bind(this));
         $bindingAddersDiv.appendChild($endpointOutAddButton);
+        $bindingsDiv.appendChild($bindingAddersDiv);
+
+        // ///// Builder == Selects
+        this.$bindingBuilderDiv = FormUtils.createEmptyInputContainer(`binding-builder-property`);
+        this.$bindingBuilderDiv.className = `directProperty`;
+
+
+        this.$startEndpointSelect = FormUtils.createSelect(`binding-start`);
+        this.$startEndpointSelect.multiple = true;
+        this.$bindingBuilderDiv.appendChild(this.$startEndpointSelect);
+
+        this.$destinationEndpointSelect = FormUtils.createSelect(`binding-destination`);
+        this.$destinationEndpointSelect.multiple = true;
+        this.$destinationEndpointSelect.classList.add(`hidden`);
+        this.$bindingBuilderDiv.appendChild(this.$destinationEndpointSelect);
+
+        const $bindingButtonsDiv = FormUtils.createEmptyInputContainer(`binding-buttons`);
+        this.$bindButton = document.createElement(`button`);
+        this.$bindButton.id = `add-binding`;
+        this.$bindButton.innerHTML = `Bind`;
+        this.$bindButton.disabled = true;
+        $bindingButtonsDiv.appendChild(this.$bindButton);
+
+        this.$unbindButton = document.createElement(`button`);
+        this.$unbindButton.id = `delete-binding`;
+        this.$unbindButton.innerHTML = `Unbind`;
+        this.$unbindButton.disabled = true;
+        $bindingButtonsDiv.appendChild(this.$unbindButton);
+
+        this.$removeButton = document.createElement(`button`);
+        this.$removeButton.id = `remove-endpoint`;
+        this.$removeButton.innerHTML = `Remove`;
+        this.$removeButton.disabled = true;
+        $bindingButtonsDiv.appendChild(this.$removeButton);
+        this.$bindingBuilderDiv.appendChild($bindingButtonsDiv);
+
+        $bindingsDiv.appendChild(this.$bindingBuilderDiv);
+
+        $activityPropertiesDiv.appendChild($bindingsDiv);
+
+        // Binding Events -  selectChanges, bindButton,
+        // User changes 1st Select (the `from` selection)
+
+        this.$startEndpointSelect.addEventListener(`change`, this.handleFromSelect.bind(this));
+        this.$destinationEndpointSelect.addEventListener(`change`, this.handleToSelect.bind(this));
+        this.$bindButton.addEventListener(`click`, this.handleBindButton.bind(this));
+        this.$unbindButton.addEventListener(`click`, this.handleUnbindButton.bind(this));
+        this.$removeButton.addEventListener(`click`, this.handleRemoveButton.bind(this));
 
 
         // Create annotation area
@@ -216,60 +257,39 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $exportSvgDiv.appendChild(this._$exportSvgButton);
         $nodePropertiesDiv.appendChild($exportSvgDiv);
 
-        this._enableProperties(false);
-        this.appendChild($propertyDiv);
+        this._enablePropertiesInputs(false);
+
         $propertyDiv.appendChild($activityPropertiesDiv);
         $propertyDiv.appendChild($nodePropertiesDiv);
-
-        // this._$urnInput.addEventListener('keyup', e => {
-        //     this._$urnInput.classList.toggle('edited', this._$urnInput.value !== this._focusNode.activity.urn);
-        // });
-
-        this._$activityNameInput.addEventListener(`blur`, this._handleActivityNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
-        this._$activityNameInput.addEventListener(`keyup`, this._handleActivityNameEdit.bind(this));
+        this.appendChild($propertyDiv);
 
         this._$urnInput.addEventListener(`focusout`, this._handleUrnChange.bind(this));  // pass urn change to ControllerIA.updateURN
-        this._$urnInput.addEventListener(`keyup`, this._handleUrnEdit.bind(this));  // pass urn change to ControllerIA.updateURN
-
+        this._$activityNameInput.addEventListener(`blur`, this._handleActivityNameChange.bind(this));  // pass urn change to ControllerIA.updateURN
         this._$activityDescInput.addEventListener(`blur`, this._handleActivityDescChange.bind(this));
-        this._$activityDescInput.addEventListener(`keyup`, this._handleActivityDescEdit.bind(this));
-
         this._$nodeNameInput.addEventListener(`blur`, this._handleNodeNameChange.bind(this));
         this._$nodeDescInput.addEventListener(`blur`, this._handleNodeDescChange.bind(this));
-
         this._$executionSelect.addEventListener(`change`, this._handleExecutionChange.bind(this));
         this._$operatorSelect.addEventListener(`change`, this._handleOperatorChange.bind(this));
-
         this._$exportJsonButton.addEventListener(`click`, this._handleExportJsonClick.bind(this));
         this._$exportSvgButton.addEventListener(`click`, this._handleExportSvgClick.bind(this));
     }
 
-    _handleActivityNameChange(e) {
-        e.stopImmediatePropagation();
-        if (this._focusNode) {
-            this._focusNode.activity.name = this._$activityNameInput.value;
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
-        }
-    }
+    /**
+     *  Event Handlers
+     * _handleUrnChange
+     * _handleActivityNameChange
+     * _handleActivityDescChange
+     * _handleExecutionChange
+     * _handleOperatorChange
+     * _handleAddEndpointIn
+     * _handleAddEndpointOut
+     * _handleNodeNameChange
+     * _handleNodeDescChange
+     * _handleExportJsonClick
+     * _handleExportSvgClick
+     *
+     */
 
-    _handleActivityNameEdit(e) {
-        if (e.key === `Enter`) {
-            e.preventDefault();
-            const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            const currentPosition = this._$activityNameInput.tabIndex;
-            if (currentPosition < inputs.length - 1) {
-                inputs.item(currentPosition + 1).focus();
-            } else {
-                inputs.item(currentPosition).blur();
-            }
-        } else {
-            this._focusNode.activity.name = `[${this._$activityNameInput.value}]`;
-        }
-    }
 
     _handleUrnChange(e) {
         if (this._focusNode.activity.urn !== this._$urnInput.value) {
@@ -286,18 +306,15 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleUrnEdit(e) {
-        if (e.key === `Enter`) {
-            e.preventDefault();
-            const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            this._$urnInput.classList.toggle(`edited`, this._$urnInput.value !== this._focusNode.activity.urn);
-            // current position in 'form'
-            const currentPosition = this._$urnInput.tabIndex;
-            if (currentPosition < inputs.length - 1) {
-                inputs.item(currentPosition + 1).focus();
-            } else {
-                inputs.item(currentPosition).blur();
-            }
+    _handleActivityNameChange(e) {
+        e.stopImmediatePropagation();
+        if (this._focusNode) {
+            this._focusNode.activity.name = this._$activityNameInput.value;
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
         }
     }
 
@@ -313,20 +330,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleActivityDescEdit(e) {
-        if (e.key === `Enter`) {
-            e.preventDefault();
-            const inputs = this.querySelectorAll(`input:enabled, textarea`);
-            const currentPosition = this._$activityDescInput.tabIndex;
-            if (currentPosition < inputs.length - 1) {
-                inputs.item(currentPosition + 1).focus();
-            } else {
-                inputs.item(currentPosition).blur();
-            }
-        } else {
-            this._focusNode.activity.description = `[${this._$activityDescInput.value}]`;
-        }
-    }
 
     _handleExecutionChange(e) {
         e.stopImmediatePropagation();
@@ -344,6 +347,52 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         e.stopImmediatePropagation();
         if (this._focusNode) {
             this._focusNode.activity.operator = this._$operatorSelect.value;
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+        }
+    }
+
+
+    _handleAddEndpointIn(e) {
+        if (this._focusNode) {
+            const identity = window.prompt(`Input name`);
+            if (identity === ``) {
+                return;
+            }
+            const format = window.prompt(`Input type`);
+            if (format === ``) {
+                return;
+            }
+            const input = {identity,
+                format};
+            this._focusNode.activity.addInput(input);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+        }
+    }
+
+    _handleAddEndpointOut(e) {
+        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
+            const identity = window.prompt(`Output name`);
+            if (identity === ``) {
+                return;
+            }
+
+            const format = window.prompt(`Output type`);
+            if (format === ``) {
+                return;
+            }
+
+            const output = {identity,
+                format};
+
+            this._focusNode.activity.addOutput(output);
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -396,58 +445,210 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
     }
 
-    _handleAddEndpointIn(e) {
-        if (this._focusNode) {
-            const identity = window.prompt(`Input name`);
-            if (identity === ``) {
-                return;
-            }
-            const format = window.prompt(`Input type`);
-            if (format === ``) {
-                return;
-            }
-            const input = {identity,
-                format};
-            this._focusNode.activity.addInput(input);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
+    /**
+     *
+     * External calls
+     *
+     */
+
+    handleExternalActivityUpdate(newActivity, newActivityUrn) {   // ===> Called my ControllerAT
+        if (newActivityUrn === this._focusNode.activity.urn) {
+            this._focusNode.activity = newActivity;
+            this._populatePropertyFields();
         }
     }
 
-    _handleAddEndpointOut(e) {
-        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
-            const identity = window.prompt(`Output name`);
-            if (identity === ``) {
-                return;
-            }
-
-            const format = window.prompt(`Output type`);
-            if (format === ``) {
-                return;
-            }
-
-            const output = {identity,
-                format};
-
-            this._focusNode.activity.addOutput(output);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
+    handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
+        this._clearProperties();
+        if (selection.length > 0) {
+            const selectedNodeModel = selection[0];
+            this._focusNode = selectedNodeModel;
+            this._populatePropertyFields();
+        } else {
+            this._enablePropertiesInputs(false);
         }
+    }
+
+    handleSelectionUnselected() {              // ===> Called my ControllerAT
+        this._clearProperties();
+        this._enablePropertiesInputs(false);
+    }
+
+
+    handleFromSelect(e) {
+        const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+        this._newBinding.from.length = 0;
+        this.$unbindButton.disabled = true;
+        this.$removeButton.disabled = true;
+
+        if (selectedStartEndpoints.length < 1) {
+            this.$destinationEndpointSelect.classList.add(`hidden`);
+            this.$destinationEndpointSelect.size = 0;
+        }
+
+        if (selectedStartEndpoints.length === 1) {
+            const selectedOption = selectedStartEndpoints[0];
+            const startEndpointType = selectedOption.value.split(`/`)[0];
+            const startEndpointUrn = selectedOption.value.split(`/`)[1];
+            const startEndpointName = selectedOption.label.split(` `)[0];
+            let allowedEndpointDestination;
+            if (startEndpointType === `in`) {
+                allowedEndpointDestination = this._getSelfOuts();
+            } else if (startEndpointType === `out`) {
+                if (startEndpointUrn === this._focusNode.activity.urn) {
+                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
+                } else {
+                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getCollectorDefinitions()];
+                }
+            } else if (startEndpointType === `router`) {
+                if (startEndpointUrn === this._focusNode.activity.urn) {
+                    allowedEndpointDestination = [...this._getChildIns()];
+                } else {
+                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];  // dont think this should be allowed
+                }
+            } else if (startEndpointType === `collector`) {
+                allowedEndpointDestination = [...this._getSelfIns()];
+            }
+            this.$destinationEndpointSelect.classList.remove(`hidden`);
+            this._newBinding.addFrom({urn: startEndpointUrn,
+                id: startEndpointName,
+                property: startEndpointType});
+            this._updateSelectList(this.$destinationEndpointSelect, allowedEndpointDestination);
+
+            if (this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName)) {
+                this.$unbindButton.disabled = false;
+            }
+            if ((startEndpointUrn === this._focusNode.activity.urn) && !(this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName))) {
+                this.$removeButton.disabled = false;
+            }
+        }
+
+        if (selectedStartEndpoints.length > 1) {
+            // 1) Check if all selected are of same type -  all in-type or all out-type (can not have a mix)
+            const activityConnectionType = selectedStartEndpoints[0].value.split(`/`)[0];
+            let activityConnectionTypeValid = true;
+            selectedStartEndpoints.forEach((endpoint) => {
+                const startEndpointType = endpoint.value.split(`/`)[0];
+                const startEndpointUrn = endpoint.value.split(`/`)[1];
+                const startEndpointName = endpoint.label.split(` `)[0];
+                if (startEndpointType !== activityConnectionType) {
+                    activityConnectionTypeValid = false;
+                }
+                this._newBinding.addFrom({urn: startEndpointUrn,
+                    id: startEndpointName,
+                    property: startEndpointType});
+            });
+            // 2) create 2nd $select of allowed endpoints to end the route.
+            let allowedEndpointDestination = [];
+            if (activityConnectionTypeValid) {
+                if (activityConnectionType === `in`) {
+                    allowedEndpointDestination = this._getSelfOuts();
+                } else if (activityConnectionType === `out`) {
+                    allowedEndpointDestination = [...this._getCollectorDefinitions()];
+                } else if (activityConnectionType === `collector`) {
+                    allowedEndpointDestination = [...this._getSelfIns()];
+                }
+                this.$destinationEndpointSelect.classList.remove(`hidden`);
+                this._updateSelectList(this.$destinationEndpointSelect, allowedEndpointDestination);
+            } else {
+                this.$destinationEndpointSelect.classList.add(`hidden`);
+            }
+        }
+    }
+
+    handleToSelect(e) {
+        const selectedDestinationEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
+        this._newBinding.to.length = 0;
+
+
+        if (selectedDestinationEndpoints.length < 1) {
+            this.$destinationEndpointSelect.classList.add(`hidden`);
+            this.$destinationEndpointSelect.size = 0;
+            this.$bindButton.disabled = true;
+        }
+
+        if (selectedDestinationEndpoints.length === 1) {
+        // wake up buttons to click
+            this.$bindButton.disabled = false;
+            const selectedOption = selectedDestinationEndpoints[0];
+            const destinationEndpointType = selectedOption.value.split(`/`)[0];
+            const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
+            const destinationEndpointName = selectedOption.label.split(` `)[0];
+            this._newBinding.addTo({
+                urn: destinationEndpointUrn,
+                id: destinationEndpointName,
+                property: destinationEndpointType
+            });
+        }
+
+
+        if (selectedDestinationEndpoints.length > 1) {
+        // wake up buttons to click --
+            this.$bindButton.disabled = false;
+            selectedDestinationEndpoints.forEach((selectedOption) => {
+                const destinationEndpointType = selectedOption.value.split(`/`)[0];
+                const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
+                const destinationEndpointName = selectedOption.label.split(` `)[0];
+                this._newBinding.addTo({
+                    urn: destinationEndpointUrn,
+                    id: destinationEndpointName,
+                    property: destinationEndpointType
+                });
+            });
+        }
+    }
+
+    handleBindButton(e) {
+        this._focusNode.activity.addBinding(this._newBinding);
+        if (this._newBinding.to[0].property === `router`) {
+            this._focusNode.activity.addRouter({identity: this._newBinding.to[0].id,
+                format: `NoIdeaWhatToPutHere`});
+        }
+        if (this._newBinding.to[0].property === `collector`) {
+            this._focusNode.activity.addCollector({identity: this._newBinding.to[0].id,
+                format: `NoIdeaWhatToPutHere`});
+        }
+        console.log(this._newBinding);
+        this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+            bubbles: true,
+            composed: true,
+            detail: {activity: this._focusNode.activity}
+        }));
+        this.$bindButton.disabled = true;
+    }
+
+    handleUnbindButton(e) {
+        this._focusNode.activity.removeBinding(this._newBinding);
+        this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+            bubbles: true,
+            composed: true,
+            detail: {activity: this._focusNode.activity}
+        }));
+        this.$unbindButton.disabled = true;
+    }
+
+    handleRemoveButton(e) {
+        if (this._newBinding.from[0].property === `in`) {
+            this._focusNode.activity.removeInput(this._newBinding.from[0].id);
+        }
+        if (this._newBinding.from[0].property === `out`) {
+            this._focusNode.activity.removeOutput(this._newBinding.from[0].id);
+        }
+        this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+            bubbles: true,
+            composed: true,
+            detail: {activity: this._focusNode.activity}
+        }));
+        this.$removeButton.disabled = true;
     }
 
     /**
-     *  _refreshProperties - fill property values according to reflect this._focusNode (on Activity update or new _focusNode)
-     *  _enableProperties - Property entries are turned on and flags displayed
+     *  _populatePropertyFields - fill property values according to reflect this._focusNode (on Activity update or new _focusNode)
+     *  _enablePropertiesInputs - Property entries are turned on and flags displayed
      *  _clearProperties
      */
 
-    _refreshProperties() {
+    _populatePropertyFields() {
         this._$urnInput.value = this._focusNode.activity.urn;
         this._$activityNameInput.value = this._focusNode.activity.name;
         this._$executionSelect.value = this._focusNode.activity.connector.execution || `none`;
@@ -455,7 +656,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._$activityDescInput.value = this._focusNode.activity.description;
         this._$nodeNameInput.value = this._focusNode.contextualName;
         this._$nodeDescInput.value = this._focusNode.contextualDescription;
-        this._enableProperties(true);
+        this._enablePropertiesInputs(true);
         this._refreshEndpoints();
         this._refreshAnnotations();
         for (const input of this.querySelectorAll(`input`)) {
@@ -467,7 +668,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _enableProperties(enabled) {
+    _enablePropertiesInputs(enabled) {
         this._$urnInput.disabled = !enabled;
         this._$activityNameInput.disabled = !enabled;
         this._$activityDescInput.disabled = !enabled;
@@ -475,11 +676,21 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._$nodeDescInput.disabled = !enabled;
         this._$executionSelect.disabled = !enabled;
         this._$operatorSelect.disabled = !enabled;
-
-        this._consumesMap.disabled = !enabled;
-        this._producesMap.disabled = !enabled;
         this._$exportJsonButton.disabled = !enabled;
         this._$exportSvgButton.disabled = !enabled;
+    }
+
+    _refreshEndpoints() {                // (when properties update)
+        this._clearEndpoints();
+        const selfIns = this._getSelfIns();
+        const selfOuts = this._getSelfOuts();
+        const childOuts = this._getChildOuts();
+        const collectors = this._getCollectors();
+        const routers = this._getRouters();
+        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
+        const numRows = this._getSelectListSize(startEndpointOptions);
+        this.$startEndpointSelect = FormUtils.updateSelect(this.$startEndpointSelect, this._rebuildSelectList(startEndpointOptions));
+        this.$startEndpointSelect.size = numRows;
     }
 
     _clearProperties() {
@@ -498,33 +709,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    /**
-     *
-     * External calls
-     *
-     */
-
-    handleExternalActivityUpdate(newActivity, newActivityUrn) {   // ===> Called my ControllerAT
-        if (newActivityUrn === this._focusNode.activity.urn) {
-            this._focusNode.activity = newActivity;
-            this._refreshProperties();
+    _clearEndpoints() {
+        while (this.$startEndpointSelect.firstChild) {
+            this.$startEndpointSelect.removeChild(this.$startEndpointSelect.firstChild);
         }
-    }
-
-    handleSelectionUpdate(selection) {       // <== Called by ControllerAT    (selectedNodeArray)
-        this._clearProperties();
-        if (selection.length > 0) {
-            const selectedNodeModel = selection[0];
-            this._focusNode = selectedNodeModel;
-            this._refreshProperties();
-        } else {
-            this._enableProperties(false);
+        while (this.$destinationEndpointSelect.firstChild) {
+            this.$destinationEndpointSelect.removeChild(this.$destinationEndpointSelect.firstChild);
         }
-    }
-
-    handleSelectionUnselected() {              // ===> Called my ControllerAT
-        this._clearProperties();
-        this._enableProperties(false);
     }
 
     /**
@@ -542,222 +733,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      *  _findFilteredOutputOptions
      */
 
-
-    _refreshEndpoints() {                // (when properties update)
-        this._clearEndpoints();
-        const oldBindings = this._focusNode.activity.bindings;
-
-        // Create binding panel
-        const selfIns = this._getSelfIns();
-        const selfOuts = this._getSelfOuts();
-        const childOuts = this._getChildOuts();
-        const collectors = this._getCollectors();
-        const routers = this._getRouters();
-        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
-        const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
-
-        const $destinationEndpointSelect = FormUtils.createSelect(`binding-destination`, []);
-        $destinationEndpointSelect.multiple = true;
-        $destinationEndpointSelect.classList.add(`hidden`);
-
-        const $bindingButtonsDiv = FormUtils.createEmptyInputContainer(`binding-buttons`);
-        const $bindButton = document.createElement(`button`);
-        $bindButton.id = `add-binding`;
-        $bindButton.innerHTML = `Bind`;
-        $bindButton.disabled = true;
-        $bindingButtonsDiv.appendChild($bindButton);
-
-        const $unbindButton = document.createElement(`button`);
-        $unbindButton.id = `delete-binding`;
-        $unbindButton.innerHTML = `Unbind`;
-        $unbindButton.disabled = true;
-        $bindingButtonsDiv.appendChild($unbindButton);
-
-        const $removeButton = document.createElement(`button`);
-        $removeButton.id = `remove-endpoint`;
-        $removeButton.innerHTML = `Remove`;
-        $removeButton.disabled = true;
-        $bindingButtonsDiv.appendChild($removeButton);
-
-
-        this.$bindingFlexibleDiv.appendChild($startEndpointSelect);
-        this.$bindingFlexibleDiv.appendChild($destinationEndpointSelect);
-        this.$bindingFlexibleDiv.appendChild($bindingButtonsDiv);
-
-        // Binding Events -  selectChanges, bindButton,
-        // User changes 1st Select (the `from` selection)
-        $startEndpointSelect.addEventListener(`change`, function (e) {
-            const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
-            this._newBinding.from.length = 0;
-            $unbindButton.disabled = true;
-            $removeButton.disabled = true;
-
-            if (selectedStartEndpoints.length < 1) {
-                $destinationEndpointSelect.classList.add(`hidden`);
-                $destinationEndpointSelect.size = 0;
-            }
-
-            if (selectedStartEndpoints.length === 1) {
-                const selectedOption = selectedStartEndpoints[0];
-                const startEndpointType = selectedOption.value.split(`/`)[0];
-                const startEndpointUrn = selectedOption.value.split(`/`)[1];
-                const startEndpointName = selectedOption.label.split(` `)[0];
-                let allowedEndpointDestination;
-                if (startEndpointType === `in`) {
-                    allowedEndpointDestination = this._getSelfOuts();
-                } else if (startEndpointType === `out`) {
-                    if (startEndpointUrn === this._focusNode.activity.urn) {
-                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
-                    } else {
-                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getCollectorDefinitions()];
-                    }
-                } else if (startEndpointType === `router`) {
-                    if (startEndpointUrn === this._focusNode.activity.urn) {
-                        allowedEndpointDestination = [...this._getChildIns()];
-                    } else {
-                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];  // dont think this should be allowed
-                    }
-                } else if (startEndpointType === `collector`) {
-                    allowedEndpointDestination = [...this._getSelfIns()];
-                }
-                $destinationEndpointSelect.classList.remove(`hidden`);
-                this._newBinding.addFrom({urn: startEndpointUrn,
-                    id: startEndpointName,
-                    property: startEndpointType});
-                this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
-
-                if (this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName)) {
-                    $unbindButton.disabled = false;
-                }
-                if ((startEndpointUrn === this._focusNode.activity.urn) && !(this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName))) {
-                    $removeButton.disabled = false;
-                }
-            }
-
-            if (selectedStartEndpoints.length > 1) {
-                // 1) Check if all selected are of same type -  all in-type or all out-type (can not have a mix)
-                const activityConnectionType = selectedStartEndpoints[0].value.split(`/`)[0];
-                let activityConnectionTypeValid = true;
-                selectedStartEndpoints.forEach((endpoint) => {
-                    const startEndpointType = endpoint.value.split(`/`)[0];
-                    const startEndpointUrn = endpoint.value.split(`/`)[1];
-                    const startEndpointName = endpoint.label.split(` `)[0];
-                    if (startEndpointType !== activityConnectionType) {
-                        activityConnectionTypeValid = false;
-                    }
-                    this._newBinding.addFrom({urn: startEndpointUrn,
-                        id: startEndpointName,
-                        property: startEndpointType});
-                });
-                // 2) create 2nd $select of allowed endpoints to end the route.
-                let allowedEndpointDestination = [];
-                if (activityConnectionTypeValid) {
-                    if (activityConnectionType === `in`) {
-                        allowedEndpointDestination = this._getSelfOuts();
-                    } else if (activityConnectionType === `out`) {
-                        allowedEndpointDestination = [...this._getCollectorDefinitions()];
-                    } else if (activityConnectionType === `collector`) {
-                        allowedEndpointDestination = [...this._getSelfIns()];
-                    }
-                    $destinationEndpointSelect.classList.remove(`hidden`);
-                    this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
-                } else {
-                    $destinationEndpointSelect.classList.add(`hidden`);
-                }
-            }
-        }.bind(this));
-
-        // Add handler for change in output select element
-        $destinationEndpointSelect.addEventListener(`change`, function (e) {
-            const selectedDestinationEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
-            this._newBinding.to.length = 0;
-
-
-            if (selectedDestinationEndpoints.length < 1) {
-                $destinationEndpointSelect.classList.add(`hidden`);
-                $destinationEndpointSelect.size = 0;
-                $bindButton.disabled = true;
-            }
-
-            if (selectedDestinationEndpoints.length === 1) {
-                // wake up buttons to click
-                $bindButton.disabled = false;
-                const selectedOption = selectedDestinationEndpoints[0];
-                const destinationEndpointType = selectedOption.value.split(`/`)[0];
-                const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
-                const destinationEndpointName = selectedOption.label.split(` `)[0];
-                this._newBinding.addTo({urn: destinationEndpointUrn,
-                    id: destinationEndpointName,
-                    property: destinationEndpointType});
-            }
-
-
-            if (selectedDestinationEndpoints.length > 1) {
-                // wake up buttons to click --
-                $bindButton.disabled = false;
-                selectedDestinationEndpoints.forEach((selectedOption) => {
-                    const destinationEndpointType = selectedOption.value.split(`/`)[0];
-                    const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
-                    const destinationEndpointName = selectedOption.label.split(` `)[0];
-                    this._newBinding.addTo({urn: destinationEndpointUrn,
-                        id: destinationEndpointName,
-                        property: destinationEndpointType});
-                });
-            }
-        }.bind(this));
-        //     }
-
-        $bindButton.addEventListener(`click`, function (e) {
-            this._focusNode.activity.addBinding(this._newBinding);
-            if (this._newBinding.to[0].property === `router`) {
-                this._focusNode.activity.addRouter({identity: this._newBinding.to[0].id,
-                    format: `NoIdeaWhatToPutHere`});
-            }
-            if (this._newBinding.to[0].property === `collector`) {
-                this._focusNode.activity.addCollector({identity: this._newBinding.to[0].id,
-                    format: `NoIdeaWhatToPutHere`});
-            }
-            console.log(this._newBinding);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
-            $bindButton.disabled = true;
-        }.bind(this));
-
-        $unbindButton.addEventListener(`click`, function (e) {
-            this._focusNode.activity.removeBinding(this._newBinding);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
-            $unbindButton.disabled = true;
-        }.bind(this));
-
-        $removeButton.addEventListener(`click`, function (e) {
-            if (this._newBinding.from[0].property = `in`) {
-                this._focusNode.activity.removeInput(this._newBinding.from[0].id);
-            }
-            if (this._newBinding.from[0].property = `out`) {
-                this._focusNode.activity.removeOutput(this._newBinding.from[0].id);
-            }
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity: this._focusNode.activity}
-            }));
-            $removeButton.disabled = true;
-        }.bind(this));
-    }
-
-    _clearEndpoints() {
-        this._consumesMap.clear();
-        while (this.$bindingFlexibleDiv.firstChild) {
-            this.$bindingFlexibleDiv.removeChild(this.$bindingFlexibleDiv.firstChild);
-        }
-    }
 
     // isBoundFrom(urn,name,type) {
     //     this._focusNode.activity.bindings.forEach((extantBinding) => {
@@ -1112,3 +1087,50 @@ export default customElements.get(`jag-properties`);
 //     this._$urnInput.classList.toggle(`edited`, false);
 // }
 
+
+//  Had these awhile to 'tab' through the entry inputs with a Return instead of tab.
+//  Works but Abandoned - it slightly limited text field entries.
+// this._$urnInput.addEventListener(`keyup`, this._handleUrnEdit.bind(this));
+// this._$activityNameInput.addEventListener(`keyup`, this._handleActivityNameEdit.bind(this));
+// this._$activityDescInput.addEventListener(`keyup`, this._handleActivityDescEdit.bind(this));
+// _handleUrnEdit(e) {
+//     if (e.key === `Enter`) {
+//         e.preventDefault();
+//         const inputs = this.querySelectorAll(`input:enabled, textarea`);
+//         this._$urnInput.classList.toggle(`edited`, this._$urnInput.value !== this._focusNode.activity.urn);
+//         const currentPosition = this._$urnInput.tabIndex;
+//         if (currentPosition < inputs.length - 1) {
+//             inputs.item(currentPosition + 1).focus();
+//         } else {
+//             inputs.item(currentPosition).blur();
+//         }
+//     }
+// }
+// _handleActivityNameEdit(e) {
+//     if (e.key === `Enter`) {
+//         e.preventDefault();
+//         const $inputs = this.querySelectorAll(`input:enabled, textarea`);
+//         const currentPosition = this._$activityNameInput.tabIndex;
+//         if (currentPosition < $inputs.length - 1) {
+//             $inputs.item(currentPosition + 1).focus();
+//         } else {
+//             $inputs.item(currentPosition).blur();
+//         }
+//     } else {
+//         this._focusNode.activity.name = `[${this._$activityNameInput.value}]`;
+//     }
+// }
+// _handleActivityDescEdit(e) {
+//     if (e.key === `Enter`) {
+//         e.preventDefault();
+//         const inputs = this.querySelectorAll(`input:enabled, textarea`);
+//         const currentPosition = this._$activityDescInput.tabIndex;
+//         if (currentPosition < inputs.length - 1) {
+//             inputs.item(currentPosition + 1).focus();
+//         } else {
+//             inputs.item(currentPosition).blur();
+//         }
+//     } else {
+//         this._focusNode.activity.description = `[${this._$activityDescInput.value}]`;
+//     }
+// }
