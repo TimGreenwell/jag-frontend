@@ -50,7 +50,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return definition;
     }
 
-    _getSorterDefinitions() {
+    _getCollectorDefinitions() {
         const definition = [
             {
                 activityId: this._focusNode.activity.urn,
@@ -609,7 +609,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     if (startEndpointUrn === this._focusNode.activity.urn) {
                         allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
                     } else {
-                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
+                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getCollectorDefinitions()];
                     }
                 } else if (startEndpointType === `router`) {
                     if (startEndpointUrn === this._focusNode.activity.urn) {
@@ -617,6 +617,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     } else {
                         allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];  // dont think this should be allowed
                     }
+                } else if (startEndpointType === `collector`) {
+                    allowedEndpointDestination = [...this._getSelfIns()];
                 }
                 $destinationEndpointSelect.classList.remove(`hidden`);
                 this._newBinding.addFrom({urn: startEndpointUrn,
@@ -653,7 +655,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     if (activityConnectionType === `in`) {
                         allowedEndpointDestination = this._getSelfOuts();
                     } else if (activityConnectionType === `out`) {
-                        allowedEndpointDestination = [...this._getSorterDefinitions()];
+                        allowedEndpointDestination = [...this._getCollectorDefinitions()];
                     } else if (activityConnectionType === `collector`) {
                         allowedEndpointDestination = [...this._getSelfIns()];
                     }
@@ -709,6 +711,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._focusNode.activity.addBinding(this._newBinding);
             if (this._newBinding.to[0].property === `router`) {
                 this._focusNode.activity.addRouter({identity: this._newBinding.to[0].id,
+                    format: `NoIdeaWhatToPutHere`});
+            }
+            if (this._newBinding.to[0].property === `collector`) {
+                this._focusNode.activity.addCollector({identity: this._newBinding.to[0].id,
                     format: `NoIdeaWhatToPutHere`});
             }
             console.log(this._newBinding);
