@@ -23,10 +23,10 @@ export default class Activity extends EventTarget {
             operator: Activity.OPERATOR.NONE.name,
             onfail: Activity.RETURNS.NONE.name
         },
-        inConnectors = [],
         inputs = [],
-        outConnectors = [],
         outputs = [],
+        collectors = [],
+        routers = [],
         children = [],
         bindings = [],   // list of Binding
         author,
@@ -42,12 +42,11 @@ export default class Activity extends EventTarget {
         this._name = name;
         this._description = description;
         this._connector = connector;
-        this._inConnectors = inConnectors,
         this._inputs = inputs ? [...inputs] : [];
-        this._outConnectors = outConnectors,
         this._outputs = outputs ? [...outputs] : [];
+        this._collectors = collectors ? [...collectors] : [];
+        this._routers = routers ? [...routers] : [];
         this._children = children ? [...children] : [];
-       // this._bindings = new Set(bindings);
         this._bindings = bindings;
 
         this._author = author;
@@ -67,7 +66,6 @@ export default class Activity extends EventTarget {
                 child.annotations = annotations;
             }
         }
-        this._inConnectors = inConnectors;
     }
 
     get urn() {
@@ -144,21 +142,27 @@ export default class Activity extends EventTarget {
         return [...this._inputs];
     }
 
+    removeInput(identity) {
+        const extantInputs = this.inputs.filter((extantInput) => {
+            return extantInput.identity !== identity;
+        });
+        this._inputs = extantInputs;
+    }
+
     addInput(input) {
+        if (this._hasInput(input.identity)) {
+            this.removeInput(input.identity);
+        }
         this._inputs.push(input);
     }
 
-    set inConnectors(value) {
-        this._inConnectors = value;
+    _hasInput(identity) {
+        const extantIdentities = this.inputs.map((input) => {
+            return input.identity;
+        });
+        return extantIdentities.includes(identity);
     }
 
-    get inConnectors() {
-        return this._inConnectors;
-    }
-
-    addInConnector(inConnector) {
-        this._inConnectors.push(inConnector);
-    }
 
     set outputs(value) {
         this._outputs = value;
@@ -168,20 +172,122 @@ export default class Activity extends EventTarget {
         return [...this._outputs];
     }
 
+    removeOutput(identity) {
+        const extantOutputs = this.outputs.filter((extantOutput) => {
+            return extantOutput.identity !== identity;
+        });
+        this._outputs = extantOutputs;
+    }
+
+
     addOutput(output) {
+        if (this._hasOutput(output.identity)) {
+            this.removeOutput(output.identity);
+        }
         this._outputs.push(output);
     }
 
-    set outConnectors(value) {
-        this._outConnectors = value;
+    _hasOutput(identity) {
+        const extantIdentities = this.outputs.map((output) => {
+            return output.identity;
+        });
+        return extantIdentities.includes(identity);
     }
 
-    get outConnectors() {
-        return this._outConnectors;
+
+
+    set collectors(value) {
+        this._collectors = value;
     }
 
-    addOutConnector(outConnector) {
-        this._outConnectors.push(outConnector);
+    get collectors() {
+        return [...this._collectors];
+    }
+
+    removeCollector(identity) {
+        const extantCollectors = this.collectors.filter((extantCollector) => {
+            return extantCollector.identity !== identity;
+        });
+        this._collectors = extantCollectors;
+    }
+
+
+    addCollector(collector) {
+        if (this._hasCollector(collector.identity)) {
+            this.removeCollector(collector.identity);
+        }
+        this._collectors.push(collector);
+    }
+
+    _hasCollector(identity) {
+        const extantIdentities = this.collectors.map((collector) => {
+            return collector.identity;
+        });
+        return extantIdentities.includes(identity);
+    }
+
+
+
+    set routers(value) {
+        this._routers = value;
+    }
+
+    get routers() {
+        return [...this._routers];
+    }
+
+    removeRouter(identity) {
+        const extantRouters = this.routers.filter((extantRouter) => {
+            return extantRouter.identity !== identity;
+        });
+        this._routers = extantRouters;
+    }
+
+
+    addRouter(router) {
+        if (this._hasRouter(router.identity)) {
+            this.removeRouter(router.identity);
+        }
+        this._routers.push(router);
+    }
+
+    _hasRouter(identity) {
+        const extantIdentities = this.routers.map((router) => {
+            return router.identity;
+        });
+        return extantIdentities.includes(identity);
+    }
+
+
+
+    removeBinding(removedBinding) {
+        const newBinding = this.bindings.filter((binding) => {
+            return (!((binding.from[0].urn === removedBinding.from[0].urn) &&
+                (binding.from[0].id === removedBinding.from[0].id) &&
+                (binding.from[0].property === removedBinding.from[0].property)))
+        })
+        this.bindings = newBinding;
+    }
+    // removeBinding(binding) {
+    //     if (this._bindings.delete(binding)) {
+
+    //     }
+    // }
+
+
+    isBound(activityId, activityConnectionType, identity) {
+        let isBound = false;
+        this.bindings.forEach((binding) => {
+            binding.from.forEach((outwardConnection) => {
+                if ((outwardConnection.urn === activityId) &&
+                    (outwardConnection.property === activityConnectionType) &&   // @TODO urn, id and property --- should be more like activityId, activityConnectionType, identity)
+                    (outwardConnection.id === identity)) {
+                    isBound = true;
+                }
+                // else {isBound = false}
+            });
+        });
+        return isBound;
     }
 
 
@@ -255,6 +361,7 @@ export default class Activity extends EventTarget {
     set collapsed(value) {
         this._collapsed = value;
     }
+
 
     addChild(urn, id = undefined) {  // Add uuidV4 default here
         /**
@@ -351,8 +458,6 @@ export default class Activity extends EventTarget {
             };
         });
 
-
-        console.log(`looking for input options --------------------`)
         if (this.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
             for (const child of this._children) {
                 if (child.id === id) {
@@ -370,18 +475,11 @@ export default class Activity extends EventTarget {
                         });
                     }
                 }
-                else {
-                    console.log(`crap`)
-                }
             }
         }
 
         return availableInputs;
     }
-
-
-
-
 
 
     /**
@@ -435,11 +533,7 @@ export default class Activity extends EventTarget {
      *
      * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding The binding to remove.
      */
-    removeBinding(binding) {
-        if (this._bindings.delete(binding)) {
-            console.log(`Stupid blank block - whatfer?`);
-        }
-    }
+
 
 
     /**
@@ -551,6 +645,8 @@ export default class Activity extends EventTarget {
                 returns: this.connector.returns,
                 operator: this.connector.operator
             },
+            collectors: [],
+            routers: [],
             inputs: [],
             outputs: [],
             children: [],
@@ -584,7 +680,12 @@ export default class Activity extends EventTarget {
             }
             json.children.push(descriptor);
         });
-
+        this._collectors.forEach((collector) => {
+            json.collectors.push(collector);
+        });
+        this._routers.forEach((router) => {
+            json.routers.push(router);
+        });
 
         this._inputs.forEach((input) => {
             json.inputs.push(input);
@@ -598,22 +699,20 @@ export default class Activity extends EventTarget {
 
         const bindingStack = [];
         for (const binding of this._bindings) {
-            console.log(binding)
             bindingStack.push(binding.toJSON());
         }
         json.bindings = bindingStack;
 
 
-
         // this._bindings.forEach((binding) => {
         //     json.bindings.push({
         //         consumer: {
-        //             id: binding.consumer.id,
-        //             property: binding.consumer.property
+        //             identity: binding.consumer.id,
+        //             format: binding.consumer.property
         //         },
         //         provider: {
-        //             id: binding.provider.id,
-        //             property: binding.provider.property
+        //             identity: binding.provider.id,
+        //             format: binding.provider.property
         //         }
         //     });
         // });

@@ -38,7 +38,6 @@ export default class Binding {
     }
 
     addTo(value) {
-        console.log(`adding to To`)
         this._to.push(value);
     }
 

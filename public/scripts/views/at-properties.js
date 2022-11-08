@@ -28,20 +28,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _getRouterDefinitions() {
         const definition = [
             {
-                groupId: this._focusNode.activity.urn,
-                groupName: ``,
-                groupType: `router`,
+                activityId: this._focusNode.activity.urn,
+                activityName: ``,
+                activityConnectionType: `router`,
                 endpoints: [
                     {
-                        identity: `General Broadcast`,
+                        identity: `GeneralBroadcast`,
                         format: `na`
                     },
                     {
-                        identity: `Content Based`,
+                        identity: `ContentBased`,
                         format: `na`
                     },
                     {
-                        identity: `Competitive Customers`,
+                        identity: `CompetitiveCustomers`,
                         format: `na`
                     }
                 ]
@@ -53,28 +53,32 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _getSorterDefinitions() {
         const definition = [
             {
-                groupId: this._focusNode.activity.urn,
-                groupName: ``,
-                groupType: `sorter`,
+                activityId: this._focusNode.activity.urn,
+                activityName: ``,
+                activityConnectionType: `collector`,
                 endpoints: [
                     {
                         identity: `Aggregate`,
                         format: `na`
                     },
                     {
-                        identity: `Round Robin`,
+                        identity: `RoundRobin`,
                         format: `na`
                     },
                     {
-                        identity: `Priority Based`,
+                        identity: `Priority`,
                         format: `na`
                     },
                     {
-                        identity: `Real Time`,
+                        identity: `RealTime`,
                         format: `na`
                     },
                     {
                         identity: `Queued`,
+                        format: `na`
+                    },
+                    {
+                        identity: `FirstResponse`,
                         format: `na`
                     }
                 ]
@@ -476,16 +480,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._producesMap.disabled = !enabled;
         this._$exportJsonButton.disabled = !enabled;
         this._$exportSvgButton.disabled = !enabled;
-
-        // if (this._focusNode && (enabled)) {
-        //     this.classList.toggle(`root-node`, false);
-        //     this._$nodeNameInput.disabled = false;
-        //     this._$nodeDescInput.disabled = false;
-        // } else {
-        //     this.classList.toggle(`root-node`, true);
-        //     this._$nodeNameInput.disabled = true;
-        //     this._$nodeDescInput.disabled = true;
-        // }
     }
 
     _clearProperties() {
@@ -557,7 +551,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const selfIns = this._getSelfIns();
         const selfOuts = this._getSelfOuts();
         const childOuts = this._getChildOuts();
-        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts];
+        const collectors = this._getCollectors();
+        const routers = this._getRouters();
+        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
         const $startEndpointSelect = this._createRouteStart(startEndpointOptions);
 
         const $destinationEndpointSelect = FormUtils.createSelect(`binding-destination`, []);
@@ -593,15 +589,15 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $startEndpointSelect.addEventListener(`change`, function (e) {
             const selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
             this._newBinding.from.length = 0;
+            $unbindButton.disabled = true;
+            $removeButton.disabled = true;
 
             if (selectedStartEndpoints.length < 1) {
                 $destinationEndpointSelect.classList.add(`hidden`);
                 $destinationEndpointSelect.size = 0;
-                $unbindButton.disabled = true;
             }
 
             if (selectedStartEndpoints.length === 1) {
-                $unbindButton.disabled = true;
                 const selectedOption = selectedStartEndpoints[0];
                 const startEndpointType = selectedOption.value.split(`/`)[0];
                 const startEndpointUrn = selectedOption.value.split(`/`)[1];
@@ -615,26 +611,37 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     } else {
                         allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];
                     }
+                } else if (startEndpointType === `router`) {
+                    if (startEndpointUrn === this._focusNode.activity.urn) {
+                        allowedEndpointDestination = [...this._getChildIns()];
+                    } else {
+                        allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];  // dont think this should be allowed
+                    }
                 }
                 $destinationEndpointSelect.classList.remove(`hidden`);
                 this._newBinding.addFrom({urn: startEndpointUrn,
                     id: startEndpointName,
                     property: startEndpointType});
-                console.log(`most impmortant`)
-                console.log(allowedEndpointDestination) //(id(urn), groupName(111), groupType(out), endpoints(name:111out1, type:dd))
                 this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
+
+                if (this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName)) {
+                    $unbindButton.disabled = false;
+                }
+                if ((startEndpointUrn === this._focusNode.activity.urn) && !(this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName))) {
+                    $removeButton.disabled = false;
+                }
             }
 
             if (selectedStartEndpoints.length > 1) {
                 // 1) Check if all selected are of same type -  all in-type or all out-type (can not have a mix)
-                const groupType = selectedStartEndpoints[0].value.split(`/`)[0];
-                let groupTypeValid = true;
+                const activityConnectionType = selectedStartEndpoints[0].value.split(`/`)[0];
+                let activityConnectionTypeValid = true;
                 selectedStartEndpoints.forEach((endpoint) => {
                     const startEndpointType = endpoint.value.split(`/`)[0];
                     const startEndpointUrn = endpoint.value.split(`/`)[1];
                     const startEndpointName = endpoint.label.split(` `)[0];
-                    if (startEndpointType !== groupType) {
-                        groupTypeValid = false;
+                    if (startEndpointType !== activityConnectionType) {
+                        activityConnectionTypeValid = false;
                     }
                     this._newBinding.addFrom({urn: startEndpointUrn,
                         id: startEndpointName,
@@ -642,11 +649,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 });
                 // 2) create 2nd $select of allowed endpoints to end the route.
                 let allowedEndpointDestination = [];
-                if (groupTypeValid) {
-                    if (groupType === `in`) {
+                if (activityConnectionTypeValid) {
+                    if (activityConnectionType === `in`) {
                         allowedEndpointDestination = this._getSelfOuts();
-                    } else if (groupType === `out`) {
+                    } else if (activityConnectionType === `out`) {
                         allowedEndpointDestination = [...this._getSorterDefinitions()];
+                    } else if (activityConnectionType === `collector`) {
+                        allowedEndpointDestination = [...this._getSelfIns()];
                     }
                     $destinationEndpointSelect.classList.remove(`hidden`);
                     this._updateSelectList($destinationEndpointSelect, allowedEndpointDestination);
@@ -670,7 +679,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             if (selectedDestinationEndpoints.length === 1) {
                 // wake up buttons to click
-                $bindButton.disabled = true;
+                $bindButton.disabled = false;
                 const selectedOption = selectedDestinationEndpoints[0];
                 const destinationEndpointType = selectedOption.value.split(`/`)[0];
                 const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
@@ -683,7 +692,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             if (selectedDestinationEndpoints.length > 1) {
                 // wake up buttons to click --
-
+                $bindButton.disabled = false;
                 selectedDestinationEndpoints.forEach((selectedOption) => {
                     const destinationEndpointType = selectedOption.value.split(`/`)[0];
                     const destinationEndpointUrn = selectedOption.value.split(`/`)[1];
@@ -698,12 +707,42 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         $bindButton.addEventListener(`click`, function (e) {
             this._focusNode.activity.addBinding(this._newBinding);
+            if (this._newBinding.to[0].property === `router`) {
+                this._focusNode.activity.addRouter({identity: this._newBinding.to[0].id,
+                    format: `NoIdeaWhatToPutHere`});
+            }
+            console.log(this._newBinding);
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
                 detail: {activity: this._focusNode.activity}
             }));
             $bindButton.disabled = true;
+        }.bind(this));
+
+        $unbindButton.addEventListener(`click`, function (e) {
+            this._focusNode.activity.removeBinding(this._newBinding);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+            $unbindButton.disabled = true;
+        }.bind(this));
+
+        $removeButton.addEventListener(`click`, function (e) {
+            if (this._newBinding.from[0].property = `in`) {
+                this._focusNode.activity.removeInput(this._newBinding.from[0].id);
+            }
+            if (this._newBinding.from[0].property = `out`) {
+                this._focusNode.activity.removeOutput(this._newBinding.from[0].id);
+            }
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+            $removeButton.disabled = true;
         }.bind(this));
     }
 
@@ -732,35 +771,34 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (selectOptions.length > 0) {
             options = selectOptions.map((selectOption) => {
                 let label;
-                if (selectOption.groupId === this._focusNode.activity.urn) {
-                    label = `(${selectOption.groupType}) this`;
+                if (selectOption.activityId === this._focusNode.activity.urn) {
+                    label = `(${selectOption.activityConnectionType}) this`;
                 } else {
-                    label = `(${selectOption.groupType}) ${selectOption.groupName}`;
+                    label = `(${selectOption.activityConnectionType}) ${selectOption.activityName}`;
                 }
 
                 return [
                     {
                         label,
                         options: selectOption.endpoints.map((selectOptionEndpoint) => {
-                            console.log(`important!`)
-                            console.log(this._focusNode.activity.bindings)  // urn (us:ihmc:111) id(111in1) property(in)
-                            console.log(selectOptionEndpoint)                      // has a name(111in1) and type(111)
+                            // urn (us:ihmc:111) id(111in1) property(in)
+                            // has a name(111in1) and type(111)
                             let optionDisplay = selectOptionEndpoint.identity;
-                            if ((selectOption.groupType === `in`) || (selectOption.groupType === `out`)) {
-                                this._focusNode.activity.bindings.forEach((extantBinding) => {
-                                    extantBinding.from.forEach((extantFromEndpoint) => {
-                                        if (extantFromEndpoint.id === selectOptionEndpoint.identity) {
-                                            const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
-                                                return extantToEndpoints.id;
-                                            });
-                                            optionDisplay = `${selectOptionEndpoint.identity} ${this.ARROW} ${toEndpoints}`;
-                                        }
-                                    });
+                            // if ((selectOption.activityConnectionType === `in`) || (selectOption.activityConnectionType === `out`)) {
+                            this._focusNode.activity.bindings.forEach((extantBinding) => {
+                                extantBinding.from.forEach((extantFromEndpoint) => {
+                                    if (extantFromEndpoint.id === selectOptionEndpoint.identity) {
+                                        const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
+                                            return extantToEndpoints.id;
+                                        });
+                                        optionDisplay = `${selectOptionEndpoint.identity} ${this.ARROW} ${toEndpoints}`;
+                                    }
                                 });
-                            }
+                            });
+                            // }
                             return {
                                 text: optionDisplay,
-                                value: `${selectOption.groupType}/${selectOption.groupId}`
+                                value: `${selectOption.activityConnectionType}/${selectOption.activityId}`
                             };
                         })
                     }
@@ -801,13 +839,40 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
 
+    _getRouters() {
+        const availableInputs = [];
+        if (this._focusNode.activity.routers.length > 0) {
+            availableInputs.push({
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `router`,
+                endpoints: this._focusNode.activity.routers
+            });
+        }
+        return availableInputs;
+    }
+
+    _getCollectors() {
+        const availableInputs = [];
+        if (this._focusNode.activity.collectors.length > 0) {
+            availableInputs.push({
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `collector`,
+                endpoints: this._focusNode.activity.collectors
+            });
+        }
+        return availableInputs;
+    }
+
+
     _getSelfIns() {
         const availableInputs = [];
         if (this._focusNode.activity.inputs.length > 0) {
             availableInputs.push({
-                groupId: this._focusNode.activity.urn,
-                groupName: this._focusNode.activity.name,
-                groupType: `in`,
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `in`,
                 endpoints: this._focusNode.activity.inputs
             });
         }
@@ -818,9 +883,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const availableOutputs = [];
         if (this._focusNode.activity.outputs.length > 0) {
             availableOutputs.push({
-                groupId: this._focusNode.activity.urn,
-                groupName: this._focusNode.activity.name,
-                groupType: `out`,
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `out`,
                 endpoints: this._focusNode.activity.outputs
             });
         }
@@ -832,9 +897,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode.children.forEach((child) => {
             if (child.activity.inputs.length > 0) {
                 availableInputs.push({
-                    groupId: child.activity.urn,
-                    groupName: child.activity.name,
-                    groupType: `in`,
+                    activityId: child.activity.urn,
+                    activityName: child.activity.name,
+                    activityConnectionType: `in`,
                     endpoints: child.activity.inputs
                 });
             }
@@ -847,9 +912,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._focusNode.children.forEach((child) => {
             if (child.activity.outputs.length > 0) {
                 availableOutputs.push({
-                    groupId: child.activity.urn,
-                    groupName: child.activity.name,
-                    groupType: `out`,
+                    activityId: child.activity.urn,
+                    activityName: child.activity.name,
+                    activityConnectionType: `out`,
                     endpoints: child.activity.outputs
                 });
             }
