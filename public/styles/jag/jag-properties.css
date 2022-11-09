@@ -20,13 +20,11 @@ jag-properties #property-container {
     flex-shrink: 1;
 }
 jag-properties #activity-container {
-    flex-basis: 0;
+    flex-basis: auto;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    padding-left: 0.2em;
-    padding-right: 0.2em;
-    padding-bottom: 0.5em;
+    padding: 2.5em 0.5em 1em;
     border: 1px solid black;
 
 }
@@ -34,54 +32,28 @@ jag-properties #node-container {
     flex-basis: auto;
     flex-grow: 1;
     flex-shrink: 1;
-    padding-left: 0.2em;
-    padding-right: 0.2em;
-    padding-bottom: 0.5em;
+    padding: 2.5em 0.5em 1em;
     border: 1px solid black;
 }
 
-jag-properties .property-item {
-    flex-basis: content;
-    flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-    /*padding-left: 0.2em;*/
-    /*padding-right: 0.2em;*/
-    /*padding-bottom: 0.5em;*/
+
+
+jag-properties .padded-property {
+    padding-bottom: 1em;
     }
 
 jag-properties textarea {
     width: 100%;
 }
 
-/*the space between items*/
-jag-properties div {
-
+jag-properties select {
+    overflow-y: auto;
 }
 
 jag-properties .special {
     font-weight: bold;
     border-radius: 0.5em;
     padding: 0.5em;
-}
-
-jag-properties #childOf {
-    background-color: blue;
-    color: white;
-}
-
-/*jag-properties div {*/
-/*    display: flex;*/
-/*    flex: 1;*/
-/*}*/
-
-
-jag-properties:not(.root-node) input.contextual {
-    box-shadow: 0px 3px 5px blue;
-}
-
-jag-properties.root-node .child-of-notice {
-    display: none;
 }
 
 jag-properties div label {
@@ -118,43 +90,21 @@ jag-properties div > input.binding, jag-properties .annotation.descriptor input 
     width: 40%;
 }
 
-jag-properties #bindings-property  {
-    flex-basis: content;
-    flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-}
 
-jag-properties #adders-property  {
+jag-properties .row-stretch  {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
 }
 
-jag-properties #binding-buttons  {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-}
-
-
-jag-properties #binding-start {
+jag-properties #binding-from-select. jag-properties #binding-to-select {
     flex-basis: content;
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-jag-properties #binding-destination  {
-    flex-basis: content;
-    flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-    visibility: visible;
-    /*experiment with display:none*/
-}
-
-jag-properties #binding-destination .hidden {
+jag-properties  .hidden {
     visibility: hidden;
     /*experiment with display:none*/
 }
