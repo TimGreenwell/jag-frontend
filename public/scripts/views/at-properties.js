@@ -228,18 +228,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             {
                 activityId: this._focusNode.activity.urn,
                 activityName: ``,
-                activityConnectionType: `router`,
+                activityConnectionType: `every`,
                 endpoints: [
                     {
-                        identity: `GeneralBroadcast`,
+                        identity: `SendToEvery`,
                         format: `na`
                     },
                     {
-                        identity: `ContentBased`,
+                        identity: `--ContentBased`,
                         format: `na`
                     },
                     {
-                        identity: `CompetitiveCustomers`,
+                        identity: `--CompetitiveCustomers`,
                         format: `na`
                     }
                 ]
@@ -253,30 +253,30 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             {
                 activityId: this._focusNode.activity.urn,
                 activityName: ``,
-                activityConnectionType: `collector`,
+                activityConnectionType: `any`,
                 endpoints: [
                     {
-                        identity: `Aggregate`,
+                        identity: `FromAny`,
                         format: `na`
                     },
                     {
-                        identity: `RoundRobin`,
+                        identity: `--RoundRobin`,
                         format: `na`
                     },
                     {
-                        identity: `Priority`,
+                        identity: `--Priority`,
                         format: `na`
                     },
                     {
-                        identity: `RealTime`,
+                        identity: `--RealTime`,
                         format: `na`
                     },
                     {
-                        identity: `Queued`,
+                        identity: `--Queued`,
                         format: `na`
                     },
                     {
-                        identity: `FirstResponse`,
+                        identity: `--FirstResponse`,
                         format: `na`
                     }
                 ]
@@ -504,7 +504,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._newBinding.addFrom({urn: startEndpointUrn,
                 id: startEndpointName,
                 property: startEndpointType});
-            this._addOptionsToSelect($destinationEndpointSelect, allowedEndpointDestination);
+            this._addAllowedEndpointsToSelect($destinationEndpointSelect, allowedEndpointDestination, false);
 
             if (this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName)) {
                 $unbindButton.disabled = false;
@@ -540,7 +540,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     allowedEndpointDestination = [...this._getSelfIns()];
                 }
                 $destinationEndpointSelect.classList.remove(`hidden`);
-                this._addOptionsToSelect($destinationEndpointSelect, allowedEndpointDestination);
+                this._addAllowedEndpointsToSelect($destinationEndpointSelect, allowedEndpointDestination, false);
             } else {
                 $destinationEndpointSelect.classList.add(`hidden`);
             }
@@ -592,8 +592,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     handleBindButton(e) {
+        console.log(e);
         const $bindButton = this._elementMap.get(`bind-button`);
-        this._focusNode.activity.addBinding(this._newBinding);
+        this._newBinding.from.forEach((fromPoint) => {
+            this._newBinding.to.forEach((toPoint) => {
+                console.log(fromPoint);
+                console.log(toPoint);
+                const binding = new Binding({from: [fromPoint],
+                    to: [toPoint]});
+                console.log(`>>>>`);
+                console.log(binding);
+                this._focusNode.activity.addBinding(binding);
+            });
+        });
+        // this._focusNode.activity.addBinding(this._newBinding);
         if (this._newBinding.to[0].property === `router`) {
             this._focusNode.activity.addRouter({identity: this._newBinding.to[0].id,
                 format: `NoIdeaWhatToPutHere`});
@@ -746,14 +758,19 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const collectors = this._getCollectors();
         const routers = this._getRouters();
         const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
-        const numRows = this._getSelectListSize(startEndpointOptions);
-        $startEndpointSelect = FormUtils.updateSelect($startEndpointSelect, this._convertEndpointsToOptions(startEndpointOptions));
-        $startEndpointSelect.size = numRows;
+        this._addAllowedEndpointsToSelect($startEndpointSelect,startEndpointOptions, true )
+
+        // const numRows = this._getSelectListSize(startEndpointOptions);
+        // $startEndpointSelect = FormUtils.updateSelect($startEndpointSelect, this._convertEndpointsToOptions(startEndpointOptions, true));
+        // $startEndpointSelect.size = numRows;
     }
 
     _clearEndpoints() {
         const $startEndpointSelect = this._elementMap.get(`binding-from-select`);
         const $destinationEndpointSelect = this._elementMap.get(`binding-to-select`);
+        const $bindButton = this._elementMap.get(`bind-button`);
+        const $unbindButton = this._elementMap.get(`unbind-button`);
+        const $removeButton = this._elementMap.get(`remove-button`);
         while ($startEndpointSelect.firstChild) {
             $startEndpointSelect.removeChild($startEndpointSelect.firstChild);
         }
@@ -761,6 +778,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             $destinationEndpointSelect.removeChild($destinationEndpointSelect.firstChild);
         }
         $destinationEndpointSelect.classList.add(`hidden`);
+        $bindButton.disabled = true;
+        $unbindButton.disabled = true;
+        $removeButton.disabled = true;
     }
 
     /**
@@ -932,7 +952,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      * Binding Select Builders
      * _convertEndpointsToOptions - given allowed endpoints, convert to option elements
      * _getSelectListSize
-     * _addOptionsToSelect
+     * _addAllowedEndpointsToSelect
      * _getRouters
      * _getCollectors
      * _getSelfIns
@@ -954,7 +974,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     //     });
     // }
 
-    _convertEndpointsToOptions(selectOptions) {
+    _convertEndpointsToOptions(selectOptions, addBindings) {
         let options;
         if (selectOptions.length > 0) {
             options = selectOptions.map((selectOption) => {
@@ -973,16 +993,25 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                             // has a name(111in1) and type(111)
                             let optionDisplay = selectOptionEndpoint.identity;
                             // if ((selectOption.activityConnectionType === `in`) || (selectOption.activityConnectionType === `out`)) {
-                            this._focusNode.activity.bindings.forEach((extantBinding) => {
-                                extantBinding.from.forEach((extantFromEndpoint) => {
-                                    if (extantFromEndpoint.id === selectOptionEndpoint.identity) {
-                                        const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
-                                            return extantToEndpoints.id;
-                                        });
-                                        optionDisplay = `${selectOptionEndpoint.identity} ${this.ARROW} ${toEndpoints}`;
-                                    }
+                            if (addBindings) {
+                                const foundBindings = [];
+                                this._focusNode.activity.bindings.forEach((extantBinding) => {
+                                    extantBinding.from.forEach((extantFromEndpoint) => {
+                                        if (extantFromEndpoint.id === selectOptionEndpoint.identity) {
+                                            const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
+                                                return extantToEndpoints.id;
+                                            });
+                                            foundBindings.push(toEndpoints);
+                                        }
+                                    });
                                 });
-                            });
+                                if (foundBindings.length > 0) {
+                                    optionDisplay = `${optionDisplay} ${this.ARROW} `;
+                                    foundBindings.forEach((foundToEndpoints) => {
+                                        optionDisplay = `${optionDisplay} ${foundToEndpoints}`;
+                                    });
+                                }
+                            }
                             // }
                             return {
                                 text: optionDisplay,
@@ -1006,9 +1035,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }, 0);
     }
 
-    _addOptionsToSelect($selectList, endpointOptions) {
-        const numRows = this._getSelectListSize(endpointOptions);
-        const options = this._convertEndpointsToOptions(endpointOptions);
+    _addAllowedEndpointsToSelect($selectList, allowedEndpoints, addBindings) {
+        const numRows = this._getSelectListSize(allowedEndpoints);
+        const options = this._convertEndpointsToOptions(allowedEndpoints, addBindings);
         FormUtils.updateSelect($selectList, options);
         $selectList.multiple = true;
         $selectList.size = numRows;
@@ -1040,9 +1069,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return availableInputs;
     }
 
+
     _getSelfIns() {
         const availableInputs = [];
         if (this._focusNode.activity.inputs.length > 0) {
+            console.log(this._focusNode.activity.bindings);
             availableInputs.push({
                 activityId: this._focusNode.activity.urn,
                 activityName: this._focusNode.activity.name,

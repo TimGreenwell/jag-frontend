@@ -41,6 +41,20 @@ export default class Binding {
         this._to.push(value);
     }
 
+    matchingEndpoint(endpoint1, endpoint2) {
+        return ((endpoint1.urn === endpoint2.urn) &&
+               (endpoint1.id === endpoint2.id) &&
+               (endpoint1.property === endpoint2.property))
+    }
+
+    sameFromEndpoint(endpoint) {
+        return this.matchingEndpoint(this.from[0], endpoint)
+    }
+
+    sameToEndpoint(endpoint) {
+        return this.matchingEndpoint(this.to[0], endpoint)
+    }
+
 
     toJSON() {
         const json = {

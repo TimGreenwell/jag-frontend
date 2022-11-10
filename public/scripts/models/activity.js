@@ -195,7 +195,6 @@ export default class Activity extends EventTarget {
     }
 
 
-
     set collectors(value) {
         this._collectors = value;
     }
@@ -225,7 +224,6 @@ export default class Activity extends EventTarget {
         });
         return extantIdentities.includes(identity);
     }
-
 
 
     set routers(value) {
@@ -258,21 +256,49 @@ export default class Activity extends EventTarget {
         return extantIdentities.includes(identity);
     }
 
-
+    equalArrays(a, b) {
+        a.every((item) => {
+            return b.includes(item);
+        }) && b.every((item) => {
+            return a.includes(item);
+        });
+    }
 
     removeBinding(removedBinding) {
-        const newBinding = this.bindings.filter((binding) => {
-            return (!((binding.from[0].urn === removedBinding.from[0].urn) &&
-                (binding.from[0].id === removedBinding.from[0].id) &&
-                (binding.from[0].property === removedBinding.from[0].property)))
-        })
-        this.bindings = newBinding;
-    }
-    // removeBinding(binding) {
-    //     if (this._bindings.delete(binding)) {
+        console.log(`inside remove binding`);
 
-    //     }
-    // }
+        let resultBindings;
+        if (removedBinding.to.length === 0) {
+            this.bindings = this.bindings.filter((checkBinding) => {
+                return !checkBinding.sameFromEndpoint(removedBinding.from[0]);
+            });
+        } else {
+            removedBinding.to.forEach((oneOfRemovedBindingsToInputs) => {
+                this.bindings = this.bindings.filter((myBinding) => {
+                    console.log(`----`)
+                    console.log(`----`)
+                    console.log(myBinding.from[0])
+                    console.log(`vs`)
+                    console.log(removedBinding.from[0])
+                    console.log(myBinding.sameFromEndpoint(removedBinding.from[0]))
+                    console.log(`----`)
+                    console.log(myBinding.to[0])
+                    console.log(`vs`)
+                    console.log(oneOfRemovedBindingsToInputs)
+                    console.log(myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs))
+                    console.log(`----`)
+                    console.log(!((myBinding.sameFromEndpoint(removedBinding.from[0])) && (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs))))
+                    return !((myBinding.sameFromEndpoint(removedBinding.from[0])) && (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs)))
+                });
+                console.log(`heres whats left`)
+                console.log(this.bindings)
+
+            });
+        }
+        console.log(this.bindings)
+
+        console.log(`leaving..`);
+    }
 
 
     isBound(activityId, activityConnectionType, identity) {
@@ -533,7 +559,6 @@ export default class Activity extends EventTarget {
      *
      * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding The binding to remove.
      */
-
 
 
     /**
