@@ -470,6 +470,7 @@ class AtPlayground extends Popupable {
      *  Events
      *
      * --- external calls and events
+     * showEndpoint(endpoints)
      * toggleColor (complete dragging node)
      * _handleNewActivityPopup
      * clearPlayground
@@ -479,6 +480,10 @@ class AtPlayground extends Popupable {
      *
      */
 
+    showEndpoint(fromArray) {
+        console.log(`I am here`)
+        console.log(fromArray)
+    }
     toggleColor() {
         this.hasColor = !this.hasColor;
         this.unselectEverything();

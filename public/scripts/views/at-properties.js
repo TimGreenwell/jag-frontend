@@ -11,6 +11,7 @@ import Activity from '../models/activity.js';
 import FormUtils from '../utils/forms.js';
 import Validator from "../utils/validation.js";
 import Binding from "../models/binding.js";
+import atPropertyUi from "./at-properties-ui.js";
 
 customElements.define(`jag-properties`, class extends HTMLElement {
 
@@ -23,179 +24,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this.ARROW = `\u21D2`;
     }
 
-
-    _buildUI() {
-        const elementMap = new Map();
-        const $propertyDiv = document.createElement(`div`);
-        $propertyDiv.id = `property-container`;
-        this.appendChild($propertyDiv);
-
-        const $activityPropertiesDiv = document.createElement(`div`);
-        $activityPropertiesDiv.id = `activity-container`;
-        $propertyDiv.appendChild($activityPropertiesDiv);
-
-        const $nodePropertiesDiv = document.createElement(`div`);
-        $nodePropertiesDiv.id = `node-container`;
-        $propertyDiv.appendChild($nodePropertiesDiv);
-
-        const $urnDiv = FormUtils.createPropertyElement(`urn-property`, `URN`);
-        $urnDiv.className = `padded-property`;
-        const $urnInput = FormUtils.createTextInput(`urn-input`);
-        $urnInput.setAttribute(`tabIndex`, `0`);
-        $urnInput.className = `direct-property`;
-        elementMap.set($urnInput.id, $urnInput);
-        $urnDiv.appendChild($urnInput);
-        $activityPropertiesDiv.appendChild($urnDiv);
-
-        const $activityNameDiv = FormUtils.createPropertyElement(`name-property`, `Name`);
-        $activityNameDiv.className = `padded-property`;
-        const $activityNameInput = FormUtils.createTextInput(`name-input`);
-        $activityNameInput.setAttribute(`placeholder`, `display name`);
-        $activityNameInput.setAttribute(`tabIndex`, `1`);
-        $activityNameInput.className = `direct-property`;
-        elementMap.set($activityNameInput.id, $activityNameInput);
-        $activityNameDiv.appendChild($activityNameInput);
-        $activityPropertiesDiv.appendChild($activityNameDiv);
-
-        const $activityDescDiv = FormUtils.createPropertyElement(`desc-property`, `Description`);
-        $activityDescDiv.className = `padded-property`;
-        const $activityDescInput = document.createElement(`textarea`);
-        $activityDescInput.setAttribute(`id`, `desc-input`);
-        $activityDescInput.setAttribute(`width`, `100%`);
-        $activityDescInput.setAttribute(`rows`, `3`);
-        $activityDescInput.setAttribute(`placeholder`, `...`);
-        $activityDescInput.setAttribute(`tabIndex`, `2`);
-        $activityDescInput.className = `direct-property`;
-        elementMap.set($activityDescInput.id, $activityDescInput);
-        $activityDescDiv.appendChild($activityDescInput);
-        $activityPropertiesDiv.appendChild($activityDescDiv);
-
-        const executionOptions = [];
-        const execution = Activity.EXECUTION;
-        for (const step in execution) {
-            executionOptions.push({
-                value: execution[step].name,
-                text: execution[step].text
-            });
-        }
-        const $executionDiv = FormUtils.createPropertyElement(`execution-property`, `Execution`);
-        $executionDiv.className = `padded-property`;
-        const $executionSelect = FormUtils.createSelect(`execution-select`, executionOptions);
-        elementMap.set($executionSelect.id, $executionSelect);
-        $executionDiv.appendChild($executionSelect);
-        $activityPropertiesDiv.appendChild($executionDiv);
-
-
-        const operatorOptions = [];
-        const operator = Activity.OPERATOR;
-        for (const step in operator) {
-            operatorOptions.push({
-                value: operator[step].name,
-                text: operator[step].text
-            });
-        }
-        const $operatorDiv = FormUtils.createPropertyElement(`operator-property`, `Operator`);             // @TODO Map this from original structure
-        $operatorDiv.className = `padded-property`;
-        const $operatorSelect = FormUtils.createSelect(`operator-select`, operatorOptions);
-        elementMap.set($operatorSelect.id, $operatorSelect);
-        $operatorDiv.appendChild($operatorSelect);
-        $activityPropertiesDiv.appendChild($operatorDiv);
-
-        const $bindingAddersDiv = FormUtils.createEmptyInputContainer(`add-endpoint-buttons`);
-        $bindingAddersDiv.className = `row-stretch`;
-        $activityPropertiesDiv.appendChild($bindingAddersDiv);
-
-        const $endpointInAddButton = document.createElement(`button`);
-        $endpointInAddButton.id = `input-button`;
-        $endpointInAddButton.innerHTML = `Add Input`;
-        elementMap.set($endpointInAddButton.id, $endpointInAddButton);
-        $bindingAddersDiv.appendChild($endpointInAddButton);
-
-        const $endpointOutAddButton = document.createElement(`button`);
-        $endpointOutAddButton.id = `output-button`;
-        $endpointOutAddButton.innerHTML = `Add Output`;
-        elementMap.set($endpointOutAddButton.id, $endpointOutAddButton);
-        $bindingAddersDiv.appendChild($endpointOutAddButton);
-
-        const $startEndpointSelect = FormUtils.createSelect(`binding-from-select`);
-        $startEndpointSelect.multiple = true;
-        elementMap.set($startEndpointSelect.id, $startEndpointSelect);
-        $activityPropertiesDiv.appendChild($startEndpointSelect);
-
-        const $destinationEndpointSelect = FormUtils.createSelect(`binding-to-select`);
-        $destinationEndpointSelect.multiple = true;
-        $destinationEndpointSelect.classList.add(`hidden`);
-        elementMap.set($destinationEndpointSelect.id, $destinationEndpointSelect);
-        $activityPropertiesDiv.appendChild($destinationEndpointSelect);
-
-        const $bindingButtonsDiv = FormUtils.createEmptyInputContainer(`binding-buttons`);
-        $bindingButtonsDiv.className = `row-stretch`;
-        $activityPropertiesDiv.appendChild($bindingButtonsDiv);
-
-        const $bindButton = document.createElement(`button`);
-        $bindButton.id = `bind-button`;
-        $bindButton.innerHTML = `Bind`;
-        $bindButton.disabled = true;
-        elementMap.set($bindButton.id, $bindButton);
-        $bindingButtonsDiv.appendChild($bindButton);
-
-        const $unbindButton = document.createElement(`button`);
-        $unbindButton.id = `unbind-button`;
-        $unbindButton.innerHTML = `Unbind`;
-        $unbindButton.disabled = true;
-        elementMap.set($unbindButton.id, $unbindButton);
-        $bindingButtonsDiv.appendChild($unbindButton);
-
-        const $removeButton = document.createElement(`button`);
-        $removeButton.id = `remove-button`;
-        $removeButton.innerHTML = `Remove`;
-        $removeButton.disabled = true;
-        elementMap.set($removeButton.id, $removeButton);
-        $bindingButtonsDiv.appendChild($removeButton);
-
-        const $annotationsDiv = FormUtils.createPropertyElement(`annotations-property`, `Annotations`);
-        $activityPropertiesDiv.appendChild($annotationsDiv);
-
-        const $annotations = FormUtils.createEmptyInputContainer(`annotations-property`);
-        $annotations.className = `directProperty`;
-        elementMap.set($annotations.id, $annotations);
-        $annotationsDiv.appendChild($annotations);
-
-        const $nodeNameDiv = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
-        $nodePropertiesDiv.appendChild($nodeNameDiv);
-        const $nodeNameInput = FormUtils.createTextInput(`node-name-input`);
-        $nodeNameInput.className = `direct-property`;
-        elementMap.set($nodeNameInput.id, $nodeNameInput);
-        $nodeNameDiv.appendChild($nodeNameInput);
-
-        const $nodeDescDiv = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
-        $nodePropertiesDiv.appendChild($nodeDescDiv);
-        const $nodeDescInput = FormUtils.createTextInput(`node-desc-input`);
-        $nodeDescInput.className = `direct-property`;
-        elementMap.set($nodeDescInput.id, $nodeDescInput);
-        $nodeDescDiv.appendChild($nodeDescInput);
-
-
-        // Create JSON export area
-        const $exportButtonsDiv = FormUtils.createEmptyInputContainer(`export-buttons`);
-        $exportButtonsDiv.className = `row-stretch`;
-        $nodePropertiesDiv.appendChild($exportButtonsDiv);
-        const $exportJsonButton = document.createElement(`button`);
-        $exportJsonButton.id = `export-json-button`;
-        $exportJsonButton.innerHTML = `Export to JSON`;
-        elementMap.set($exportJsonButton.id, $exportJsonButton);
-        $exportButtonsDiv.appendChild($exportJsonButton);
-
-        const $exportSvgButton = document.createElement(`button`);
-        $exportSvgButton.id = `export-svg-button`;
-        $exportSvgButton.innerHTML = `Export to SVG`;
-        elementMap.set($exportSvgButton.id, $exportSvgButton);
-        $exportButtonsDiv.appendChild($exportSvgButton);
-        return elementMap;
-    }
-
     _initUI() {
-        this._elementMap = this._buildUI();
+        this._elementMap = atPropertyUi();
+        const $container = this._elementMap.get(`property-container`);
+        this.appendChild($container);
         this._enablePropertyInputs(false);
         this._elementMap.get(`urn-input`).addEventListener(`focusout`, this._handleUrnChange.bind(this));
         this._elementMap.get(`name-input`).addEventListener(`blur`, this._handleActivityNameChange.bind(this));
@@ -471,63 +303,64 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._newBinding.from.length = 0;
         $unbindButton.disabled = true;
         $removeButton.disabled = true;
+        const endpointArray = Array.from(selectedStartEndpoints).map((selectedFromEndpoint) => {
+            const startEndpointType = selectedFromEndpoint.value.split(`/`)[0];
+            const startEndpointUrn = selectedFromEndpoint.value.split(`/`)[1];
+            const startEndpointName = selectedFromEndpoint.label.split(` `)[0];
+            const fromEndpointDefinition = {urn: startEndpointUrn,
+                id: startEndpointName,
+                property: startEndpointType};
+            return fromEndpointDefinition;
+        })
 
-        if (selectedStartEndpoints.length < 1) {
+
+        console.log(endpointArray)
+
+        if (endpointArray.length < 1) {
             $destinationEndpointSelect.classList.add(`hidden`);
             $destinationEndpointSelect.size = 0;
         }
 
-        if (selectedStartEndpoints.length === 1) {
-            const selectedOption = selectedStartEndpoints[0];
-            const startEndpointType = selectedOption.value.split(`/`)[0];
-            const startEndpointUrn = selectedOption.value.split(`/`)[1];
-            const startEndpointName = selectedOption.label.split(` `)[0];
+        if (endpointArray.length === 1) {
             let allowedEndpointDestination;
-            if (startEndpointType === `in`) {
+            if (endpointArray[0].property === `in`) {
                 allowedEndpointDestination = this._getSelfOuts();
-            } else if (startEndpointType === `out`) {
-                if (startEndpointUrn === this._focusNode.activity.urn) {
+            } else if (endpointArray[0].property === `out`) {
+                if (endpointArray[0].urn === this._focusNode.activity.urn) {
                     allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
                 } else {
                     allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getCollectorDefinitions()];
                 }
-            } else if (startEndpointType === `router`) {
-                if (startEndpointUrn === this._focusNode.activity.urn) {
+            } else if (endpointArray[0].property === `router`) {
+                if (endpointArray[0].urn === this._focusNode.activity.urn) {
                     allowedEndpointDestination = [...this._getChildIns()];
                 } else {
                     allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns()];  // dont think this should be allowed
                 }
-            } else if (startEndpointType === `collector`) {
+            } else if (endpointArray[0].property === `collector`) {
                 allowedEndpointDestination = [...this._getSelfIns()];
             }
             $destinationEndpointSelect.classList.remove(`hidden`);
-            this._newBinding.addFrom({urn: startEndpointUrn,
-                id: startEndpointName,
-                property: startEndpointType});
+            this._newBinding.addFrom(endpointArray[0]);
             this._addAllowedEndpointsToSelect($destinationEndpointSelect, allowedEndpointDestination, false);
 
-            if (this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName)) {
+            if (this._focusNode.activity.isBound(endpointArray[0].urn, endpointArray[0].property, endpointArray[0].id)) {
                 $unbindButton.disabled = false;
             }
-            if ((startEndpointUrn === this._focusNode.activity.urn) && !(this._focusNode.activity.isBound(startEndpointUrn, startEndpointType, startEndpointName))) {
+            if ((endpointArray[0].urn === this._focusNode.activity.urn) && !(this._focusNode.activity.isBound(endpointArray[0].urn, endpointArray[0].property, endpointArray[0].id))) {
                 $removeButton.disabled = false;
             }
         }
 
-        if (selectedStartEndpoints.length > 1) {
+        if (endpointArray.length > 1) {
             // 1) Check if all selected are of same type -  all in-type or all out-type (can not have a mix)
-            const activityConnectionType = selectedStartEndpoints[0].value.split(`/`)[0];
+            const activityConnectionType = endpointArray[0].property;
             let activityConnectionTypeValid = true;
-            selectedStartEndpoints.forEach((endpoint) => {
-                const startEndpointType = endpoint.value.split(`/`)[0];
-                const startEndpointUrn = endpoint.value.split(`/`)[1];
-                const startEndpointName = endpoint.label.split(` `)[0];
-                if (startEndpointType !== activityConnectionType) {
+            endpointArray.forEach((endpoint) => {
+                if (endpoint.property !== activityConnectionType) {
                     activityConnectionTypeValid = false;
                 }
-                this._newBinding.addFrom({urn: startEndpointUrn,
-                    id: startEndpointName,
-                    property: startEndpointType});
+                this._newBinding.addFrom(endpoint);
             });
             // 2) create 2nd $select of allowed endpoints to end the route.
             let allowedEndpointDestination = [];
@@ -545,6 +378,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 $destinationEndpointSelect.classList.add(`hidden`);
             }
         }
+
+        this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
+            bubbles: true,
+            composed: true,
+            detail: {from: endpointArray}
+        }));
     }
 
     handleToSelect(e) {
@@ -623,7 +462,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $bindButton.disabled = true;
     }
 
-    handleUnbindButton(e) {
+    handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
         this._focusNode.activity.removeBinding(this._newBinding);
         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -634,7 +473,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $unbindButton.disabled = true;
     }
 
-    handleRemoveButton(e) {
+    handleRemoveButton() {
         const $removeButton = this._elementMap.get(`remove-button`);
         if (this._newBinding.from[0].property === `in`) {
             this._focusNode.activity.removeInput(this._newBinding.from[0].id);
@@ -750,7 +589,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      */
 
     _populateEndpoints() {                // (when properties update)
-        let $startEndpointSelect = this._elementMap.get(`binding-from-select`);
+        const $startEndpointSelect = this._elementMap.get(`binding-from-select`);
         this._clearEndpoints();
         const selfIns = this._getSelfIns();
         const selfOuts = this._getSelfOuts();
@@ -758,7 +597,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const collectors = this._getCollectors();
         const routers = this._getRouters();
         const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
-        this._addAllowedEndpointsToSelect($startEndpointSelect,startEndpointOptions, true )
+        this._addAllowedEndpointsToSelect($startEndpointSelect, startEndpointOptions, true);
 
         // const numRows = this._getSelectListSize(startEndpointOptions);
         // $startEndpointSelect = FormUtils.updateSelect($startEndpointSelect, this._convertEndpointsToOptions(startEndpointOptions, true));
@@ -806,7 +645,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 annotation_add.innerHTML = `+`;
                 annotation_add.className = `io-add`;
 
-                annotation_add.addEventListener(`click`, function (e) {
+                annotation_add.addEventListener(`click`, function () {
                     this._addAnnotation(child.id);
                 }.bind(this));
 
@@ -818,7 +657,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 iterable_checkbox.setAttribute(`id`, `${child.id}-iterable`);
                 iterable_checkbox.type = `checkbox`;
 
-                iterable_checkbox.addEventListener(`change`, function (e) {
+                iterable_checkbox.addEventListener(`change`, function () {
                     this._focusNode.activity.setIterable(child.id, iterable_checkbox.checked);
                 }.bind(this));
 
@@ -868,7 +707,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                         remove.innerHTML = `-`;
                         remove.className = `annotation remove`;
 
-                        remove.addEventListener(`click`, function (e) {
+                        remove.addEventListener(`click`, function () {
                             this._focusNode.activity.removeAnnotation(child.id, annotation[0]);
                         }.bind(this));
 
@@ -960,19 +799,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      * _getChildIns
      * _getChildOuts
      */
-
-    // isBoundFrom(urn,name,type) {
-    //     this._focusNode.activity.bindings.forEach((extantBinding) => {
-    //         extantBinding.from.forEach((extantFromEndpoint) => {
-    //             if (extantFromEndpoint.id === selectOptionEndpoint.name) {
-    //                 const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
-    //                     return extantToEndpoints.id;
-    //                 });
-    //                 optionDisplay = `${selectOptionEndpoint.name} ${this.ARROW} ${toEndpoints}`;
-    //             }
-    //         });
-    //     });
-    // }
 
     _convertEndpointsToOptions(selectOptions, addBindings) {
         let options;

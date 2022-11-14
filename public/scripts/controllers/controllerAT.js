@@ -110,6 +110,8 @@ export default class ControllerAT extends Controller {
         this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));  //                     // button to export JAG and Activities to file as JSON
         this._properties.addEventListener(`event-export-svg`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
         this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this)); //                    // URN changed - rename or clone actions
+        this._properties.addEventListener(`event-endpoints-selected`, this.eventEndpointsSelected.bind(this)); //                    // URN changed - rename or clone actions
+
 
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
@@ -290,6 +292,11 @@ export default class ControllerAT extends Controller {
     // eventUrnChangedHandler --- hosted by common controller.
     // eventActivityUpdatedHandler --- hosted by common controller.
     // eventNodeUpdatedHandler --- common with 'playground' handler
+
+    eventEndpointsSelected(event) {
+        const fromArray = event.detail.from;
+        this._playground.showEndpoint(fromArray)
+    }
 
     eventExportJagHandler(event) {
         const node = event.detail.node;

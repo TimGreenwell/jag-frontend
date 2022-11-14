@@ -23,6 +23,13 @@ class FormUtils {
         return input;
     }
 
+    static createButton(id, text) {
+        const button = document.createElement(`button`);
+        button.setAttribute(`id`, id);
+        button.innerHTML = text;
+        return button;
+    }
+
     static updateSelect($selectElement, options, selected = undefined) {
         while ($selectElement.firstChild) {
             $selectElement.removeChild($selectElement.firstChild);
