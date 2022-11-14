@@ -38,8 +38,11 @@ export default class SvgObject {
         this.EDGE = `edge`;
         this.EXPAND = `expand`;
         this.ADD = `add`;
+        this.INPUT = `input`;
+        this.OUTPUT = `output`;
+        this.BINDING = `binding`
         this.ID_SEPARATOR = `-`;
-        this.EDGE_SEPARATOR = `:`;
+        this.PATH_SEPARATOR = `:`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
         this.SVGNS = `http://www.w3.org/2000/svg`;
@@ -216,8 +219,8 @@ export default class SvgObject {
     }
 
     addColor(item, fill = `black`, stroke = `black`) {
-        item.setAttributeNS(null, `fill`, `hsla(${this.standardHue},100%,${fill}%,1)`);
-        item.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,${stroke}%,1)`);
+        item.setAttributeNS(null, `fill`, `hsla(${fill},100%,50%,1)`);
+        item.setAttributeNS(null, `stroke`, `hsla(${stroke},100%,50%,1)`);
     }
 
     applyColorDepthEffect(item, depth, treeHeight) {
@@ -294,12 +297,58 @@ export default class SvgObject {
         return nodeGroup;
     }
 
-    createCircle(x, y, radius) {
+    createCircle(id, radius) {
         const circle = document.createElementNS(this.SVGNS, `circle`);
-        circle.setAttributeNS(null, `cx`, x);
-        circle.setAttributeNS(null, `cy`, y);
+        circle.id = id;
         circle.setAttributeNS(null, `r`, radius);
         return circle;
+    }
+
+    createInputEndpoint(nodeId, inputId) {         // id = nodeId - endpointId(name)
+        const endpointId = `${nodeId}:${inputId}`;
+        console.log(endpointId)
+        const newId = this.buildId(this.INPUT, endpointId);
+        const inputEndpoint = this.createCircle(newId, 5);
+        inputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
+        inputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
+        this.addColor(inputEndpoint, 240, 60);
+        return inputEndpoint;
+    }
+    createOutputEndpoint(nodeId, outputId) {         // id = nodeId - endpointId(name)
+        const endpointId = `${nodeId}:${outputId}`;
+        const newId = this.buildId(this.OUTPUT, endpointId);
+        const inputEndpoint = this.createCircle(newId, 5);
+        inputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
+        inputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
+        this.addColor(inputEndpoint, 120, 0);
+        return inputEndpoint;
+    }endpointId
+
+    createBinding(fromEndpoint, toEndpoint){
+        let fromId = `${fromEndpoint.urn}:${fromEndpoint.id}`;
+        let toId = `${toEndpoint.urn}:${toEndpoint.id}`;
+        let fromElement;
+        let toElement;
+        if (fromEndpoint.property === `in`) {
+            fromElement = this.fetchInputEndpoint(fromId)
+            toElement = this.fetchOutputEndpoint(toId)
+        } else
+        {
+            fromElement = this.fetchOutputEndpoint(fromId)
+            toElement = this.fetchInputEndpoint(toId)
+        }
+        const binding = document.createElementNS(this.SVGNS, `path`);
+        binding.id = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+
+        binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
+        binding.setAttributeNS(null, `fill`, `transparent`);
+        binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
+        // const cubicCurve = this.buildPath(fromElement, toElement);
+        // binding.setAttributeNS(null, `d`, cubicCurve);
+        // binding.setAttributeNS(null, `cursor`, `pointer`);
+        // binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
+        return binding;
+
     }
 
     createAddButton(id, width, height) {
@@ -374,7 +423,7 @@ export default class SvgObject {
         const edge = document.createElementNS(this.SVGNS, `path`);
         const edgeSourceId = this.buildId(this.EDGE, sourceId);
         const edgeDestId = this.buildId(this.EDGE, destId);
-        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
+        edge.id = `${edgeSourceId}${this.PATH_SEPARATOR}${edgeDestId}`;
         edge.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
         edge.setAttributeNS(null, `stroke-width`, this.lineWidth);
@@ -389,7 +438,7 @@ export default class SvgObject {
         const edge = document.createElementNS(this.SVGNS, `path`);
         const edgeSourceId = this.buildId(this.EDGE, sourceId);
         const edgeDestId = `${this.CURSOR}`;
-        edge.id = `${edgeSourceId}${this.EDGE_SEPARATOR}${edgeDestId}`;
+        edge.id = `${edgeSourceId}${this.PATH_SEPARATOR}${edgeDestId}`;
         edge.setAttributeNS(null, `stroke`, `hsla(${this.possibleHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
         edge.setAttributeNS(null, `stroke-width`, this.lineWidth);
@@ -606,6 +655,17 @@ export default class SvgObject {
         return document.getElementById(this.buildId(this.NODEGROUP, id));
     }
 
+fetchInputEndpoint(id) {
+    return document.getElementById(this.buildId(this.INPUT, id));
+}
+    fetchOutputEndpoint(id) {
+        return document.getElementById(this.buildId(this.OUTPUT, id));
+    }
+    
+    fetchBinding(id) {
+        return document.getElementById(this.buildId(this.BINDING, id));
+    }
+
     fetchExpandButton(id) {
         return document.getElementById(this.buildId(this.EXPAND, id));
     }
@@ -639,14 +699,29 @@ export default class SvgObject {
         return id;
     }
 
+    fetchBindingSourceId(edge) {
+        const edgeSourceId = edge.id.split(this.PATH_SEPARATOR)[0];
+        const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
+        return sourceId;
+    }
+
+    fetchBindingDestinationId(edge) {
+        const edgeDestinationId = edge.id.split(this.PATH_SEPARATOR)[1];
+        const destinationId = edgeDestinationId.split(this.ID_SEPARATOR)[1];
+        return destinationId;
+    }
+
+
+
+
     fetchEdgeSourceId(edge) {
-        const edgeSourceId = edge.id.split(this.EDGE_SEPARATOR)[0];
+        const edgeSourceId = edge.id.split(this.PATH_SEPARATOR)[0];
         const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
         return sourceId;
     }
 
     fetchEdgeDestinationId(edge) {
-        const edgeDestinationId = edge.id.split(this.EDGE_SEPARATOR)[1];
+        const edgeDestinationId = edge.id.split(this.PATH_SEPARATOR)[1];
         const destinationId = edgeDestinationId.split(this.ID_SEPARATOR)[1];
         return destinationId;
     }

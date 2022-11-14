@@ -313,9 +313,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             return fromEndpointDefinition;
         })
 
-
-        console.log(endpointArray)
-
         if (endpointArray.length < 1) {
             $destinationEndpointSelect.classList.add(`hidden`);
             $destinationEndpointSelect.size = 0;
@@ -545,7 +542,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _enablePropertyInputs(enabled) {
-        console.log(this._elementMap);
         this._elementMap.get(`urn-input`).disabled = !enabled;
         this._elementMap.get(`name-input`).disabled = !enabled;
         this._elementMap.get(`desc-input`).disabled = !enabled;
@@ -882,7 +878,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return availableInputs;
     }
 
-    _getCollectors() {
+    _getCollectors() {2
         const availableInputs = [];
         if (this._focusNode.activity.collectors.length > 0) {
             availableInputs.push({
@@ -899,7 +895,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _getSelfIns() {
         const availableInputs = [];
         if (this._focusNode.activity.inputs.length > 0) {
-            console.log(this._focusNode.activity.bindings);
             availableInputs.push({
                 activityId: this._focusNode.activity.urn,
                 activityName: this._focusNode.activity.name,

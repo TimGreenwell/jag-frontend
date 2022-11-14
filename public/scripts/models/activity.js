@@ -270,34 +270,18 @@ export default class Activity extends EventTarget {
         let resultBindings;
         if (removedBinding.to.length === 0) {
             this.bindings = this.bindings.filter((checkBinding) => {
-                return !checkBinding.sameFromEndpoint(removedBinding.from[0]);
+                resultBindings = !checkBinding.sameFromEndpoint(removedBinding.from[0]);
+                return resultBindings;
             });
         } else {
             removedBinding.to.forEach((oneOfRemovedBindingsToInputs) => {
                 this.bindings = this.bindings.filter((myBinding) => {
-                    console.log(`----`)
-                    console.log(`----`)
-                    console.log(myBinding.from[0])
-                    console.log(`vs`)
-                    console.log(removedBinding.from[0])
-                    console.log(myBinding.sameFromEndpoint(removedBinding.from[0]))
-                    console.log(`----`)
-                    console.log(myBinding.to[0])
-                    console.log(`vs`)
-                    console.log(oneOfRemovedBindingsToInputs)
-                    console.log(myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs))
-                    console.log(`----`)
-                    console.log(!((myBinding.sameFromEndpoint(removedBinding.from[0])) && (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs))))
-                    return !((myBinding.sameFromEndpoint(removedBinding.from[0])) && (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs)))
+                    resultBindings = !((myBinding.sameFromEndpoint(removedBinding.from[0])) &&
+                        (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs)));
+                    return resultBindings;
                 });
-                console.log(`heres whats left`)
-                console.log(this.bindings)
-
             });
         }
-        console.log(this.bindings)
-
-        console.log(`leaving..`);
     }
 
 

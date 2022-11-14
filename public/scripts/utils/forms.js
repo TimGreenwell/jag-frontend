@@ -71,8 +71,6 @@ class FormUtils {
         if (options) {
             input = FormUtils.updateSelect(input, options, selected);
         }
-        console.log("my select...")
-        console.log(input)
         return input;
     }
 

@@ -47,7 +47,7 @@ class AtPlayground extends Popupable {
         this._viewedProjectsMap = new Map();               // All active Jag root nodes - id,node
         this._selectedNodesMap = new Map();         // set of ActivityNodes (selected)
         this._selectedEdge = null;                         // single selected edge
-        this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
+        // this.currentNodeModel = null;                      // node in focus (selected or head of selected)  // needed?  - we have selectedActivityNodeMap
         this.hasColor = false;
 
         // EVENTS
@@ -138,7 +138,7 @@ class AtPlayground extends Popupable {
             width};
         const edge = this.svg.createEdgeToCursor(parentNodeModel.id, sourceBox);
         this._playgroundSvg.appendChild(edge);
-        this.currentNodeModel = parentNodeModel;
+        // this.currentNodeModel = parentNodeModel;
         document.addEventListener(`mousemove`, this._boundLinkNodes);
         document.addEventListener(`mouseup`, this._boundFinalizeEdge);
     }
@@ -481,9 +481,18 @@ class AtPlayground extends Popupable {
      */
 
     showEndpoint(fromArray) {
-        console.log(`I am here`)
-        console.log(fromArray)
+        const [focusNode] = this.selectedNodes.values();
+        fromArray.forEach((fromEndpoint) => {
+            const endpointUrn = fromEndpoint.urn;
+            const endpointProperty = fromEndpoint.property;
+            const endpointId = fromEndpoint.id;
+            this.viewedProjects.forEach((project) => {
+
+                });
+
+        });
     }
+
     toggleColor() {
         this.hasColor = !this.hasColor;
         this.unselectEverything();
@@ -824,6 +833,18 @@ class AtPlayground extends Popupable {
         });
     }
 
+    isEndpointBoundToChild(activity, endpointId) {
+        let isBound = false;
+        activity.bindings.forEach((binding) => {
+            binding.from.forEach((outBound) => {
+                if ((outBound.urn === activity.urn) && (outBound.id === endpointId)) {
+                    isBound = true;
+                }
+            });
+        });
+        return isBound;
+    }
+
     buildJointActivityGraph(parentGroup, nodeModel) {
         const nodeBox = {x: nodeModel.x,
             y: nodeModel.y,
@@ -838,11 +859,13 @@ class AtPlayground extends Popupable {
         subgroup.insertBefore(nodeContentGroup, subgroupTop);
 
         const labelElement = this.svg.createTextElement(nodeModel.name, nodeModel.id);
-        const svgText = this.svg.positionItem(labelElement, this.svg.labelIndent, 0);
+        const svgText = this.svg.positionItem(labelElement, this.svg.labelIndent, this.svg.standardBoxHeight / 4);
         const groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
         nodeBox.height = this.svg.standardBoxHeight;
-        nodeBox.width = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
+        const possibleWidth1 = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
+        const possibleWidth2 = Math.max(nodeModel.activity.inputs.length , nodeModel.activity.inputs.length) * 10;
+        nodeBox.width = Math.max(possibleWidth1, possibleWidth2);
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
 
@@ -868,6 +891,58 @@ class AtPlayground extends Popupable {
             addButton.classList.add(`button`);
             nodeContentGroup.insertBefore(addButton, svgText);
         }
+
+        if (nodeModel.activity.inputs.length !== 0) {
+            const spread = nodeBox.width / (nodeModel.activity.inputs.length + 1);  // +1 -> making space from corners
+            const topLayer = [];
+            nodeModel.activity.inputs.forEach((endpoint) => {
+                if (this.isEndpointBoundToChild(nodeModel.activity, endpoint.identity)) {
+                    topLayer.push(endpoint.identity);
+                } else {
+                    topLayer.unshift(endpoint.identity);
+                }
+            });
+            nodeModel.activity.inputs.forEach((endpoint) => {
+                console.log(endpoint)
+                const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.identity);
+                const position = spread + (topLayer.indexOf(endpoint.identity) * spread);
+                this.svg.positionItem(endpointCircle, position, 0);
+                nodeContentGroup.insertBefore(endpointCircle, svgText);
+            });
+        }
+
+        if (nodeModel.activity.outputs.length !== 0) {
+            const spread = nodeBox.width / (nodeModel.activity.outputs.length + 1);  // +1 -> making space from corners
+            const bottomLayer = [];
+            nodeModel.activity.outputs.forEach((endpoint) => {
+                if (this.isEndpointBoundToChild(nodeModel.activity, endpoint.identity)) {
+                    bottomLayer.push(endpoint.identity);
+                } else {
+                    bottomLayer.unshift(endpoint.identity);
+                }
+            });
+            nodeModel.activity.outputs.forEach((endpoint) => {
+                const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.identity);
+                const position = spread + (bottomLayer.indexOf(endpoint.identity) * spread);
+                this.svg.positionItem(endpointCircle, position, nodeBox.height);
+                nodeContentGroup.insertBefore(endpointCircle, svgText);
+            });
+        }
+
+        if (nodeModel.activity.bindings.length !== 0) {
+            nodeModel.activity.bindings.forEach((binding) => {
+                binding.from.forEach((fromEndpoint) => {
+                    binding.to.forEach((toEndPoint) => {
+
+                        this.svg.createBinding(fromEndpoint,toEndPoint)
+                        console.log(`endpoint`)
+                        console.log(fromEndpoint)
+                        console.log(toEndPoint)
+                    })
+                })
+            })
+        }
+
 
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);

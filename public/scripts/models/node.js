@@ -211,11 +211,15 @@ export default class Node extends EventTarget {
     }
 
     get contextualName() {
+        let returnName = null;
         if ((this._contextualName === ``) || (this._contextualName == undefined)) {
-            if (this._activity) {return this._activity.name;}
+            if (this._activity) {
+                returnName = this._activity.name;
+            }
         } else {
-            return this._contextualName;
+            returnName = this._contextualName;
         }
+        return returnName;
     }
 
     set contextualName(value) {
@@ -223,12 +227,15 @@ export default class Node extends EventTarget {
     }
 
     get contextualDescription() {
+        let returnDescription = null;
         if ((this._contextualDescription === ``) || (this._contextualName == undefined)) {
             if (this._activity) {
-            return this.activity.description;}
+                returnDescription = this.activity.description;
+            }
         } else {
-            return this._contextualDescription;
+            returnDescription = this._contextualDescription;
         }
+        return returnDescription;
     }
 
     set contextualDescription(value) {
@@ -361,7 +368,7 @@ export default class Node extends EventTarget {
     incrementDepth(depthCount) {
         this._treeDepth = depthCount + 1;
         this._children.forEach((child) => {
-            child.incrementDepth(this._treeDepth)
+            child.incrementDepth(this._treeDepth);
         });
     }
 
@@ -394,7 +401,7 @@ export default class Node extends EventTarget {
         const depths = [];
         if (this.hasChildren()) {
             this.children.forEach((child) => {
-                depths.push(child.findDeepestLeaf())
+                depths.push(child.findDeepestLeaf());
             });
         } else {
             depths.push(this.treeDepth);
