@@ -480,7 +480,7 @@ class AtPlayground extends Popupable {
      *
      */
 
-    showEndpoint(fromArray) {
+    showEndpoint(fromArray) {        // future - to unhide the data flow
         const [focusNode] = this.selectedNodes.values();
         fromArray.forEach((fromEndpoint) => {
             const endpointUrn = fromEndpoint.urn;
@@ -488,8 +488,7 @@ class AtPlayground extends Popupable {
             const endpointId = fromEndpoint.id;
             this.viewedProjects.forEach((project) => {
 
-                });
-
+            });
         });
     }
 
@@ -864,7 +863,7 @@ class AtPlayground extends Popupable {
         nodeContentGroup.insertBefore(svgText, groupTop);
         nodeBox.height = this.svg.standardBoxHeight;
         const possibleWidth1 = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
-        const possibleWidth2 = Math.max(nodeModel.activity.inputs.length , nodeModel.activity.inputs.length) * 10;
+        const possibleWidth2 = Math.max(nodeModel.activity.inputs.length, nodeModel.activity.inputs.length) * 10;
         nodeBox.width = Math.max(possibleWidth1, possibleWidth2);
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
@@ -903,7 +902,6 @@ class AtPlayground extends Popupable {
                 }
             });
             nodeModel.activity.inputs.forEach((endpoint) => {
-                console.log(endpoint)
                 const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.identity);
                 const position = spread + (topLayer.indexOf(endpoint.identity) * spread);
                 this.svg.positionItem(endpointCircle, position, 0);
@@ -929,29 +927,52 @@ class AtPlayground extends Popupable {
             });
         }
 
-        if (nodeModel.activity.bindings.length !== 0) {
-            nodeModel.activity.bindings.forEach((binding) => {
-                binding.from.forEach((fromEndpoint) => {
-                    binding.to.forEach((toEndPoint) => {
-
-                        this.svg.createBinding(fromEndpoint,toEndPoint)
-                        console.log(`endpoint`)
-                        console.log(fromEndpoint)
-                        console.log(toEndPoint)
-                    })
-                })
-            })
-        }
-
 
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);
+            this.buildBindings(subgroup, nodeModel);
             const svgEdge = this.svg.createEdge(nodeModel.id, child.id, nodeBox, subNodeBox);
             svgEdge.addEventListener(`mousedown`, this.mousedownController.bind(this));
             subgroup.appendChild(svgEdge);
         });
         return nodeBox;
     }
+
+    buildBindings(parentGroup, nodeModel) {
+        nodeModel.activity.bindings.forEach((binding) => {
+            binding.from.forEach((fromEndpoint) => {                   // a little confusing.  Every binding should only have 1 from.  (except collectors - which are probably extinct now)
+                const fromNodes = [];
+                const checkStack = [];
+                checkStack.push(nodeModel);
+                checkStack.push(...nodeModel.children);
+                while (checkStack.length > 0) {
+                    const checkNodeModel = checkStack.pop();
+                    if (checkNodeModel.activity.urn === fromEndpoint.urn) {
+                        fromNodes.push(checkNodeModel);
+                    }
+                }
+                binding.to.forEach((toEndpoint) => {
+                    const toNodes = [];
+                    const checkStack = [];
+                    checkStack.push(nodeModel);
+                    checkStack.push(...nodeModel.children);
+                    while (checkStack.length > 0) {
+                        const checkNodeModel = checkStack.pop();
+                        if (checkNodeModel.activity.urn === toEndpoint.urn) {
+                            toNodes.push(checkNodeModel);
+                        }
+                    }
+                    fromNodes.forEach((fromNode) => {
+                        toNodes.forEach((toNode) => {
+                            let newBinding = this.svg.createBinding(fromNode, fromEndpoint, toNode, toEndpoint);
+                            parentGroup.appendChild(newBinding);
+                        });
+                    });
+                });
+            });
+        });
+    }
+
 
 }
 

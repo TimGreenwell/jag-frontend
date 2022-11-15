@@ -334,6 +334,22 @@ export default class Node extends EventTarget {
         return workStack;
     }
 
+
+    activitiesInDataScope(urn) {    // return array of nodes matching urn
+        const matchStack = [];
+        const workStack = [];
+
+        workStack.push(this);
+        workStack.push(this.children);
+        while (workStack.length > 0) {
+            const nodeModel = workStack.pop();
+            if (nodeModel.activity.urn === urn) {
+                matchStack.push(nodeModel);
+            }
+        }
+        return matchStack;
+    }
+
     activitiesInProject(urn) {    // return array of nodes matching urn
         const matchStack = [];
         const workStack = [];

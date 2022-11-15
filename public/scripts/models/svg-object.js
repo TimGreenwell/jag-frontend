@@ -40,7 +40,7 @@ export default class SvgObject {
         this.ADD = `add`;
         this.INPUT = `input`;
         this.OUTPUT = `output`;
-        this.BINDING = `binding`
+        this.BINDING = `binding`;
         this.ID_SEPARATOR = `-`;
         this.PATH_SEPARATOR = `:`;
         this.TEXT = `text`;
@@ -306,7 +306,6 @@ export default class SvgObject {
 
     createInputEndpoint(nodeId, inputId) {         // id = nodeId - endpointId(name)
         const endpointId = `${nodeId}:${inputId}`;
-        console.log(endpointId)
         const newId = this.buildId(this.INPUT, endpointId);
         const inputEndpoint = this.createCircle(newId, 5);
         inputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
@@ -314,6 +313,7 @@ export default class SvgObject {
         this.addColor(inputEndpoint, 240, 60);
         return inputEndpoint;
     }
+
     createOutputEndpoint(nodeId, outputId) {         // id = nodeId - endpointId(name)
         const endpointId = `${nodeId}:${outputId}`;
         const newId = this.buildId(this.OUTPUT, endpointId);
@@ -322,33 +322,62 @@ export default class SvgObject {
         inputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         this.addColor(inputEndpoint, 120, 0);
         return inputEndpoint;
-    }endpointId
+    }
 
-    createBinding(fromEndpoint, toEndpoint){
-        let fromId = `${fromEndpoint.urn}:${fromEndpoint.id}`;
-        let toId = `${toEndpoint.urn}:${toEndpoint.id}`;
+    endpointId;
+
+    createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
+        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
+        const toId = `${toNode.id}:${toEndpoint.id}`;
         let fromElement;
         let toElement;
         if (fromEndpoint.property === `in`) {
-            fromElement = this.fetchInputEndpoint(fromId)
-            toElement = this.fetchOutputEndpoint(toId)
-        } else
-        {
-            fromElement = this.fetchOutputEndpoint(fromId)
-            toElement = this.fetchInputEndpoint(toId)
+            fromElement = this.fetchInputEndpoint(fromId);
+            toElement = this.fetchOutputEndpoint(toId);
+        } else if (fromEndpoint.property === `out`) {
+            fromElement = this.fetchOutputEndpoint(fromId);
+            toElement = this.fetchInputEndpoint(toId);
         }
-        const binding = document.createElementNS(this.SVGNS, `path`);
-        binding.id = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+        const binding = document.createElementNS(this.SVGNS, `line`);
+        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+        const bindingId = this.buildId(this.BINDING, bindingDesc);
+        binding.id = bindingId;
 
-        binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
-        binding.setAttributeNS(null, `fill`, `transparent`);
-        binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
-        // const cubicCurve = this.buildPath(fromElement, toElement);
+        const fromNodeGroup = this.fetchNodeGroup(fromNode.id)
+        const toNodeGroup = this.fetchNodeGroup(toNode.id)
+        console.log(`!`)
+        console.log(toNodeGroup)
+        const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
+        const fromTransformComponents = this.parse(fromTranslateString);
+        const fromTransformX = Number(fromTransformComponents.translate[0])
+        const fromTransformY = Number(fromTransformComponents.translate[1])
+        const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
+        const toTransformComponents = this.parse(toTranslateString);
+        const toTransformX = Number(toTransformComponents.translate[0])
+        const toTransformY = Number(toTransformComponents.translate[1])
+
+        const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
+        const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
+        const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
+        const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
+
+
+        binding.setAttributeNS(null, `id`, `${bindingId}`);
+        binding.setAttributeNS(null, `x1`, `${fromX}`);
+        binding.setAttributeNS(null, `y1`, `${fromY}`);
+        binding.setAttributeNS(null, `x2`, `${toX}`);
+        binding.setAttributeNS(null, `y2`, `${toY}`);
+        binding.setAttributeNS(null, `stroke`, `black`);
+
+
+        // binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
+        // binding.setAttributeNS(null, `fill`, `transparent`);
+        // binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
+        // const cubicCurve = this.buildPath2(fromElement, toElement);
         // binding.setAttributeNS(null, `d`, cubicCurve);
         // binding.setAttributeNS(null, `cursor`, `pointer`);
         // binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
         return binding;
-
     }
 
     createAddButton(id, width, height) {
@@ -630,6 +659,24 @@ export default class SvgObject {
         return cubicCurve;
     }
 
+    buildPath2(sourceCircle, destCircle) {
+        console.log(`##`);
+        console.log(sourceCircle);
+        const ox = sourceCircle.x + sourceCircle.rad;
+        const oy = sourceCircle.y + (sourceCircle.height / 2);
+        const ex = destCircle.x;
+        const ey = destCircle.y + (destCircle.height / 2);
+        const delta_x = (ex - ox) / 2.0;
+        const x1 = ox + delta_x;
+        const y1 = oy;
+        const x2 = ex - delta_x;
+        const y2 = ey;
+        // const mx = (ox + ex) / 2.0;
+        // const my = (oy + ey) / 2.0;
+        const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        return cubicCurve;
+    }
+
     /**
      * Fetching - getter/setters
      *
@@ -655,13 +702,17 @@ export default class SvgObject {
         return document.getElementById(this.buildId(this.NODEGROUP, id));
     }
 
-fetchInputEndpoint(id) {
-    return document.getElementById(this.buildId(this.INPUT, id));
-}
+    fetchInputEndpoint(id) {
+        return document.getElementById(this.buildId(this.INPUT, id));
+    }
+
     fetchOutputEndpoint(id) {
+        console.log(`infetch`);
+        console.log(id);
+        console.log(this.buildId(this.OUTPUT, id));
         return document.getElementById(this.buildId(this.OUTPUT, id));
     }
-    
+
     fetchBinding(id) {
         return document.getElementById(this.buildId(this.BINDING, id));
     }
@@ -710,8 +761,6 @@ fetchInputEndpoint(id) {
         const destinationId = edgeDestinationId.split(this.ID_SEPARATOR)[1];
         return destinationId;
     }
-
-
 
 
     fetchEdgeSourceId(edge) {
@@ -842,7 +891,7 @@ fetchInputEndpoint(id) {
     }
 
     applyFilter(svgItem, filterId) {
-         svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
+        svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
     }
 
 }
