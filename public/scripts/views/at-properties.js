@@ -428,16 +428,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     handleBindButton(e) {
-        console.log(e);
         const $bindButton = this._elementMap.get(`bind-button`);
         this._newBinding.from.forEach((fromPoint) => {
             this._newBinding.to.forEach((toPoint) => {
-                console.log(fromPoint);
-                console.log(toPoint);
                 const binding = new Binding({from: [fromPoint],
                     to: [toPoint]});
-                console.log(`>>>>`);
-                console.log(binding);
                 this._focusNode.activity.addBinding(binding);
             });
         });

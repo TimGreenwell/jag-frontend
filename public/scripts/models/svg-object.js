@@ -323,8 +323,8 @@ export default class SvgObject {
         this.addColor(inputEndpoint, 120, 0);
         return inputEndpoint;
     }
-
-    endpointId;
+    //
+    // endpointId;
 
     createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
         const fromId = `${fromNode.id}:${fromEndpoint.id}`;
@@ -345,8 +345,6 @@ export default class SvgObject {
 
         const fromNodeGroup = this.fetchNodeGroup(fromNode.id)
         const toNodeGroup = this.fetchNodeGroup(toNode.id)
-        console.log(`!`)
-        console.log(toNodeGroup)
         const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
         const fromTransformComponents = this.parse(fromTranslateString);
         const fromTransformX = Number(fromTransformComponents.translate[0])
@@ -660,8 +658,6 @@ export default class SvgObject {
     }
 
     buildPath2(sourceCircle, destCircle) {
-        console.log(`##`);
-        console.log(sourceCircle);
         const ox = sourceCircle.x + sourceCircle.rad;
         const oy = sourceCircle.y + (sourceCircle.height / 2);
         const ex = destCircle.x;
@@ -707,9 +703,6 @@ export default class SvgObject {
     }
 
     fetchOutputEndpoint(id) {
-        console.log(`infetch`);
-        console.log(id);
-        console.log(this.buildId(this.OUTPUT, id));
         return document.getElementById(this.buildId(this.OUTPUT, id));
     }
 

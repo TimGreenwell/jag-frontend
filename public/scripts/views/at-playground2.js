@@ -930,11 +930,11 @@ class AtPlayground extends Popupable {
 
         nodeModel.children.forEach((child) => {
             const subNodeBox = this.buildJointActivityGraph(subgroup, child);
-            this.buildBindings(subgroup, nodeModel);
             const svgEdge = this.svg.createEdge(nodeModel.id, child.id, nodeBox, subNodeBox);
             svgEdge.addEventListener(`mousedown`, this.mousedownController.bind(this));
             subgroup.appendChild(svgEdge);
         });
+        this.buildBindings(subgroup, nodeModel);
         return nodeBox;
     }
 

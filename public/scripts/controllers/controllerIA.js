@@ -423,7 +423,6 @@ export default class ControllerIA extends Controller {
     }
 
     commandAgentCreatedHandler(createdAgentModel, createdAgentId) {
-        console.log(`See incoming Agent`)
         this.cacheAgent(createdAgentModel);
         this._agentLibrary.addListItem(createdAgentModel);
     }

@@ -265,8 +265,6 @@ export default class Activity extends EventTarget {
     }
 
     removeBinding(removedBinding) {
-        console.log(`inside remove binding`);
-
         let resultBindings;
         if (removedBinding.to.length === 0) {
             this.bindings = this.bindings.filter((checkBinding) => {
