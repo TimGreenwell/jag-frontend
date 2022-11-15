@@ -257,13 +257,14 @@ export default class SvgObject {
      * createBackground - group to hold all subgroups
      * createSubGroup - group to hold node groups and edges (and sub-subgroups, if exist)
      * createNodeGroup - group to hold node rectangle, text, button groups
+     * createTextElement - basic svg text components
      * createCircle - test circle for debugging points
      * createAddButton - group holding svg components forming 'add button'
      * createExpandButton - group holding svg components forming `expand button`
      * createRectangle - Rectangle giving nodeGroup its form and size
      * resizeRectangle - Convenience function to set and change rectangle size
      * createEdge - basic edge components (path is defined with pathing methods)
-     * createTextElement - basic svg text components
+     * createBinding - data flow representation between Activities
      */
 
     buildSvg() {
@@ -297,6 +298,17 @@ export default class SvgObject {
         return nodeGroup;
     }
 
+    createTextElement(text, id) {
+        const svgText = document.createElementNS(this.SVGNS, `text`);
+        svgText.id = this.buildId(this.TEXT, id);
+        svgText.setAttributeNS(null, `font-size`, this.standardFontSize.toString());
+        svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
+        svgText.setAttributeNS(null, `pointer-events`, `none`);
+        const textNode = document.createTextNode(text);
+        svgText.appendChild(textNode);
+        return svgText;
+    }
+
     createCircle(id, radius) {
         const circle = document.createElementNS(this.SVGNS, `circle`);
         circle.id = id;
@@ -323,60 +335,7 @@ export default class SvgObject {
         this.addColor(inputEndpoint, 120, 0);
         return inputEndpoint;
     }
-    //
-    // endpointId;
 
-    createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
-        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
-        const toId = `${toNode.id}:${toEndpoint.id}`;
-        let fromElement;
-        let toElement;
-        if (fromEndpoint.property === `in`) {
-            fromElement = this.fetchInputEndpoint(fromId);
-            toElement = this.fetchOutputEndpoint(toId);
-        } else if (fromEndpoint.property === `out`) {
-            fromElement = this.fetchOutputEndpoint(fromId);
-            toElement = this.fetchInputEndpoint(toId);
-        }
-        const binding = document.createElementNS(this.SVGNS, `line`);
-        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
-        const bindingId = this.buildId(this.BINDING, bindingDesc);
-        binding.id = bindingId;
-
-        const fromNodeGroup = this.fetchNodeGroup(fromNode.id)
-        const toNodeGroup = this.fetchNodeGroup(toNode.id)
-        const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
-        const fromTransformComponents = this.parse(fromTranslateString);
-        const fromTransformX = Number(fromTransformComponents.translate[0])
-        const fromTransformY = Number(fromTransformComponents.translate[1])
-        const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
-        const toTransformComponents = this.parse(toTranslateString);
-        const toTransformX = Number(toTransformComponents.translate[0])
-        const toTransformY = Number(toTransformComponents.translate[1])
-
-        const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
-        const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
-        const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
-        const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
-
-
-        binding.setAttributeNS(null, `id`, `${bindingId}`);
-        binding.setAttributeNS(null, `x1`, `${fromX}`);
-        binding.setAttributeNS(null, `y1`, `${fromY}`);
-        binding.setAttributeNS(null, `x2`, `${toX}`);
-        binding.setAttributeNS(null, `y2`, `${toY}`);
-        binding.setAttributeNS(null, `stroke`, `black`);
-
-
-        // binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
-        // binding.setAttributeNS(null, `fill`, `transparent`);
-        // binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
-        // const cubicCurve = this.buildPath2(fromElement, toElement);
-        // binding.setAttributeNS(null, `d`, cubicCurve);
-        // binding.setAttributeNS(null, `cursor`, `pointer`);
-        // binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
-        return binding;
-    }
 
     createAddButton(id, width, height) {
         const halfFont = this.standardFontSize / 2;
@@ -446,6 +405,7 @@ export default class SvgObject {
         return rectangle;
     }
 
+
     createEdge(sourceId, destId, sourceBox, destBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
         const edgeSourceId = this.buildId(this.EDGE, sourceId);
@@ -476,16 +436,60 @@ export default class SvgObject {
     }
 
 
-    createTextElement(text, id) {
-        const svgText = document.createElementNS(this.SVGNS, `text`);
-        svgText.id = this.buildId(this.TEXT, id);
-        svgText.setAttributeNS(null, `font-size`, this.standardFontSize.toString());
-        svgText.setAttributeNS(null, `dominant-baseline`, `text-before-edge`);
-        svgText.setAttributeNS(null, `pointer-events`, `none`);
-        const textNode = document.createTextNode(text);
-        svgText.appendChild(textNode);
-        return svgText;
+    createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
+        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
+        const toId = `${toNode.id}:${toEndpoint.id}`;
+        let fromElement;
+        let toElement;
+        if (fromEndpoint.property === `in`) {
+            fromElement = this.fetchInputEndpoint(fromId);
+        } else {
+            fromElement = this.fetchOutputEndpoint(fromId);
+        }
+        if (toEndpoint.property === `in`) {
+            toElement = this.fetchInputEndpoint(toId);
+        } else {
+            toElement = this.fetchOutputEndpoint(toId);
+        }
+
+        const binding = document.createElementNS(this.SVGNS, `line`);
+        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+        const bindingId = this.buildId(this.BINDING, bindingDesc);
+        binding.id = bindingId;
+
+        const fromNodeGroup = this.fetchNodeGroup(fromNode.id);
+        const toNodeGroup = this.fetchNodeGroup(toNode.id);
+        const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
+        const fromTransformComponents = this.parse(fromTranslateString);
+        const fromTransformX = Number(fromTransformComponents.translate[0]);
+        const fromTransformY = Number(fromTransformComponents.translate[1]);
+        const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
+        const toTransformComponents = this.parse(toTranslateString);
+        const toTransformX = Number(toTransformComponents.translate[0]);
+        const toTransformY = Number(toTransformComponents.translate[1]);
+
+        const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
+        const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
+        const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
+        const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
+
+        binding.setAttributeNS(null, `id`, `${bindingId}`);
+        binding.setAttributeNS(null, `x1`, `${fromX}`);
+        binding.setAttributeNS(null, `y1`, `${fromY}`);
+        binding.setAttributeNS(null, `x2`, `${toX}`);
+        binding.setAttributeNS(null, `y2`, `${toY}`);
+        binding.setAttributeNS(null, `stroke`, `black`);
+
+        // binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
+        // binding.setAttributeNS(null, `fill`, `transparent`);
+        // binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
+        // const cubicCurve = this.buildPath2(fromElement, toElement);
+        // binding.setAttributeNS(null, `d`, cubicCurve);
+        // binding.setAttributeNS(null, `cursor`, `pointer`);
+        // binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
+        return binding;
     }
+
 
     /**
      * Positioning
@@ -535,7 +539,6 @@ export default class SvgObject {
         edge.setAttributeNS(null, `stroke`, `orange`);
         edge.setAttributeNS(null, `cursor`, `grabbing`);
     }
-
 
     signalPossibleChild(node) {  // Apply 'select' effect (highlight)
         const rectangle = this.fetchRectangle(node.id);
@@ -646,6 +649,7 @@ export default class SvgObject {
         const oy = sourceBox.y + (sourceBox.height / 2);
         const ex = destBox.x;
         const ey = destBox.y + (destBox.height / 2);
+
         const delta_x = (ex - ox) / 2.0;
         const x1 = ox + delta_x;
         const y1 = oy;

@@ -321,13 +321,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (endpointArray.length === 1) {
             let allowedEndpointDestination;
             if (endpointArray[0].property === `in`) {
-                allowedEndpointDestination = this._getSelfOuts();
+                allowedEndpointDestination = this._getChildIns();
             } else if (endpointArray[0].property === `out`) {
-                if (endpointArray[0].urn === this._focusNode.activity.urn) {
-                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getRouterDefinitions()];
-                } else {
-                    allowedEndpointDestination = [...this._getSelfIns(), ...this._getChildIns(), ...this._getCollectorDefinitions()];
-                }
+                allowedEndpointDestination = [...this._getSelfOuts(), ...this._getChildIns()];
             } else if (endpointArray[0].property === `router`) {
                 if (endpointArray[0].urn === this._focusNode.activity.urn) {
                     allowedEndpointDestination = [...this._getChildIns()];
@@ -583,11 +579,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const $startEndpointSelect = this._elementMap.get(`binding-from-select`);
         this._clearEndpoints();
         const selfIns = this._getSelfIns();
-        const selfOuts = this._getSelfOuts();
         const childOuts = this._getChildOuts();
-        const collectors = this._getCollectors();
-        const routers = this._getRouters();
-        const startEndpointOptions = [...selfIns, ...selfOuts, ...childOuts, ...collectors, ...routers];
+        const startEndpointOptions = [...selfIns, ...childOuts];
         this._addAllowedEndpointsToSelect($startEndpointSelect, startEndpointOptions, true);
 
         // const numRows = this._getSelectListSize(startEndpointOptions);
