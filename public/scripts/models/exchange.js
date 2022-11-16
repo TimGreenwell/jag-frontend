@@ -7,7 +7,7 @@
 
 'use strict';
 
-import RouteEndpoint from "./route-endpoint";
+import RouteEndpoint from "./endpoint";
 
 export default class Exchange extends EventTarget {
 

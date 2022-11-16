@@ -480,17 +480,33 @@ class AtPlayground extends Popupable {
      *
      */
 
-    showEndpoint(fromArray) {        // future - to unhide the data flow
-        const [focusNode] = this.selectedNodes.values();
-        fromArray.forEach((fromEndpoint) => {
-            const endpointUrn = fromEndpoint.urn;
-            const endpointProperty = fromEndpoint.property;
-            const endpointId = fromEndpoint.id;
+    showEndpoint(selectedFromEndpoints, selectedToEndpoints) {        // future - to unhide the data flow
+        // const [focusNode] = this.selectedNodes.values();
+        this.svg.hideAllOutputEndpoints();
+        this.svg.hideAllInputEndpoints();
+        const selectedEndpoints = [...selectedFromEndpoints, ...selectedToEndpoints];
+        selectedEndpoints.forEach((endpoint) => {
             this.viewedProjects.forEach((project) => {
-
+                const nodeList = project.activitiesInProject(endpoint.urn);
+                nodeList.forEach((node) => {
+                    let $endpoint;
+                    if (endpoint.property === `in`) {
+                        $endpoint = this.svg.fetchInputEndpoint(node.id, endpoint.id);
+                    }
+                    else {
+                        $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
+                    }
+                    $endpoint.classList.remove(`hidden`);
+                })
             });
         });
+        console.log(selectedFromEndpoints.length)
+        if ((selectedFromEndpoints.length > 0) && (selectedToEndpoints.length > 0)) {
+            console.log(`Happiness`)
+        }
     }
+
+
 
     toggleColor() {
         this.hasColor = !this.hasColor;
@@ -903,6 +919,7 @@ class AtPlayground extends Popupable {
             });
             nodeModel.activity.inputs.forEach((endpoint) => {
                 const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.identity);
+                endpointCircle.classList.add(`hidden`);
                 const position = spread + (topLayer.indexOf(endpoint.identity) * spread);
                 this.svg.positionItem(endpointCircle, position, 0);
                 nodeContentGroup.insertBefore(endpointCircle, svgText);
@@ -921,6 +938,7 @@ class AtPlayground extends Popupable {
             });
             nodeModel.activity.outputs.forEach((endpoint) => {
                 const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.identity);
+                endpointCircle.classList.add(`hidden`);
                 const position = spread + (bottomLayer.indexOf(endpoint.identity) * spread);
                 this.svg.positionItem(endpointCircle, position, nodeBox.height);
                 nodeContentGroup.insertBefore(endpointCircle, svgText);

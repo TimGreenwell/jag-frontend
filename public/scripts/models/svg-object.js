@@ -160,7 +160,6 @@ export default class SvgObject {
     set buttonSize(value) {
         this._buttonSize = value;
     }
-    
 
     get chosenFilter() {
         return this._chosenFilter;
@@ -265,6 +264,8 @@ export default class SvgObject {
      * createNodeGroup - group to hold node rectangle, text, button groups
      * createTextElement - basic svg text components
      * createCircle - test circle for debugging points
+     * createInputEndpoint
+     * createOutputEndpoint
      * createAddButton - group holding svg components forming 'add button'
      * createExpandButton - group holding svg components forming `expand button`
      * createRectangle - Rectangle giving nodeGroup its form and size
@@ -326,6 +327,7 @@ export default class SvgObject {
         const endpointId = `${nodeId}:${inputId}`;
         const newId = this.buildId(this.INPUT, endpointId);
         const inputEndpoint = this.createCircle(newId, 5);
+        inputEndpoint.classList.add(`input-endpoint`);
         inputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
         inputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         this.addColor(inputEndpoint, 240, 60);
@@ -335,11 +337,12 @@ export default class SvgObject {
     createOutputEndpoint(nodeId, outputId) {         // id = nodeId - endpointId(name)
         const endpointId = `${nodeId}:${outputId}`;
         const newId = this.buildId(this.OUTPUT, endpointId);
-        const inputEndpoint = this.createCircle(newId, 5);
-        inputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
-        inputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
-        this.addColor(inputEndpoint, 120, 0);
-        return inputEndpoint;
+        const outputEndpoint = this.createCircle(newId, 5);
+        outputEndpoint.classList.add(`output-endpoint`);
+        outputEndpoint.setAttributeNS(null, `fill-opacity`, `1`);
+        outputEndpoint.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
+        this.addColor(outputEndpoint, 120, 0);
+        return outputEndpoint;
     }
 
 
@@ -443,21 +446,21 @@ export default class SvgObject {
 
 
     createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
-        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
-        const toId = `${toNode.id}:${toEndpoint.id}`;
+
         let fromElement;
         let toElement;
         if (fromEndpoint.property === `in`) {
-            fromElement = this.fetchInputEndpoint(fromId);
+            fromElement = this.fetchInputEndpoint(fromNode, fromEndpoint);
         } else {
-            fromElement = this.fetchOutputEndpoint(fromId);
+            fromElement = this.fetchOutputEndpoint(fromNode, fromEndpoint);
         }
         if (toEndpoint.property === `in`) {
-            toElement = this.fetchInputEndpoint(toId);
+            toElement = this.fetchInputEndpoint(toNode, toEndpoint);
         } else {
-            toElement = this.fetchOutputEndpoint(toId);
+            toElement = this.fetchOutputEndpoint(toNode, toEndpoint);
         }
-
+        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
+        const toId = `${toNode.id}:${toEndpoint.id}`;
         const binding = document.createElementNS(this.SVGNS, `line`);
         const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
         const bindingId = this.buildId(this.BINDING, bindingDesc);
@@ -708,12 +711,14 @@ export default class SvgObject {
         return document.getElementById(this.buildId(this.NODEGROUP, id));
     }
 
-    fetchInputEndpoint(id) {
-        return document.getElementById(this.buildId(this.INPUT, id));
+    fetchInputEndpoint(fromNodeId, fromEndpointId) {
+        const fromId = `${fromNodeId}:${fromEndpointId}`;
+        return document.getElementById(this.buildId(this.INPUT, fromId));
     }
 
-    fetchOutputEndpoint(id) {
-        return document.getElementById(this.buildId(this.OUTPUT, id));
+    fetchOutputEndpoint(toNodeId, toEndpointId) {
+        const toId = `${toNodeId}:${toEndpointId}`;
+        return document.getElementById(this.buildId(this.OUTPUT, toId));
     }
 
     fetchBinding(id) {
@@ -831,6 +836,20 @@ export default class SvgObject {
                 background.removeChild(background.firstChild);
             }
         });
+    }
+
+    hideAllInputEndpoints() {
+        const $inputEndpoints = document.getElementsByClassName(`input-endpoint`);
+        Array.from($inputEndpoints).forEach(($inputEndpoint) => {
+            $inputEndpoint.classList.add(`hidden`);
+        })
+    }
+
+    hideAllOutputEndpoints() {
+        const $outputEndpoints = document.getElementsByClassName(`output-endpoint`);
+        Array.from($outputEndpoints).forEach(($outputEndpoint) => {
+            $outputEndpoint.classList.add(`hidden`);
+        })
     }
 
     saveSvg(svgEl, name = `jag`) {

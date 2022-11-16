@@ -25,8 +25,6 @@ export default class Activity extends EventTarget {
         },
         inputs = [],
         outputs = [],
-        collectors = [],
-        routers = [],
         children = [],
         bindings = [],   // list of Binding
         author,
@@ -44,8 +42,6 @@ export default class Activity extends EventTarget {
         this._connector = connector;
         this._inputs = inputs ? [...inputs] : [];
         this._outputs = outputs ? [...outputs] : [];
-        this._collectors = collectors ? [...collectors] : [];
-        this._routers = routers ? [...routers] : [];
         this._children = children ? [...children] : [];
         this._bindings = bindings;
 
@@ -190,68 +186,6 @@ export default class Activity extends EventTarget {
     _hasOutput(identity) {
         const extantIdentities = this.outputs.map((output) => {
             return output.identity;
-        });
-        return extantIdentities.includes(identity);
-    }
-
-
-    set collectors(value) {
-        this._collectors = value;
-    }
-
-    get collectors() {
-        return [...this._collectors];
-    }
-
-    removeCollector(identity) {
-        const extantCollectors = this.collectors.filter((extantCollector) => {
-            return extantCollector.identity !== identity;
-        });
-        this._collectors = extantCollectors;
-    }
-
-
-    addCollector(collector) {
-        if (this._hasCollector(collector.identity)) {
-            this.removeCollector(collector.identity);
-        }
-        this._collectors.push(collector);
-    }
-
-    _hasCollector(identity) {
-        const extantIdentities = this.collectors.map((collector) => {
-            return collector.identity;
-        });
-        return extantIdentities.includes(identity);
-    }
-
-
-    set routers(value) {
-        this._routers = value;
-    }
-
-    get routers() {
-        return [...this._routers];
-    }
-
-    removeRouter(identity) {
-        const extantRouters = this.routers.filter((extantRouter) => {
-            return extantRouter.identity !== identity;
-        });
-        this._routers = extantRouters;
-    }
-
-
-    addRouter(router) {
-        if (this._hasRouter(router.identity)) {
-            this.removeRouter(router.identity);
-        }
-        this._routers.push(router);
-    }
-
-    _hasRouter(identity) {
-        const extantIdentities = this.routers.map((router) => {
-            return router.identity;
         });
         return extantIdentities.includes(identity);
     }
@@ -652,8 +586,6 @@ export default class Activity extends EventTarget {
                 returns: this.connector.returns,
                 operator: this.connector.operator
             },
-            collectors: [],
-            routers: [],
             inputs: [],
             outputs: [],
             children: [],
@@ -686,12 +618,6 @@ export default class Activity extends EventTarget {
                 descriptor.iterable = true;
             }
             json.children.push(descriptor);
-        });
-        this._collectors.forEach((collector) => {
-            json.collectors.push(collector);
-        });
-        this._routers.forEach((router) => {
-            json.routers.push(router);
         });
 
         this._inputs.forEach((input) => {

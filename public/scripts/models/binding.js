@@ -7,11 +7,13 @@
 
 'use strict';
 
+import Endpoint from "./endpoint.js";
+
 export default class Binding {
 
     constructor({
-        from = [],  // [{urn: uuu, id: xxx, property: yyy}]
-        to = []     // [{urn: uuu, id: xxx, property: yyy}]
+        from = null,  // endpoint
+        to = null     // endpoint
     } = {}) {
         this._from = from;
         this._to = to;
@@ -21,12 +23,8 @@ export default class Binding {
         return this._from;
     }
 
-    set from(value) {
-        this._from = value;
-    }
-
-    addFrom(value) {
-        this._from.push(value);
+    set from(endpoint) {
+        this._from = endpoint;
     }
 
     get to() {
@@ -37,24 +35,14 @@ export default class Binding {
         this._to = value;
     }
 
-    addTo(value) {
-        this._to.push(value);
-    }
-
-    matchingEndpoint(endpoint1, endpoint2) {
-        return ((endpoint1.urn === endpoint2.urn) &&
-               (endpoint1.id === endpoint2.id) &&
-               (endpoint1.property === endpoint2.property))
-    }
 
     sameFromEndpoint(endpoint) {
-        return this.matchingEndpoint(this.from[0], endpoint)
+        return this.from.equals(endpoint)
     }
 
     sameToEndpoint(endpoint) {
-        return this.matchingEndpoint(this.to[0], endpoint)
+        return this.to.equals(endpoint)
     }
-
 
     toJSON() {
         const json = {
@@ -64,7 +52,9 @@ export default class Binding {
     }
 
     static fromJSON(element) {
-        const returnValue = new Binding(element);
+        const returnValue = new Binding();
+        returnValue.from = Endpoint.fromJSON(element.from);
+        returnValue.to = Endpoint.fromJSON(element.to);
         return returnValue;
     }
 

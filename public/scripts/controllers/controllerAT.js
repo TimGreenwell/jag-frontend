@@ -294,8 +294,9 @@ export default class ControllerAT extends Controller {
     // eventNodeUpdatedHandler --- common with 'playground' handler
 
     eventEndpointsSelected(event) {
-        const fromArray = event.detail.from;
-        this._playground.showEndpoint(fromArray)
+        const selectedFromEndpoints = event.detail.fromEndpoints;
+        const selectedToEndpoints = event.detail.toEndpoints;
+        this._playground.showEndpoint(selectedFromEndpoints, selectedToEndpoints)
     }
 
     eventExportJagHandler(event) {
