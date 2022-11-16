@@ -868,7 +868,7 @@ class AtPlayground extends Popupable {
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
 
-        this.svg.applyDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
+        this.svg.applyLightnessDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
         }
@@ -886,7 +886,7 @@ class AtPlayground extends Popupable {
         }
         if (this._viewedProjectsMap.size > 1) {
             const addButton = this.svg.createAddButton(nodeModel.id, nodeBox.width, nodeBox.height);
-            this.svg.applyDepthEffect(addButton, nodeModel.treeDepth, this.treeHeight);
+            this.svg.applyLightnessDepthEffect(addButton, nodeModel.treeDepth, this.treeHeight);
             addButton.classList.add(`button`);
             nodeContentGroup.insertBefore(addButton, svgText);
         }

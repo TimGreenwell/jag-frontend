@@ -169,7 +169,7 @@ class AtTimeview extends HTMLElement {
         const svgBox = this.svg.createRectangle(box.width, box.height, nodeModel.id);
         this.svg.positionItem(svgBox, box.topLeftX, box.topLeftY);
         this.svg.applyFilter(svgBox, this.svg.chosenFilter);
-        this.svg.applyDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
+        this.svg.applyLightnessDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }

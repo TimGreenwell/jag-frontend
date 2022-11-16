@@ -12,24 +12,28 @@ export default class SvgObject {
 
     constructor(id) {
         this._id = id;
-        this._standardHue = 200;
-        this._selectedHue = 150;
-        this._possibleHue = 50;
-        this._horizontalMargin = 10;
+
+        // Values determining the svg appearance.
+        this._standardHue = 200;          // default color
+        this._selectedHue = 150;          // color of selected items
+        this._possibleHue = 50;           // color highlighting potential connect points
+        this._horizontalMargin = 10;      // margins
         this._verticalMargin = 10;
         this._lineWidth = 2;
         this._standardFontSize = 17;
-        this._stepBrightness = 5;
-        this._initialBrightness = 50;
-        this._chosenFilter = ``;
+        this._stepBrightness = 5;         // 3-d effect - changes in brightness
+        this._initialBrightness = 50;     // average brightness (1-100)
 
+        // derived svg appearances
         this._labelIndent = this.verticalMargin / 2;
         this._labelHeight = this.standardFontSize;
         this._standardBoxHeight = (2 * this.verticalMargin) + this.labelHeight;
         this._buttonSize = this.standardFontSize / 2;
 
         this._customFilters = this.createCustomFilters();
+        this._chosenFilter = ``;          // 3-d effect - chosen method (currently only one)
 
+        // convenience ID builders for svg elements
         this.SVG = `svg`;
         this.BACKGROUND = `background`;
         this.SUBGROUP = `subgroup`;
@@ -45,6 +49,7 @@ export default class SvgObject {
         this.PATH_SEPARATOR = `:`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
+
         this.SVGNS = `http://www.w3.org/2000/svg`;
     }
 
@@ -116,6 +121,14 @@ export default class SvgObject {
         this._stepBrightness = value;
     }
 
+    get initialBrightness() {
+        return this._initialBrightness;
+    }
+
+    set initialBrightness(value) {
+        this._initialBrightness = value;
+    }
+
     get labelIndent() {
         return this._labelIndent;
     }
@@ -147,15 +160,7 @@ export default class SvgObject {
     set buttonSize(value) {
         this._buttonSize = value;
     }
-
-    get initialBrightness() {
-        return this._initialBrightness;
-    }
-
-    set initialBrightness(value) {
-        this._initialBrightness = value;
-    }
-
+    
 
     get chosenFilter() {
         return this._chosenFilter;
@@ -179,7 +184,8 @@ export default class SvgObject {
      updateLightness - adjust lightness portion of current hsla (100% = white)
      updateAlpha - adjust alpha portion of current hsla (0% = invisible)
      addColor - @TODO future effort to use color instead of lightness for depth effect
-     applyDepthEffect - adjust lightness based on depth in tree
+     applyColorDepthEffect - color based on node depth in tree
+     applyLightnessDepthEffect - adjust lightness based on depth in tree
      fillDepthLightness - apply effect to fill
      strokeDepthLightness - apply effect to stroke
      */
@@ -231,7 +237,7 @@ export default class SvgObject {
         item.setAttributeNS(null, `stroke`, newHsla);
     }
 
-    applyDepthEffect(item, depth, treeHeight) {
+    applyLightnessDepthEffect(item, depth, treeHeight) {
         const fillShading = this.fillDepthLightness(depth, treeHeight);
         const strokeShading = this.strokeDepthLightness(depth, treeHeight);
         const fill = `hsla(${this.standardHue},100%,${fillShading}%,1)`;
