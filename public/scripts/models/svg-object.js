@@ -653,6 +653,29 @@ export default class SvgObject {
         edge.setAttributeNS(null, `d`, cubicCurve);
     }
 
+    buildDataPath(fromEndpoint, toEndpoint) {
+        const fromX = fromEndpoint.getAttributeNS(null, `cx`);
+        const fromY = fromEndpoint.getAttributeNS(null, `cy`);
+        const toX = fromEndpoint.getAttributeNS(null, `cx`);
+        const toY = fromEndpoint.getAttributeNS(null, `cy`);
+
+        const ox = fromX - this.standardBoxHeight * 2;
+        const oy = fromY + (sourceBox.height / 2);
+        const ex = toX;
+        const ey = toY + (destBox.height / 2);
+
+        const delta_x = (ex - ox) / 2.0;
+        const x1 = ox + delta_x;
+        const y1 = oy;
+        const x2 = ex - delta_x;
+        const y2 = ey;
+        // const mx = (ox + ex) / 2.0;
+        // const my = (oy + ey) / 2.0;
+        const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
+        return cubicCurve;
+    }
+
+
     buildPath(sourceBox, destBox) {
         const ox = sourceBox.x + sourceBox.width;
         const oy = sourceBox.y + (sourceBox.height / 2);
