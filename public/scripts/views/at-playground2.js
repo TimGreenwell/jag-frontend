@@ -492,20 +492,23 @@ class AtPlayground extends Popupable {
                     let $endpoint;
                     if (endpoint.property === `in`) {
                         $endpoint = this.svg.fetchInputEndpoint(node.id, endpoint.id);
-                    }
-                    else {
+                    } else {
                         $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
                     }
                     $endpoint.classList.remove(`hidden`);
-                })
+                });
             });
         });
-        console.log(selectedFromEndpoints.length)
-        if ((selectedFromEndpoints.length > 0) && (selectedToEndpoints.length > 0)) {
-            console.log(`Happiness`)
-        }
-    }
 
+        // THIS WAS GOING TO SHOW THE PATH BEFORE THE BIND  --- BUT ABANDONED THE IDEA
+        // if ((selectedFromEndpoints.length > 0) && (selectedToEndpoints.length > 0)) {
+        //     selectedFromEndpoints.forEach((fromEndpoint) => {
+        //         selectedToEndpoints.forEach((toEndpoint) => {
+        //             this.svg.buildDataPath(fromEndpoint,toEndpoint)
+        //         })
+        //     })
+        // }
+    }
 
 
     toggleColor() {
@@ -851,11 +854,9 @@ class AtPlayground extends Popupable {
     isEndpointBoundToChild(activity, endpointId) {
         let isBound = false;
         activity.bindings.forEach((binding) => {
-            binding.from.forEach((outBound) => {
-                if ((outBound.urn === activity.urn) && (outBound.id === endpointId)) {
-                    isBound = true;
-                }
-            });
+            if ((binding.from.urn === activity.urn) && (binding.from.id === endpointId)) {
+                isBound = true;
+            }
         });
         return isBound;
     }
@@ -911,11 +912,7 @@ class AtPlayground extends Popupable {
             const spread = nodeBox.width / (nodeModel.activity.inputs.length + 1);  // +1 -> making space from corners
             const topLayer = [];
             nodeModel.activity.inputs.forEach((endpoint) => {
-                if (this.isEndpointBoundToChild(nodeModel.activity, endpoint.identity)) {
-                    topLayer.push(endpoint.identity);
-                } else {
-                    topLayer.unshift(endpoint.identity);
-                }
+                topLayer.push(endpoint.identity);
             });
             nodeModel.activity.inputs.forEach((endpoint) => {
                 const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.identity);
@@ -930,11 +927,7 @@ class AtPlayground extends Popupable {
             const spread = nodeBox.width / (nodeModel.activity.outputs.length + 1);  // +1 -> making space from corners
             const bottomLayer = [];
             nodeModel.activity.outputs.forEach((endpoint) => {
-                if (this.isEndpointBoundToChild(nodeModel.activity, endpoint.identity)) {
                     bottomLayer.push(endpoint.identity);
-                } else {
-                    bottomLayer.unshift(endpoint.identity);
-                }
             });
             nodeModel.activity.outputs.forEach((endpoint) => {
                 const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.identity);
@@ -957,35 +950,33 @@ class AtPlayground extends Popupable {
     }
 
     buildBindings(parentGroup, nodeModel) {
+
         nodeModel.activity.bindings.forEach((binding) => {
-            binding.from.forEach((fromEndpoint) => {                   // a little confusing.  Every binding should only have 1 from.  (except collectors - which are probably extinct now)
-                const fromNodes = [];
-                const checkStack = [];
-                checkStack.push(nodeModel);
-                checkStack.push(...nodeModel.children);
-                while (checkStack.length > 0) {
-                    const checkNodeModel = checkStack.pop();
-                    if (checkNodeModel.activity.urn === fromEndpoint.urn) {
-                        fromNodes.push(checkNodeModel);
-                    }
+            const fromNodes = [];
+            let checkStack = [];
+            checkStack.push(nodeModel);
+            checkStack.push(...nodeModel.children);
+            while (checkStack.length > 0) {
+                const checkNodeModel = checkStack.pop();
+                if (checkNodeModel.activity.urn === binding.from.urn) {
+                    fromNodes.push(checkNodeModel);
                 }
-                binding.to.forEach((toEndpoint) => {
-                    const toNodes = [];
-                    const checkStack = [];
-                    checkStack.push(nodeModel);
-                    checkStack.push(...nodeModel.children);
-                    while (checkStack.length > 0) {
-                        const checkNodeModel = checkStack.pop();
-                        if (checkNodeModel.activity.urn === toEndpoint.urn) {
-                            toNodes.push(checkNodeModel);
-                        }
-                    }
-                    fromNodes.forEach((fromNode) => {
-                        toNodes.forEach((toNode) => {
-                            let newBinding = this.svg.createBinding(fromNode, fromEndpoint, toNode, toEndpoint);
-                            parentGroup.appendChild(newBinding);
-                        });
-                    });
+            }
+
+            const toNodes = [];
+            checkStack = [];
+            checkStack.push(nodeModel);
+            checkStack.push(...nodeModel.children);
+            while (checkStack.length > 0) {
+                const checkNodeModel = checkStack.pop();
+                if (checkNodeModel.activity.urn === binding.to.urn) {
+                    toNodes.push(checkNodeModel);
+                }
+            }
+            fromNodes.forEach((fromNode) => {
+                toNodes.forEach((toNode) => {
+                    const newBinding = this.svg.createBinding(fromNode, binding.from, toNode, binding.to);
+                    parentGroup.appendChild(newBinding);
                 });
             });
         });

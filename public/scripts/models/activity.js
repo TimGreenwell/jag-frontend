@@ -626,29 +626,12 @@ export default class Activity extends EventTarget {
         this._outputs.forEach((output) => {
             json.outputs.push(output);
         });
-        // this._bindings.forEach((binding) => {
-        //     json.bindings.push(binding);
-        // });
-
         const bindingStack = [];
-        for (const binding of this._bindings) {
+        this._bindings.forEach((binding) => {
             bindingStack.push(binding.toJSON());
-        }
+        })
         json.bindings = bindingStack;
 
-
-        // this._bindings.forEach((binding) => {
-        //     json.bindings.push({
-        //         consumer: {
-        //             identity: binding.consumer.id,
-        //             format: binding.consumer.property
-        //         },
-        //         provider: {
-        //             identity: binding.provider.id,
-        //             format: binding.provider.property
-        //         }
-        //     });
-        // });
         return json;
     }
 

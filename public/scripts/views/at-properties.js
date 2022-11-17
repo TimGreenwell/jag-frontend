@@ -358,7 +358,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             bubbles: true,
             composed: true,
             detail: {fromEndpoints: this._selectedFromEndpoints,
-            toEndpoints: this._selectedToEndpoints}
+                toEndpoints: this._selectedToEndpoints}
         }));
     }
 
@@ -382,22 +382,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             });
             // wake up buttons to click --
             $bindButton.disabled = false;
-
-            this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
-                bubbles: true,
-                composed: true,
-                detail: {fromEndpoints: this._selectedFromEndpoints,
-                    toEndpoints: this._selectedToEndpoints}
-            }));
         }
+        this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
+            bubbles: true,
+            composed: true,
+            detail: {fromEndpoints: this._selectedFromEndpoints,
+                toEndpoints: this._selectedToEndpoints}
+        }));
     }
 
     handleBindButton(e) {
         const $bindButton = this._elementMap.get(`bind-button`);
-        this._selectedEndpoints.from.forEach((fromPoint) => {
-            this._selectedEndpoints.to.forEach((toPoint) => {
-                const binding = new Binding({from: [fromPoint],
-                    to: [toPoint]});
+        this._selectedFromEndpoints.forEach((from) => {
+            this._selectedToEndpoints.forEach((to) => {
+                const binding = new Binding({from, to});
                 this._focusNode.activity.addBinding(binding);
             });
         });
@@ -679,10 +677,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         let parsed = false;
 
-        if (value == `true` || value == `false`) {
+        if (value === `true` || value === `false`) {
             const boolean_type = window.confirm(`Treat this value as a boolean?`);
             if (boolean_type) {
-                value = (value == `true`);
+                value = (value === `true`);
             }
             parsed = boolean_type;
         } else {
@@ -766,14 +764,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                             if (addBindings) {
                                 const foundBindings = [];
                                 this._focusNode.activity.bindings.forEach((extantBinding) => {
-                                    extantBinding.from.forEach((extantFromEndpoint) => {
-                                        if (extantFromEndpoint.id === selectOptionEndpoint.identity) {
-                                            const toEndpoints = extantBinding.to.map((extantToEndpoints) => {
-                                                return extantToEndpoints.id;
-                                            });
-                                            foundBindings.push(toEndpoints);
-                                        }
-                                    });
+                                    if (extantBinding.from.id === selectOptionEndpoint.identity) {
+                                        foundBindings.push(extantBinding.to.id);
+                                    }
                                 });
                                 if (foundBindings.length > 0) {
                                     optionDisplay = `${optionDisplay} ${this.ARROW} `;

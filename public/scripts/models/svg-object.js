@@ -430,6 +430,82 @@ export default class SvgObject {
         return edge;
     }
 
+
+    buildPath3(fromX, fromY, toX, toY, fromProp, toProp) {
+
+        const delta_y = this.standardBoxHeight * 1.5;
+        const fromPullX = fromX;
+        const fromPullY = (fromProp === `in`) ? fromY - delta_y : fromY + delta_y;
+        const toPullX = toX;
+        const toPullY = (toProp === `in`) ? toY - delta_y : toY + delta_y;
+        const cubicCurve = `M ${fromX} ${fromY} C ${fromPullX} ${fromPullY}, ${toPullX} ${toPullY}, ${toX} ${toY}`;
+        return cubicCurve;
+    }
+
+    createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
+        let fromElement;
+        let toElement;
+        if (fromEndpoint.property === `in`) {
+            fromElement = this.fetchInputEndpoint(fromNode.id, fromEndpoint.id);
+        } else {
+            fromElement = this.fetchOutputEndpoint(fromNode.id, fromEndpoint.id);
+        }
+        if (toEndpoint.property === `in`) {
+            toElement = this.fetchInputEndpoint(toNode.id, toEndpoint.id);
+        } else {
+            toElement = this.fetchOutputEndpoint(toNode.id, toEndpoint.id);
+        }
+
+
+        const fromNodeGroup = this.fetchNodeGroup(fromNode.id);
+        const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
+        const fromTransformComponents = this.parse(fromTranslateString);
+        const fromTransformX = Number(fromTransformComponents.translate[0]);
+        const fromTransformY = Number(fromTransformComponents.translate[1]);
+        const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
+        const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
+        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
+
+        const toNodeGroup = this.fetchNodeGroup(toNode.id);
+        const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
+        const toTransformComponents = this.parse(toTranslateString);
+        const toTransformX = Number(toTransformComponents.translate[0]);
+        const toTransformY = Number(toTransformComponents.translate[1]);
+        const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
+        const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
+        const toId = `${toNode.id}:${toEndpoint.id}`;
+
+        const delta_y = this.standardBoxHeight * 1.5;
+        const fromPullX = fromX;
+        const fromPullY = (fromEndpoint.property === `in`) ? fromY - delta_y : fromY + delta_y;
+        const toPullX = toX;
+        const toPullY = (toEndpoint.property === `in`) ? toY - delta_y : toY + delta_y;
+        const cubicCurve = `M ${fromX} ${fromY} C ${fromPullX} ${fromPullY}, ${toPullX} ${toPullY}, ${toX} ${toY}`;
+
+        const binding = document.createElementNS(this.SVGNS, `path`);
+        binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,50%,1)`);
+        binding.setAttributeNS(null, `fill`, `transparent`);
+        binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
+        binding.setAttributeNS(null, `d`, cubicCurve);
+        binding.setAttributeNS(null, `cursor`, `pointer`);
+        binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
+        return binding;
+    }
+
+    createLine(crap) {
+        const binding = document.createElementNS(this.SVGNS, `line`);
+        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+        const bindingId = this.buildId(this.BINDING, bindingDesc);
+        binding.id = bindingId;
+
+        binding.setAttributeNS(null, `id`, `${bindingId}`);
+        binding.setAttributeNS(null, `x1`, `${fromX}`);
+        binding.setAttributeNS(null, `y1`, `${fromY}`);
+        binding.setAttributeNS(null, `x2`, `${toX}`);
+        binding.setAttributeNS(null, `y2`, `${toY}`);
+        binding.setAttributeNS(null, `stroke`, `black`);
+    }
+
     createEdgeToCursor(sourceId, sourceBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
         const edgeSourceId = this.buildId(this.EDGE, sourceId);
@@ -442,61 +518,6 @@ export default class SvgObject {
         edge.setAttributeNS(null, `d`, cubicCurve);
         edge.setAttributeNS(null, `pointer-events`, `none`);
         return edge;
-    }
-
-
-    createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
-
-        let fromElement;
-        let toElement;
-        if (fromEndpoint.property === `in`) {
-            fromElement = this.fetchInputEndpoint(fromNode, fromEndpoint);
-        } else {
-            fromElement = this.fetchOutputEndpoint(fromNode, fromEndpoint);
-        }
-        if (toEndpoint.property === `in`) {
-            toElement = this.fetchInputEndpoint(toNode, toEndpoint);
-        } else {
-            toElement = this.fetchOutputEndpoint(toNode, toEndpoint);
-        }
-        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
-        const toId = `${toNode.id}:${toEndpoint.id}`;
-        const binding = document.createElementNS(this.SVGNS, `line`);
-        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
-        const bindingId = this.buildId(this.BINDING, bindingDesc);
-        binding.id = bindingId;
-
-        const fromNodeGroup = this.fetchNodeGroup(fromNode.id);
-        const toNodeGroup = this.fetchNodeGroup(toNode.id);
-        const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
-        const fromTransformComponents = this.parse(fromTranslateString);
-        const fromTransformX = Number(fromTransformComponents.translate[0]);
-        const fromTransformY = Number(fromTransformComponents.translate[1]);
-        const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
-        const toTransformComponents = this.parse(toTranslateString);
-        const toTransformX = Number(toTransformComponents.translate[0]);
-        const toTransformY = Number(toTransformComponents.translate[1]);
-
-        const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
-        const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
-        const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
-        const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
-
-        binding.setAttributeNS(null, `id`, `${bindingId}`);
-        binding.setAttributeNS(null, `x1`, `${fromX}`);
-        binding.setAttributeNS(null, `y1`, `${fromY}`);
-        binding.setAttributeNS(null, `x2`, `${toX}`);
-        binding.setAttributeNS(null, `y2`, `${toY}`);
-        binding.setAttributeNS(null, `stroke`, `black`);
-
-        // binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
-        // binding.setAttributeNS(null, `fill`, `transparent`);
-        // binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
-        // const cubicCurve = this.buildPath2(fromElement, toElement);
-        // binding.setAttributeNS(null, `d`, cubicCurve);
-        // binding.setAttributeNS(null, `cursor`, `pointer`);
-        // binding.setAttributeNS(null, `pointer-events`, `visibleStroke`);
-        return binding;
     }
 
 
@@ -651,28 +672,6 @@ export default class SvgObject {
         const y2 = ey;
         const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
         edge.setAttributeNS(null, `d`, cubicCurve);
-    }
-
-    buildDataPath(fromEndpoint, toEndpoint) {
-        const fromX = fromEndpoint.getAttributeNS(null, `cx`);
-        const fromY = fromEndpoint.getAttributeNS(null, `cy`);
-        const toX = fromEndpoint.getAttributeNS(null, `cx`);
-        const toY = fromEndpoint.getAttributeNS(null, `cy`);
-
-        const ox = fromX - this.standardBoxHeight * 2;
-        const oy = fromY + (sourceBox.height / 2);
-        const ex = toX;
-        const ey = toY + (destBox.height / 2);
-
-        const delta_x = (ex - ox) / 2.0;
-        const x1 = ox + delta_x;
-        const y1 = oy;
-        const x2 = ex - delta_x;
-        const y2 = ey;
-        // const mx = (ox + ex) / 2.0;
-        // const my = (oy + ey) / 2.0;
-        const cubicCurve = `M ${ox} ${oy} C ${x1} ${y1}, ${x2} ${y2}, ${ex} ${ey}`;
-        return cubicCurve;
     }
 
 
@@ -865,14 +864,14 @@ export default class SvgObject {
         const $inputEndpoints = document.getElementsByClassName(`input-endpoint`);
         Array.from($inputEndpoints).forEach(($inputEndpoint) => {
             $inputEndpoint.classList.add(`hidden`);
-        })
+        });
     }
 
     hideAllOutputEndpoints() {
         const $outputEndpoints = document.getElementsByClassName(`output-endpoint`);
         Array.from($outputEndpoints).forEach(($outputEndpoint) => {
             $outputEndpoint.classList.add(`hidden`);
-        })
+        });
     }
 
     saveSvg(svgEl, name = `jag`) {

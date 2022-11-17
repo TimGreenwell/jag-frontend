@@ -46,8 +46,8 @@ export default class Binding {
 
     toJSON() {
         const json = {
-            from: this.from,
-            to: this.to}
+            from: this.from.toJSON(),
+            to: this.to.toJSON()}
         return json;
     }
 

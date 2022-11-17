@@ -59,6 +59,9 @@ export default class Endpoint {
     }
 
     static fromJSON(element) {
+
+
+
         const returnValue = new Endpoint(element);
         return returnValue;
     }
