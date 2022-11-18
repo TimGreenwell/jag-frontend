@@ -46,7 +46,7 @@ export default class SvgObject {
         this.OUTPUT = `output`;
         this.BINDING = `binding`;
         this.ID_SEPARATOR = `-`;
-        this.PATH_SEPARATOR = `:`;
+        this.PATH_SEPARATOR = `--`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
 
@@ -417,9 +417,10 @@ export default class SvgObject {
 
     createEdge(sourceId, destId, sourceBox, destBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
-        const edgeSourceId = this.buildId(this.EDGE, sourceId);
-        const edgeDestId = this.buildId(this.EDGE, destId);
-        edge.id = `${edgeSourceId}${this.PATH_SEPARATOR}${edgeDestId}`;
+        const sourceNodeId = this.buildId(this.NODEGROUP, sourceId);
+        const destNodeId = this.buildId(this.NODEGROUP, destId);
+        const edgeIdentifier = `${sourceNodeId}${this.PATH_SEPARATOR}${destNodeId}`
+        edge.id = edgeIdentifier;
         edge.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
         edge.setAttributeNS(null, `stroke-width`, this.lineWidth);
@@ -456,7 +457,6 @@ export default class SvgObject {
             toElement = this.fetchOutputEndpoint(toNode.id, toEndpoint.id);
         }
 
-
         const fromNodeGroup = this.fetchNodeGroup(fromNode.id);
         const fromTranslateString = fromNodeGroup.getAttributeNS(null, `transform`);
         const fromTransformComponents = this.parse(fromTranslateString);
@@ -464,7 +464,6 @@ export default class SvgObject {
         const fromTransformY = Number(fromTransformComponents.translate[1]);
         const fromX = Number(fromElement.getAttributeNS(null, `cx`)) + fromTransformX;
         const fromY = Number(fromElement.getAttributeNS(null, `cy`)) + fromTransformY;
-        const fromId = `${fromNode.id}:${fromEndpoint.id}`;
 
         const toNodeGroup = this.fetchNodeGroup(toNode.id);
         const toTranslateString = toNodeGroup.getAttributeNS(null, `transform`);
@@ -473,7 +472,6 @@ export default class SvgObject {
         const toTransformY = Number(toTransformComponents.translate[1]);
         const toX = Number(toElement.getAttributeNS(null, `cx`)) + toTransformX;
         const toY = Number(toElement.getAttributeNS(null, `cy`)) + toTransformY;
-        const toId = `${toNode.id}:${toEndpoint.id}`;
 
         const delta_y = this.standardBoxHeight * 1.5;
         const fromPullX = fromX;
@@ -483,6 +481,8 @@ export default class SvgObject {
         const cubicCurve = `M ${fromX} ${fromY} C ${fromPullX} ${fromPullY}, ${toPullX} ${toPullY}, ${toX} ${toY}`;
 
         const binding = document.createElementNS(this.SVGNS, `path`);
+        binding.id = `${fromElement.id}${this.PATH_SEPARATOR}${toElement.id}`;
+        binding.classList.add(`hidden`);
         binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,50%,1)`);
         binding.setAttributeNS(null, `fill`, `transparent`);
         binding.setAttributeNS(null, `stroke-width`, this.lineWidth);
@@ -492,19 +492,19 @@ export default class SvgObject {
         return binding;
     }
 
-    createLine(crap) {
-        const binding = document.createElementNS(this.SVGNS, `line`);
-        const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
-        const bindingId = this.buildId(this.BINDING, bindingDesc);
-        binding.id = bindingId;
-
-        binding.setAttributeNS(null, `id`, `${bindingId}`);
-        binding.setAttributeNS(null, `x1`, `${fromX}`);
-        binding.setAttributeNS(null, `y1`, `${fromY}`);
-        binding.setAttributeNS(null, `x2`, `${toX}`);
-        binding.setAttributeNS(null, `y2`, `${toY}`);
-        binding.setAttributeNS(null, `stroke`, `black`);
-    }
+    // createLine(crap) {
+    //     const binding = document.createElementNS(this.SVGNS, `line`);
+    //     const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
+    //     const bindingId = this.buildId(this.BINDING, bindingDesc);
+    //     binding.id = bindingId;
+    //
+    //     binding.setAttributeNS(null, `id`, `${bindingId}`);
+    //     binding.setAttributeNS(null, `x1`, `${fromX}`);
+    //     binding.setAttributeNS(null, `y1`, `${fromY}`);
+    //     binding.setAttributeNS(null, `x2`, `${toX}`);
+    //     binding.setAttributeNS(null, `y2`, `${toY}`);
+    //     binding.setAttributeNS(null, `stroke`, `black`);
+    // }
 
     createEdgeToCursor(sourceId, sourceBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);
@@ -628,6 +628,7 @@ export default class SvgObject {
         const ox = Math.round(Number(splitOrigPath[1]));
         const oy = Math.round(Number(splitOrigPath[2]));
         const destinationNodeId = this.fetchEdgeDestinationId(edge);
+        console.log(destinationNodeId)
         const destinationNode = svgSelectedItems.nodes.get(destinationNodeId);
 
         const transformString = destinationNode.getAttributeNS(null, `transform`);
@@ -811,12 +812,22 @@ export default class SvgObject {
     }
 
     fetchEdgeTo(nodeId) {
-        const incomingEdges = document.querySelector(`[id$=${this.buildId(this.EDGE, nodeId)}]`);
-        return incomingEdges;
+        const incomingEdge = document.querySelector(`[id$=${this.PATH_SEPARATOR}${this.buildId(this.NODEGROUP, nodeId)}]`);
+        return incomingEdge;
     }
 
     fetchEdgesFrom(nodeId) {
-        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.buildId(this.EDGE, nodeId)}]`));
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.buildId(this.NODEGROUP, nodeId)}${this.PATH_SEPARATOR}]`));
+        return outgoingEdges;
+    }
+
+    fetchBindingTo(nodeId) {
+        const incomingEdge = document.querySelector(`[id$=${this.PATH_SEPARATOR}${this.buildId(this.INPUT, nodeId)}]`);
+        return incomingEdge;
+    }
+FIX THESE`
+    fetchBindingsFrom(nodeId) {
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.buildId(this.NODEGROUP, nodeId)}${this.PATH_SEPARATOR}]`));
         return outgoingEdges;
     }
 

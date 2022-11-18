@@ -496,6 +496,11 @@ class AtPlayground extends Popupable {
                         $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
                     }
                     $endpoint.classList.remove(`hidden`);
+                    this.node.activity.bindings.forEach((extantBinding) => {
+                        if (extantBinding.from.id === endpoint.identity) {
+                            $binding = this.svg.fetchBinding();
+                        }
+                    });
                 });
             });
         });
