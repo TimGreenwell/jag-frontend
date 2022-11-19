@@ -500,7 +500,7 @@ export default class ControllerAT extends Controller {
     }
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
-        this.cacheActivity(updatedActivity);
+         this.cacheActivity(updatedActivity);
         const updatePromises = [];
 
         for (const viewedProject of this._playground.viewedProjects) {

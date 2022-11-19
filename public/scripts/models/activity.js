@@ -52,6 +52,7 @@ export default class Activity extends EventTarget {
         this._isLocked = isLocked;
         this._collapsed = collapsed;
 
+
         // The below has not been looked at.
         for (const child of this._children) {
             if (child.annotations) {
@@ -63,6 +64,7 @@ export default class Activity extends EventTarget {
             }
         }
     }
+
 
     get urn() {
         return this._urn;
@@ -175,7 +177,6 @@ export default class Activity extends EventTarget {
         this._outputs = extantOutputs;
     }
 
-
     addOutput(output) {
         if (this._hasOutput(output.identity)) {
             this.removeOutput(output.identity);
@@ -188,6 +189,15 @@ export default class Activity extends EventTarget {
             return output.identity;
         });
         return extantIdentities.includes(identity);
+    }
+
+
+    get dependencySlot() {
+        return this._dependencySlot;
+    }
+
+    set dependencySlot(value) {
+        this._dependencySlot = value;
     }
 
     equalArrays(a, b) {
@@ -342,7 +352,7 @@ export default class Activity extends EventTarget {
             }
         }
         for (const binding of this._bindings) {
-            if (binding.provider.id === childId || binding.consumer.id === childId) {
+            if (binding.from.id === childId || binding.to.id === childId) {
                 this.removeBinding(binding);
             }
         }
@@ -448,10 +458,10 @@ export default class Activity extends EventTarget {
      * @param {String} consumer_property The property to seek.
      * @returns {boolean} Whether or not a binding exists for the given consumer ID and property.
      */
-    hasBinding(consumer_id, consumer_property) {
-        const binding = this.getBinding(consumer_id, consumer_property);
-        return binding !== undefined;
-    }
+    // hasBinding(consumer_id, consumer_property) {
+    //     const binding = this.getBinding(consumer_id, consumer_property);
+    //     return binding !== undefined;
+    // }
 
     /**
      * Gets a binding for the given consumer ID and property.
@@ -460,15 +470,15 @@ export default class Activity extends EventTarget {
      * @param {String} consumer_property Name of the consumer property for the binding to be returned.
      * @returns {{provider:{id:String,property:String},consumer:{id:String,property:String}}|undefined} Binding for the given consumer ID and property, or undefined if none exists.
      */
-    getBinding(consumer_id, consumer_property) {
-        for (const binding of this._bindings) {
-            if (consumer_id === binding.consumer.id &&
-                consumer_property === binding.consumer.property) {
-                return binding;
-            }
-        }
-        return undefined;
-    }
+    // getBinding(consumer_id, consumer_property) {
+    //     for (const binding of this._bindings) {
+    //         if (consumer_id === binding.to.id &&
+    //             consumer_property === binding.to.property) {
+    //             return binding;
+    //         }
+    //     }
+    //     return undefined;
+    // }
 
     /**
      * Removes the provided binding from this node.
@@ -629,7 +639,7 @@ export default class Activity extends EventTarget {
         const bindingStack = [];
         this._bindings.forEach((binding) => {
             bindingStack.push(binding.toJSON());
-        })
+        });
         json.bindings = bindingStack;
 
         return json;

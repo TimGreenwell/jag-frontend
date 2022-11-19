@@ -56,10 +56,35 @@ export default class Node extends EventTarget {
         this._activity = undefined;
         this._leafCount = 1;
         this._treeDepth = 0;
-        // Temp
-        // @TODO this._hasNewStructure = false;
-        // @TODO this._hasNewProperties = false;
+        // derived
+        this._requiresOutputFrom = [];
+        this._providesOutputTo = [];
+        this._dependencySlot = 0;
+
     }
+
+    becomeConsumerOf(node) {
+        if (!(node.providesOutputTo.includes(this))) {
+            node.providesOutputTo.push(this);
+        }
+        if (!(this._requiresOutputFrom.includes(node))) {
+            this._requiresOutputFrom.push(node);
+            if (this._dependencySlot < (node.dependencySlot + 1)) {
+                this.adjustDependencySlot(node.dependencySlot + 1);
+            }
+        }
+    }
+
+    adjustDependencySlot(n) {
+
+        this.dependencySlot = n;
+        let workStack = [...this.providesOutputTo];
+        while (workStack.length > 0) {
+            let childNode = workStack.pop();
+            childNode.adjustDependencySlot(n+1);
+        }
+    }
+
 
     get id() {
         return this._id;
@@ -276,7 +301,40 @@ export default class Node extends EventTarget {
         this._testReturnState = value;
     }
 
-    // /////////////////////////////////////////////////////////////////////////////////////////
+
+    get requiresOutputFrom() {
+        return this._requiresOutputFrom;
+    }
+
+    set requiresOutputFrom(value) {
+        this._requiresOutputFrom = value;
+    }
+
+    addRequiresOutputFrom(node) {
+        this._requiresOutputFrom.push(node)
+    }
+
+    get providesOutputTo() {
+        return this._providesOutputTo;
+    }
+
+    set providesOutputTo(value) {
+        this._providesOutputTo = value;
+    }
+
+    addProvidesOutputTo(node) {
+        this._providesOutputTo(node)
+    }
+
+    get dependencySlot() {
+        return this._dependencySlot;
+    }
+
+    set dependencySlot(value) {
+        this._dependencySlot = value;
+    }
+
+// /////////////////////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////// Inner Jag Assignments  ////////////////////////////////
     // ///////////////////   ( This will go away once extending JAG Model )    /////////////////
     // /////////////////////////////////////////////////////////////////////////////////////////

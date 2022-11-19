@@ -17,6 +17,7 @@ export default class SvgObject {
         this._standardHue = 200;          // default color
         this._selectedHue = 150;          // color of selected items
         this._possibleHue = 50;           // color highlighting potential connect points
+        this._warningHue = 5;
         this._horizontalMargin = 10;      // margins
         this._verticalMargin = 10;
         this._lineWidth = 2;
@@ -32,6 +33,7 @@ export default class SvgObject {
 
         this._customFilters = this.createCustomFilters();
         this._chosenFilter = ``;          // 3-d effect - chosen method (currently only one)
+        this._chosenPattern = ``;          // diagonals - chosen method (currently only one)
 
         // convenience ID builders for svg elements
         this.SVG = `svg`;
@@ -171,6 +173,15 @@ export default class SvgObject {
 
     get customFilters() {
         return this._customFilters;
+    }
+
+
+    get chosenPattern() {
+        return this._chosenPattern;
+    }
+
+    set chosenPattern(value) {
+        this._chosenPattern = value;
     }
 
 
@@ -318,7 +329,9 @@ export default class SvgObject {
 
     createCircle(id, radius) {
         const circle = document.createElementNS(this.SVGNS, `circle`);
-        circle.id = id;
+        if (id.length > 0) {
+            circle.id = id;
+        }
         circle.setAttributeNS(null, `r`, radius);
         return circle;
     }
@@ -347,10 +360,16 @@ export default class SvgObject {
 
 
     createAddButton(id, width, height) {
+        console.log(id);
+        console.log(width);
+        console.log(height);
         const halfFont = this.standardFontSize / 2;
+
         const addButton = document.createElementNS(this.SVGNS, `g`);
         addButton.id = this.buildId(this.ADD, id);
-        const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
+        // const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
+        const circle = this.createCircle(``, halfFont);
+        this.positionItem(circle, width - halfFont, height - halfFont)
         circle.setAttributeNS(null, `fill-opacity`, `1`);
         circle.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         const horizLine = document.createElementNS(this.SVGNS, `path`);
@@ -419,7 +438,7 @@ export default class SvgObject {
         const edge = document.createElementNS(this.SVGNS, `path`);
         const sourceNodeId = this.buildId(this.NODEGROUP, sourceId);
         const destNodeId = this.buildId(this.NODEGROUP, destId);
-        const edgeIdentifier = `${sourceNodeId}${this.PATH_SEPARATOR}${destNodeId}`
+        const edgeIdentifier = `${sourceNodeId}${this.PATH_SEPARATOR}${destNodeId}`;
         edge.id = edgeIdentifier;
         edge.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,0%,1)`);
         edge.setAttributeNS(null, `fill`, `transparent`);
@@ -433,7 +452,6 @@ export default class SvgObject {
 
 
     buildPath3(fromX, fromY, toX, toY, fromProp, toProp) {
-
         const delta_y = this.standardBoxHeight * 1.5;
         const fromPullX = fromX;
         const fromPullY = (fromProp === `in`) ? fromY - delta_y : fromY + delta_y;
@@ -482,6 +500,7 @@ export default class SvgObject {
 
         const binding = document.createElementNS(this.SVGNS, `path`);
         binding.id = `${fromElement.id}${this.PATH_SEPARATOR}${toElement.id}`;
+        binding.classList.add(`binding`);
         binding.classList.add(`hidden`);
         binding.setAttributeNS(null, `stroke`, `hsla(${this.standardHue},100%,50%,1)`);
         binding.setAttributeNS(null, `fill`, `transparent`);
@@ -580,6 +599,19 @@ export default class SvgObject {
         rectangle.setAttributeNS(null, `stroke`, `hsla(${this.possibleHue},100%,${shadeStroke},1)`);
     }
 
+    signalWarning(node) {  // Apply 'select' effect (highlight)
+        console.log(`getting rect for node ${node.id}`);
+        const $rectangle = this.fetchRectangle(node.id);
+        if ($rectangle) {
+            // const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
+            // const shadeStroke = hslaStroke.split(`,`)[2];
+            // rectangle.setAttributeNS(null, `stroke`, `hsla(${this._warningHue},100%,${shadeStroke},1)`);
+            this.applyPattern($rectangle, `diagonals`);
+        } else {
+            console.log(`couldnt find that rect`);
+        }
+    }
+
     unselectNode(node) {   // Remove 'select' effect (highlight)
         const rectangle = this.fetchRectangle(node.id);
         const hslaFill = rectangle.getAttributeNS(null, `fill`);
@@ -628,7 +660,6 @@ export default class SvgObject {
         const ox = Math.round(Number(splitOrigPath[1]));
         const oy = Math.round(Number(splitOrigPath[2]));
         const destinationNodeId = this.fetchEdgeDestinationId(edge);
-        console.log(destinationNodeId)
         const destinationNode = svgSelectedItems.nodes.get(destinationNodeId);
 
         const transformString = destinationNode.getAttributeNS(null, `transform`);
@@ -744,6 +775,10 @@ export default class SvgObject {
         return document.getElementById(this.buildId(this.OUTPUT, toId));
     }
 
+    fetchSvgObjectFromId(id) {
+        return document.getElementById(id);
+    }
+
     fetchBinding(id) {
         return document.getElementById(this.buildId(this.BINDING, id));
     }
@@ -781,20 +816,18 @@ export default class SvgObject {
         return id;
     }
 
-    fetchBindingSourceId(edge) {
-        const edgeSourceId = edge.id.split(this.PATH_SEPARATOR)[0];
-        const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
-        return sourceId;
+    fetchBindingSourceId(binding) {
+        const bindingSourceId = binding.id.split(this.PATH_SEPARATOR)[0];
+        return bindingSourceId;
     }
 
-    fetchBindingDestinationId(edge) {
-        const edgeDestinationId = edge.id.split(this.PATH_SEPARATOR)[1];
-        const destinationId = edgeDestinationId.split(this.ID_SEPARATOR)[1];
-        return destinationId;
+    fetchBindingDestinationId(binding) {
+        const bindingDestinationId = binding.id.split(this.PATH_SEPARATOR)[1];
+        return bindingDestinationId;
     }
 
 
-    fetchEdgeSourceId(edge) {
+    fetchEdgeSourceId(edge) {  // @todo this returns the id of the node of the edge source... might be cleaner to break this into two pieces - (more like the binding)
         const edgeSourceId = edge.id.split(this.PATH_SEPARATOR)[0];
         const sourceId = edgeSourceId.split(this.ID_SEPARATOR)[1];
         return sourceId;
@@ -821,13 +854,15 @@ export default class SvgObject {
         return outgoingEdges;
     }
 
-    fetchBindingTo(nodeId) {
-        const incomingEdge = document.querySelector(`[id$=${this.PATH_SEPARATOR}${this.buildId(this.INPUT, nodeId)}]`);
-        return incomingEdge;
+    fetchBindingsTo(endpointId) {
+        const incomingBinds = Array.from(document.querySelectorAll(`[id$="${this.PATH_SEPARATOR}${endpointId}"]`));
+        return incomingBinds;
     }
-FIX THESE`
-    fetchBindingsFrom(nodeId) {
-        const outgoingEdges = Array.from(document.querySelectorAll(`[id^=${this.buildId(this.NODEGROUP, nodeId)}${this.PATH_SEPARATOR}]`));
+
+    fetchBindingsFrom(endpointId) {
+        const searchString = `${endpointId}${this.PATH_SEPARATOR}`;
+        //  const outgoingEdges = Array.from(document.querySelectorAll(`[id^="${searchString}"]`));
+        const outgoingEdges = Array.from(document.querySelectorAll(`[id^="${endpointId}${this.PATH_SEPARATOR}"]`));
         return outgoingEdges;
     }
 
@@ -885,6 +920,13 @@ FIX THESE`
         });
     }
 
+    hideAllBindings() {
+        const $bindings = document.getElementsByClassName(`binding`);
+        Array.from($bindings).forEach(($binding) => {
+            $binding.classList.add(`hidden`);
+        });
+    }
+
     saveSvg(svgEl, name = `jag`) {
         const svgData = svgEl.outerHTML;
         const preface = `<?xml version="1.0" standalone="no"?>\r\n`;
@@ -901,6 +943,23 @@ FIX THESE`
     createDefinitionContainer() {
         const defs = document.createElementNS(this.SVGNS, `defs`);
         return defs;
+    }
+
+    createCustomPatterns() {
+        const customPatternMap = new Map();
+        const diagonalPattern = document.createElementNS(this.SVGNS, `pattern`);
+        diagonalPattern.id = `diagonals`;
+        diagonalPattern.setAttributeNS(null, `width`, `4`);
+        diagonalPattern.setAttributeNS(null, `height`, `4`);
+        diagonalPattern.setAttribute(`patternUnits`, `userSpaceOnUse`);
+        const diagonalPath = document.createElementNS(this.SVGNS, `path`);
+        diagonalPath.setAttributeNS(null, `d`, `M-1,1 l2,-2  M0,4 l4,-4  M3,5 l2,-2`);
+        diagonalPath.setAttribute(`patternUnits`, `userSpaceOnUse`);
+        diagonalPath.setAttributeNS(null, `stroke`, `red`);
+        diagonalPath.setAttributeNS(null, `stroke-width`, `1`);
+        diagonalPattern.appendChild(diagonalPath);
+        customPatternMap.set(diagonalPattern.id, diagonalPattern);
+        return customPatternMap;
     }
 
     createCustomFilters() {
@@ -947,6 +1006,10 @@ FIX THESE`
 
     applyFilter(svgItem, filterId) {
         svgItem.setAttributeNS(null, `filter`, `url(#${filterId})`);
+    }
+
+    applyPattern(svgItem, patternId) {
+        svgItem.setAttributeNS(null, `fill`, `url(#${patternId})`);
     }
 
 }

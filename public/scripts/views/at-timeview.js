@@ -31,6 +31,7 @@ class AtTimeview extends HTMLElement {
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
         this.svg.chosenFilter = `blur`;
+        this.svg.chosenPattern = `diagonals`;
 
         this._timeviewSvg = this.svg.buildSvg();
         this.$def = this.svg.createDefinitionContainer();

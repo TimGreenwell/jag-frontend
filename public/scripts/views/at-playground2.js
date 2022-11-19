@@ -30,7 +30,13 @@ class AtPlayground extends Popupable {
         this.svg.lineWidth = 2;
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
+        this.svg.chosenPattern = `diagonals`;
         this._playgroundSvg = this.svg.buildSvg();
+        this.$def = this.svg.createDefinitionContainer();
+        this._playgroundSvg.appendChild(this.$def);
+        this.patternMap = this.svg.createCustomPatterns();
+        this.$chosenPattern = this.patternMap.get(this.svg.chosenPattern);
+        this.$def.appendChild(this.$chosenPattern);
         this._background = this.svg.createBackground();
         this._playgroundSvg.appendChild(this._background);
         this._playgroundWrapperDiv.appendChild(this._playgroundSvg);
@@ -484,6 +490,7 @@ class AtPlayground extends Popupable {
         // const [focusNode] = this.selectedNodes.values();
         this.svg.hideAllOutputEndpoints();
         this.svg.hideAllInputEndpoints();
+        this.svg.hideAllBindings();
         const selectedEndpoints = [...selectedFromEndpoints, ...selectedToEndpoints];
         selectedEndpoints.forEach((endpoint) => {
             this.viewedProjects.forEach((project) => {
@@ -496,23 +503,17 @@ class AtPlayground extends Popupable {
                         $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
                     }
                     $endpoint.classList.remove(`hidden`);
-                    this.node.activity.bindings.forEach((extantBinding) => {
-                        if (extantBinding.from.id === endpoint.identity) {
-                            $binding = this.svg.fetchBinding();
-                        }
+
+                    const $bindings = this.svg.fetchBindingsFrom($endpoint.id);
+                    $bindings.forEach(($binding) => {
+                        $binding.classList.remove(`hidden`);
+                        const $toEndpointId = this.svg.fetchBindingDestinationId($binding);
+                        const $toEndpoint = this.svg.fetchSvgObjectFromId($toEndpointId);
+                        $toEndpoint.classList.remove(`hidden`);
                     });
                 });
             });
         });
-
-        // THIS WAS GOING TO SHOW THE PATH BEFORE THE BIND  --- BUT ABANDONED THE IDEA
-        // if ((selectedFromEndpoints.length > 0) && (selectedToEndpoints.length > 0)) {
-        //     selectedFromEndpoints.forEach((fromEndpoint) => {
-        //         selectedToEndpoints.forEach((toEndpoint) => {
-        //             this.svg.buildDataPath(fromEndpoint,toEndpoint)
-        //         })
-        //     })
-        // }
     }
 
 
@@ -866,6 +867,8 @@ class AtPlayground extends Popupable {
         return isBound;
     }
 
+
+
     buildJointActivityGraph(parentGroup, nodeModel) {
         const nodeBox = {x: nodeModel.x,
             y: nodeModel.y,
@@ -895,6 +898,15 @@ class AtPlayground extends Popupable {
             this.svg.applyColorDepthEffect(svgRect, nodeModel.treeDepth, this.treeHeight);
         }
         nodeContentGroup.insertBefore(svgRect, svgText);
+
+        // Apply placement warning
+        nodeModel.providesOutputTo.forEach((dependantNode) => {
+            if (dependantNode.y < (nodeModel.y + nodeBox.height)) {
+
+               this.svg.signalWarning(nodeModel);
+                this.svg.signalWarning(dependantNode);
+            }
+        })
 
 
         this.svgSize.width = Math.max(this.svgSize.width, nodeBox.x + nodeBox.width);
@@ -932,7 +944,7 @@ class AtPlayground extends Popupable {
             const spread = nodeBox.width / (nodeModel.activity.outputs.length + 1);  // +1 -> making space from corners
             const bottomLayer = [];
             nodeModel.activity.outputs.forEach((endpoint) => {
-                    bottomLayer.push(endpoint.identity);
+                bottomLayer.push(endpoint.identity);
             });
             nodeModel.activity.outputs.forEach((endpoint) => {
                 const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.identity);
@@ -955,7 +967,6 @@ class AtPlayground extends Popupable {
     }
 
     buildBindings(parentGroup, nodeModel) {
-
         nodeModel.activity.bindings.forEach((binding) => {
             const fromNodes = [];
             let checkStack = [];
@@ -981,6 +992,9 @@ class AtPlayground extends Popupable {
             fromNodes.forEach((fromNode) => {
                 toNodes.forEach((toNode) => {
                     const newBinding = this.svg.createBinding(fromNode, binding.from, toNode, binding.to);
+                    // if ((nodeModel.children.includes(fromNode)) && (nodeModel.children.includes(toNode))) {
+                    //     toNode.activity.becomeConsumerOf(fromNode.activity);
+                    // }
                     parentGroup.appendChild(newBinding);
                 });
             });

@@ -53,74 +53,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     /**
-     * _getRouterDefinitions
-     * _getCollectorDefinitions
-     */
-
-    _getRouterDefinitions() {
-        const definition = [
-            {
-                activityId: this._focusNode.activity.urn,
-                activityName: ``,
-                activityConnectionType: `every`,
-                endpoints: [
-                    {
-                        identity: `SendToEvery`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--ContentBased`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--CompetitiveCustomers`,
-                        format: `na`
-                    }
-                ]
-            }
-        ];
-        return definition;
-    }
-
-    _getCollectorDefinitions() {
-        const definition = [
-            {
-                activityId: this._focusNode.activity.urn,
-                activityName: ``,
-                activityConnectionType: `any`,
-                endpoints: [
-                    {
-                        identity: `FromAny`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--RoundRobin`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--Priority`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--RealTime`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--Queued`,
-                        format: `na`
-                    },
-                    {
-                        identity: `--FirstResponse`,
-                        format: `na`
-                    }
-                ]
-            }
-        ];
-        return definition;
-    }
-
-
-    /**
      *  Event Handlers
      * _handleUrnChange
      * _handleActivityNameChange
@@ -297,6 +229,33 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
     }
 
+    blacklistProviders(urn) {
+        const workStack = [];
+        const blackListedUrns = new Set();
+        const childrenArray = this._focusNode.activity.children.map((child) => {
+            return child.urn;
+        });
+        workStack.push(urn);
+        while (workStack.length > 0) {
+            const checkUrn = workStack.pop();
+            if (childrenArray.includes(checkUrn)) {
+                blackListedUrns.add(urn);
+                const forbiddenProviders = this._focusNode.activity.bindings.filter((binding) => {
+                    return ((binding.to.urn === checkUrn) && (childrenArray.includes(binding.from.urn)));
+                }).map((binding2) => {
+                    return binding2.from.urn;
+                });
+                forbiddenProviders.forEach((urn) => {
+                    blackListedUrns.add(urn)
+                    workStack.push(urn)
+                })
+                console.log(`Total blacklist now`)
+                console.log(blackListedUrns)
+            }
+        }
+        return blackListedUrns;
+    }
+
     handleFromSelect(e) {
         const $unbindButton = this._elementMap.get(`unbind-button`);
         const $removeButton = this._elementMap.get(`remove-button`);
@@ -311,18 +270,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             $destinationEndpointSelect.classList.add(`hidden`);
             $destinationEndpointSelect.size = 0;
         } else {
-            const endpointArray = Array.from($selectedStartEndpoints).map((selectedFromEndpoint) => {
+            this._selectedFromEndpoints = Array.from($selectedStartEndpoints).map((selectedFromEndpoint) => {
                 const fromEndpointDefinition = new Endpoint();
                 fromEndpointDefinition.property = selectedFromEndpoint.value.split(`/`)[0];
                 fromEndpointDefinition.urn = selectedFromEndpoint.value.split(`/`)[1];
                 fromEndpointDefinition.id = selectedFromEndpoint.label.split(` `)[0];
                 return fromEndpointDefinition;
             });
-            this._selectedFromEndpoints.push(...endpointArray);
+            // this._selectedFromEndpoints.push(...endpointArray);
             // Check if property types are same or mixed (ins, outs, mixed)
-            const activityConnectionType = endpointArray[0].property;
+            const activityConnectionType = this._selectedFromEndpoints[0].property;
             let activityConnectionTypeSame = true;
-            endpointArray.forEach((endpoint) => {
+            this._selectedFromEndpoints.forEach((endpoint) => {
                 if (endpoint.property !== activityConnectionType) {
                     activityConnectionTypeSame = false;
                 }
@@ -330,15 +289,17 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
             // Can't have a child's out going to its in
             const blacklistedUrns = [];
-            endpointArray.forEach((endpoint) => {
-                blacklistedUrns.push(endpoint.urn);
-            });
-            const allowedChildIns = this._getChildIns().filter((endpoint) => {
-                //  @TODO - I will probably eventually need a dependsOn[] to track what urns this
-                //  activity has.  For establishing order and prevent circular dependencies.
-                return !(blacklistedUrns.includes(endpoint.activityId));
+            this._selectedFromEndpoints.forEach((endpoint) => {
+                const blacklistedProviders = this.blacklistProviders(endpoint.urn);
+                blacklistedProviders.forEach((blacklistedProvider) => {
+                    blacklistedUrns.push(blacklistedProvider);
+                })
+
             });
 
+            const allowedChildIns = this._getChildIns().filter((endpoint) => {
+                return (!(blacklistedUrns.includes(endpoint.activityId)));
+            });
             // 2) create 2nd $select of allowed endpoints to end the route.
             let allowedEndpointDestination = [];
             if (activityConnectionTypeSame) {
@@ -358,7 +319,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             bubbles: true,
             composed: true,
             detail: {fromEndpoints: this._selectedFromEndpoints,
-                toEndpoints: this._selectedToEndpoints}
+                toEndpoints: []}
         }));
     }
 
@@ -395,7 +356,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const $bindButton = this._elementMap.get(`bind-button`);
         this._selectedFromEndpoints.forEach((from) => {
             this._selectedToEndpoints.forEach((to) => {
-                const binding = new Binding({from, to});
+                const binding = new Binding({from,
+                    to});
                 this._focusNode.activity.addBinding(binding);
             });
         });
@@ -834,14 +796,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _getChildIns() {
         const availableInputs = [];
+        const alreadyTallied = [];
         this._focusNode.children.forEach((child) => {
-            if (child.activity.inputs.length > 0) {
+            if ((child.activity.inputs.length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
                 availableInputs.push({
                     activityId: child.activity.urn,
                     activityName: child.activity.name,
                     activityConnectionType: `in`,
                     endpoints: child.activity.inputs
                 });
+                alreadyTallied.push(child.activity.urn)
             }
         });
         return availableInputs;
@@ -849,15 +813,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _getChildOuts() {
         const availableOutputs = [];
+        const alreadyTallied = [];
         this._focusNode.children.forEach((child) => {
-            if (child.activity.outputs.length > 0) {
+            if ((child.activity.outputs.length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
                 availableOutputs.push({
                     activityId: child.activity.urn,
                     activityName: child.activity.name,
                     activityConnectionType: `out`,
                     endpoints: child.activity.outputs
                 });
-            } this._annotations;
+                alreadyTallied.push(child.activity.urn)
+            }
+            // this._annotations;
         });
         return availableOutputs;
     }

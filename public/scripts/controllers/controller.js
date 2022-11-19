@@ -380,11 +380,30 @@ export default class Controller extends EventTarget {
         }
     }
 
+
+    establishChildInterdependency(node) {
+        node.activity.bindings.forEach((binding) => {
+            const childrenUrnList = node.activity.children.map((child) => {
+                return child.urn
+            })
+            if ((childrenUrnList.includes(binding.from.urn)) && (childrenUrnList.includes(binding.to.urn))) {
+                node.children.forEach((fromNode) => {
+                    node.children.forEach((toNode) => {
+                        if ((fromNode.activity.urn === binding.from.urn) && (toNode.activity.urn === binding.to.urn)) {
+                            toNode.becomeConsumerOf(fromNode);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
     addDerivedProjectData(node, projectId = node.id) {       // only to be applied at the top.
         this.repopulateParent(node);
         this.repopulateActivity(node);
         this.repopulateProject(node, projectId);      // top specific
         this.repopulateDepth(node);                   // requires parent
+        this.establishChildInterdependency(node);
         node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leaf count?)
     }
 
