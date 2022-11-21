@@ -246,75 +246,152 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     return binding2.from.urn;
                 });
                 forbiddenProviders.forEach((urn) => {
-                    blackListedUrns.add(urn)
-                    workStack.push(urn)
-                })
-                console.log(`Total blacklist now`)
-                console.log(blackListedUrns)
+                    blackListedUrns.add(urn);
+                    workStack.push(urn);
+                });
             }
         }
         return blackListedUrns;
     }
 
+
+    convertOptionsToEndpoints($selectedOptions) {
+        const endpointArray = Array.from($selectedOptions).map((selectedFromEndpoint) => {
+            const fromEndpointDefinition = new Endpoint();
+            fromEndpointDefinition.property = selectedFromEndpoint.value.split(`/`)[0];
+            fromEndpointDefinition.urn = selectedFromEndpoint.value.split(`/`)[1];
+            fromEndpointDefinition.id = selectedFromEndpoint.label.split(` `)[0];
+            return fromEndpointDefinition;
+        })
+        return endpointArray
+    }
+
+    isRemovable(bindings, fromEndpoints) {
+        let removable = true;
+        fromEndpoints.forEach((endpoint) => {
+            bindings.forEach((binding) => {
+                if (((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id)) || (endpoint.urn !== this._focusNode.activity.urn)) {
+                    removable = false;
+                }
+            });
+        });
+        return removable;
+    }
+
+    isUnbindable(bindings, fromEndpoints, toEndpoints = null) {
+        let unbindable;
+        if (toEndpoints) {
+            unbindable = true;
+            fromEndpoints.forEach((fromEndpoint) => {
+                toEndpoints.forEach((toEndpoint) => {
+                    let thisPairUnbindable = false;
+                    bindings.forEach((binding) => {
+                        if ((binding.from.urn === fromEndpoint.urn) && (binding.from.id === fromEndpoint.id) && (binding.to.urn === toEndpoint.urn) && (binding.to.id === toEndpoint.id)) {
+                            thisPairUnbindable = true;
+                        }
+                    });
+                    if (!(thisPairUnbindable)) {
+                        unbindable = false;
+                    }
+                });
+            });
+        } else {
+            unbindable = true;
+            fromEndpoints.forEach((endpoint) => {
+                bindings.forEach((binding) => {
+                    if (!((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id))) {
+                        unbindable = false;
+                    }
+                });
+            });
+        }
+        return unbindable;
+    }
+
+    areEndpointsSameType(selectedEndpoints){
+        const activityConnectionType = selectedEndpoints[0].property;
+        let isSameType = true;
+        selectedEndpoints.forEach((endpoint) => {
+            if (endpoint.property !== activityConnectionType) {
+                isSameType = false;
+            }
+        });
+        return isSameType;
+    }
+
+    filterInvalidDestinations(selectedFromEndpoints) {
+
+        const blacklistedUrns = [];
+        selectedFromEndpoints.forEach((endpoint) => {
+            const blacklistedProviders = this.blacklistProviders(endpoint.urn);
+            blacklistedProviders.forEach((blacklistedProvider) => {
+                blacklistedUrns.push(blacklistedProvider);
+            });
+        });
+
+        const allowedChildIns = this._getChildIns().filter((endpoint) => {
+            return (!(blacklistedUrns.includes(endpoint.activityId)));
+        });
+        // 2) create 2nd $select of allowed endpoints to end the route.
+        // Check if property types are same or mixed (ins, outs, mixed)
+
+        let homeoTypus = this.areEndpointsSameType(selectedFromEndpoints);
+        let allowedEndpointDestination = [];
+        if (homeoTypus) {
+            if (selectedFromEndpoints[0].property === `in`) {
+                allowedEndpointDestination = allowedChildIns;
+            } else if (selectedFromEndpoints[0].property === `out`) {
+                allowedEndpointDestination = [...this._getSelfOuts(), ...allowedChildIns];
+            }
+        } else {
+            allowedEndpointDestination = allowedChildIns;
+        }
+        return allowedEndpointDestination
+    }
+
+
     handleFromSelect(e) {
+        const $selectedFromOptions = Array.from(e.target.selectedOptions);  // HTMLCollection
+         this._selectedFromEndpoints = [];
+
+        const $bindButton = this._elementMap.get(`bind-button`);
         const $unbindButton = this._elementMap.get(`unbind-button`);
         const $removeButton = this._elementMap.get(`remove-button`);
-        const $destinationEndpointSelect = this._elementMap.get(`binding-to-select`);
-        const $selectedStartEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
-        this._selectedFromEndpoints = [];
-        $unbindButton.disabled = true;
-        $removeButton.disabled = true;
-
-
-        if ($selectedStartEndpoints.length === 0) {
-            $destinationEndpointSelect.classList.add(`hidden`);
-            $destinationEndpointSelect.size = 0;
-        } else {
-            this._selectedFromEndpoints = Array.from($selectedStartEndpoints).map((selectedFromEndpoint) => {
-                const fromEndpointDefinition = new Endpoint();
-                fromEndpointDefinition.property = selectedFromEndpoint.value.split(`/`)[0];
-                fromEndpointDefinition.urn = selectedFromEndpoint.value.split(`/`)[1];
-                fromEndpointDefinition.id = selectedFromEndpoint.label.split(` `)[0];
-                return fromEndpointDefinition;
-            });
-            // this._selectedFromEndpoints.push(...endpointArray);
-            // Check if property types are same or mixed (ins, outs, mixed)
-            const activityConnectionType = this._selectedFromEndpoints[0].property;
-            let activityConnectionTypeSame = true;
-            this._selectedFromEndpoints.forEach((endpoint) => {
-                if (endpoint.property !== activityConnectionType) {
-                    activityConnectionTypeSame = false;
-                }
-            });
-
-            // Can't have a child's out going to its in
-            const blacklistedUrns = [];
-            this._selectedFromEndpoints.forEach((endpoint) => {
-                const blacklistedProviders = this.blacklistProviders(endpoint.urn);
-                blacklistedProviders.forEach((blacklistedProvider) => {
-                    blacklistedUrns.push(blacklistedProvider);
-                })
-
-            });
-
-            const allowedChildIns = this._getChildIns().filter((endpoint) => {
-                return (!(blacklistedUrns.includes(endpoint.activityId)));
-            });
-            // 2) create 2nd $select of allowed endpoints to end the route.
-            let allowedEndpointDestination = [];
-            if (activityConnectionTypeSame) {
-                if (activityConnectionType === `in`) {
-                    allowedEndpointDestination = allowedChildIns;
-                } else if (activityConnectionType === `out`) {
-                    allowedEndpointDestination = [...this._getSelfOuts(), ...allowedChildIns];
-                }
-            } else {
-                allowedEndpointDestination = allowedChildIns;
-            }
-            $destinationEndpointSelect.classList.remove(`hidden`);
-            this._addAllowedEndpointsToSelect($destinationEndpointSelect, allowedEndpointDestination, false);
+        const $toEndpointSelect = this._elementMap.get(`binding-to-select`);
+        $toEndpointSelect.classList.add(`hidden`);
+        while ($toEndpointSelect.options.length > 0) {
+            $toEndpointSelect.remove(0);
         }
+        $toEndpointSelect.value = null;
+        console.log(`!!`)
+        console.log($toEndpointSelect)
 
+
+        // $unbindButton.disabled = true;
+        // $removeButton.disabled = true;
+        let unbindable;
+        let removable;
+        let bindable = false;
+
+
+        if ($selectedFromOptions.length === 0) {
+            unbindable = false;
+            removable = false;
+            bindable = false;
+        } else {
+
+            this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
+            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints)
+
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
+            removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
+
+            $toEndpointSelect.classList.remove(`hidden`);
+            this._addAllowedEndpointsToSelect($toEndpointSelect, allowedEndpointDestination, false);
+        }
+        $bindButton.disabled = !(bindable);
+        $unbindButton.disabled = !(unbindable);
+        $removeButton.disabled = !(removable);
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
@@ -324,14 +401,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     handleToSelect(e) {
-        const $destinationEndpointSelect = this._elementMap.get(`binding-to-select`);
+        const $toEndpointSelect = this._elementMap.get(`binding-to-select`);
         const $bindButton = this._elementMap.get(`bind-button`);
+        const $unbindButton = this._elementMap.get(`unbind-button`);
+        const $removeButton = this._elementMap.get(`remove-button`);
         const $selectedToEndpoints = Array.from(e.target.selectedOptions);  // HTMLCollection
         this._selectedToEndpoints = [];
+        let unbindable = true;
+        const removable = false;
 
         if ($selectedToEndpoints.length < 1) {
-            $destinationEndpointSelect.classList.add(`hidden`);
-            $destinationEndpointSelect.size = 0;
+            $toEndpointSelect.classList.add(`hidden`);
+            $toEndpointSelect.size = 0;
             $bindButton.disabled = true;
         } else {
             this._selectedToEndpoints = Array.from($selectedToEndpoints).map((selectedToEndpoint) => {
@@ -341,9 +422,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 fromToDefinition.id = selectedToEndpoint.label.split(` `)[0];
                 return fromToDefinition;
             });
-            // wake up buttons to click --
-            $bindButton.disabled = false;
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints, this._selectedToEndpoints);
+
+            $bindButton.disabled = unbindable;
         }
+        $unbindButton.disabled = !(unbindable);
+        $removeButton.disabled = !(removable);
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
@@ -370,9 +454,26 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $bindButton.disabled = true;
     }
 
+
+
     handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
-        this._focusNode.activity.removeBinding(this._selectedEndpoints);
+        if (this._selectedToEndpoints.length === 0) {
+            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+                const removedBinding = new Binding({from: selectedFromEndpoint,
+                    to: null});
+                this._focusNode.activity.removeBinding(removedBinding)
+            })
+        } else {
+            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+                this._selectedToEndpoints.forEach((selectedToEndpoint) => {
+                    const removedBinding = new Binding({from: selectedFromEndpoint,
+                        to: selectedToEndpoint});
+                    this._focusNode.activity.removeBinding(removedBinding);
+                })
+            })
+        }
+
         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
             bubbles: true,
             composed: true,
@@ -383,12 +484,15 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     handleRemoveButton() {
         const $removeButton = this._elementMap.get(`remove-button`);
-        if (this._selectedEndpoints.from[0].property === `in`) {
-            this._focusNode.activity.removeInput(this._selectedEndpoints.from[0].id);
-        }
-        if (this._selectedEndpoints.from[0].property === `out`) {
-            this._focusNode.activity.removeOutput(this._selectedEndpoints.from[0].id);
-        }
+        this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+            if (selectedFromEndpoint.property === `in`) {
+                this._focusNode.activity.removeInput(selectedFromEndpoint.id);
+            }
+            if (selectedFromEndpoint.property === `out`) {
+                this._focusNode.activity.removeOutput(selectedFromEndpoint.id);
+            }
+        })
+
         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
             bubbles: true,
             composed: true,
@@ -510,17 +614,17 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _clearEndpoints() {
         const $startEndpointSelect = this._elementMap.get(`binding-from-select`);
-        const $destinationEndpointSelect = this._elementMap.get(`binding-to-select`);
+        const $toEndpointSelect = this._elementMap.get(`binding-to-select`);
         const $bindButton = this._elementMap.get(`bind-button`);
         const $unbindButton = this._elementMap.get(`unbind-button`);
         const $removeButton = this._elementMap.get(`remove-button`);
         while ($startEndpointSelect.firstChild) {
             $startEndpointSelect.removeChild($startEndpointSelect.firstChild);
         }
-        while ($destinationEndpointSelect.firstChild) {
-            $destinationEndpointSelect.removeChild($destinationEndpointSelect.firstChild);
+        while ($toEndpointSelect.firstChild) {
+            $toEndpointSelect.removeChild($toEndpointSelect.firstChild);
         }
-        $destinationEndpointSelect.classList.add(`hidden`);
+        $toEndpointSelect.classList.add(`hidden`);
         $bindButton.disabled = true;
         $unbindButton.disabled = true;
         $removeButton.disabled = true;
@@ -805,7 +909,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     activityConnectionType: `in`,
                     endpoints: child.activity.inputs
                 });
-                alreadyTallied.push(child.activity.urn)
+                alreadyTallied.push(child.activity.urn);
             }
         });
         return availableInputs;
@@ -822,7 +926,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                     activityConnectionType: `out`,
                     endpoints: child.activity.outputs
                 });
-                alreadyTallied.push(child.activity.urn)
+                alreadyTallied.push(child.activity.urn);
             }
             // this._annotations;
         });

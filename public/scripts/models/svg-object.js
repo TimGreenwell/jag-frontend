@@ -47,8 +47,8 @@ export default class SvgObject {
         this.INPUT = `input`;
         this.OUTPUT = `output`;
         this.BINDING = `binding`;
-        this.ID_SEPARATOR = `-`;
-        this.PATH_SEPARATOR = `--`;
+        this.ID_SEPARATOR = `_`;
+        this.PATH_SEPARATOR = `___`;
         this.TEXT = `text`;
         this.CURSOR = `cursor`;
 
@@ -360,16 +360,13 @@ export default class SvgObject {
 
 
     createAddButton(id, width, height) {
-        console.log(id);
-        console.log(width);
-        console.log(height);
         const halfFont = this.standardFontSize / 2;
 
         const addButton = document.createElementNS(this.SVGNS, `g`);
         addButton.id = this.buildId(this.ADD, id);
         // const circle = this.createCircle(width - halfFont, height - halfFont, halfFont);
         const circle = this.createCircle(``, halfFont);
-        this.positionItem(circle, width - halfFont, height - halfFont)
+        this.positionItem(circle, width - halfFont, height - halfFont);
         circle.setAttributeNS(null, `fill-opacity`, `1`);
         circle.setAttributeNS(null, `stroke-width`, `${this.lineWidth}`);
         const horizLine = document.createElementNS(this.SVGNS, `path`);
@@ -600,7 +597,6 @@ export default class SvgObject {
     }
 
     signalWarning(node) {  // Apply 'select' effect (highlight)
-        console.log(`getting rect for node ${node.id}`);
         const $rectangle = this.fetchRectangle(node.id);
         if ($rectangle) {
             // const hslaStroke = rectangle.getAttributeNS(null, `stroke`);
@@ -807,13 +803,21 @@ export default class SvgObject {
     }
 
     fetchTargetElementType(svgElement) {
-        let id;
+        let elementType;
         if (svgElement.id) {
-            id = svgElement.id.split(this.ID_SEPARATOR)[0];
+            if (svgElement.id.includes(this.PATH_SEPARATOR)) {
+                if (svgElement.id.split(this.ID_SEPARATOR)[0] === this.NODEGROUP) {
+                    elementType = this.EDGE;
+                } else if ((svgElement.id.split(this.ID_SEPARATOR)[0] === this.INPUT) || (svgElement.id.split(this.ID_SEPARATOR)[0] === this.INPUT)) {
+                    elementType = this.BINDING;
+                }
+            } else {
+                elementType = svgElement.id.split(this.ID_SEPARATOR)[0];
+            }
         } else {
-            id = this.fetchTargetElementType(svgElement.parentNode);
+            elementType = this.fetchTargetElementType(svgElement.parentNode);
         }
-        return id;
+        return elementType;
     }
 
     fetchBindingSourceId(binding) {

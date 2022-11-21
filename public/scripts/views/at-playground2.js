@@ -208,6 +208,7 @@ class AtPlayground extends Popupable {
         this.unselectEverything();
         this._selectedEdge = e.target;
         this.svg.selectEdge(this._selectedEdge);
+        this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
     }
 
     svgMouseDownEvent(e) {
@@ -425,6 +426,9 @@ class AtPlayground extends Popupable {
                 const destinationNode = this.retrieveNodeModel(destinationNodeId);
                 if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                     const parentActivity = destinationNode.parent.activity;
+                    parentActivity.bindings = parentActivity.bindings.filter((binding) => {
+                        return ((binding.to.urn !== destinationNode.activity.urn) && (binding.from.urn !== destinationNode.activity.urn));
+                    });
                     const childActivityChildId = destinationNode.childId;
                     const remainingChildren = parentActivity._children.filter((entry) => {
                         return entry.id !== childActivityChildId;
@@ -737,15 +741,16 @@ class AtPlayground extends Popupable {
 
     _isStacked(projectNodeModel) {
         const workStack = [];
+        let isStacked = false;
         workStack.push(...projectNodeModel.children);
         while (workStack.length > 0) {
             const currentItem = workStack.pop();
-            if ((currentItem.x !== projectNodeModel.x) || (currentItem.y !== projectNodeModel.y)) {
-                return false;
+            if ((currentItem.x === projectNodeModel.x) && (currentItem.y === projectNodeModel.y)) {
+                isStacked = true;
             }
             workStack.push(...currentItem.children);
         }
-        return true;
+        return isStacked;
     }
 
     layoutNodes(nodeArray = [...this.selectedNodes.values()]) {
@@ -761,6 +766,11 @@ class AtPlayground extends Popupable {
         function layoutTree(nodeModel) {
             if ((nodeModel.hasChildren()) && (nodeModel.isExpanded)) {
                 let childrenVerticalRange = 0;
+
+                nodeModel.children.sort((a, b) => {
+                    return ((a.dependencySlot > b.dependencySlot) ? 1 : ((b.dependencySlot > a.dependencySlot) ? -1 : 0));
+                });
+
                 nodeModel.children.forEach((child) => {
                     child = layoutTree(child);
                     childrenVerticalRange = childrenVerticalRange + child.y;
@@ -868,7 +878,6 @@ class AtPlayground extends Popupable {
     }
 
 
-
     buildJointActivityGraph(parentGroup, nodeModel) {
         const nodeBox = {x: nodeModel.x,
             y: nodeModel.y,
@@ -902,11 +911,10 @@ class AtPlayground extends Popupable {
         // Apply placement warning
         nodeModel.providesOutputTo.forEach((dependantNode) => {
             if (dependantNode.y < (nodeModel.y + nodeBox.height)) {
-
-               this.svg.signalWarning(nodeModel);
+                this.svg.signalWarning(nodeModel);
                 this.svg.signalWarning(dependantNode);
             }
-        })
+        });
 
 
         this.svgSize.width = Math.max(this.svgSize.width, nodeBox.x + nodeBox.width);

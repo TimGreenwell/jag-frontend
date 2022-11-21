@@ -325,8 +325,10 @@ export default class ControllerAT extends Controller {
 
     async eventPromoteProjectHandler(event) {
         const newProject = event.detail.node;
+        newProject.childId = null;
+        newProject.parentId = null;
         this.addDerivedProjectData(newProject);
-        this.cacheProject(newProject);        // updating and caching project just before a 'create' -useful?
+        // this.cacheProject(newProject);        // updating and caching project just before a 'create' -useful?
         await StorageService.create(newProject, `node`);
         this._playground._refreshPlayground(newProject);
     }
@@ -520,7 +522,7 @@ export default class ControllerAT extends Controller {
         this.addDerivedProjectData(updatedNodeModel);
         this.cacheProject(updatedNodeModel);
         console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
-        this._playground._refreshPlayground(updatedNodeModel);
+         this._playground._refreshPlayground(updatedNodeModel);  // <- causing issues
         this._projectLibrary.updateItem(updatedNodeModel);
     }
 

@@ -209,19 +209,21 @@ export default class Activity extends EventTarget {
     }
 
     removeBinding(removedBinding) {
+        console.log(`removing: `)
+        console.log(removedBinding)
         let resultBindings;
-        if (removedBinding.to.length === 0) {
-            this.bindings = this.bindings.filter((checkBinding) => {
-                resultBindings = !checkBinding.sameFromEndpoint(removedBinding.from[0]);
+        if (removedBinding.to) {
+            this.bindings = this.bindings.filter((binding) => {
+                resultBindings = (!((binding.from.equals(removedBinding.from) &&
+                    (binding.to.equals(removedBinding.to)))));
                 return resultBindings;
             });
+
         } else {
-            removedBinding.to.forEach((oneOfRemovedBindingsToInputs) => {
-                this.bindings = this.bindings.filter((myBinding) => {
-                    resultBindings = !((myBinding.sameFromEndpoint(removedBinding.from[0])) &&
-                        (myBinding.sameToEndpoint(oneOfRemovedBindingsToInputs)));
-                    return resultBindings;
-                });
+            console.log(`openended unbinding`)
+            this.bindings = this.bindings.filter((checkBinding) => {
+                resultBindings = (!(checkBinding.from.equals(removedBinding.from)));
+                return resultBindings;
             });
         }
     }
