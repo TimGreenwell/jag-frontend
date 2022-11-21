@@ -279,9 +279,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     isUnbindable(bindings, fromEndpoints, toEndpoints = null) {
-        let unbindable;
+        console.log(`i have to's selected: `)
+        console.log(toEndpoints)
+        let unbindable = true;
         if (toEndpoints) {
-            unbindable = true;
             fromEndpoints.forEach((fromEndpoint) => {
                 toEndpoints.forEach((toEndpoint) => {
                     let thisPairUnbindable = false;
@@ -296,13 +297,17 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 });
             });
         } else {
-            unbindable = true;
+            console.log(`using the from-only Alg`)
             fromEndpoints.forEach((endpoint) => {
+                let thisFromUnbindable = false;
                 bindings.forEach((binding) => {
-                    if (!((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id))) {
-                        unbindable = false;
+                    if ((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id)) {
+                        thisFromUnbindable = true;
                     }
                 });
+                if (!(thisFromUnbindable)) {
+                    unbindable = false;
+                }
             });
         }
         return unbindable;
