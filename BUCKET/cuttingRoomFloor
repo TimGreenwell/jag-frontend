@@ -1328,3 +1328,44 @@ Random - also from playground.. look through and wipe.
 //         this.syncSizes(child);
 //     });
 // }
+
+// Removed this in favor of simple popup -- migth consider using it for `fancy` but dont really think its necessary for simple io
+// AtPlayground.NOTICE_REMOVE_CHILD = Popupable._createPopup({          // is this running - i want it?
+//     type: AtPlayground.POPUP_TYPES.NOTICE,
+//     name: `Disconnect Child`,
+//     description: `Disconnect this child JAG from parent JAG?`,
+//     actions: [
+//         {
+//             text: `Yes`,
+//             color: `black`,
+//             bgColor: `red`,
+//             action({inputs: {node}}) {
+//                 const edge = node.getParentEdge();
+//                 const id = edge.getChildId();
+//                 const parent = node.getParent();
+//                 const jagUrn = parent.nodeModel.urn;
+//                 const jagChild = {
+//                     urn: node.nodeModel.urn,
+//                     id: node.nodeModel.childId
+//                 };
+//                 const remainingChildren = parent.nodeModel.activity.children.filter((entry) => {
+//                     // if (entry.id !== jagChild.id) {
+//                     //     return entry;
+//                     // }
+//                     // xxxxx
+//                     return entry.id !== jagChild.id;
+//                 });
+//                 parent.nodeModel.activity.children = remainingChildren;
+//                 this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+//                     detail: {activity: parent.nodeModel.activity}
+//                 }));
+//             }
+//         },
+//         {
+//             text: `No`,
+//             color: `white`,
+//             bgColor: `black`
+//         }
+//
+//     ]
+// });

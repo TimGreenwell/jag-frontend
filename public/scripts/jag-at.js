@@ -8,7 +8,7 @@
  *
  */
 
-import Playground from './views/at-playground2.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
+import Playground from './views/at-playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
 import TimeView from "./views/at-timeview.js";
 import Library from './views/at-activity-library.js';                     // AT - Left view of available Activities
 import ProjectLibrary from './views/at-node-library.js';         // AT - Left view(2) of current JAGs

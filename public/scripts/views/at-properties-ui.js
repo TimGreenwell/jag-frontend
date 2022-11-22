@@ -2,6 +2,8 @@ import FormUtils from "../utils/forms.js";
 import Activity from "../models/activity.js";
 
 
+
+
 export default function _buildUI() {
     const elementMap = new Map();
     const $propertyDiv = FormUtils.createEmptyInputContainer(`property-container`);
@@ -14,7 +16,7 @@ export default function _buildUI() {
     const $nodePropertiesDiv = FormUtils.createEmptyInputContainer(`node-container`);
     $propertyDiv.appendChild($nodePropertiesDiv);
 
-    const $urnDiv = FormUtils.createPropertyElement(`urn-property`, `URN`);
+    const $urnDiv = FormUtils.createPropertyElement(`urn-input`, `URN`);
     $urnDiv.className = `padded-property`;
     const $urnInput = FormUtils.createTextInput(`urn-input`);
     $urnInput.setAttribute(`tabIndex`, `0`);
@@ -23,7 +25,7 @@ export default function _buildUI() {
     $urnDiv.appendChild($urnInput);
     $activityPropertiesDiv.appendChild($urnDiv);
 
-    const $activityNameDiv = FormUtils.createPropertyElement(`name-property`, `Name`);
+    const $activityNameDiv = FormUtils.createPropertyElement(`name-input`, `Name`);
     $activityNameDiv.className = `padded-property`;
     const $activityNameInput = FormUtils.createTextInput(`name-input`);
     $activityNameInput.setAttribute(`placeholder`, `display name`);
@@ -33,7 +35,7 @@ export default function _buildUI() {
     $activityNameDiv.appendChild($activityNameInput);
     $activityPropertiesDiv.appendChild($activityNameDiv);
 
-    const $activityTimeDiv = FormUtils.createPropertyElement(`time-property`, `Expected Duration`);
+    const $activityTimeDiv = FormUtils.createPropertyElement(`duration-input`, `Expected Duration`);
     $activityTimeDiv.className = `padded-property`;
     const $activityExpectedDurationInput = FormUtils.createTextInput(`duration-input`);
     $activityExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
@@ -43,7 +45,7 @@ export default function _buildUI() {
     $activityTimeDiv.appendChild($activityExpectedDurationInput);
     $activityPropertiesDiv.appendChild($activityTimeDiv);
 
-    const $activityDescDiv = FormUtils.createPropertyElement(`desc-property`, `Description`);
+    const $activityDescDiv = FormUtils.createPropertyElement(`desc-input`, `Description`);
     $activityDescDiv.className = `padded-property`;
     const $activityDescInput = document.createElement(`textarea`);
     $activityDescInput.setAttribute(`id`, `desc-input`);
@@ -62,7 +64,7 @@ export default function _buildUI() {
             text: execution[step].text
         });
     }
-    const $executionDiv = FormUtils.createPropertyElement(`execution-property`, `Execution`);
+    const $executionDiv = FormUtils.createPropertyElement(`execution-select`, `Execution`);
     $executionDiv.className = `padded-property`;
     const $executionSelect = FormUtils.createSelect(`execution-select`, executionOptions);
     elementMap.set($executionSelect.id, $executionSelect);
@@ -78,7 +80,7 @@ export default function _buildUI() {
             text: operator[step].text
         });
     }
-    const $operatorDiv = FormUtils.createPropertyElement(`operator-property`, `Operator`);             // @TODO Map this from original structure
+    const $operatorDiv = FormUtils.createPropertyElement(`operator-select`, `Operator`);             // @TODO Map this from original structure
     $operatorDiv.className = `padded-property`;
     const $operatorSelect = FormUtils.createSelect(`operator-select`, operatorOptions);
     elementMap.set($operatorSelect.id, $operatorSelect);
@@ -137,14 +139,14 @@ export default function _buildUI() {
     elementMap.set($annotations.id, $annotations);
     $annotationsDiv.appendChild($annotations);
 
-    const $nodeNameDiv = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
+    const $nodeNameDiv = FormUtils.createPropertyElement(`node-name-input`, `Contextual Name`);
     const $nodeNameInput = FormUtils.createTextInput(`node-name-input`);
     $nodeNameInput.className = `direct-property`;
     elementMap.set($nodeNameInput.id, $nodeNameInput);
     $nodeNameDiv.appendChild($nodeNameInput);
     $nodePropertiesDiv.appendChild($nodeNameDiv);
 
-    const $nodeExpectedDurationDiv = FormUtils.createPropertyElement(`node-expected-duration`, `Expected Duration`);
+    const $nodeExpectedDurationDiv = FormUtils.createPropertyElement(`node-expected-duration-input`, `Expected Duration`);
     $nodeExpectedDurationDiv.className = `padded-property`;
     const $nodeExpectedDurationInput = FormUtils.createTextInput(`node-expected-duration-input`);
     $nodeExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
@@ -153,7 +155,7 @@ export default function _buildUI() {
     $nodeExpectedDurationDiv.appendChild($nodeExpectedDurationInput);
     $nodePropertiesDiv.appendChild($nodeExpectedDurationDiv);
 
-    const $nodeTimeAllowanceDiv = FormUtils.createPropertyElement(`node-time-allowance`, `Time Allowance`);
+    const $nodeTimeAllowanceDiv = FormUtils.createPropertyElement(`node-time-allowance-input`, `Time Allowance`);
     $nodeTimeAllowanceDiv.className = `padded-property`;
     const $nodeTimeAllowanceInput = FormUtils.createTextInput(`node-time-allowance-input`);
     $nodeTimeAllowanceInput.setAttribute(`placeholder`, `time allowance`);
@@ -162,7 +164,7 @@ export default function _buildUI() {
     $nodeTimeAllowanceDiv.appendChild($nodeTimeAllowanceInput);
     $nodePropertiesDiv.appendChild($nodeTimeAllowanceDiv);
 
-    const $nodeDescDiv = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
+    const $nodeDescDiv = FormUtils.createPropertyElement(`node-desc-input`, `Contextual Description`);
     $nodePropertiesDiv.appendChild($nodeDescDiv);
     const $nodeDescInput = FormUtils.createTextInput(`node-desc-input`);
     $nodeDescInput.className = `direct-property`;
@@ -184,3 +186,32 @@ export default function _buildUI() {
     return elementMap;
 }
 
+
+/**
+ *  property-container               (div)
+ *       activity-container          (div)
+ *            urn-property           (div)
+ *                 urn-input         (text)
+ *            name-property          (div)
+ *                 name-input        (text)
+ *            time-property          (div)
+ *                 duration-input    (text)
+ *            desc-property          (div)
+ *                 desc-input        (textarea)
+ *            execution-property
+ *                 execution-select
+ *            operator-property
+ *                 operator-select
+ *            add-endpoint-buttons
+ *                 input-button
+ *                 output-button
+ *            binding-from-select
+ *            binding-to-select
+ *            binding-buttons
+ *                 bind-button
+ *                 unbind-button
+ *                 remove-button
+ *
+ *
+ *       node-container
+ */
