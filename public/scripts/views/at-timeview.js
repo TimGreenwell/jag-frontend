@@ -11,6 +11,7 @@
 
 import TimeviewBox from '../models/svg-box.js';
 import SvgObject from "../models/svg-object.js";
+import Point from "../models/point.js";
 
 class AtTimeview extends HTMLElement {
 
@@ -25,13 +26,17 @@ class AtTimeview extends HTMLElement {
         this.svg.standardHue = 200;
         this.svg.selectedHue = 150;
         this.svg.possibleHue = 50;
-        this.svg.horizontalMargin = 10;
-        this.svg.verticalMargin = 10;
+        this.svg.horizontalLeftMargin = 10;
+        this.svg.horizontalRightMargin = 10;
+        this.svg.verticalTopMargin = 10;
+        this.svg.verticalBottomMargin = 2;
         this.svg.lineWidth = 2;
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
         this.svg.chosenFilter = `blur`;
         this.svg.chosenPattern = `diagonals`;
+
+        this.timeLine = 10;
 
         this._timeviewSvg = this.svg.buildSvg();
         this.$def = this.svg.createDefinitionContainer();
@@ -86,6 +91,11 @@ class AtTimeview extends HTMLElement {
         }
     }
 
+    tempGetRandomTime(time) {
+        let random =  Math.floor(Math.random() * time) + (time / 2);
+        return random
+     }
+
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
         let svgText;
         let groupTop;
@@ -95,6 +105,8 @@ class AtTimeview extends HTMLElement {
         box.label = nodeModel.name;
         const labelElement = this.svg.createTextElement(box.label, nodeModel.id);
         const group = this.svg.createSubGroup(nodeModel.id);
+        groupTop = group.firstChild;
+        group.insertBefore(labelElement, groupTop);
         parentGroup.appendChild(group);
 
         if (nodeModel.hasChildren()) {
@@ -106,8 +118,8 @@ class AtTimeview extends HTMLElement {
                 let widestChild = 0;
                 let growingBoxHeight = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(group, child, topLeftX + this.svg.horizontalMargin, childTopLeftY + this.svg.verticalMargin);
-                    childTopLeftY = childTopLeftY + newBox.height + this.svg.verticalMargin;
+                    newBox = this.buildBoxSet(group, child, topLeftX + this.svg.horizontalLeftMargin, childTopLeftY + this.svg.verticalTopMargin);
+                    childTopLeftY = childTopLeftY + newBox.height + this.svg.verticalTopMargin;
                     growingBoxHeight = growingBoxHeight + newBox.height;
                     if (newBox.width > widestChild) {
                         widestChild = newBox.width;
@@ -118,25 +130,24 @@ class AtTimeview extends HTMLElement {
                     boxToStretch.width = widestChild;
                     this.boxMap.set(child.id, boxToStretch);
                 });
-                box.topLeftX = topLeftX + this.svg.horizontalMargin;
-                box.topLeftY = topLeftY + this.svg.verticalMargin;
-                svgText = this.svg.positionItem(labelElement, box.topLeftX + this.svg.labelIndent, box.topLeftY);
-                groupTop = group.firstChild;
-                group.insertBefore(svgText, groupTop);
-                box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalMargin) + this.svg.standardFontSize;
+                box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
+                box.topLeftY = topLeftY + this.svg.verticalTopMargin;
+                box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalTopMargin) + this.svg.standardFontSize + (2 * this.timeLine);
 
                 box.width = Math.max(
-                    widestChild + (this.svg.horizontalMargin * 2),
-                    this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 2)
+                    widestChild + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin),
+                    this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin)
                 );
+
+                svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
                 let childTopLeftX = topLeftX;
                 let tallestChild = 0;
                 let growingBoxWidth = 0;
                 nodeModel.children.forEach((child) => {
-                    newBox = this.buildBoxSet(group, child, childTopLeftX + this.svg.horizontalMargin, topLeftY + this.svg.verticalMargin);
-                    childTopLeftX = childTopLeftX + newBox.width + this.svg.horizontalMargin;
+                    newBox = this.buildBoxSet(group, child, childTopLeftX + this.svg.horizontalLeftMargin, topLeftY + this.svg.verticalTopMargin);
+                    childTopLeftX = childTopLeftX + newBox.width + this.svg.horizontalLeftMargin;
                     growingBoxWidth = growingBoxWidth + newBox.width;
                     if (newBox.height > tallestChild) {
                         tallestChild = newBox.height;
@@ -147,25 +158,27 @@ class AtTimeview extends HTMLElement {
                     boxToStretch.height = tallestChild;
                     this.boxMap.set(child.id, boxToStretch);
                 });
-                box.topLeftX = topLeftX + this.svg.horizontalMargin;
-                box.topLeftY = topLeftY + this.svg.verticalMargin;
-                svgText = this.svg.positionItem(labelElement, box.topLeftX + this.svg.labelIndent, box.topLeftY);
-                groupTop = group.firstChild;
-                group.insertBefore(svgText, groupTop);
-                box.height = tallestChild + (this.svg.verticalMargin * 2) + this.svg.standardFontSize;
+                box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
+                box.topLeftY = topLeftY + this.svg.verticalTopMargin;
+
+                box.height = tallestChild + (this.svg.verticalTopMargin + this.svg.verticalBottomMargin) + this.svg.standardFontSize + (2 * this.timeLine);
                 box.width = Math.max(
-                    growingBoxWidth + ((nodeModel.children.length + 1) * this.svg.horizontalMargin),
+                    growingBoxWidth + ((nodeModel.children.length + 1) * this.svg.horizontalLeftMargin),
                     this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 2)
                 );
+
+                svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
             }
         } else {
-            box.topLeftX = topLeftX + this.svg.horizontalMargin;
-            box.topLeftY = topLeftY + this.svg.verticalMargin;
-            svgText = this.svg.positionItem(labelElement, box.topLeftX + this.svg.labelIndent, box.topLeftY);
+            box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
+            box.topLeftY = topLeftY + this.svg.verticalTopMargin;
+
+            box.height = this.svg.standardBoxHeight + (2 * this.timeLine);
+            console.log(`this seems to work`);
+            box.width = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
+            svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
             groupTop = group.firstChild;
             group.insertBefore(svgText, groupTop);
-            box.height = this.svg.standardBoxHeight;
-            box.width = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 2);
         }
         const svgBox = this.svg.createRectangle(box.width, box.height, nodeModel.id);
         this.svg.positionItem(svgBox, box.topLeftX, box.topLeftY);
@@ -176,6 +189,35 @@ class AtTimeview extends HTMLElement {
         }
         group.insertBefore(svgBox, svgText);
         this.boxMap.set(box.id, box);
+
+        let expectedDuration = nodeModel.contextualExpectedDuration;
+        let timeUnit = (box.width * 0.95) / expectedDuration ;
+        let lineLength = expectedDuration * timeUnit;
+        let startPoint = new Point();
+        let endPoint = new Point();
+        startPoint.x = box.topLeftX + this.svg.labelIndent;
+        startPoint.y = box.topLeftY + box.height - 10;
+        endPoint.x = box.topLeftX + lineLength;
+        endPoint.y = box.topLeftY + box.height - 10;
+        const line = this.svg.createLine(nodeModel.id, startPoint, endPoint);
+        let groupLast = group.lastChild;
+        group.insertBefore(line, groupLast);
+
+        let actualTime = this.tempGetRandomTime(nodeModel.contextualExpectedDuration)
+        console.log(`###`)
+        console.log(`Expected: ${nodeModel.contextualExpectedDuration}`)
+        console.log(`Actual Time: ${actualTime}`)
+        lineLength = actualTime * timeUnit;
+        startPoint = new Point();
+        endPoint = new Point();
+        startPoint.x = box.topLeftX + this.svg.labelIndent;
+          startPoint.y = box.topLeftY + box.height - 7;
+        endPoint.x = box.topLeftX + lineLength;
+        endPoint.y = box.topLeftY + box.height - 7;
+        const line2 = this.svg.createLine(`${nodeModel.id}2`, startPoint, endPoint);
+        group.insertBefore(line2, groupLast);
+
+
         return box;
     }
 
@@ -208,8 +250,8 @@ class AtTimeview extends HTMLElement {
     dragView(e) {
         const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
         const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
-        const svgViewSizeX = this.svgSize.width + this.START_X + this.svg.horizontalMargin;
-        const svgViewSizeY = this.svgSize.height + this.START_Y + this.svg.verticalMargin;
+        const svgViewSizeX = this.svgSize.width + this.START_X + this.svg.horizontalLeftMargin;
+        const svgViewSizeY = this.svgSize.height + this.START_Y + this.svg.verticalTopMargin;
 
         if (zoomedBoxWidth > svgViewSizeX) {
             this.panX = 0;

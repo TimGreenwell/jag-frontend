@@ -33,12 +33,22 @@ export default function _buildUI() {
     $activityNameDiv.appendChild($activityNameInput);
     $activityPropertiesDiv.appendChild($activityNameDiv);
 
+    const $activityTimeDiv = FormUtils.createPropertyElement(`time-property`, `Expected Duration`);
+    $activityTimeDiv.className = `padded-property`;
+    const $activityExpectedDurationInput = FormUtils.createTextInput(`duration-input`);
+    $activityExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
+    $activityExpectedDurationInput.setAttribute(`tabIndex`, `2`);
+    $activityExpectedDurationInput.className = `direct-property`;
+    elementMap.set($activityExpectedDurationInput.id, $activityExpectedDurationInput);
+    $activityTimeDiv.appendChild($activityExpectedDurationInput);
+    $activityPropertiesDiv.appendChild($activityTimeDiv);
+
     const $activityDescDiv = FormUtils.createPropertyElement(`desc-property`, `Description`);
     $activityDescDiv.className = `padded-property`;
     const $activityDescInput = document.createElement(`textarea`);
     $activityDescInput.setAttribute(`id`, `desc-input`);
     $activityDescInput.setAttribute(`placeholder`, `...`);
-    $activityDescInput.setAttribute(`tabIndex`, `2`);
+    $activityDescInput.setAttribute(`tabIndex`, `3`);
     $activityDescInput.className = `direct-property`;
     elementMap.set($activityDescInput.id, $activityDescInput);
     $activityDescDiv.appendChild($activityDescInput);
@@ -74,6 +84,8 @@ export default function _buildUI() {
     elementMap.set($operatorSelect.id, $operatorSelect);
     $operatorDiv.appendChild($operatorSelect);
     $activityPropertiesDiv.appendChild($operatorDiv);
+
+
 
     const $bindingAddersDiv = FormUtils.createEmptyInputContainer(`add-endpoint-buttons`);
     $bindingAddersDiv.className = `row-stretch`;
@@ -126,11 +138,29 @@ export default function _buildUI() {
     $annotationsDiv.appendChild($annotations);
 
     const $nodeNameDiv = FormUtils.createPropertyElement(`name-ctx`, `Contextual Name`);
-    $nodePropertiesDiv.appendChild($nodeNameDiv);
     const $nodeNameInput = FormUtils.createTextInput(`node-name-input`);
     $nodeNameInput.className = `direct-property`;
     elementMap.set($nodeNameInput.id, $nodeNameInput);
     $nodeNameDiv.appendChild($nodeNameInput);
+    $nodePropertiesDiv.appendChild($nodeNameDiv);
+
+    const $nodeExpectedDurationDiv = FormUtils.createPropertyElement(`node-expected-duration`, `Expected Duration`);
+    $nodeExpectedDurationDiv.className = `padded-property`;
+    const $nodeExpectedDurationInput = FormUtils.createTextInput(`node-expected-duration-input`);
+    $nodeExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
+    $nodeExpectedDurationInput.className = `direct-property`;
+    elementMap.set($nodeExpectedDurationInput.id, $nodeExpectedDurationInput);
+    $nodeExpectedDurationDiv.appendChild($nodeExpectedDurationInput);
+    $nodePropertiesDiv.appendChild($nodeExpectedDurationDiv);
+
+    const $nodeTimeAllowanceDiv = FormUtils.createPropertyElement(`node-time-allowance`, `Time Allowance`);
+    $nodeTimeAllowanceDiv.className = `padded-property`;
+    const $nodeTimeAllowanceInput = FormUtils.createTextInput(`node-time-allowance-input`);
+    $nodeTimeAllowanceInput.setAttribute(`placeholder`, `time allowance`);
+    $nodeTimeAllowanceInput.className = `direct-property`;
+    elementMap.set($nodeTimeAllowanceInput.id, $nodeTimeAllowanceInput);
+    $nodeTimeAllowanceDiv.appendChild($nodeTimeAllowanceInput);
+    $nodePropertiesDiv.appendChild($nodeTimeAllowanceDiv);
 
     const $nodeDescDiv = FormUtils.createPropertyElement(`desc-ctx`, `Contextual Description`);
     $nodePropertiesDiv.appendChild($nodeDescDiv);

@@ -33,6 +33,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._enablePropertyInputs(false);
         this._elementMap.get(`urn-input`).addEventListener(`focusout`, this._handleUrnChange.bind(this));
         this._elementMap.get(`name-input`).addEventListener(`blur`, this._handleActivityNameChange.bind(this));
+        this._elementMap.get(`duration-input`).addEventListener(`blur`, this._handleExpectedDurationChange.bind(this));
         this._elementMap.get(`desc-input`).addEventListener(`blur`, this._handleActivityDescChange.bind(this));
 
         this._elementMap.get(`execution-select`).addEventListener(`change`, this._handleExecutionChange.bind(this));
@@ -47,6 +48,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`remove-button`).addEventListener(`click`, this.handleRemoveButton.bind(this));
 
         this._elementMap.get(`node-name-input`).addEventListener(`blur`, this._handleNodeNameChange.bind(this));
+        this._elementMap.get(`node-expected-duration-input`).addEventListener(`blur`, this._handleNodeExpectedDurationChange.bind(this));
+        this._elementMap.get(`node-time-allowance-input`).addEventListener(`blur`, this._handleNodeTimeAllowanceChange.bind(this));
         this._elementMap.get(`node-desc-input`).addEventListener(`blur`, this._handleNodeDescChange.bind(this));
         this._elementMap.get(`export-json-button`).addEventListener(`click`, this._handleExportJsonClick.bind(this));
         this._elementMap.get(`export-svg-button`).addEventListener(`click`, this._handleExportSvgClick.bind(this));
@@ -93,6 +96,19 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const $activityNameInput = this._elementMap.get(`name-input`);
         if (this._focusNode) {
             this._focusNode.activity.name = $activityNameInput.value;
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity: this._focusNode.activity}
+            }));
+        }
+    }
+
+    _handleExpectedDurationChange(e) {
+        e.stopImmediatePropagation();
+        const $activityExpectedDurationInput = this._elementMap.get(`duration-input`);
+        if (this._focusNode) {
+            this._focusNode.activity.expectedDuration = $activityExpectedDurationInput.value;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -198,6 +214,37 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
+
+    _handleNodeExpectedDurationChange(e) {
+        {
+            e.stopImmediatePropagation();
+            const $nodeExpectedDurationInput = this._elementMap.get(`node-expected-duration-input`);
+            if (this._focusNode) {
+                this._focusNode.contextualExpectedDuration = $nodeExpectedDurationInput.value;
+                this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {nodeModel: this._focusNode}
+                }));
+            }
+        }
+    }
+
+    _handleNodeTimeAllowanceChange(e) {
+        {
+            e.stopImmediatePropagation();
+            const $nodeTimeAllowanceInput = this._elementMap.get(`node-time-allowance-input`);
+            if (this._focusNode) {
+                this._focusNode.contextualTimeAllowance = $nodeTimeAllowanceInput.value;
+                this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {nodeModel: this._focusNode}
+                }));
+            }
+        }
+    }
+
     _handleNodeDescChange(e) {
         e.stopImmediatePropagation();
         const $nodeDescInput = this._elementMap.get(`node-desc-input`);
@@ -262,8 +309,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             fromEndpointDefinition.urn = selectedFromEndpoint.value.split(`/`)[1];
             fromEndpointDefinition.id = selectedFromEndpoint.label.split(` `)[0];
             return fromEndpointDefinition;
-        })
-        return endpointArray
+        });
+        return endpointArray;
     }
 
     isRemovable(bindings, fromEndpoints) {
@@ -279,8 +326,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     isUnbindable(bindings, fromEndpoints, toEndpoints = null) {
-        console.log(`i have to's selected: `)
-        console.log(toEndpoints)
         let unbindable = true;
         if (toEndpoints) {
             fromEndpoints.forEach((fromEndpoint) => {
@@ -297,7 +342,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 });
             });
         } else {
-            console.log(`using the from-only Alg`)
             fromEndpoints.forEach((endpoint) => {
                 let thisFromUnbindable = false;
                 bindings.forEach((binding) => {
@@ -313,7 +357,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return unbindable;
     }
 
-    areEndpointsSameType(selectedEndpoints){
+    areEndpointsSameType(selectedEndpoints) {
         const activityConnectionType = selectedEndpoints[0].property;
         let isSameType = true;
         selectedEndpoints.forEach((endpoint) => {
@@ -325,7 +369,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     filterInvalidDestinations(selectedFromEndpoints) {
-
         const blacklistedUrns = [];
         selectedFromEndpoints.forEach((endpoint) => {
             const blacklistedProviders = this.blacklistProviders(endpoint.urn);
@@ -340,7 +383,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         // 2) create 2nd $select of allowed endpoints to end the route.
         // Check if property types are same or mixed (ins, outs, mixed)
 
-        let homeoTypus = this.areEndpointsSameType(selectedFromEndpoints);
+        const homeoTypus = this.areEndpointsSameType(selectedFromEndpoints);
         let allowedEndpointDestination = [];
         if (homeoTypus) {
             if (selectedFromEndpoints[0].property === `in`) {
@@ -351,13 +394,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         } else {
             allowedEndpointDestination = allowedChildIns;
         }
-        return allowedEndpointDestination
+        return allowedEndpointDestination;
     }
 
 
     handleFromSelect(e) {
         const $selectedFromOptions = Array.from(e.target.selectedOptions);  // HTMLCollection
-         this._selectedFromEndpoints = [];
+        this._selectedFromEndpoints = [];
 
         const $bindButton = this._elementMap.get(`bind-button`);
         const $unbindButton = this._elementMap.get(`unbind-button`);
@@ -368,9 +411,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             $toEndpointSelect.remove(0);
         }
         $toEndpointSelect.value = null;
-        console.log(`!!`)
-        console.log($toEndpointSelect)
-
 
         // $unbindButton.disabled = true;
         // $removeButton.disabled = true;
@@ -384,9 +424,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             removable = false;
             bindable = false;
         } else {
-
             this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
-            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints)
+            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints);
 
             unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
             removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
@@ -460,23 +499,22 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
 
-
     handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
         if (this._selectedToEndpoints.length === 0) {
             this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
                 const removedBinding = new Binding({from: selectedFromEndpoint,
                     to: null});
-                this._focusNode.activity.removeBinding(removedBinding)
-            })
+                this._focusNode.activity.removeBinding(removedBinding);
+            });
         } else {
             this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
                 this._selectedToEndpoints.forEach((selectedToEndpoint) => {
                     const removedBinding = new Binding({from: selectedFromEndpoint,
                         to: selectedToEndpoint});
                     this._focusNode.activity.removeBinding(removedBinding);
-                })
-            })
+                });
+            });
         }
 
         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -496,7 +534,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             if (selectedFromEndpoint.property === `out`) {
                 this._focusNode.activity.removeOutput(selectedFromEndpoint.id);
             }
-        })
+        });
 
         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
             bubbles: true,
@@ -550,10 +588,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _populatePropertyFields() {
         this._elementMap.get(`urn-input`).value = this._focusNode.activity.urn;
         this._elementMap.get(`name-input`).value = this._focusNode.activity.name;
+        this._elementMap.get(`duration-input`).value = this._focusNode.activity.expectedDuration;
         this._elementMap.get(`execution-select`).value = this._focusNode.activity.connector.execution || `none`;
         this._elementMap.get(`operator-select`).value = this._focusNode.activity.operator || `none`;
         this._elementMap.get(`desc-input`).value = this._focusNode.activity.description;
         this._elementMap.get(`node-name-input`).value = this._focusNode.contextualName;
+        this._elementMap.get(`node-expected-duration-input`).value = this._focusNode.contextualExpectedDuration;
+        this._elementMap.get(`node-time-allowance-input`).value = this._focusNode.contextualTimeAllowance;
         this._elementMap.get(`node-desc-input`).value = this._focusNode.contextualDescription;
         this._enablePropertyInputs(true);
         this._addPropertyTooltips();
@@ -564,8 +605,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _enablePropertyInputs(enabled) {
         this._elementMap.get(`urn-input`).disabled = !enabled;
         this._elementMap.get(`name-input`).disabled = !enabled;
+        this._elementMap.get(`duration-input`).disabled = !enabled;
         this._elementMap.get(`desc-input`).disabled = !enabled;
         this._elementMap.get(`node-name-input`).disabled = !enabled;
+        this._elementMap.get(`node-expected-duration-input`).disabled = !enabled;
+        this._elementMap.get(`node-time-allowance-input`).disabled = !enabled;
         this._elementMap.get(`node-desc-input`).disabled = !enabled;
         this._elementMap.get(`execution-select`).disabled = !enabled;
         this._elementMap.get(`operator-select`).disabled = !enabled;
@@ -586,8 +630,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     _clearProperties() {
         this._elementMap.get(`urn-input`).value = ``;
         this._elementMap.get(`name-input`).value = ``;
+        this._elementMap.get(`duration-input`).value = ``;
         this._elementMap.get(`desc-input`).value = ``;
         this._elementMap.get(`node-name-input`).value = ``;
+        this._elementMap.get(`node-expected-duration-input`).value = ``;
+        this._elementMap.get(`node-time-allowance-input`).value = ``;
         this._elementMap.get(`node-desc-input`).value = ``;
         this._elementMap.get(`execution-select`).value = Activity.EXECUTION.NONE.name;
         this._elementMap.get(`operator-select`).value = Activity.OPERATOR.NONE.name;

@@ -30,6 +30,7 @@ export default class Activity extends EventTarget {
         author,
         createdDate,
         modifiedDate,
+        expectedDuration,
         lockedBy,
         isLocked = Boolean(false),
         collapsed = Boolean(false)
@@ -48,6 +49,7 @@ export default class Activity extends EventTarget {
         this._author = author;
         this._createdDate = createdDate;
         this._modifiedDate = modifiedDate;
+        this._expectedDuration = expectedDuration;
         this._lockedBy = lockedBy;
         this._isLocked = isLocked;
         this._collapsed = collapsed;
@@ -114,6 +116,15 @@ export default class Activity extends EventTarget {
 
     set modifiedDate(value) {
         this._modifiedDate = value;
+    }
+
+
+    get expectedDuration() {
+        return this._expectedDuration;
+    }
+
+    set expectedDuration(value) {
+        this._expectedDuration = value;
     }
 
     get lockedBy() {
@@ -209,8 +220,6 @@ export default class Activity extends EventTarget {
     }
 
     removeBinding(removedBinding) {
-        console.log(`removing: `)
-        console.log(removedBinding)
         let resultBindings;
         if (removedBinding.to) {
             this.bindings = this.bindings.filter((binding) => {
@@ -220,7 +229,6 @@ export default class Activity extends EventTarget {
             });
 
         } else {
-            console.log(`openended unbinding`)
             this.bindings = this.bindings.filter((checkBinding) => {
                 resultBindings = (!(checkBinding.from.equals(removedBinding.from)));
                 return resultBindings;
@@ -591,6 +599,7 @@ export default class Activity extends EventTarget {
         const json = {
             urn: this._urn,
             name: this._name,
+            expectedDuration: this._expectedDuration,
             description: this._description,
             type: `node.type.plan`,
             connector: {

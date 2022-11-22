@@ -18,17 +18,19 @@ export default class SvgObject {
         this._selectedHue = 150;          // color of selected items
         this._possibleHue = 50;           // color highlighting potential connect points
         this._warningHue = 5;
-        this._horizontalMargin = 10;      // margins
-        this._verticalMargin = 10;
+        this._horizontalLeftMargin = 10;      // margins
+        this._horizontalRightMargin = 10;
+        this._verticalTopMargin = 10;
+        this._verticalBottomMargin = 10;
         this._lineWidth = 2;
         this._standardFontSize = 17;
         this._stepBrightness = 5;         // 3-d effect - changes in brightness
         this._initialBrightness = 50;     // average brightness (1-100)
 
         // derived svg appearances
-        this._labelIndent = this.verticalMargin / 2;
+        this._labelIndent = this.horizontalLeftMargin / 2;
         this._labelHeight = this.standardFontSize;
-        this._standardBoxHeight = (2 * this.verticalMargin) + this.labelHeight;
+        this._standardBoxHeight = (this.verticalTopMargin + this.verticalBottomMargin) + this.labelHeight;
         this._buttonSize = this.standardFontSize / 2;
 
         this._customFilters = this.createCustomFilters();
@@ -42,6 +44,7 @@ export default class SvgObject {
         this.NODEGROUP = `node`;
         this.RECTANGLE = `rect`;
         this.EDGE = `edge`;
+        this.LINE = `line`;
         this.EXPAND = `expand`;
         this.ADD = `add`;
         this.INPUT = `input`;
@@ -83,20 +86,38 @@ export default class SvgObject {
         this._possibleHue = value;
     }
 
-    get horizontalMargin() {
-        return this._horizontalMargin;
+
+    get horizontalLeftMargin() {
+        return this._horizontalLeftMargin;
     }
 
-    set horizontalMargin(value) {
-        this._horizontalMargin = value;
+    set horizontalLeftMargin(value) {
+        this._horizontalLeftMargin = value;
     }
 
-    get verticalMargin() {
-        return this._verticalMargin;
+    get horizontalRightMargin() {
+        return this._horizontalRightMargin;
     }
 
-    set verticalMargin(value) {
-        this._verticalMargin = value;
+    set horizontalRightMargin(value) {
+        this._horizontalRightMargin = value;
+    }
+
+
+    get verticalTopMargin() {
+        return this._verticalTopMargin;
+    }
+
+    set verticalTopMargin(value) {
+        this._verticalTopMargin = value;
+    }
+
+    get verticalBottomMargin() {
+        return this._verticalBottomMargin;
+    }
+
+    set verticalBottomMargin(value) {
+        this._verticalBottomMargin = value;
     }
 
     get lineWidth() {
@@ -508,19 +529,18 @@ export default class SvgObject {
         return binding;
     }
 
-    // createLine(crap) {
-    //     const binding = document.createElementNS(this.SVGNS, `line`);
-    //     const bindingDesc = `${fromId}${this.PATH_SEPARATOR}${toId}`;
-    //     const bindingId = this.buildId(this.BINDING, bindingDesc);
-    //     binding.id = bindingId;
-    //
-    //     binding.setAttributeNS(null, `id`, `${bindingId}`);
-    //     binding.setAttributeNS(null, `x1`, `${fromX}`);
-    //     binding.setAttributeNS(null, `y1`, `${fromY}`);
-    //     binding.setAttributeNS(null, `x2`, `${toX}`);
-    //     binding.setAttributeNS(null, `y2`, `${toY}`);
-    //     binding.setAttributeNS(null, `stroke`, `black`);
-    // }
+    createLine(id, startPoint, endPoint) {
+        const line = document.createElementNS(this.SVGNS, `line`);
+        line.id = id;
+        line.setAttributeNS(null, `x1`, `${startPoint.x}`);
+        line.setAttributeNS(null, `y1`, `${startPoint.y}`);
+        line.setAttributeNS(null, `x2`, `${endPoint.x}`);
+        line.setAttributeNS(null, `y2`, `${endPoint.y}`);
+        line.setAttributeNS(null, `stroke`, `hsla(78,100%,50%,1)`);
+        line.setAttributeNS(null, `fill`, `transparent`);
+        line.setAttributeNS(null, `stroke-width`, `3`);
+        return line;
+    }
 
     createEdgeToCursor(sourceId, sourceBox) {
         const edge = document.createElementNS(this.SVGNS, `path`);

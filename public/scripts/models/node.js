@@ -31,7 +31,9 @@ export default class Node extends EventTarget {
         returnState = null,
         testReturnValue = null,
         testReturnState = null,
-        children = []
+        children = [],
+        contextualExpectedDuration,
+        contextualTimeAllowance
     } = {}) {
         super();
         this._id = id;                       // An assigned unique ID given at construction
@@ -51,6 +53,8 @@ export default class Node extends EventTarget {
         this._testReturnValue = testReturnValue;
         this._testReturnState = testReturnState;
         this._children = children;            // Links to actual children [objects]
+        this._contextualExpectedDuration = contextualExpectedDuration;
+        this._contextualTimeAllowance = contextualTimeAllowance;
         // Derived
         this._parent = null;
         this._activity = undefined;
@@ -60,7 +64,6 @@ export default class Node extends EventTarget {
         this._requiresOutputFrom = [];
         this._providesOutputTo = [];
         this._dependencySlot = 0;
-
     }
 
     becomeConsumerOf(node) {
@@ -76,12 +79,11 @@ export default class Node extends EventTarget {
     }
 
     adjustDependencySlot(n) {
-
         this.dependencySlot = n;
-        let workStack = [...this.providesOutputTo];
+        const workStack = [...this.providesOutputTo];
         while (workStack.length > 0) {
-            let childNode = workStack.pop();
-            childNode.adjustDependencySlot(n+1);
+            const childNode = workStack.pop();
+            childNode.adjustDependencySlot(n + 1);
         }
     }
 
@@ -140,6 +142,26 @@ export default class Node extends EventTarget {
 
     set children(value) {
         this._children = value;
+    }
+
+
+    get contextualExpectedDuration() {
+        if (!(this._contextualExpectedDuration)) {
+            this._contextualExpectedDuration = this.activity.expectedDuration;
+        }
+        return this._contextualExpectedDuration;
+    }
+
+    set contextualExpectedDuration(value) {
+        this._contextualExpectedDuration = value;
+    }
+
+    get contextualTimeAllowance() {
+        return this._contextualTimeAllowance;
+    }
+
+    set contextualTimeAllowance(value) {
+        this._contextualTimeAllowance = value;
     }
 
     get parent() {
@@ -311,7 +333,7 @@ export default class Node extends EventTarget {
     }
 
     addRequiresOutputFrom(node) {
-        this._requiresOutputFrom.push(node)
+        this._requiresOutputFrom.push(node);
     }
 
     get providesOutputTo() {
@@ -323,7 +345,7 @@ export default class Node extends EventTarget {
     }
 
     addProvidesOutputTo(node) {
-        this._providesOutputTo(node)
+        this._providesOutputTo(node);
     }
 
     get dependencySlot() {
@@ -334,7 +356,7 @@ export default class Node extends EventTarget {
         this._dependencySlot = value;
     }
 
-// /////////////////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////// Inner Jag Assignments  ////////////////////////////////
     // ///////////////////   ( This will go away once extending JAG Model )    /////////////////
     // /////////////////////////////////////////////////////////////////////////////////////////
@@ -580,6 +602,8 @@ export default class Node extends EventTarget {
             x: this._x,
             y: this._y,
             contextualName: this._contextualName,
+            contextualExpectedDuration: this._contextualExpectedDuration,
+            contextualTimeAllowance: this._contextualTimeAllowance,
             contextualDescription: this._contextualDescription,
             subscriptions: [],
             returnValue: this._returnValue,

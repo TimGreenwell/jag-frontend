@@ -25,8 +25,10 @@ class AtPlayground extends Popupable {
         this.svg.standardHue = 200;
         this.svg.selectedHue = 150;
         this.svg.possibleHue = 50;
-        this.svg.horizontalMargin = 10;
-        this.svg.verticalMargin = 10;
+        this.svg.horizontalLeftMargin = 10;
+        this.svg.horizonalRightMargin = 10;
+        this.svg.verticalTopMargin = 10;
+        this.svg.verticalBottomMargin = 10;
         this.svg.lineWidth = 2;
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
@@ -754,12 +756,13 @@ class AtPlayground extends Popupable {
     }
 
     layoutNodes(nodeArray = [...this.selectedNodes.values()]) {
-        const horizontalMargin = 50;
+        const horizontalLeftMargin = 50;
+        const horizontalRightMargin = 50;
         let xIndentArray = [];
         let startTreeDepth = 0;
         let leafCount = 0;
         const boxHeight = this.svg.standardBoxHeight;
-        const verticalMargin = 15;
+        const separationSpacing = 15;
         const startPoint = new Point();
         const offsetPoint = new Point();
 
@@ -780,7 +783,7 @@ class AtPlayground extends Popupable {
                 return nodeModel;
             } else {
                 nodeModel.x = xIndentArray[nodeModel.treeDepth - startTreeDepth];
-                nodeModel.y = (leafCount * (boxHeight + verticalMargin));
+                nodeModel.y = (leafCount * (boxHeight + separationSpacing));
                 leafCount = leafCount + 1;
                 return nodeModel;
             }
@@ -790,7 +793,7 @@ class AtPlayground extends Popupable {
             node.x = node.x ? node.x : 0;
             node.y = node.y ? node.y : 0;
             const longestAtEachDepthArray = this.findLongestAtEachDepth(node);
-            xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalMargin);
+            xIndentArray = this.xIndentForDepth(longestAtEachDepthArray, horizontalLeftMargin);
             startTreeDepth = node.treeDepth;
             startPoint.x = node.x;
             startPoint.y = node.y;
