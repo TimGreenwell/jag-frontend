@@ -63,6 +63,62 @@
   "isLocked": false,
   "collapsed": false
 },{
+  "urn": "us:ihmc:333",
+  "name": "333",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [
+    {
+      "identity": "333in1",
+      "format": "erer"
+    },
+    {
+      "identity": "333in2",
+      "format": "wwww"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "333out1",
+      "format": "ioio"
+    },
+    {
+      "identity": "333ou2",
+      "format": "sdfsdf"
+    }
+  ],
+  "children": [
+    {
+      "urn": "us:ihmc:666",
+      "id": "14c4657e"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:666",
+  "name": "666",
+  "expectedDuration": "6",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
   "urn": "us:ihmc:222",
   "name": "222",
   "description": "",
@@ -106,24 +162,9 @@
   "isLocked": false,
   "collapsed": false
 },{
-  "urn": "us:ihmc:555",
-  "name": "555",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
   "urn": "us:ihmc:444",
   "name": "444",
+  "expectedDuration": "4",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -138,47 +179,9 @@
   "isLocked": false,
   "collapsed": false
 },{
-  "urn": "us:ihmc:333",
-  "name": "333",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.sequential",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [
-    {
-      "identity": "333in1",
-      "format": "erer"
-    },
-    {
-      "identity": "333in2",
-      "format": "wwww"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "333out1",
-      "format": "ioio"
-    },
-    {
-      "identity": "333ou2",
-      "format": "sdfsdf"
-    }
-  ],
-  "children": [
-    {
-      "urn": "us:ihmc:666",
-      "id": "14c4657e"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "us:ihmc:666",
-  "name": "666",
+  "urn": "us:ihmc:555",
+  "name": "555",
+  "expectedDuration": "5",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -193,13 +196,13 @@
   "isLocked": false,
   "collapsed": false
 }], "jags" : [{
-  "id": "40e0b189",
+  "id": "92a1aef3",
   "urn": "us:ihmc:111",
-  "projectId": "40e0b189",
+  "projectId": "92a1aef3",
   "isLocked": false,
   "isExpanded": true,
-  "x": 86,
-  "y": 242,
+  "x": 0,
+  "y": 65,
   "contextualName": "",
   "contextualDescription": "",
   "subscriptions": [],
@@ -209,15 +212,15 @@
   "testReturnState": null,
   "children": [
     {
-      "id": "8962f11c",
-      "urn": "us:ihmc:222",
-      "childId": "7d8cce29",
-      "parentId": "40e0b189",
-      "projectId": "40e0b189",
+      "id": "3375d2a1",
+      "urn": "us:ihmc:333",
+      "childId": "5894134a",
+      "parentId": "92a1aef3",
+      "projectId": "92a1aef3",
       "isLocked": false,
       "isExpanded": true,
-      "x": 186,
-      "y": 203,
+      "x": 100,
+      "y": 104,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -227,34 +230,15 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "07f669b1",
-          "urn": "us:ihmc:555",
-          "childId": "44403265",
-          "parentId": "8962f11c",
-          "projectId": "40e0b189",
+          "id": "43837533",
+          "urn": "us:ihmc:666",
+          "childId": "14c4657e",
+          "parentId": "3375d2a1",
+          "projectId": "92a1aef3",
           "isLocked": false,
-          "isExpanded": false,
-          "x": 287,
-          "y": 177,
-          "contextualName": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": []
-        },
-        {
-          "id": "2faa3f51",
-          "urn": "us:ihmc:444",
-          "childId": "865973e0",
-          "parentId": "8962f11c",
-          "projectId": "40e0b189",
-          "isLocked": false,
-          "isExpanded": false,
-          "x": 287,
-          "y": 229,
+          "isExpanded": true,
+          "x": 201,
+          "y": 104,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],
@@ -267,15 +251,15 @@
       ]
     },
     {
-      "id": "a5997d4c",
-      "urn": "us:ihmc:333",
-      "childId": "5894134a",
-      "parentId": "40e0b189",
-      "projectId": "40e0b189",
+      "id": "10c0cf20",
+      "urn": "us:ihmc:222",
+      "childId": "7d8cce29",
+      "parentId": "92a1aef3",
+      "projectId": "92a1aef3",
       "isLocked": false,
       "isExpanded": true,
-      "x": 186,
-      "y": 281,
+      "x": 100,
+      "y": 26,
       "contextualName": "",
       "contextualDescription": "",
       "subscriptions": [],
@@ -285,15 +269,34 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "804d331f",
-          "urn": "us:ihmc:666",
-          "childId": "14c4657e",
-          "parentId": "a5997d4c",
-          "projectId": "40e0b189",
+          "id": "3cd19c38",
+          "urn": "us:ihmc:444",
+          "childId": "865973e0",
+          "parentId": "10c0cf20",
+          "projectId": "92a1aef3",
           "isLocked": false,
-          "isExpanded": false,
-          "x": 287,
-          "y": 281,
+          "isExpanded": true,
+          "x": 201,
+          "y": 0,
+          "contextualName": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "96d0278f",
+          "urn": "us:ihmc:555",
+          "childId": "44403265",
+          "parentId": "10c0cf20",
+          "projectId": "92a1aef3",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 201,
+          "y": 52,
           "contextualName": "",
           "contextualDescription": "",
           "subscriptions": [],

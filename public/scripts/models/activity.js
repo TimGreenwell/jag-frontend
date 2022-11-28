@@ -219,39 +219,6 @@ export default class Activity extends EventTarget {
         });
     }
 
-    removeBinding(removedBinding) {
-        let resultBindings;
-        if (removedBinding.to) {
-            this.bindings = this.bindings.filter((binding) => {
-                resultBindings = (!((binding.from.equals(removedBinding.from) &&
-                    (binding.to.equals(removedBinding.to)))));
-                return resultBindings;
-            });
-
-        } else {
-            this.bindings = this.bindings.filter((checkBinding) => {
-                resultBindings = (!(checkBinding.from.equals(removedBinding.from)));
-                return resultBindings;
-            });
-        }
-    }
-
-
-    isBound(activityId, activityConnectionType, identity) {
-        let isBound = false;
-        this.bindings.forEach((binding) => {
-            binding.from.forEach((outwardConnection) => {
-                if ((outwardConnection.urn === activityId) &&
-                    (outwardConnection.property === activityConnectionType) &&   // @TODO urn, id and property --- should be more like activityId, activityConnectionType, identity)
-                    (outwardConnection.id === identity)) {
-                    isBound = true;
-                }
-                // else {isBound = false}
-            });
-        });
-        return isBound;
-    }
-
 
     set children(value) {
         this._children = value;
@@ -385,6 +352,16 @@ export default class Activity extends EventTarget {
         }
     }
 
+    isChild(urn){
+        let isChild = false;
+        this._children.forEach((child) => {
+            if (child.urn === urn) {
+                isChild = true;
+            }
+        });
+        return isChild;
+    }
+
     /**
      * Sets the description of the child with the given ID to the given description.
      *
@@ -443,59 +420,140 @@ export default class Activity extends EventTarget {
         return availableInputs;
     }
 
+    removeBinding(removedBinding) {
+        let resultBindings;
+        if (removedBinding.to) {
+            this.bindings = this.bindings.filter((binding) => {
+                resultBindings = (!((binding.from.equals(removedBinding.from) &&
+                    (binding.to.equals(removedBinding.to)))));
+                return resultBindings;
+            });
+        } else {
+            this.bindings = this.bindings.filter((checkBinding) => {
+                resultBindings = (!(checkBinding.from.equals(removedBinding.from)));
+                return resultBindings;
+            });
+        }
+    }
 
     /**
-     * Adds the given binding to the bindings of this Activity.
-     * Will remove an existing binding with the same consumer.
-     * Dispatches an update.
-     *
-     * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding Binding to add.
+     * Is given endpoint bound to something...
+     * @returns {boolean}
      */
-    // addBinding(binding) {
-    //     const existing_binding = this.getBinding(binding.consumer.id, binding.consumer.property);
-    //
-    //     if (existing_binding !== undefined) {
-    //         this._bindings.delete(existing_binding);
-    //     }
-    //
-    //     this._bindings.add(binding);
-    // }
+    isBoundProducerEndpoint(checkEndpoint) {
+        let isBoundProducer = false;
+        this.bindings.forEach((binding) => {
+            if (binding.from.equals(checkEndpoint)) {
+                isBoundProducer = true;
+            }
+        });
+        return isBoundProducer;
+    }
+
+
+isDependentSibling(urn) {
+    let isDependentSibling = false;
+    this.bindings.forEach((binding) => {
+        if ((binding.to.urn === urn) && (binding.to.property = `in`)) {
+            let producer = binding.from;
+            if (this.isChild(producer.urn)) {
+                isDependentSibling = true;
+            }
+        }
+    })
+    return isDependentSibling;
+}
+}
+
+    hasConsumingSiblings(urn) {
+        let hasConsumingSiblings = false;
+        this.bindings.forEach((binding) => {
+            if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
+                let consumer = binding.to;
+                if (this.isChild(consumer.urn)) {
+                    hasConsumingSiblings = true;
+                }
+            }
+        })
+        return hasConsumingSiblings;
+    }
+
+    getConsumingSiblings(urn) {
+        let consumingSiblings = [];
+        this.bindings.forEach((binding) => {
+            if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
+                let consumer = binding.to;
+                if (this.isChild(consumer.urn)) {
+                    consumingSiblings.push(urn);
+                }
+            }
+        })
+    }
+
 
     /**
-     * Check if a binding exists for the given consumer ID and property.
-     *
-     * @param {String} consumer_id The ID to seek.
-     * @param {String} consumer_property The property to seek.
-     * @returns {boolean} Whether or not a binding exists for the given consumer ID and property.
+     * Is given endpoint bound from something...
+     * @returns {boolean}
      */
-    // hasBinding(consumer_id, consumer_property) {
-    //     const binding = this.getBinding(consumer_id, consumer_property);
-    //     return binding !== undefined;
-    // }
+    isBoundConsumerEndpoint(checkEndpoint) {
+        let isBoundConsumer = false;
+        this.bindings.forEach((binding) => {
+            if (binding.to.equals(checkEndpoint)) {
+                isBoundConsumer = true;
+            }
+        });
+        return isBoundConsumer;
+    }
 
     /**
-     * Gets a binding for the given consumer ID and property.
-     *
-     * @param {String} consumer_id ID of the consumer for the binding to be returned.
-     * @param {String} consumer_property Name of the consumer property for the binding to be returned.
-     * @returns {{provider:{id:String,property:String},consumer:{id:String,property:String}}|undefined} Binding for the given consumer ID and property, or undefined if none exists.
+     * Get list of consuming nodes of endpoint.
+     * @param checkEndpoint
+     * @returns {*[]}
      */
-    // getBinding(consumer_id, consumer_property) {
-    //     for (const binding of this._bindings) {
-    //         if (consumer_id === binding.to.id &&
-    //             consumer_property === binding.to.property) {
-    //             return binding;
-    //         }
-    //     }
-    //     return undefined;
-    // }
+    getConsumingEndpointsFor(checkEndpoint) {
+        const consumers = [];
+        this.bindings.forEach((binding) => {
+            if (binding.from.equals(checkEndpoint)) {
+                consumers.push(binding.to);
+            }
+        });
+        return consumers;
+    }
 
     /**
-     * Removes the provided binding from this node.
-     *
-     * @param {{provider:{id:String,property:String},consumer:{id:String,property:String}}} binding The binding to remove.
+     * Get list of producing nodes for endpoint.
+     * @param checkEndpoint
+     * @returns {*[]}
      */
+    getProducingEndpointsFor(checkEndpoint) {
+        const producers = [];
+        this.bindings.forEach((binding) => {
+            if (binding.to.equals(checkEndpoint)) {
+                producers.push(binding.from);
+            }
+        });
+        return producers;
+    }
 
+
+
+
+    getConsumingLeaves(urn){
+        let leaves = [];
+        console.log(`checking ...`)
+        console.log(checkEndpoint)
+        if (this.isBoundProducer(checkEndpoint)) {
+            console.log(`!`)
+            if (checkEnd)
+            leaves.push(...this.getConsumingEndpointsFor(checkEndpoint));
+        }
+        else {
+            console.log(`?`)
+            leaves.push(checkEndpoint);
+            return leaves;
+        }
+        console.log(leaves)
+    }
 
     /**
      * Gets the child of this Activity with the given ID.
@@ -584,13 +642,11 @@ export default class Activity extends EventTarget {
         if (this.connector.execution === Activity.EXECUTION.PARALLEL.name) {
             return 0;
         }
-
         for (let i = 0; i < this._children.length; ++i) {
             if (this._children[i].id === id) {
                 return i + 1;
             }
         }
-
         return 0;
     }
 

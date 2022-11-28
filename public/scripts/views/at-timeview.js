@@ -17,6 +17,8 @@ class AtTimeview extends HTMLElement {
 
     constructor() {
         super();
+        this.showTime = false;
+
         this.START_X = 5;
         this.START_Y = 5;
         this._timeContainerWrapperDiv = document.createElement(`div`);
@@ -35,8 +37,6 @@ class AtTimeview extends HTMLElement {
         this.svg.stepBrightness = 5;
         this.svg.chosenFilter = `blur`;
         this.svg.chosenPattern = `diagonals`;
-
-        this.timeLine = 10;
 
         this._timeviewSvg = this.svg.buildSvg();
         this.$def = this.svg.createDefinitionContainer();
@@ -76,6 +76,16 @@ class AtTimeview extends HTMLElement {
             this.zoomMap.set(this.currentNodeModel.id, this.zoomStep);
         }
         this.currentNodeModel = nodeModel;
+
+        this.currentNodeModel.activity.bindings.forEach((binding) => {
+            console.log()
+            console.log(binding.from)
+            console.log(this.currentNodeModel.activity.getConsumingLeaves(binding.from))
+            console.log()
+
+        });
+
+
         this.svg.clearBackground(this.id);
         if (this.currentNodeModel) {
             if (this.zoomMap.has(this.currentNodeModel.id)) {
@@ -91,23 +101,33 @@ class AtTimeview extends HTMLElement {
         }
     }
 
-    tempGetRandomTime(time) {
-        let random =  Math.floor(Math.random() * time) + (time / 2);
+    tempGetRandomTime(estimatedTime) {
+        let random =  Math.floor(Math.random() * estimatedTime) + (estimatedTime / 2);
         return random
      }
+
+    placeInnerBox(innerBox, topLeftX, topLeftY) {
+        innerBox.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
+        innerBox.topLeftY = topLeftY + this.svg.verticalTopMargin;
+    }
+
+    createNewNodeBoxChild(nodeModel, parentGroup) {
+
+    }
 
     buildBoxSet(parentGroup, nodeModel, topLeftX, topLeftY) {
         let svgText;
         let groupTop;
-        topLeftY = topLeftY + this.svg.standardFontSize;
-        const box = new TimeviewBox();
-        box.id = nodeModel.id;
-        box.label = nodeModel.name;
-        const labelElement = this.svg.createTextElement(box.label, nodeModel.id);
+        topLeftY = topLeftY + this.svg.standardFontSize;          // move Y down past label of container
+        const nodeModelBox = new TimeviewBox();
+        nodeModelBox.id = nodeModel.id;
+        nodeModelBox.label = nodeModel.name;
+        const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         const group = this.svg.createSubGroup(nodeModel.id);
         groupTop = group.firstChild;
         group.insertBefore(labelElement, groupTop);
         parentGroup.appendChild(group);
+        let labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin)
 
         if (nodeModel.hasChildren()) {
             let newBox;
@@ -125,21 +145,20 @@ class AtTimeview extends HTMLElement {
                         widestChild = newBox.width;
                     }
                 });
-                nodeModel.children.forEach((child) => {
-                    const boxToStretch = this.boxMap.get(child.id);
-                    boxToStretch.width = widestChild;
-                    this.boxMap.set(child.id, boxToStretch);
-                });
-                box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
-                box.topLeftY = topLeftY + this.svg.verticalTopMargin;
-                box.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalTopMargin) + this.svg.standardFontSize + (2 * this.timeLine);
+                // nodeModel.children.forEach((child) => {
+                //     const boxToStretch = this.boxMap.get(child.id);
+                //     boxToStretch.width = widestChild;
+                //     this.boxMap.set(child.id, boxToStretch);
+                // });
+                this.placeInnerBox(nodeModelBox, topLeftX, topLeftY);
+                nodeModelBox.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalTopMargin) + this.svg.standardFontSize;
 
-                box.width = Math.max(
+                nodeModelBox.width = Math.max(
                     widestChild + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin),
-                    this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin)
+                    labelingWidth
                 );
 
-                svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
+                svgText = this.svg.positionItem(labelElement, nodeModelBox.topLeftX + (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), nodeModelBox.topLeftY);
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
                 let childTopLeftX = topLeftX;
@@ -153,72 +172,67 @@ class AtTimeview extends HTMLElement {
                         tallestChild = newBox.height;
                     }
                 });
-                nodeModel.children.forEach((child) => {
-                    const boxToStretch = this.boxMap.get(child.id);
-                    boxToStretch.height = tallestChild;
-                    this.boxMap.set(child.id, boxToStretch);
-                });
-                box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
-                box.topLeftY = topLeftY + this.svg.verticalTopMargin;
+                // nodeModel.children.forEach((child) => {
+                //     const boxToStretch = this.boxMap.get(child.id);
+                //     boxToStretch.height = tallestChild;
+                //     this.boxMap.set(child.id, boxToStretch);
+                // });
+                this.placeInnerBox(nodeModelBox, topLeftX, topLeftY);
 
-                box.height = tallestChild + (this.svg.verticalTopMargin + this.svg.verticalBottomMargin) + this.svg.standardFontSize + (2 * this.timeLine);
-                box.width = Math.max(
+                nodeModelBox.height = tallestChild + (this.svg.verticalTopMargin + this.svg.verticalBottomMargin) + this.svg.standardFontSize;
+                nodeModelBox.width = Math.max(
                     growingBoxWidth + ((nodeModel.children.length + 1) * this.svg.horizontalLeftMargin),
-                    this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 2)
+                    labelingWidth
                 );
 
-                svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
+                svgText = this.svg.positionItem(labelElement, nodeModelBox.topLeftX + (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), nodeModelBox.topLeftY);
             }
         } else {
-            box.topLeftX = topLeftX + this.svg.horizontalLeftMargin;
-            box.topLeftY = topLeftY + this.svg.verticalTopMargin;
-
-            box.height = this.svg.standardBoxHeight + (2 * this.timeLine);
-            console.log(`this seems to work`);
-            box.width = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
-            svgText = this.svg.positionItem(labelElement, box.topLeftX + (box.width / 2) - (this.svg.labelWidth(labelElement) / 2), box.topLeftY);
+            this.placeInnerBox(nodeModelBox, topLeftX, topLeftY);
+            nodeModelBox.height = this.svg.standardBoxHeight;
+            nodeModelBox.width = (this.showTime) ? nodeModel.contextualExpectedDuration * 100 : labelingWidth;
+            svgText = this.svg.positionItem(labelElement, nodeModelBox.topLeftX + (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), nodeModelBox.topLeftY);
             groupTop = group.firstChild;
             group.insertBefore(svgText, groupTop);
         }
-        const svgBox = this.svg.createRectangle(box.width, box.height, nodeModel.id);
-        this.svg.positionItem(svgBox, box.topLeftX, box.topLeftY);
+        const svgBox = this.svg.createRectangle(nodeModelBox.width, nodeModelBox.height, nodeModel.id);
+        this.svg.positionItem(svgBox, nodeModelBox.topLeftX, nodeModelBox.topLeftY);
         this.svg.applyFilter(svgBox, this.svg.chosenFilter);
         this.svg.applyLightnessDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }
         group.insertBefore(svgBox, svgText);
-        this.boxMap.set(box.id, box);
+        this.boxMap.set(nodeModelBox.id, nodeModelBox);
 
-        let expectedDuration = nodeModel.contextualExpectedDuration;
-        let timeUnit = (box.width * 0.95) / expectedDuration ;
-        let lineLength = expectedDuration * timeUnit;
-        let startPoint = new Point();
-        let endPoint = new Point();
-        startPoint.x = box.topLeftX + this.svg.labelIndent;
-        startPoint.y = box.topLeftY + box.height - 10;
-        endPoint.x = box.topLeftX + lineLength;
-        endPoint.y = box.topLeftY + box.height - 10;
-        const line = this.svg.createLine(nodeModel.id, startPoint, endPoint);
-        let groupLast = group.lastChild;
-        group.insertBefore(line, groupLast);
+        // let expectedDuration = nodeModel.contextualExpectedDuration;
+        // let timeUnit = (nodeModelBox.width * 0.95) / expectedDuration ;
+        // let lineLength = expectedDuration * timeUnit;
+        // let startPoint = new Point();
+        // let endPoint = new Point();
+        // startPoint.x = nodeModelBox.topLeftX + this.svg.labelIndent;
+        // startPoint.y = nodeModelBox.topLeftY + nodeModelBox.height - 10;
+        // endPoint.x = nodeModelBox.topLeftX + lineLength;
+        // endPoint.y = nodeModelBox.topLeftY + nodeModelBox.height - 10;
+        // const line = this.svg.createLine(nodeModel.id, startPoint, endPoint);
+        // let groupLast = group.lastChild;
+        // group.insertBefore(line, groupLast);
 
-        let actualTime = this.tempGetRandomTime(nodeModel.contextualExpectedDuration)
-        console.log(`###`)
-        console.log(`Expected: ${nodeModel.contextualExpectedDuration}`)
-        console.log(`Actual Time: ${actualTime}`)
-        lineLength = actualTime * timeUnit;
-        startPoint = new Point();
-        endPoint = new Point();
-        startPoint.x = box.topLeftX + this.svg.labelIndent;
-          startPoint.y = box.topLeftY + box.height - 7;
-        endPoint.x = box.topLeftX + lineLength;
-        endPoint.y = box.topLeftY + box.height - 7;
-        const line2 = this.svg.createLine(`${nodeModel.id}2`, startPoint, endPoint);
-        group.insertBefore(line2, groupLast);
+        // let actualTime = this.tempGetRandomTime(nodeModel.contextualExpectedDuration)
+        // console.log(`###`)
+        // console.log(`Expected: ${nodeModel.contextualExpectedDuration}`)
+        // console.log(`Actual Time: ${actualTime}`)
+        // lineLength = actualTime * timeUnit;
+        // startPoint = new Point();
+        // endPoint = new Point();
+        // startPoint.x = nodeModelBox.topLeftX + this.svg.labelIndent;
+        //   startPoint.y = nodeModelBox.topLeftY + nodeModelBox.height - 7;
+        // endPoint.x = nodeModelBox.topLeftX + lineLength;
+        // endPoint.y = nodeModelBox.topLeftY + nodeModelBox.height - 7;
+        // const line2 = this.svg.createLine(`${nodeModel.id}2`, startPoint, endPoint);
+        // group.insertBefore(line2, groupLast);
 
-
-        return box;
+        return nodeModelBox;
     }
 
     svgWheelZoomEvent(event) {
