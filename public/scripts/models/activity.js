@@ -536,21 +536,12 @@ export default class Activity extends EventTarget {
     }
 
 
-    getConsumingLeaves(urn) {
-        const leaves = [];
-        console.log(`checking ...`);
-        console.log(urn);
-        if (this.isBoundProducer(checkEndpoint)) {
-            console.log(`!`);
-            if (checkEnd) {
-                leaves.push(...this.getConsumingEndpointsFor(checkEndpoint));
-            }
-        } else {
-            console.log(`?`);
-            leaves.push(checkEndpoint);
-            return leaves;
+    getConsumingChildren(urn) {
+        let leafConsumers = [];
+        if (this.hasConsumingSiblings()) {
+            leafConsumers = [...this.getConsumingSiblings()]
         }
-        console.log(leaves);
+        return leafConsumers;
     }
 
     /**
