@@ -17,7 +17,7 @@ class AtTimeview extends HTMLElement {
 
     constructor() {
         super();
-        this.showTime = false;
+        this.showTime = true;
 
         this.START_X = 5;
         this.START_Y = 5;
@@ -80,7 +80,7 @@ class AtTimeview extends HTMLElement {
         this.currentNodeModel.activity.bindings.forEach((binding) => {
             console.log()
             console.log(binding.from)
-            console.log(this.currentNodeModel.activity.getConsumingLeaves(binding.from))
+            // console.log(this.currentNodeModel.activity.getConsumingLeaves(binding.from))
             console.log()
 
         });
@@ -190,7 +190,7 @@ class AtTimeview extends HTMLElement {
         } else {
             this.placeInnerBox(nodeModelBox, topLeftX, topLeftY);
             nodeModelBox.height = this.svg.standardBoxHeight;
-            nodeModelBox.width = (this.showTime) ? nodeModel.contextualExpectedDuration * 100 : labelingWidth;
+            nodeModelBox.width = (this.showTime) ? nodeModel.contextualExpectedDuration * 10 : labelingWidth;
             svgText = this.svg.positionItem(labelElement, nodeModelBox.topLeftX + (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), nodeModelBox.topLeftY);
             groupTop = group.firstChild;
             group.insertBefore(svgText, groupTop);

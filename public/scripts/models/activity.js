@@ -352,7 +352,7 @@ export default class Activity extends EventTarget {
         }
     }
 
-    isChild(urn){
+    isChild(urn) {
         let isChild = false;
         this._children.forEach((child) => {
             if (child.urn === urn) {
@@ -451,43 +451,43 @@ export default class Activity extends EventTarget {
     }
 
 
-isDependentSibling(urn) {
-    let isDependentSibling = false;
-    this.bindings.forEach((binding) => {
-        if ((binding.to.urn === urn) && (binding.to.property = `in`)) {
-            let producer = binding.from;
-            if (this.isChild(producer.urn)) {
-                isDependentSibling = true;
+    isDependentSibling(urn) {
+        let isDependentSibling = false;
+        this.bindings.forEach((binding) => {
+            if ((binding.to.urn === urn) && (binding.to.property = `in`)) {
+                const producer = binding.from;
+                if (this.isChild(producer.urn)) {
+                    isDependentSibling = true;
+                }
             }
-        }
-    })
-    return isDependentSibling;
-}
-}
+        });
+        return isDependentSibling;
+    }
+
 
     hasConsumingSiblings(urn) {
         let hasConsumingSiblings = false;
         this.bindings.forEach((binding) => {
             if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
-                let consumer = binding.to;
+                const consumer = binding.to;
                 if (this.isChild(consumer.urn)) {
                     hasConsumingSiblings = true;
                 }
             }
-        })
+        });
         return hasConsumingSiblings;
     }
 
     getConsumingSiblings(urn) {
-        let consumingSiblings = [];
+        const consumingSiblings = [];
         this.bindings.forEach((binding) => {
             if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
-                let consumer = binding.to;
+                const consumer = binding.to;
                 if (this.isChild(consumer.urn)) {
                     consumingSiblings.push(urn);
                 }
             }
-        })
+        });
     }
 
 
@@ -536,23 +536,21 @@ isDependentSibling(urn) {
     }
 
 
-
-
-    getConsumingLeaves(urn){
-        let leaves = [];
-        console.log(`checking ...`)
-        console.log(checkEndpoint)
+    getConsumingLeaves(urn) {
+        const leaves = [];
+        console.log(`checking ...`);
+        console.log(urn);
         if (this.isBoundProducer(checkEndpoint)) {
-            console.log(`!`)
-            if (checkEnd)
-            leaves.push(...this.getConsumingEndpointsFor(checkEndpoint));
-        }
-        else {
-            console.log(`?`)
+            console.log(`!`);
+            if (checkEnd) {
+                leaves.push(...this.getConsumingEndpointsFor(checkEndpoint));
+            }
+        } else {
+            console.log(`?`);
             leaves.push(checkEndpoint);
             return leaves;
         }
-        console.log(leaves)
+        console.log(leaves);
     }
 
     /**
