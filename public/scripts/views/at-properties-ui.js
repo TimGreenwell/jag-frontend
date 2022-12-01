@@ -36,7 +36,7 @@ export default function _buildUI() {
     $activityPropertiesDiv.appendChild($activityNameDiv);
 
     const $activityTimeDiv = FormUtils.createPropertyElement(`duration-input`, `Expected Duration`);
-    $activityTimeDiv.className = `padded-property`;
+    $activityTimeDiv.className = `leaf-property padded-property`;
     const $activityExpectedDurationInput = FormUtils.createTextInput(`duration-input`);
     $activityExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
     $activityExpectedDurationInput.setAttribute(`tabIndex`, `2`);
@@ -147,7 +147,7 @@ export default function _buildUI() {
     $nodePropertiesDiv.appendChild($nodeNameDiv);
 
     const $nodeExpectedDurationDiv = FormUtils.createPropertyElement(`node-expected-duration-input`, `Expected Duration`);
-    $nodeExpectedDurationDiv.className = `padded-property`;
+    $nodeExpectedDurationDiv.className = `leaf-property padded-property`;
     const $nodeExpectedDurationInput = FormUtils.createTextInput(`node-expected-duration-input`);
     $nodeExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
     $nodeExpectedDurationInput.className = `direct-property`;

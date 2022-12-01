@@ -384,8 +384,8 @@ export default class Controller extends EventTarget {
     establishChildInterdependency(node) {
         node.activity.bindings.forEach((binding) => {
             const childrenUrnList = node.activity.children.map((child) => {
-                return child.urn
-            })
+                return child.urn;
+            });
             if ((childrenUrnList.includes(binding.from.urn)) && (childrenUrnList.includes(binding.to.urn))) {
                 node.children.forEach((fromNode) => {
                     node.children.forEach((toNode) => {
@@ -404,7 +404,26 @@ export default class Controller extends EventTarget {
         this.repopulateProject(node, projectId);      // top specific
         this.repopulateDepth(node);                   // requires parent
         this.establishChildInterdependency(node);
+        this.repopulateExpectedDuration(node);
         node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leaf count?)
+    }
+
+    repopulateExpectedDuration(node) {
+
+        const assignDurationCallback = (node) => {
+            const childDurationsArray = [];
+            node.children.forEach((child) => {
+                childDurationsArray.push(child.contextualExpectedDuration);
+            });
+            if (childDurationsArray.length > 0) {
+                const totalExpectedDuration = childDurationsArray.reduce((partialSum, a) => {
+                    return partialSum + Number(a);
+                }, 0);
+                node.contextualExpectedDuration = totalExpectedDuration;
+            }
+        };
+
+        Traversal.recursePostorder(node, assignDurationCallback);
     }
 
     repopulateParent(node) {

@@ -35,6 +35,14 @@ export default class JAGATValidation {
         return Boolean(this._urn.match(regex));
     }
 
+    static isNumeric(str) {
+        if (typeof str != `string`) {
+            return false;
+        } // we only process strings!
+        return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+            !isNaN(parseFloat(str)); // ...and ensure strings of whitespace fail
+    }
+
     static isValidUrn(urn) {
         let isValid = true;
         try {

@@ -144,16 +144,15 @@ export default class Node extends EventTarget {
         this._children = value;
     }
 
-
     get contextualExpectedDuration() {
-        if (!(this._contextualExpectedDuration)) {
-            this._contextualExpectedDuration = this.activity.expectedDuration;
+        if (!Validation.isNumeric(this._contextualExpectedDuration) && (this.activity)) {
+            this.contextualExpectedDuration = this.activity.expectedDuration;
         }
         return this._contextualExpectedDuration;
     }
 
     set contextualExpectedDuration(value) {
-        this._contextualExpectedDuration = value;
+        this._contextualExpectedDuration = value.toString();
     }
 
     get contextualTimeAllowance() {

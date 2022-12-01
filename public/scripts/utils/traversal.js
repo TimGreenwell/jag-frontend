@@ -34,7 +34,7 @@ export default class Traversal {
 
     static recursePostorder(node, callback) {
         node.children.forEach((child) => {
-            return this.recursePreorder(child, callback);
+            return this.recursePostorder(child, callback);
         });
         callback(node);
     }

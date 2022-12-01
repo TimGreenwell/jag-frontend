@@ -104,11 +104,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
+
     _handleExpectedDurationChange(e) {
         e.stopImmediatePropagation();
         const $activityExpectedDurationInput = this._elementMap.get(`duration-input`);
         if (this._focusNode) {
-            this._focusNode.activity.expectedDuration = $activityExpectedDurationInput.value;
+            const newValue = $activityExpectedDurationInput.value;
+            this._focusNode.activity.expectedDuration = Validator.isNumeric(newValue) ? newValue : `0`;
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
@@ -555,7 +557,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (this._focusNode) {
             if (newActivityUrn === this._focusNode.activity.urn) {
                 this._focusNode.activity = newActivity;
-                this._populatePropertyFields();
+                this._populatePropertyFields(this._focusNode.activity);
             }
         }
     }
@@ -565,9 +567,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (selection.length > 0) {
             const selectedNodeModel = selection[0];
             this._focusNode = selectedNodeModel;
-            this._populatePropertyFields();
+            this._populatePropertyFields(this._focusNode.activity);
         } else {
-            this._enablePropertyInputs(false);
+            this._enablePropertyInputs(false, this._focusNode.activity);
         }
     }
 
@@ -585,10 +587,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      */
 
 
-    _populatePropertyFields() {
+    _populatePropertyFields(activity) {
+        const $leafs = Array.from(document.getElementsByClassName(`leaf-property`));
+        $leafs.forEach((leaf) => {
+            if (activity.hasChildren()) {
+                leaf.classList.add(`hidden`);
+            } else {
+                leaf.classList.remove(`hidden`);
+            }
+        });
+
         this._elementMap.get(`urn-input`).value = this._focusNode.activity.urn;
         this._elementMap.get(`name-input`).value = this._focusNode.activity.name;
         this._elementMap.get(`duration-input`).value = this._focusNode.activity.expectedDuration;
+
         this._elementMap.get(`execution-select`).value = this._focusNode.activity.connector.execution || `none`;
         this._elementMap.get(`operator-select`).value = this._focusNode.activity.operator || `none`;
         this._elementMap.get(`desc-input`).value = this._focusNode.activity.description;
@@ -596,13 +608,14 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`node-expected-duration-input`).value = this._focusNode.contextualExpectedDuration;
         this._elementMap.get(`node-time-allowance-input`).value = this._focusNode.contextualTimeAllowance;
         this._elementMap.get(`node-desc-input`).value = this._focusNode.contextualDescription;
-        this._enablePropertyInputs(true);
+        this._enablePropertyInputs(true, activity);
         this._addPropertyTooltips();
         this._populateEndpoints();
         this._populateAnnotations();
     }
 
-    _enablePropertyInputs(enabled) {
+    _enablePropertyInputs(enabled, activity) {
+
         this._elementMap.get(`urn-input`).disabled = !enabled;
         this._elementMap.get(`name-input`).disabled = !enabled;
         this._elementMap.get(`duration-input`).disabled = !enabled;
@@ -615,6 +628,18 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`operator-select`).disabled = !enabled;
         this._elementMap.get(`export-json-button`).disabled = !enabled;
         this._elementMap.get(`export-svg-button`).disabled = !enabled;
+
+        const $leafs = Array.from(document.getElementsByClassName(`leaf-property`));
+        $leafs.forEach((leaf) => {
+            if (activity.hasChildren()) {
+                let childElements = Array.from(leaf.getElementsByTagName(`input`));
+
+                childElements.forEach((element) => {
+                    console.log(childElements)
+                    element.disabled = true;
+                })
+            }
+        });
     }
 
     _addPropertyTooltips() {

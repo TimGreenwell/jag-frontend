@@ -87,9 +87,9 @@ class AtTimeview extends HTMLElement {
             }
             this.treeHeight = nodeModel.findTreeHeight();
             const expanded = true;
-            const startPoint = new Point({x: this.START_X,
+            const boxCornerPoint = new Point({x: this.START_X,
                 y: this.START_Y});
-            this.svgSize = this.buildBoxSet(this.svg.fetchBackground(this.id), nodeModel, startPoint, expanded);
+            this.svgSize = this.buildBoxSet(this.svg.fetchBackground(this.id), nodeModel, boxCornerPoint, expanded);
             this.windowSize = this.getBoundingClientRect();
             this.redrawSvg();
             this.boxMap.clear(); // ?
@@ -106,20 +106,20 @@ class AtTimeview extends HTMLElement {
 
     }
 
-    buildBoxSet(parentGroup, nodeModel, startPoint, isExpanded) {
+    buildBoxSet(parentGroup, nodeModel, boxCornerPoint, isExpanded) {
         let svgText;
-        startPoint.y = startPoint.y + this.svg.standardFontSize;          // move Y down past label of container
-        const group = this.svg.createSubGroup(nodeModel.id);
-        parentGroup.appendChild(group);
+        boxCornerPoint.y = boxCornerPoint.y + this.svg.standardFontSize;          // move Y down past label of container
+        const subGroup = this.svg.createSubGroup(nodeModel.id);
+        parentGroup.appendChild(subGroup);
 
         const nodeModelBox = new TimeviewBox();
         nodeModelBox.id = nodeModel.id;
         nodeModelBox.label = nodeModel.name;
-        nodeModelBox.topLeftX = startPoint.x + this.svg.horizontalLeftMargin;
-        nodeModelBox.topLeftY = startPoint.y + this.svg.verticalTopMargin;
+        nodeModelBox.topLeftX = boxCornerPoint.x + this.svg.horizontalLeftMargin;
+        nodeModelBox.topLeftY = boxCornerPoint.y + this.svg.verticalTopMargin;
 
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
-        group.insertBefore(labelElement, group.firstChild);
+        subGroup.insertBefore(labelElement, subGroup.firstChild);
 
         const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
 
@@ -127,17 +127,17 @@ class AtTimeview extends HTMLElement {
         if (nodeModel.hasChildren()) {
             let newBox;
             if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
-                let childTopLeftY = startPoint.y;
+                let shiftDown = boxCornerPoint.y;
                 let widestChild = 0;
                 let growingBoxHeight = 0;
-                nodeModel.children.forEach((child) => {
+                nodeModel.children.forEach((childNodeModel) => {
+                    const childBoxCornerPoint = new Point();
+                    childBoxCornerPoint.x = boxCornerPoint.x + this.svg.horizontalLeftMargin;
+                    childBoxCornerPoint.y = shiftDown + this.svg.verticalTopMargin;
                     const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-                    const childStartPoint = new Point();
-                    childStartPoint.x = startPoint.x + this.svg.horizontalLeftMargin;
-                    childStartPoint.y = childTopLeftY + this.svg.verticalTopMargin;
-                    newBox = this.buildBoxSet(group, child, childStartPoint, expanded);
+                    newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);          // !!!!!!!!
 
-                    childTopLeftY = childTopLeftY + newBox.height + this.svg.verticalTopMargin;
+                    shiftDown = shiftDown + newBox.height + this.svg.verticalTopMargin;
                     growingBoxHeight = growingBoxHeight + newBox.height;
                     if (newBox.width > widestChild) {
                         widestChild = newBox.width;
@@ -151,16 +151,16 @@ class AtTimeview extends HTMLElement {
                 );
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
-                let childTopLeftX = startPoint.x;
+                let shiftRight = boxCornerPoint.x;
                 let tallestChild = 0;
                 let growingBoxWidth = 0;
-                nodeModel.children.forEach((child) => {
+                nodeModel.children.forEach((childNodeModel) => {
+                    const childBoxCornerPoint = new Point();
+                    childBoxCornerPoint.x = shiftRight + this.svg.horizontalLeftMargin;
+                    childBoxCornerPoint.y = boxCornerPoint.y + this.svg.verticalTopMargin;
                     const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-                    const childStartPoint = new Point();
-                    childStartPoint.x = childTopLeftX + this.svg.horizontalLeftMargin;
-                    childStartPoint.y = startPoint.y + this.svg.verticalTopMargin;
-                    newBox = this.buildBoxSet(group, child, childStartPoint, expanded);
-                    childTopLeftX = childTopLeftX + newBox.width + this.svg.horizontalLeftMargin;
+                    newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);
+                    shiftRight = shiftRight + newBox.width + this.svg.horizontalLeftMargin;
                     growingBoxWidth = growingBoxWidth + newBox.width;
                     if (newBox.height > tallestChild) {
                         tallestChild = newBox.height;
@@ -186,7 +186,7 @@ class AtTimeview extends HTMLElement {
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }
-        group.insertBefore(svgBox, svgText);
+        subGroup.insertBefore(svgBox, svgText);
         this.boxMap.set(nodeModelBox.id, nodeModelBox);
 
 
