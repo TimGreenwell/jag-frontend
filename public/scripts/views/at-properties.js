@@ -49,7 +49,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
         this._elementMap.get(`node-name-input`).addEventListener(`blur`, this._handleNodeNameChange.bind(this));
         this._elementMap.get(`node-expected-duration-input`).addEventListener(`blur`, this._handleNodeExpectedDurationChange.bind(this));
-        this._elementMap.get(`node-time-allowance-input`).addEventListener(`blur`, this._handleNodeTimeAllowanceChange.bind(this));
+        // this._elementMap.get(`node-time-allowance-input`).addEventListener(`blur`, this._handleNodeTimeAllowanceChange.bind(this));
         this._elementMap.get(`node-desc-input`).addEventListener(`blur`, this._handleNodeDescChange.bind(this));
         this._elementMap.get(`export-json-button`).addEventListener(`click`, this._handleExportJsonClick.bind(this));
         this._elementMap.get(`export-svg-button`).addEventListener(`click`, this._handleExportSvgClick.bind(this));
@@ -232,20 +232,20 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-    _handleNodeTimeAllowanceChange(e) {
-        {
-            e.stopImmediatePropagation();
-            const $nodeTimeAllowanceInput = this._elementMap.get(`node-time-allowance-input`);
-            if (this._focusNode) {
-                this._focusNode.contextualTimeAllowance = $nodeTimeAllowanceInput.value;
-                this.dispatchEvent(new CustomEvent(`event-node-updated`, {
-                    bubbles: true,
-                    composed: true,
-                    detail: {nodeModel: this._focusNode}
-                }));
-            }
-        }
-    }
+    // _handleNodeTimeAllowanceChange(e) {
+    //     {
+    //         e.stopImmediatePropagation();
+    //         const $nodeTimeAllowanceInput = this._elementMap.get(`node-time-allowance-input`);
+    //         if (this._focusNode) {
+    //             this._focusNode.contextualTimeAllowance = $nodeTimeAllowanceInput.value;
+    //             this.dispatchEvent(new CustomEvent(`event-node-updated`, {
+    //                 bubbles: true,
+    //                 composed: true,
+    //                 detail: {nodeModel: this._focusNode}
+    //             }));
+    //         }
+    //     }
+    // }
 
     _handleNodeDescChange(e) {
         e.stopImmediatePropagation();
@@ -557,7 +557,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (this._focusNode) {
             if (newActivityUrn === this._focusNode.activity.urn) {
                 this._focusNode.activity = newActivity;
-                this._populatePropertyFields(this._focusNode.activity);
+                this._populatePropertyFields(this._focusNode);
             }
         }
     }
@@ -567,7 +567,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         if (selection.length > 0) {
             const selectedNodeModel = selection[0];
             this._focusNode = selectedNodeModel;
-            this._populatePropertyFields(this._focusNode.activity);
+            this._populatePropertyFields(this._focusNode);
         } else {
             this._enablePropertyInputs(false, this._focusNode.activity);
         }
@@ -587,34 +587,34 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      */
 
 
-    _populatePropertyFields(activity) {
-        const $leafs = Array.from(document.getElementsByClassName(`leaf-property`));
+    _populatePropertyFields(focusNode) {
+        const $leafs = Array.from(document.getElementsByClassName(`activity leaf-only`));
         $leafs.forEach((leaf) => {
-            if (activity.hasChildren()) {
+            if (focusNode && focusNode.hasChildren()) {
                 leaf.classList.add(`hidden`);
             } else {
                 leaf.classList.remove(`hidden`);
             }
         });
 
-        this._elementMap.get(`urn-input`).value = this._focusNode.activity.urn;
-        this._elementMap.get(`name-input`).value = this._focusNode.activity.name;
-        this._elementMap.get(`duration-input`).value = this._focusNode.activity.expectedDuration;
+        this._elementMap.get(`urn-input`).value = focusNode.activity.urn;
+        this._elementMap.get(`name-input`).value = focusNode.activity.name;
+        this._elementMap.get(`duration-input`).value = focusNode.activity.expectedDuration;
 
-        this._elementMap.get(`execution-select`).value = this._focusNode.activity.connector.execution || `none`;
-        this._elementMap.get(`operator-select`).value = this._focusNode.activity.operator || `none`;
-        this._elementMap.get(`desc-input`).value = this._focusNode.activity.description;
-        this._elementMap.get(`node-name-input`).value = this._focusNode.contextualName;
-        this._elementMap.get(`node-expected-duration-input`).value = this._focusNode.contextualExpectedDuration;
-        this._elementMap.get(`node-time-allowance-input`).value = this._focusNode.contextualTimeAllowance;
-        this._elementMap.get(`node-desc-input`).value = this._focusNode.contextualDescription;
-        this._enablePropertyInputs(true, activity);
+        this._elementMap.get(`execution-select`).value = focusNode.activity.connector.execution || `none`;
+        this._elementMap.get(`operator-select`).value = focusNode.activity.operator || `none`;
+        this._elementMap.get(`desc-input`).value = focusNode.activity.description;
+        this._elementMap.get(`node-name-input`).value = focusNode.contextualName;
+        this._elementMap.get(`node-expected-duration-input`).value = focusNode.contextualExpectedDuration;
+        // this._elementMap.get(`node-time-allowance-input`).value = focusNode.contextualTimeAllowance;
+        this._elementMap.get(`node-desc-input`).value = focusNode.contextualDescription;
+        this._enablePropertyInputs(true, focusNode);
         this._addPropertyTooltips();
         this._populateEndpoints();
         this._populateAnnotations();
     }
 
-    _enablePropertyInputs(enabled, activity) {
+    _enablePropertyInputs(enabled, focusNode) {
 
         this._elementMap.get(`urn-input`).disabled = !enabled;
         this._elementMap.get(`name-input`).disabled = !enabled;
@@ -622,16 +622,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`desc-input`).disabled = !enabled;
         this._elementMap.get(`node-name-input`).disabled = !enabled;
         this._elementMap.get(`node-expected-duration-input`).disabled = !enabled;
-        this._elementMap.get(`node-time-allowance-input`).disabled = !enabled;
+        // this._elementMap.get(`node-time-allowance-input`).disabled = !enabled;
         this._elementMap.get(`node-desc-input`).disabled = !enabled;
         this._elementMap.get(`execution-select`).disabled = !enabled;
         this._elementMap.get(`operator-select`).disabled = !enabled;
         this._elementMap.get(`export-json-button`).disabled = !enabled;
         this._elementMap.get(`export-svg-button`).disabled = !enabled;
 
-        const $leafs = Array.from(document.getElementsByClassName(`leaf-property`));
+        const $leafs = Array.from(document.getElementsByClassName(`node leaf-only`));
         $leafs.forEach((leaf) => {
-            if (activity.hasChildren()) {
+            if (focusNode && focusNode.hasChildren()) {
                 let childElements = Array.from(leaf.getElementsByTagName(`input`));
 
                 childElements.forEach((element) => {
@@ -659,7 +659,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`desc-input`).value = ``;
         this._elementMap.get(`node-name-input`).value = ``;
         this._elementMap.get(`node-expected-duration-input`).value = ``;
-        this._elementMap.get(`node-time-allowance-input`).value = ``;
+        // this._elementMap.get(`node-time-allowance-input`).value = ``;
         this._elementMap.get(`node-desc-input`).value = ``;
         this._elementMap.get(`execution-select`).value = Activity.EXECUTION.NONE.name;
         this._elementMap.get(`operator-select`).value = Activity.OPERATOR.NONE.name;

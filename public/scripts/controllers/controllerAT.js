@@ -388,7 +388,7 @@ export default class ControllerAT extends Controller {
 
         const deadActivityUrn = event.detail.activityUrn;
         const updatePromises = [];
-        for (const activity of this._activityMap.values) {
+        for (let activity of this._activityMap.values()) {
             const remainingChildren = activity.children.filter((kid) => {
                 return kid.urn !== deadActivityUrn;
             });

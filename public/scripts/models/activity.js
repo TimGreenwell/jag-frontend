@@ -30,7 +30,7 @@ export default class Activity extends EventTarget {
         author,
         createdDate,
         modifiedDate,
-        expectedDuration,
+        expectedDuration = '',
         lockedBy,
         isLocked = Boolean(false),
         collapsed = Boolean(false)

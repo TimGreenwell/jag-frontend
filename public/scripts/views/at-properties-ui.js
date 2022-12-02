@@ -17,41 +17,41 @@ export default function _buildUI() {
     $propertyDiv.appendChild($nodePropertiesDiv);
 
     const $urnDiv = FormUtils.createPropertyElement(`urn-input`, `URN`);
-    $urnDiv.className = `padded-property`;
+    $urnDiv.className = `padded activity`;
     const $urnInput = FormUtils.createTextInput(`urn-input`);
     $urnInput.setAttribute(`tabIndex`, `0`);
-    $urnInput.className = `direct-property`;
+    //$urnInput.className = `direct-property`;
     elementMap.set($urnInput.id, $urnInput);
     $urnDiv.appendChild($urnInput);
     $activityPropertiesDiv.appendChild($urnDiv);
 
     const $activityNameDiv = FormUtils.createPropertyElement(`name-input`, `Name`);
-    $activityNameDiv.className = `padded-property`;
+    $activityNameDiv.className = `padded activity`;
     const $activityNameInput = FormUtils.createTextInput(`name-input`);
     $activityNameInput.setAttribute(`placeholder`, `display name`);
     $activityNameInput.setAttribute(`tabIndex`, `1`);
-    $activityNameInput.className = `direct-property`;
+    //$activityNameInput.className = `direct-property`;
     elementMap.set($activityNameInput.id, $activityNameInput);
     $activityNameDiv.appendChild($activityNameInput);
     $activityPropertiesDiv.appendChild($activityNameDiv);
 
     const $activityTimeDiv = FormUtils.createPropertyElement(`duration-input`, `Expected Duration`);
-    $activityTimeDiv.className = `leaf-property padded-property`;
+    $activityTimeDiv.className = `padded activity leaf-only`;
     const $activityExpectedDurationInput = FormUtils.createTextInput(`duration-input`);
     $activityExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
     $activityExpectedDurationInput.setAttribute(`tabIndex`, `2`);
-    $activityExpectedDurationInput.className = `direct-property`;
+    //$activityExpectedDurationInput.className = `direct-property`;
     elementMap.set($activityExpectedDurationInput.id, $activityExpectedDurationInput);
     $activityTimeDiv.appendChild($activityExpectedDurationInput);
     $activityPropertiesDiv.appendChild($activityTimeDiv);
 
     const $activityDescDiv = FormUtils.createPropertyElement(`desc-input`, `Description`);
-    $activityDescDiv.className = `padded-property`;
+    $activityDescDiv.className = `padded activity`;
     const $activityDescInput = document.createElement(`textarea`);
     $activityDescInput.setAttribute(`id`, `desc-input`);
     $activityDescInput.setAttribute(`placeholder`, `...`);
     $activityDescInput.setAttribute(`tabIndex`, `3`);
-    $activityDescInput.className = `direct-property`;
+    //$activityDescInput.className = `direct-property`;
     elementMap.set($activityDescInput.id, $activityDescInput);
     $activityDescDiv.appendChild($activityDescInput);
     $activityPropertiesDiv.appendChild($activityDescDiv);
@@ -65,7 +65,7 @@ export default function _buildUI() {
         });
     }
     const $executionDiv = FormUtils.createPropertyElement(`execution-select`, `Execution`);
-    $executionDiv.className = `padded-property`;
+    $executionDiv.className = `padded activity`;
     const $executionSelect = FormUtils.createSelect(`execution-select`, executionOptions);
     elementMap.set($executionSelect.id, $executionSelect);
     $executionDiv.appendChild($executionSelect);
@@ -81,7 +81,7 @@ export default function _buildUI() {
         });
     }
     const $operatorDiv = FormUtils.createPropertyElement(`operator-select`, `Operator`);             // @TODO Map this from original structure
-    $operatorDiv.className = `padded-property`;
+    $operatorDiv.className = `padded activity`;
     const $operatorSelect = FormUtils.createSelect(`operator-select`, operatorOptions);
     elementMap.set($operatorSelect.id, $operatorSelect);
     $operatorDiv.appendChild($operatorSelect);
@@ -135,39 +135,39 @@ export default function _buildUI() {
     $activityPropertiesDiv.appendChild($annotationsDiv);
 
     const $annotations = FormUtils.createEmptyInputContainer(`annotations-property`);
-    $annotations.className = `directProperty`;
+    //$annotations.className = `directProperty`;
     elementMap.set($annotations.id, $annotations);
     $annotationsDiv.appendChild($annotations);
 
     const $nodeNameDiv = FormUtils.createPropertyElement(`node-name-input`, `Contextual Name`);
+    $nodeNameDiv.className = `padded node`;
     const $nodeNameInput = FormUtils.createTextInput(`node-name-input`);
-    $nodeNameInput.className = `direct-property`;
     elementMap.set($nodeNameInput.id, $nodeNameInput);
     $nodeNameDiv.appendChild($nodeNameInput);
     $nodePropertiesDiv.appendChild($nodeNameDiv);
 
     const $nodeExpectedDurationDiv = FormUtils.createPropertyElement(`node-expected-duration-input`, `Expected Duration`);
-    $nodeExpectedDurationDiv.className = `leaf-property padded-property`;
+    $nodeExpectedDurationDiv.className = `padded node leaf-only`;
     const $nodeExpectedDurationInput = FormUtils.createTextInput(`node-expected-duration-input`);
     $nodeExpectedDurationInput.setAttribute(`placeholder`, `expected duration (seconds)`);
-    $nodeExpectedDurationInput.className = `direct-property`;
+    //$nodeExpectedDurationInput.className = `direct-property`;
     elementMap.set($nodeExpectedDurationInput.id, $nodeExpectedDurationInput);
     $nodeExpectedDurationDiv.appendChild($nodeExpectedDurationInput);
     $nodePropertiesDiv.appendChild($nodeExpectedDurationDiv);
 
-    const $nodeTimeAllowanceDiv = FormUtils.createPropertyElement(`node-time-allowance-input`, `Time Allowance`);
-    $nodeTimeAllowanceDiv.className = `padded-property`;
-    const $nodeTimeAllowanceInput = FormUtils.createTextInput(`node-time-allowance-input`);
-    $nodeTimeAllowanceInput.setAttribute(`placeholder`, `time allowance`);
-    $nodeTimeAllowanceInput.className = `direct-property`;
-    elementMap.set($nodeTimeAllowanceInput.id, $nodeTimeAllowanceInput);
-    $nodeTimeAllowanceDiv.appendChild($nodeTimeAllowanceInput);
-    $nodePropertiesDiv.appendChild($nodeTimeAllowanceDiv);
+    // const $nodeTimeAllowanceDiv = FormUtils.createPropertyElement(`node-time-allowance-input`, `Time Allowance`);
+    // $nodeTimeAllowanceDiv.className = `padded node `;
+    // const $nodeTimeAllowanceInput = FormUtils.createTextInput(`node-time-allowance-input`);
+    // $nodeTimeAllowanceInput.setAttribute(`placeholder`, `time allowance`);
+    // //$nodeTimeAllowanceInput.className = `direct-property`;
+    // elementMap.set($nodeTimeAllowanceInput.id, $nodeTimeAllowanceInput);
+    // $nodeTimeAllowanceDiv.appendChild($nodeTimeAllowanceInput);
+    // $nodePropertiesDiv.appendChild($nodeTimeAllowanceDiv);
 
     const $nodeDescDiv = FormUtils.createPropertyElement(`node-desc-input`, `Contextual Description`);
+    $nodeDescDiv.className = `padded node`;
     $nodePropertiesDiv.appendChild($nodeDescDiv);
     const $nodeDescInput = FormUtils.createTextInput(`node-desc-input`);
-    $nodeDescInput.className = `direct-property`;
     elementMap.set($nodeDescInput.id, $nodeDescInput);
     $nodeDescDiv.appendChild($nodeDescInput);
 
