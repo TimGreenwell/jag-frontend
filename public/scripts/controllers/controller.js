@@ -423,7 +423,7 @@ export default class Controller extends EventTarget {
             }
         };
 
-        Traversal.recursePostorder(node, assignDurationCallback);
+        Traversal.recurseChildrenPostorder(node, assignDurationCallback);
     }
 
     repopulateParent(node) {
@@ -440,7 +440,7 @@ export default class Controller extends EventTarget {
         const fetchActivitiesCallback = (node) => {
             node.activity = this.fetchActivity(node.urn);
         };
-        Traversal.recursePreorder(node, fetchActivitiesCallback);
+        Traversal.recurseChildrenPreorder(node, fetchActivitiesCallback);
     }
 
     repopulateProject(node, projectId) {
@@ -454,7 +454,7 @@ export default class Controller extends EventTarget {
         const assignDepthCallback = (node) => {
             node.setDepth();
         };
-        Traversal.recursePreorder(node, assignDepthCallback);
+        Traversal.recurseChildrenPreorder(node, assignDepthCallback);
     }
 
     relocateProject(node, deltaX, deltaY) {

@@ -520,6 +520,16 @@ export default class Node extends EventTarget {
         }
     }
 
+    getChildrenDependencyDepth() {
+        let depth = 0;
+        this.children.forEach((childNodeModel) => {
+            if (childNodeModel.dependencySlot > depth) {
+                depth = childNodeModel.dependencySlot;
+            }
+        });
+        return depth;
+    }
+
 
     removeChild(child) {
         const filtered = this.children.filter((entry) => {

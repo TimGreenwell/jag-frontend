@@ -26,6 +26,7 @@ export default class Node extends EventTarget {
         this._width = width;
         this._zoomStep = 0;
         this._selected = false;
+        this._totalLeafHeight = 0;  // The visual height of the dependent leaves (if stacked on each other)
     }
 
     get id() {
@@ -91,5 +92,14 @@ export default class Node extends EventTarget {
 
     set selected(value) {
         this._selected = value;
+    }
+
+
+    get totalLeafHeight() {
+        return this._totalLeafHeight;
+    }
+
+    set totalLeafHeight(value) {
+        this._totalLeafHeight = value;
     }
 }

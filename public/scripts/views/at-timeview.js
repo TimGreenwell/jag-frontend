@@ -12,6 +12,7 @@
 import TimeviewBox from '../models/svg-box.js';
 import SvgObject from "../models/svg-object.js";
 import Point from "../models/point.js";
+import Traversal from "../utils/traversal.js";
 
 class AtTimeview extends HTMLElement {
 
@@ -213,6 +214,8 @@ class AtTimeview extends HTMLElement {
 
 
     getInnerNoneBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
+        console.log(`getting inner non node on ${nodeModel.activity.urn}`);
+        // BUILD BOX
         const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         subGroup.insertBefore(labelElement, subGroup.firstChild);
@@ -220,45 +223,58 @@ class AtTimeview extends HTMLElement {
         const boxMap = new Map();
         let newBox;
         const shiftRight = boxCornerPoint.x;
+        // BUILD THE INTERNALS
         nodeModel.children.forEach((childNodeModel) => {
             const childBoxCornerPoint = new Point();
             childBoxCornerPoint.x = shiftRight + this.svg.horizontalLeftMargin;
             childBoxCornerPoint.y = boxCornerPoint.y + this.svg.verticalTopMargin;
             const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-            newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);
+            newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);       // !!!
             boxMap.set(childNodeModel.id, newBox);
         });
-        let depth = 0;
+        nodeModelBox.height = 0;
         nodeModel.children.forEach((childNodeModel) => {
-            if (childNodeModel.dependencySlot > depth) {
-                depth = childNodeModel.dependencySlot;
-            }
-        });
-        console.log(depth);
-        const tallest = [];
-        const widest = [];
-        const heightSum = [];
-        for (let i = 0; i <= depth; i++) {
-            tallest[i] = 0;
-            widest[i] = 0;
-            heightSum[i] = 0;
-        }
+            let boxWidth = 0;
+            if (childNodeModel.dependencySlot === 0) {
+                this.repopulateLeafSize(childNodeModel, boxMap);                         // leaf Size gives the height of dependent sibling leaf's boxHeights totaled
+                const widestAtDepthArray = this.findWidestAtDepth(childNodeModel, boxMap, new Array());   // widest sibling box at each depth level ex. [13,43,26]
 
-        nodeModel.children.forEach((childNodeModel) => {
-            const childBox = boxMap.get(childNodeModel.id);
-            if (childBox.height > tallest[childNodeModel.dependencySlot]) {
-                tallest[childNodeModel.dependencySlot] = childBox.height;
+                nodeModelBox.height = nodeModelBox.height + childNodeModel.totalLeafHeight;
+                boxWidth = widestAtDepthArray.reduce((partialSum, a) => {
+                    return partialSum + a;
+                }, 0);
             }
-            if (childBox.width > widest[childNodeModel.dependencySlot]) {
-                widest[childNodeModel.dependencySlot] = childBox.width;
-            }
-            heightSum[childNodeModel.dependencySlot] = heightSum[childNodeModel.dependencySlot] + childBox.height ;
+            nodeModelBox.width = Math.max(nodeModelBox.width, boxWidth);
         });
-
-        console.log(tallest);
-        console.log(widest);
-        console.log(heightSum);
     }
+
+    findWidestAtDepth(sibling, boxSet, widestAtDepth) {
+        const fetchActivitiesCallback = (node) => {
+            const depth = sibling.dependencySlot;
+            const box = boxSet.get(sibling.id);
+            if ((widestAtDepth[depth] == undefined) || (widestAtDepth[depth] < box.width)) {
+                widestAtDepth[depth] = box.width;
+            }
+        };
+    }
+
+    repopulateLeafSize(node, boxMap) {
+        const nodebox = boxMap.get(node.id);
+        const fetchActivitiesCallback = (node) => {
+            if (node.hasChildren()) {
+                let totalHeight = 0;
+                node.providesOutputTo.forEach((child) => {
+                    const childNodebox = boxMap.get(child.id);
+                    totalHeight = totalHeight + childNodebox.totalLeafHeight;
+                });
+                nodebox.totalLeafHeight = totalHeight;
+            } else {
+                nodebox.totalLeafHeight = nodebox.height;
+            }
+        };
+        Traversal.recurseProvidesIOPostorder(node, fetchActivitiesCallback);
+    }
+
 
     // Given Bindings:
 
@@ -278,7 +294,7 @@ class AtTimeview extends HTMLElement {
         boxCornerPoint.y = boxCornerPoint.y + this.svg.standardFontSize;          // move Y down past label of container
         const subGroup = this.svg.createSubGroup(nodeModel.id);
         parentGroup.appendChild(subGroup);
-
+        console.log(`STARTing-----------------------------> ${nodeModel.activity.urn}`);
         let nodeModelBox;
         if (nodeModel.children) {
             if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control

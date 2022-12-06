@@ -25,19 +25,27 @@ export default class Traversal {
         return results;
     }
 
-    static recursePreorder(node, callback) {
+    static recurseChildrenPreorder(node, callback) {
         callback(node);
         node.children.forEach((child) => {
-            return this.recursePreorder(child, callback);
+            return this.recurseChildrenPreorder(child, callback);
         });
     }
 
-    static recursePostorder(node, callback) {
+    static recurseChildrenPostorder(node, callback) {
         node.children.forEach((child) => {
-            return this.recursePostorder(child, callback);
+            return this.recurseChildrenPostorder(child, callback);
         });
         callback(node);
     }
+
+    static recurseProvidesIOPostorder(node, callback) {
+        node.providesOutputTo.forEach((child) => {
+            return this.recurseProvidesIOPostorder(child, callback);
+        });
+        callback(node);
+    }
+
 
 }
 
