@@ -635,7 +635,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                 let childElements = Array.from(leaf.getElementsByTagName(`input`));
 
                 childElements.forEach((element) => {
-                    console.log(childElements)
                     element.disabled = true;
                 })
             }

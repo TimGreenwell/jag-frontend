@@ -101,6 +101,43 @@ class AtTimeview extends HTMLElement {
         return random;
     }
 
+    buildDataDependence(node) {
+
+    }
+    //
+    // getRoutesFromBinding(node) {
+    //     const routeList = [];
+    //     const childRoutes = [];
+    //     const allRoutes = [];
+    //     node.children.forEach((child) => {
+    //         const routeIndex = [];
+    //         if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
+    //             this.findRoutes(node, child, routeIndex, routeList);
+    //         }
+    //     });
+    //     return routeList;
+    // }
+    //
+    // findRoutes(node, child, routeIndex, routeList) {
+    //     if (node.activity.hasConsumingSiblings(child.activity.urn)) {
+    //         node.activity.bindings.forEach((bind) => {
+    //             if (bind.from.urn === child.activity.urn) {
+    //                 node.children.forEach((childSibling) => {
+    //                     if (childSibling.activity.urn === bind.to.urn) {
+    //                         routeIndex.push(child);
+    //                         this.findRoutes(node, childSibling, routeIndex, routeList);
+    //                         routeIndex.pop(); // the end consumer
+    //                         routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } else {
+    //         routeIndex.push(child);
+    //         routeList.push([...routeIndex]);
+    //     }
+    //     return routeList;
+    // }
 
     createNodeSvgBox(boxCornerPoint, nodeModel) {
         const nodeModelBox = new TimeviewBox();
@@ -112,7 +149,7 @@ class AtTimeview extends HTMLElement {
     }
 
 
-    getInnerPBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
+    getInnerParallelBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
         const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         subGroup.insertBefore(labelElement, subGroup.firstChild);
@@ -144,7 +181,7 @@ class AtTimeview extends HTMLElement {
         return nodeModelBox;
     }
 
-    getInnerSBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
+    getInnerSequentialBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
         const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         subGroup.insertBefore(labelElement, subGroup.firstChild);
@@ -174,42 +211,58 @@ class AtTimeview extends HTMLElement {
         return nodeModelBox;
     }
 
-    getInnerNBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
+
+    getInnerNoneBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
         const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         subGroup.insertBefore(labelElement, subGroup.firstChild);
         const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
+        const boxMap = new Map();
         let newBox;
-        let shiftRight = boxCornerPoint.x;
-        let shiftDown = boxCornerPoint.y;
-        let tallestChild = 0;
-        let widestChild = 0;
-        let growingBoxWidth = 0;
-        let growingBoxHeight = 0;
+        const shiftRight = boxCornerPoint.x;
         nodeModel.children.forEach((childNodeModel) => {
             const childBoxCornerPoint = new Point();
             childBoxCornerPoint.x = shiftRight + this.svg.horizontalLeftMargin;
             childBoxCornerPoint.y = boxCornerPoint.y + this.svg.verticalTopMargin;
             const expanded = (isExpanded) ? nodeModel.isExpanded : false;
             newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);
-            shiftRight = shiftRight + newBox.width + this.svg.horizontalLeftMargin;
-            growingBoxWidth = growingBoxWidth + newBox.width;
-            if (newBox.height > tallestChild) {
-                tallestChild = newBox.height;
+            boxMap.set(childNodeModel.id, newBox);
+        });
+        let depth = 0;
+        nodeModel.children.forEach((childNodeModel) => {
+            if (childNodeModel.dependencySlot > depth) {
+                depth = childNodeModel.dependencySlot;
             }
         });
-        nodeModelBox.height = tallestChild + (this.svg.verticalTopMargin + this.svg.verticalBottomMargin) + this.svg.standardFontSize;
-        nodeModelBox.width = Math.max(
-            growingBoxWidth + ((nodeModel.children.length + 1) * this.svg.horizontalLeftMargin),
-            labelingWidth
-        );
-        this.svg.positionItem(labelElement, nodeModelBox.topLeftX + (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), nodeModelBox.topLeftY);
-        return nodeModelBox;
+        console.log(depth);
+        const tallest = [];
+        const widest = [];
+        const heightSum = [];
+        for (let i = 0; i <= depth; i++) {
+            tallest[i] = 0;
+            widest[i] = 0;
+            heightSum[i] = 0;
+        }
+
+        nodeModel.children.forEach((childNodeModel) => {
+            const childBox = boxMap.get(childNodeModel.id);
+            if (childBox.height > tallest[childNodeModel.dependencySlot]) {
+                tallest[childNodeModel.dependencySlot] = childBox.height;
+            }
+            if (childBox.width > widest[childNodeModel.dependencySlot]) {
+                widest[childNodeModel.dependencySlot] = childBox.width;
+            }
+            heightSum[childNodeModel.dependencySlot] = heightSum[childNodeModel.dependencySlot] + childBox.height ;
+        });
+
+        console.log(tallest);
+        console.log(widest);
+        console.log(heightSum);
     }
 
-// Given Bindings:
+    // Given Bindings:
 
-    getInnerLBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
+    getInnerLeafBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
         const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         subGroup.insertBefore(labelElement, subGroup.firstChild);
@@ -227,18 +280,18 @@ class AtTimeview extends HTMLElement {
         parentGroup.appendChild(subGroup);
 
         let nodeModelBox;
-        if (nodeModel.hasChildren()) {
+        if (nodeModel.children) {
             if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
-                nodeModelBox = this.getInnerPBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerParallelBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
-                nodeModelBox = this.getInnerSBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerSequentialBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
             }
             if (nodeModel._activity.connector.execution === `node.execution.none`) {
-                nodeModelBox = this.getInnerNBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerNoneBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
             }
         } else {
-            nodeModelBox = this.getInnerLBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+            nodeModelBox = this.getInnerLeafBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
         }
         const svgBox = this.svg.createRectangle(nodeModelBox.width, nodeModelBox.height, nodeModel.id);
         this.svg.positionItem(svgBox, nodeModelBox.topLeftX, nodeModelBox.topLeftY);
@@ -247,7 +300,8 @@ class AtTimeview extends HTMLElement {
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }
-        subGroup.insertBefore(svgBox, svgText);
+        subGroup.insertBefore(svgBox, subGroup.firstChild);
+        // subGroup.insertBefore(svgBox, svgText);
         this.boxMap.set(nodeModelBox.id, nodeModelBox);
         return nodeModelBox;
     }

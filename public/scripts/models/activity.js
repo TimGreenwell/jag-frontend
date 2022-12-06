@@ -354,6 +354,7 @@ export default class Activity extends EventTarget {
 
     isChild(urn) {
         let isChild = false;
+
         this._children.forEach((child) => {
             if (child.urn === urn) {
                 isChild = true;
@@ -455,8 +456,8 @@ export default class Activity extends EventTarget {
         let isDependentSibling = false;
         this.bindings.forEach((binding) => {
             if ((binding.to.urn === urn) && (binding.to.property = `in`)) {
-                const producer = binding.from;
-                if (this.isChild(producer.urn)) {
+                const producer = binding.from.urn;
+                if (this.isChild(producer)) {
                     isDependentSibling = true;
                 }
             }

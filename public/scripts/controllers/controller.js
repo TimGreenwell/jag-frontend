@@ -382,10 +382,10 @@ export default class Controller extends EventTarget {
 
 
     establishChildInterdependency(node) {
+        const childrenUrnList = node.activity.children.map((child) => {
+            return child.urn;
+        });
         node.activity.bindings.forEach((binding) => {
-            const childrenUrnList = node.activity.children.map((child) => {
-                return child.urn;
-            });
             if ((childrenUrnList.includes(binding.from.urn)) && (childrenUrnList.includes(binding.to.urn))) {
                 node.children.forEach((fromNode) => {
                     node.children.forEach((toNode) => {
@@ -463,6 +463,40 @@ export default class Controller extends EventTarget {
             node.y = node.y + deltaY;
         };
         Traversal.iterate(node, changeLocationCallback);
+    }
+
+    repopulateDataDependence(node) {
+        const routeList = [];
+        const childRoutes = [];
+        const allRoutes = [];
+        node.children.forEach((child) => {
+            const routeIndex = [];
+            if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
+                this.findRoutes(node, child, routeIndex, routeList);
+            }
+        });
+        return routeList;
+    }
+
+    findRoutes(node, child, routeIndex, routeList) {
+        if (node.activity.hasConsumingSiblings(child.activity.urn)) {
+            node.activity.bindings.forEach((bind) => {
+                if (bind.from.urn === child.activity.urn) {
+                    node.children.forEach((childSibling) => {
+                        if (childSibling.activity.urn === bind.to.urn) {
+                            routeIndex.push(child);
+                            this.findRoutes(node, childSibling, routeIndex, routeList);
+                            routeIndex.pop(); // the end consumer
+                            routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
+                        }
+                    });
+                }
+            });
+        } else {
+            routeIndex.push(child);
+            routeList.push([...routeIndex]);
+        }
+        return routeList;
     }
 
 }
