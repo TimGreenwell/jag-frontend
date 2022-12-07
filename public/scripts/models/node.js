@@ -355,6 +355,10 @@ export default class Node extends EventTarget {
         this._dependencySlot = value;
     }
 
+    isTopProducerSibling() {
+        return this._dependencySlot === 0;
+    }
+
     // /////////////////////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////// Inner Jag Assignments  ////////////////////////////////
     // ///////////////////   ( This will go away once extending JAG Model )    /////////////////
