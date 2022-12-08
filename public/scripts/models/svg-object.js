@@ -438,14 +438,14 @@ export default class SvgObject {
     createRectangle(width, height, id) {
         let rectangle = document.createElementNS(this.SVGNS, `rect`);
         rectangle.id = this.buildId(this.RECTANGLE, id);
-        rectangle = this.resizeRectangle(rectangle, height, width);
+        rectangle = this.resizeRectangle(rectangle, width, height);
         rectangle.setAttributeNS(null, `rx`, `7`);
         rectangle.setAttributeNS(null, `cursor`, `grab`);
         // rectangle.setAttributeNS(null, `pointer-events`, `bounding-box`);
         return rectangle;
     }
 
-    resizeRectangle(rectangle, height, width) {
+    resizeRectangle(rectangle, width, height) {
         rectangle.setAttributeNS(null, `width`, width);
         rectangle.setAttributeNS(null, `height`, height);
         return rectangle;
