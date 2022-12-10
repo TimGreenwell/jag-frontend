@@ -524,6 +524,7 @@ export default class ControllerAT extends Controller {
         console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
          this._playground._refreshPlayground(updatedNodeModel);  // <- causing issues
         this._projectLibrary.updateItem(updatedNodeModel);
+        this._timeview.refreshTimeview(updatedNodeModel);
     }
 
     commandNodeDeletedHandler(deletedNodeId) {

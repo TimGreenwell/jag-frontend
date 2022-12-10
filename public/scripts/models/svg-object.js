@@ -18,10 +18,13 @@ export default class SvgObject {
         this._selectedHue = 150;          // color of selected items
         this._possibleHue = 50;           // color highlighting potential connect points
         this._warningHue = 5;
-        this._horizontalLeftMargin = 10;      // margins
+        this._horizontalLeftMargin = 10;      // margins for looks
         this._horizontalRightMargin = 10;
         this._verticalTopMargin = 10;
         this._verticalBottomMargin = 10;
+        this._verticalInnerMargin = 10;
+        this._horizontalInnerMargin = 10;
+
         this._lineWidth = 2;
         this._standardFontSize = 17;
         this._stepBrightness = 5;         // 3-d effect - changes in brightness
@@ -31,6 +34,7 @@ export default class SvgObject {
         this._labelIndent = this.horizontalLeftMargin / 2;
         this._labelHeight = this.standardFontSize;
         this._standardBoxHeight = (this.verticalTopMargin + this.verticalBottomMargin) + this.labelHeight;
+        this._verticalLabelShift = (this.verticalTopMargin) + this.labelHeight;
         this._buttonSize = this.standardFontSize / 2;
 
         this._customFilters = this.createCustomFilters();
@@ -174,6 +178,15 @@ export default class SvgObject {
 
     set standardBoxHeight(value) {
         this._standardBoxHeight = value;
+    }
+
+
+    get verticalLabelShift() {
+        return this._verticalLabelShift;
+    }
+
+    set verticalLabelShift(value) {
+        this._verticalLabelShift = value;
     }
 
     get buttonSize() {
@@ -775,6 +788,10 @@ export default class SvgObject {
 
     fetchBackground() {
         return document.getElementById(`${this.BACKGROUND}${this.ID_SEPARATOR}${this._id}`);
+    }
+
+    fetchSubGroup(id) {
+        return document.getElementById(this.buildId(this.SUBGROUP, id));
     }
 
     fetchNodeGroup(id) {

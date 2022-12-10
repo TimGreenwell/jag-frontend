@@ -19,9 +19,8 @@ class AtTimeview extends HTMLElement {
     constructor() {
         super();
         this.showTime = false;
-
-        this.START_X = 5;
-        this.START_Y = 5;
+        this.svgOriginPoint = new Point({x: 30,
+            y: 30});
         this._timeContainerWrapperDiv = document.createElement(`div`);
         this._timeContainerWrapperDiv.id = `timeview-wrapper`;
         this.appendChild(this._timeContainerWrapperDiv);
@@ -54,7 +53,7 @@ class AtTimeview extends HTMLElement {
         this.svgLocationX = 0;
         this.svgLocationY = 0;
         this.windowSize = null;
-        this.svgSize = null;
+        this.svgBox = null;
         this.panX = 0;
         this.panY = 0;
         this.zoomStep = 0;
@@ -88,9 +87,7 @@ class AtTimeview extends HTMLElement {
             }
             this.treeHeight = nodeModel.findTreeHeight();
             const expanded = true;
-            const boxCornerPoint = new Point({x: this.START_X,
-                y: this.START_Y});
-            this.svgSize = this.buildBoxSet(this.svg.fetchBackground(this.id), nodeModel, boxCornerPoint, expanded);
+            this.svgBox = this.buildTimelineDiagram(this.svg.fetchBackground(this.id), nodeModel, this.svgOriginPoint, expanded);
             this.windowSize = this.getBoundingClientRect();
             this.redrawSvg();
             this.boxMap.clear(); // ?
@@ -102,37 +99,41 @@ class AtTimeview extends HTMLElement {
         return random;
     }
 
-    buildDataDependence(node) {
-
-    }
-
-    createNodeSvgBox(boxCornerPoint, nodeModel) {
+    createNodeSvgBox(nodeModel) {
         const nodeModelBox = new TimeviewBox();
         nodeModelBox.id = nodeModel.id;
         nodeModelBox.label = nodeModel.name;
-        nodeModelBox.topLeftX = boxCornerPoint.x + this.svg.horizontalLeftMargin;
-        nodeModelBox.topLeftY = boxCornerPoint.y + this.svg.verticalTopMargin;
         return nodeModelBox;
     }
 
+    fetchSvgGroupContainer(nodeModel) {
+        if (nodeModel.isRoot()) {
+            return this.svg.fetchBackground();
+        } else {
+            return this.svg.fetchSubGroup(nodeModel.id);
+        }
+    }
 
-    getInnerParallelBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
-        const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
+    getInnerParallelBox(nodeModel, boxOriginPoint, isExpanded) {
+        console.log(boxOriginPoint);
+        const nodeModelBox = this.createNodeSvgBox(nodeModel);
+        nodeModelBox.topLeftX = boxOriginPoint.x;
+        nodeModelBox.topLeftY = boxOriginPoint.y;
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
+        const parentGroup = this.svg.fetchSubGroup(nodeModel.id);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
-        const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
+        const labelingWidth = (this.svg.labelIndent) + this.svg.labelWidth(labelElement);
 
         let newBox;                           //  newBox is the collection of all the things the node box needs/has
-        let movingDownwardMarker = boxCornerPoint.y;
+        let movingDownwardMarker = boxOriginPoint.y + this.svg.verticalLabelShift;
         let widestChild = 0;
         let growingBoxHeight = 0;
         nodeModel.children.forEach((childNodeModel) => {
-            const childBoxCornerPoint = new Point();
-            childBoxCornerPoint.x = boxCornerPoint.x + this.svg.horizontalLeftMargin;
-            childBoxCornerPoint.y = movingDownwardMarker + this.svg.verticalTopMargin;
+            const childBoxCornerPoint = new Point({x: boxOriginPoint.x + this.svg.horizontalLeftMargin,
+                y: movingDownwardMarker + this.svg.verticalTopMargin});
             const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-            newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);          // !!!!!!!!
+            newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, childBoxCornerPoint, expanded);          // !!!!!!!!
 
             movingDownwardMarker = movingDownwardMarker + newBox.height + this.svg.verticalTopMargin;
             growingBoxHeight = growingBoxHeight + newBox.height;
@@ -140,7 +141,7 @@ class AtTimeview extends HTMLElement {
                 widestChild = newBox.width;
             }
         });
-        nodeModelBox.height = growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalTopMargin) + this.svg.standardFontSize;
+        nodeModelBox.height = this.svg.verticalLabelShift + growingBoxHeight + ((nodeModel.children.length + 1) * this.svg.verticalTopMargin);
         nodeModelBox.width = Math.max(
             widestChild + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin),
             labelingWidth
@@ -149,9 +150,13 @@ class AtTimeview extends HTMLElement {
         return nodeModelBox;
     }
 
-    getInnerSequentialBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
-        const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
+    getInnerSequentialBox(nodeModel, boxCornerPoint, isExpanded) {
+        console.log(boxCornerPoint);
+        const nodeModelBox = this.createNodeSvgBox(nodeModel);
+        nodeModelBox.topLeftX = boxCornerPoint.x;
+        nodeModelBox.topLeftY = boxCornerPoint.y;
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
+        const parentGroup = this.svg.fetchSubGroup(nodeModel.id);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
@@ -160,18 +165,17 @@ class AtTimeview extends HTMLElement {
         let tallestChild = 0;
         let growingBoxWidth = 0;
         nodeModel.children.forEach((childNodeModel) => {
-            const childBoxCornerPoint = new Point();
-            childBoxCornerPoint.x = movingForwardMarker + this.svg.horizontalLeftMargin;
-            childBoxCornerPoint.y = boxCornerPoint.y + this.svg.verticalTopMargin;
+            const childBoxCornerPoint = new Point({x: movingForwardMarker + this.svg.horizontalLeftMargin,
+                y: boxCornerPoint.y + this.svg.verticalLabelShift});
             const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-            newBox = this.buildBoxSet(subGroup, childNodeModel, childBoxCornerPoint, expanded);      // !!!!
+            newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, childBoxCornerPoint, expanded);      // !!!!
             movingForwardMarker = movingForwardMarker + newBox.width + this.svg.horizontalLeftMargin;
             growingBoxWidth = growingBoxWidth + newBox.width;
             if (newBox.height > tallestChild) {
                 tallestChild = newBox.height;
             }
         });
-        nodeModelBox.height = tallestChild + (this.svg.verticalTopMargin + this.svg.verticalBottomMargin) + this.svg.standardFontSize;
+        nodeModelBox.height = this.svg.verticalLabelShift + this.svg.verticalTopMargin + tallestChild + this.svg.verticalBottomMargin;
         nodeModelBox.width = Math.max(
             growingBoxWidth + ((nodeModel.children.length + 1) * this.svg.horizontalLeftMargin),
             labelingWidth
@@ -180,52 +184,66 @@ class AtTimeview extends HTMLElement {
         return nodeModelBox;
     }
 
+    buildChildNodeMap(nodeModel, parentGroup, isExpanded) {
+        const boxMap = new Map();
+        nodeModel.children.forEach((childNodeModel) => {
+            const expanded = (isExpanded) ? nodeModel.isExpanded : false;
+            const newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, new Point(), expanded);       // !!!
+            boxMap.set(childNodeModel.id, newBox);
+        });
+        return boxMap;
+    }
 
-    getInnerNoneBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
-        // BUILD BOX
-        const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
+    buildNodeBox(nodeModel, boxMap) {
+        const nodeModelBox = this.createNodeSvgBox(nodeModel);
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
-        const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent) + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
-        const boxMap = new Map();
-        let newBox;
+        const labelingWidth = this.svg.labelWidth(labelElement) + (this.svg.labelIndent);
 
-        // BUILD THE INTERNALS
-        nodeModel.children.forEach((childNodeModel) => {
-            const expanded = (isExpanded) ? nodeModel.isExpanded : false;
-            newBox = this.buildBoxSet(subGroup, childNodeModel, new Point(), expanded);       // !!!
-            boxMap.set(childNodeModel.id, newBox);
-        });
         nodeModelBox.totalLeafHeight = 0;  //  The height is the sum of the tallest part of each non-sibling-dependent node    sum(child1.maxheight + .. + childn.maxheight)
-        nodeModelBox.width = 0;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
+        nodeModelBox.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
         nodeModel.children.forEach((childNodeModel) => {
             let childWidth = 0;
             if (childNodeModel.isTopProducerSibling()) {
                 this.repopulateLeafSize(childNodeModel, boxMap);                         // leaf Size gives the height of dependent sibling leaf's boxHeights totaled
-                const childBox = boxMap.get(childNodeModel.id);
                 const widestAtDepthArray = this.findWidestAtDepth(childNodeModel, boxMap, new Array());   // widest sibling box at each depth level ex. [13,43,26]
                 childWidth = widestAtDepthArray.reduce((partialSum, a) => {                               // add those widest together.
                     return partialSum + a;
                 }, 0);
-                nodeModelBox.totalLeafHeight = nodeModelBox.totalLeafHeight + childBox.totalLeafHeight;
+                nodeModelBox.totalLeafHeight = nodeModelBox.totalLeafHeight + boxMap.get(childNodeModel.id).totalLeafHeight;
             }
             nodeModelBox.width = Math.max(nodeModelBox.width, childWidth);
         });
-        nodeModelBox.height = nodeModelBox.totalLeafHeight;
-        // Got the outer box dimensions
-        // Now place the interior subgroups ( might be able to meld this into the loop above) -?-
-        const plotPoint = new Point();
-        plotPoint.x = boxCornerPoint.x + this.svg.horizontalLeftMargin;
-        plotPoint.y = boxCornerPoint.y + this.svg.verticalTopMargin;
+        nodeModelBox.width = nodeModelBox.width + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin);
+        nodeModelBox.height = this.svg.verticalLabelShift + nodeModelBox.totalLeafHeight + this.svg.verticalTopMargin + this.svg.verticalBottomMargin;
+        this.svg.positionItem(labelElement, (nodeModelBox.width / 2) - (this.svg.labelWidth(labelElement) / 2), 0);
+        return nodeModelBox;
+    }
+
+    you only need one grouping`
+
+    getInnerNoneBox(nodeModel, boxCornerPoint, isExpanded) {
+        // BUILD BOX
+
+        const parentGroup = this.svg.fetchSubGroup(nodeModel.id);
+        // Recursively find the sizes of nodes internal children -- add immediate children to boxMap (id-> box size info)
+        const boxMap = this.buildChildNodeMap(nodeModel, parentGroup, isExpanded);
+        const nodeModelBox = this.buildNodeBox(nodeModel, boxMap);   // determine size/shape of containing box (none,p,s dependent)
+        // const boxCornerPoint = new Point({x: this.svg.horizontalLeftMargin,
+        //     y: this.svg.verticalTopMargin + this.svg.verticalLabelShift});
+        nodeModelBox.topLeftX = boxCornerPoint.x;
+        nodeModelBox.topLeftY = boxCornerPoint.y;
+        const childCornerPoint = new Point({x: boxCornerPoint.x + this.svg.horizontalLeftMargin,
+            y: boxCornerPoint.y + this.svg.verticalLabelShift});
         nodeModel.children.forEach((childNodeModel) => {
+
             if (childNodeModel.isTopProducerSibling()) {
-                this.produceDataLayout(plotPoint, childNodeModel, boxMap, nodeModelBox);
+                this.produceDataLayout(childCornerPoint, childNodeModel, boxMap, nodeModelBox);
                 const box = boxMap.get(childNodeModel.id);
-                plotPoint.y = plotPoint.y + box.totalLeafHeight;
+                childCornerPoint.y = childCornerPoint.y + box.totalLeafHeight;
             }
         });
-        console.log(`Final tally = ${nodeModelBox.width} and ${nodeModelBox.height}`);
         return nodeModelBox;
     }
 
@@ -234,21 +252,26 @@ class AtTimeview extends HTMLElement {
         const box = boxMap.get(node.id);
         const rectangle = this.svg.fetchRectangle(node.id);
         let widthExtender = 0;
-        if ((node.providesOutputTo.length === 0) && ((childBoxCornerPoint.x + box.width) < (parentBox.topLeftX + parentBox.width))) {
-            widthExtender = (parentBox.topLeftX + parentBox.width) - (childBoxCornerPoint.x + box.width);
+        const parentRightSide = parentBox.topLeftX + parentBox.width;
+        const rightSideLimit = parentRightSide - this.svg.horizontalRightMargin;
+        const childRightSide = childBoxCornerPoint.x + box.width;
+        if ((node.providesOutputTo.length === 0) && ((childRightSide) < (rightSideLimit))) {
+            widthExtender = (rightSideLimit) - (childRightSide);
         }
-        this.svg.resizeRectangle(rectangle, box.width + widthExtender, box.totalLeafHeight)
+        this.svg.resizeRectangle(rectangle, box.width + widthExtender, box.totalLeafHeight);
         this.svg.positionItem(nodeGroup, childBoxCornerPoint.x, childBoxCornerPoint.y);
-        const nextPoint = new Point({x: childBoxCornerPoint.x + box.width, y: childBoxCornerPoint.y});
+        const nextPoint = new Point({x: childBoxCornerPoint.x + box.width,
+            y: childBoxCornerPoint.y});
         node.providesOutputTo.forEach((dependant) => {
             this.produceDataLayout(nextPoint, dependant, boxMap, parentBox);
-            const dependantBox = boxMap.get(node.id);
-            nextPoint.y = nextPoint.y + dependantBox.height;
+            nextPoint.y = nextPoint.y + boxMap.get(node.id).height;
         });
     }
 
-    getInnerLeafBox(nodeModel, boxCornerPoint, subGroup, isExpanded) {
-        const nodeModelBox = this.createNodeSvgBox(boxCornerPoint, nodeModel);
+    getInnerLeafBox(nodeModel, boxCornerPoint) {
+        const nodeModelBox = this.createNodeSvgBox(nodeModel);
+        nodeModelBox.topLeftX = boxCornerPoint.x;
+        nodeModelBox.topLeftY = boxCornerPoint.y;
         const labelElement = this.svg.createTextElement(nodeModelBox.label, nodeModel.id);
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
@@ -260,62 +283,36 @@ class AtTimeview extends HTMLElement {
         return nodeModelBox;
     }
 
-    findWidestAtDepth(sibling, boxMap, widestAtDepth) {
-        const fetchActivitiesCallback = (sibling) => {
-            const depth = sibling.dependencySlot;
-            const box = boxMap.get(sibling.id);
-            if ((widestAtDepth[depth] == undefined) || (widestAtDepth[depth] < box.width)) {
-                widestAtDepth[depth] = box.width;
-            }
-        };
-        Traversal.recurseProvidesIOPostorder(sibling, fetchActivitiesCallback);
-        return widestAtDepth;
-    }
-
-    repopulateLeafSize(node, boxMap) {
-        const fetchActivitiesCallback = (node) => {
-            const nodebox = boxMap.get(node.id);
-            if (node.providesOutputTo.length > 0) {
-                nodebox.totalLeafHeight = 0;
-                node.providesOutputTo.forEach((child) => {
-                    const childNodebox = boxMap.get(child.id);
-                    nodebox.totalLeafHeight = nodebox.totalLeafHeight + childNodebox.totalLeafHeight;
-                });
-            }
-        };
-        Traversal.recurseProvidesIOPostorder(node, fetchActivitiesCallback);
-    }
-
-    buildBoxSet(parentGroup, nodeModel, boxCornerPoint, isExpanded) {
-        // let svgText;
-        boxCornerPoint.y = boxCornerPoint.y + this.svg.standardFontSize;          // move Y down past label of container
+    buildTimelineDiagram(parentGroup, nodeModel, boxCornerPoint, isExpanded) {
         const subGroup = this.svg.createSubGroup(nodeModel.id);
         parentGroup.appendChild(subGroup);
         const nodeGroup = this.svg.createNodeGroup(nodeModel.id);
         subGroup.appendChild(nodeGroup);
         let nodeModelBox;
+        // const childOriginPoint = new Point({x: boxCornerPoint.x + this.svg.horizontalLeftMargin,
+        //     y: boxCornerPoint.y + this.svg.verticalLabelShift});
         if (nodeModel.hasChildren()) {
             if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
-                nodeModelBox = this.getInnerParallelBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerParallelBox(nodeModel, boxCornerPoint, isExpanded);
             }
             if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
-                nodeModelBox = this.getInnerSequentialBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerSequentialBox(nodeModel, boxCornerPoint, isExpanded);
             }
             if (nodeModel._activity.connector.execution === `node.execution.none`) {
-                nodeModelBox = this.getInnerNoneBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+                nodeModelBox = this.getInnerNoneBox(nodeModel, boxCornerPoint, isExpanded);
             }
         } else {
-            nodeModelBox = this.getInnerLeafBox(nodeModel, boxCornerPoint, subGroup, isExpanded);
+            nodeModelBox = this.getInnerLeafBox(nodeModel, boxCornerPoint);
         }
         const svgBox = this.svg.createRectangle(nodeModelBox.width, nodeModelBox.height, nodeModel.id);
-        this.svg.positionItem(nodeGroup, nodeModelBox.topLeftX, nodeModelBox.topLeftY);
+        // this.svg.positionItem(nodeGroup, nodeModelBox.topLeftX, nodeModelBox.topLeftY);
+        this.svg.positionItem(nodeGroup, boxCornerPoint.x, boxCornerPoint.y);
         this.svg.applyFilter(svgBox, this.svg.chosenFilter);
         this.svg.applyLightnessDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         if (this.hasColor) {
             this.svg.applyColorDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
         }
         nodeGroup.insertBefore(svgBox, nodeGroup.firstChild);
-        // subGroup.insertBefore(svgBox, svgText);
         this.boxMap.set(nodeModelBox.id, nodeModelBox);
         return nodeModelBox;
     }
@@ -349,8 +346,8 @@ class AtTimeview extends HTMLElement {
     dragView(e) {
         const zoomedBoxWidth = this.applyZoom(this.windowSize.width);
         const zoomedBoxHeight = this.applyZoom(this.windowSize.height);
-        const svgViewSizeX = this.svgSize.width + this.START_X + this.svg.horizontalLeftMargin;
-        const svgViewSizeY = this.svgSize.height + this.START_Y + this.svg.verticalTopMargin;
+        const svgViewSizeX = this.svgBox.width + this.svgOriginPoint.x + this.svg.horizontalLeftMargin;
+        const svgViewSizeY = this.svgBox.height + this.svgOriginPoint.y + this.svg.verticalTopMargin;
 
         if (zoomedBoxWidth > svgViewSizeX) {
             this.panX = 0;
@@ -402,6 +399,34 @@ class AtTimeview extends HTMLElement {
         console.log(`m[${key}] = ${value}`);
         console.log(JSON.stringify(value));
     }
+
+
+    findWidestAtDepth(sibling, boxMap, widestAtDepth) {
+        const fetchActivitiesCallback = (sibling) => {
+            const depth = sibling.dependencySlot;
+            const box = boxMap.get(sibling.id);
+            if ((widestAtDepth[depth] == undefined) || (widestAtDepth[depth] < box.width)) {
+                widestAtDepth[depth] = box.width;
+            }
+        };
+        Traversal.recurseProvidesIOPostorder(sibling, fetchActivitiesCallback);
+        return widestAtDepth;
+    }
+
+    repopulateLeafSize(node, boxMap) {
+        const fetchActivitiesCallback = (node) => {
+            const nodebox = boxMap.get(node.id);
+            if (node.providesOutputTo.length > 0) {
+                nodebox.totalLeafHeight = 0;
+                node.providesOutputTo.forEach((child) => {
+                    const childNodebox = boxMap.get(child.id);
+                    nodebox.totalLeafHeight = nodebox.totalLeafHeight + childNodebox.totalLeafHeight;
+                });
+            }
+        };
+        Traversal.recurseProvidesIOPostorder(node, fetchActivitiesCallback);
+    }
+
 
 }
 

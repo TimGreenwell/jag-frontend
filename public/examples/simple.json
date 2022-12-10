@@ -1,6 +1,7 @@
 {"activities" : [{
   "urn": "us:ihmc:111",
   "name": "111",
+  "expectedDuration": "",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -32,21 +33,17 @@
     {
       "urn": "us:ihmc:333",
       "id": "5894134a"
+    },
+    {
+      "urn": "us:ihmc:777",
+      "id": "3a6896a4"
+    },
+    {
+      "urn": "us:ihmc:888",
+      "id": "942848eb"
     }
   ],
   "bindings": [
-    {
-      "from": {
-        "urn": "us:ihmc:111",
-        "id": "111in1",
-        "property": "in"
-      },
-      "to": {
-        "urn": "us:ihmc:333",
-        "id": "333in1",
-        "property": "in"
-      }
-    },
     {
       "from": {
         "urn": "us:ihmc:222",
@@ -58,13 +55,148 @@
         "id": "333in1",
         "property": "in"
       }
+    },
+    {
+      "from": {
+        "urn": "us:ihmc:333",
+        "id": "333out1",
+        "property": "out"
+      },
+      "to": {
+        "urn": "us:ihmc:777",
+        "id": "777in",
+        "property": "in"
+      }
+    },
+    {
+      "from": {
+        "urn": "us:ihmc:333",
+        "id": "333out1",
+        "property": "out"
+      },
+      "to": {
+        "urn": "us:ihmc:888",
+        "id": "888in",
+        "property": "in"
+      }
     }
   ],
   "isLocked": false,
   "collapsed": false
 },{
+  "urn": "us:ihmc:333",
+  "name": "333",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "inputs": [
+    {
+      "identity": "333in1",
+      "format": "erer"
+    },
+    {
+      "identity": "333in2",
+      "format": "wwww"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "333out1",
+      "format": "ioio"
+    },
+    {
+      "identity": "333ou2",
+      "format": "sdfsdf"
+    },
+    {
+      "identity": "333out",
+      "format": "fesf"
+    }
+  ],
+  "children": [
+    {
+      "urn": "us:ihmc:666",
+      "id": "14c4657e"
+    }
+  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:666",
+  "name": "666",
+  "expectedDuration": "6",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:777",
+  "name": "777",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [
+    {
+      "identity": "777in",
+      "format": "fsf"
+    }
+  ],
+  "outputs": [
+    {
+      "identity": "777out",
+      "format": "fgdg"
+    }
+  ],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:888",
+  "name": "888",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "inputs": [
+    {
+      "identity": "888in",
+      "format": "fgf"
+    }
+  ],
+  "outputs": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
   "urn": "us:ihmc:222",
   "name": "222",
+  "expectedDuration": "",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -90,6 +222,10 @@
     {
       "identity": "222out3",
       "format": "sdfsdf"
+    },
+    {
+      "identity": "222out",
+      "format": "fsdfs"
     }
   ],
   "children": [
@@ -139,79 +275,104 @@
   "bindings": [],
   "isLocked": false,
   "collapsed": false
-},{
-  "urn": "us:ihmc:333",
-  "name": "333",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.sequential",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [
-    {
-      "identity": "333in1",
-      "format": "erer"
-    },
-    {
-      "identity": "333in2",
-      "format": "wwww"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "333out1",
-      "format": "ioio"
-    },
-    {
-      "identity": "333ou2",
-      "format": "sdfsdf"
-    }
-  ],
-  "children": [
-    {
-      "urn": "us:ihmc:666",
-      "id": "14c4657e"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "us:ihmc:666",
-  "name": "666",
-  "expectedDuration": "6",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
 }], "jags" : [{
   "id": "c3fc2c8b",
   "urn": "us:ihmc:111",
   "projectId": "c3fc2c8b",
   "isLocked": false,
   "isExpanded": true,
-  "x": 116,
-  "y": 402,
-  "contextualName": "",
-  "contextualExpectedDuration": "",
-  "contextualDescription": "",
+  "x": 85,
+  "y": 186,
+  "contextualName": null,
+  "contextualExpectedDuration": "15",
+  "contextualDescription": null,
   "subscriptions": [],
   "returnValue": null,
   "returnState": null,
   "testReturnValue": null,
   "testReturnState": null,
   "children": [
+    {
+      "id": "69b5bbf4",
+      "urn": "us:ihmc:333",
+      "childId": "5894134a",
+      "parentId": "c3fc2c8b",
+      "projectId": "c3fc2c8b",
+      "isLocked": false,
+      "isExpanded": true,
+      "x": 215,
+      "y": 227,
+      "contextualName": "",
+      "contextualExpectedDuration": "6",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": [
+        {
+          "id": "1080ebe2",
+          "urn": "us:ihmc:666",
+          "childId": "14c4657e",
+          "parentId": "69b5bbf4",
+          "projectId": "c3fc2c8b",
+          "isLocked": false,
+          "isExpanded": true,
+          "x": 316,
+          "y": 227,
+          "contextualName": "",
+          "contextualExpectedDuration": "6",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "2f355cdc",
+      "urn": "us:ihmc:777",
+      "childId": "3a6896a4",
+      "parentId": "c3fc2c8b",
+      "projectId": "c3fc2c8b",
+      "isLocked": false,
+      "isExpanded": false,
+      "x": 209,
+      "y": 313,
+      "contextualName": "",
+      "contextualExpectedDuration": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": []
+    },
+    {
+      "id": "f3eae409",
+      "urn": "us:ihmc:888",
+      "childId": "942848eb",
+      "parentId": "c3fc2c8b",
+      "projectId": "c3fc2c8b",
+      "isLocked": false,
+      "isExpanded": false,
+      "x": 159,
+      "y": 382,
+      "contextualName": "",
+      "contextualExpectedDuration": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": []
+    },
     {
       "id": "e970cdab",
       "urn": "us:ihmc:222",
@@ -220,10 +381,10 @@
       "projectId": "c3fc2c8b",
       "isLocked": false,
       "isExpanded": true,
-      "x": 253,
-      "y": 366,
+      "x": 215,
+      "y": 149,
       "contextualName": "",
-      "contextualExpectedDuration": "",
+      "contextualExpectedDuration": "9",
       "contextualDescription": "",
       "subscriptions": [],
       "returnValue": null,
@@ -239,10 +400,10 @@
           "projectId": "c3fc2c8b",
           "isLocked": false,
           "isExpanded": true,
-          "x": 354,
-          "y": 340,
+          "x": 316,
+          "y": 123,
           "contextualName": "",
-          "contextualExpectedDuration": "",
+          "contextualExpectedDuration": "4",
           "contextualDescription": "",
           "subscriptions": [],
           "returnValue": null,
@@ -259,51 +420,10 @@
           "projectId": "c3fc2c8b",
           "isLocked": false,
           "isExpanded": true,
-          "x": 354,
-          "y": 392,
+          "x": 316,
+          "y": 175,
           "contextualName": "",
-          "contextualExpectedDuration": "",
-          "contextualDescription": "",
-          "subscriptions": [],
-          "returnValue": null,
-          "returnState": null,
-          "testReturnValue": null,
-          "testReturnState": null,
-          "children": []
-        }
-      ]
-    },
-    {
-      "id": "69b5bbf4",
-      "urn": "us:ihmc:333",
-      "childId": "5894134a",
-      "parentId": "c3fc2c8b",
-      "projectId": "c3fc2c8b",
-      "isLocked": false,
-      "isExpanded": true,
-      "x": 253,
-      "y": 444,
-      "contextualName": "",
-      "contextualExpectedDuration": "",
-      "contextualDescription": "",
-      "subscriptions": [],
-      "returnValue": null,
-      "returnState": null,
-      "testReturnValue": null,
-      "testReturnState": null,
-      "children": [
-        {
-          "id": "1080ebe2",
-          "urn": "us:ihmc:666",
-          "childId": "14c4657e",
-          "parentId": "69b5bbf4",
-          "projectId": "c3fc2c8b",
-          "isLocked": false,
-          "isExpanded": true,
-          "x": 354,
-          "y": 444,
-          "contextualName": "",
-          "contextualExpectedDuration": "",
+          "contextualExpectedDuration": "5",
           "contextualDescription": "",
           "subscriptions": [],
           "returnValue": null,
