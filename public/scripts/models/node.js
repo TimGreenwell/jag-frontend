@@ -383,10 +383,6 @@ export default class Node extends EventTarget {
         }
     }
 
-    isLeaf(node) {
-        return !(node.hasChildren());
-    }
-
     getShortUrn() {
         const parts = this.urn.split(`:`);
         const lastPart = parts.pop().trim();
@@ -589,11 +585,11 @@ export default class Node extends EventTarget {
         return this._children[this.children.length - 1];
     }
 
-    get canHaveChildren() {  // already pushed to activity model
+    canHaveChildren() {  // already pushed to activity model
         return ((this.activity !== undefined) && (Validation.isValidUrn(this.activity.urn)));
     }
 
-    get childCount() {
+    childCount() {
         return this._children.length;
     }
 
@@ -602,6 +598,9 @@ export default class Node extends EventTarget {
         return this._id === this._projectId;
     }         // is determined by lack of parent.
 
+    isLeaf() {
+        return this.childCount() === 0;
+    }
 
     toJSON() {
         const json = {

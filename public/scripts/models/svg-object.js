@@ -53,7 +53,6 @@ export default class SvgObject {
         this.ADD = `add`;
         this.INPUT = `input`;
         this.OUTPUT = `output`;
-        this.BINDING = `binding`;
         this.ID_SEPARATOR = `_`;
         this.PATH_SEPARATOR = `___`;
         this.TEXT = `text`;
@@ -122,6 +121,23 @@ export default class SvgObject {
 
     set verticalBottomMargin(value) {
         this._verticalBottomMargin = value;
+    }
+
+
+    get verticalInnerMargin() {
+        return this._verticalInnerMargin;
+    }
+
+    set verticalInnerMargin(value) {
+        this._verticalInnerMargin = value;
+    }
+
+    get horizontalInnerMargin() {
+        return this._horizontalInnerMargin;
+    }
+
+    set horizontalInnerMargin(value) {
+        this._horizontalInnerMargin = value;
     }
 
     get lineWidth() {
@@ -828,6 +844,9 @@ export default class SvgObject {
         return document.getElementById(this.buildId(this.RECTANGLE, id));
     }
 
+    fetchText(id) {
+        return document.getElementById(this.buildId(this.TEXT, id));
+    }
 
     fetchTargetId(svgElement) {
         let id;

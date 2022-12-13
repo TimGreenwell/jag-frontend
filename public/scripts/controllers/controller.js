@@ -405,11 +405,27 @@ export default class Controller extends EventTarget {
         this.repopulateDepth(node);                   // requires parent
         this.establishChildInterdependency(node);
         this.repopulateExpectedDuration(node);
+        this.resortChildrenSpatially(node);
         node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leaf count?)
     }
 
-    repopulateExpectedDuration(node) {
+    resortChildrenSpatially(node) {
+        const sortChildren = (node) => {
+            node.children.sort((a, b) => {
+                if (a.y < b.y) {
+                    return -1;
+                }
+                if (a.y > b.y) {
+                    return 1;
+                }
+                return 0;
+            });
+        };
+        Traversal.recurseChildrenPostorder(node, sortChildren);
+    }
 
+
+    repopulateExpectedDuration(node) {
         const assignDurationCallback = (node) => {
             const childDurationsArray = [];
             node.children.forEach((child) => {
@@ -435,6 +451,7 @@ export default class Controller extends EventTarget {
         };
         Traversal.iterate(node, assignParentCallback);
     }
+
 
     repopulateActivity(node) {
         const fetchActivitiesCallback = (node) => {
@@ -465,6 +482,7 @@ export default class Controller extends EventTarget {
         Traversal.iterate(node, changeLocationCallback);
     }
 
+
     repopulateDataDependence(node) {
         const routeList = [];
         const childRoutes = [];
@@ -477,6 +495,7 @@ export default class Controller extends EventTarget {
         });
         return routeList;
     }
+
 
     findRoutes(node, child, routeIndex, routeList) {
         if (node.activity.hasConsumingSiblings(child.activity.urn)) {

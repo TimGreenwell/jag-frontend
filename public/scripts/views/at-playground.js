@@ -26,7 +26,7 @@ class AtPlayground extends Popupable {
         this.svg.selectedHue = 150;
         this.svg.possibleHue = 50;
         this.svg.horizontalLeftMargin = 10;
-        this.svg.horizonalRightMargin = 10;
+        this.svg.horizontalRightMargin = 10;
         this.svg.verticalTopMargin = 10;
         this.svg.verticalBottomMargin = 10;
         this.svg.lineWidth = 2;
@@ -895,11 +895,17 @@ class AtPlayground extends Popupable {
         subgroup.insertBefore(nodeContentGroup, subgroupTop);
 
         const labelElement = this.svg.createTextElement(nodeModel.name, nodeModel.id);
-        const svgText = this.svg.positionItem(labelElement, this.svg.labelIndent, this.svg.standardBoxHeight / 4);
+        const svgText = this.svg.positionItem(labelElement, this.svg.horizontalLeftMargin, this.svg.standardBoxHeight / 4);
         const groupTop = nodeContentGroup.firstChild;
         nodeContentGroup.insertBefore(svgText, groupTop);
         nodeBox.height = this.svg.standardBoxHeight;
-        const possibleWidth1 = this.svg.labelWidth(labelElement) + (this.svg.labelIndent * 3) + this.svg.buttonSize;
+        let possibleWidth1;
+
+        if ((nodeModel.isLeaf()) && (!nodeModel.isRoot())) {
+            possibleWidth1 = this.svg.labelWidth(labelElement) + this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin;
+        } else {
+            possibleWidth1 = this.svg.labelWidth(labelElement) + this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin + this.svg.buttonSize;
+        }
         const possibleWidth2 = Math.max(nodeModel.activity.inputs.length, nodeModel.activity.inputs.length) * 10;
         nodeBox.width = Math.max(possibleWidth1, possibleWidth2);
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);

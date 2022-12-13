@@ -499,7 +499,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
         $bindButton.disabled = true;
     }
-
+    // console.log(`removing all the items in `)
+    // console.log(this._selectedFromEndpoints)
+    // console.log(`now`)
+    // console.log(selectedFromEndpoint)
 
     handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
@@ -902,11 +905,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                             // urn (us:ihmc:111) id(111in1) property(in)
                             // has a name(111in1) and type(111)
                             let optionDisplay = selectOptionEndpoint.identity;
-                            // if ((selectOption.activityConnectionType === `in`) || (selectOption.activityConnectionType === `out`)) {
-                            if (addBindings) {
+                            // Look to see if previous binding can be added to the option text string...
+                            if (addBindings) {   // method parameter to state whether this previous binding is desired for display
                                 const foundBindings = [];
                                 this._focusNode.activity.bindings.forEach((extantBinding) => {
-                                    if (extantBinding.from.id === selectOptionEndpoint.identity) {
+                                    if ((extantBinding.from.id === selectOptionEndpoint.identity) && (extantBinding.from.urn === selectOption.activityId)) {
                                         foundBindings.push(extantBinding.to.id);
                                     }
                                 });
@@ -914,6 +917,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
                                     optionDisplay = `${optionDisplay} ${this.ARROW} `;
                                     foundBindings.forEach((foundToEndpoints) => {
                                         optionDisplay = `${optionDisplay} ${foundToEndpoints}`;
+                                        //optionDisplay = `${optionDisplay} ${selectOption.activityName}:${foundToEndpoints}`;  // long version -- need scrolling
                                     });
                                 }
                             }
