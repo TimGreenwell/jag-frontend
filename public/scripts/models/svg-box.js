@@ -27,6 +27,25 @@ export default class Node extends EventTarget {
         this._zoomStep = 0;
         this._selected = false;
         this._totalLeafHeight = 0;  // The visual height of the dependent leaves (if stacked on each other)
+        this._routeMembershipCount = 0;    // num of sibling routes to which this activity belongs
+        this._maxDepth = 0; // The furthest down the dependency chain this child is found.
+    }
+
+
+    get routeMembershipCount() {
+        return this._routeMembershipCount;
+    }
+
+    set routeMembershipCount(value) {
+        this._routeMembershipCount = value;
+    }
+
+    get maxDepth() {
+        return this._maxDepth;
+    }
+
+    set maxDepth(value) {
+        this._maxDepth = value;
     }
 
     get id() {

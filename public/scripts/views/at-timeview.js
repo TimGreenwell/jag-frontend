@@ -60,7 +60,7 @@ class AtTimeview extends HTMLElement {
         this.panY = 0;
         this.zoomStep = 0;
 
-        this.boxMap = new Map();  // id, svg rectangle (id is copy of corresponding node id)
+        // this.boxMap = new Map();  // id, svg rectangle (id is copy of corresponding node id)
         this.zoomMap = new Map(); // id, zoom level (each node temporarily saves users zoom level)
 
         this._timeviewSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));
@@ -92,7 +92,7 @@ class AtTimeview extends HTMLElement {
             this.svgBox = this.buildTimelineDiagram(this.svg.fetchBackground(this.id), nodeModel, this.svgOriginPoint);
             this.windowSize = this.getBoundingClientRect();
             this.redrawSvg();
-            this.boxMap.clear(); // ?
+            // this.boxMap.clear(); // ?
         }
     }
 
@@ -111,7 +111,6 @@ class AtTimeview extends HTMLElement {
     buildChildNodeDescriptorMap(nodeModel, parentGroup) {
         const boxMap = new Map();
         nodeModel.children.forEach((childNodeModel) => {
-            // const expanded = (isExpanded) ? nodeModel.isExpanded : false;
             const newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, new Point());       // !!!
             boxMap.set(childNodeModel.id, newBox);
         });
@@ -236,6 +235,55 @@ class AtTimeview extends HTMLElement {
         });
     }
 
+    dependencyShiftRight(array, nodeModel, boxMap) {
+        array.sort((a, b) => {
+            return ((a.length > b.length) ? -1 : ((b.length > a.length) ? 1 : 0));
+        });
+
+        const modifiedArray = [];
+        array.forEach((route) => {
+            const modifiedRoute = [];
+            nodeModel.children.forEach((child) => {
+                const childBox = boxMap.get(child.id);
+                if (route.includes(child)) {
+                    childBox.routeMembershipCount = childBox.routeMembershipCount + 1;
+                    const depth = route.indexOf(child);
+                    if (depth > childBox.maxDepth) {
+                        childBox.maxDepth = depth;
+                    }
+                    modifiedRoute[childBox.maxDepth] = child;  // necessary?
+                }
+            });
+            modifiedArray.push(modifiedRoute);
+        });
+        // array.forEach((route) => {
+        //     console.log(route.length);
+        //     for (let i = 0; i < route.length; i++) {
+        //         if (route[i]) {
+        //             console.log(route[i]);
+        //         } else {
+        //             console.log(`bloop`);
+        //         }
+        //     };
+        //     console.log(`---`);
+        // });
+        // console.log(`-----------------------------`);
+        // modifiedArray.forEach((route) => {
+        //     console.log(route.length);
+        //     for (let i = 0; i < route.length; i++) {
+        //         if (route[i]) {
+        //             console.log(route[i]);
+        //         } else {
+        //             console.log(`bloop`);
+        //         }
+        //     };
+        //     console.log(`---`);
+        // });
+        console.log([...boxMap.entries()]);
+        return modifiedArray;
+    }
+
+
     getInnerNoneBox(nodeModel, boxMap) {
         const nodeGroup = this.svg.fetchNodeGroup(nodeModel.id);
         const nodeDescriptor = this.createNodeDescriptor(nodeModel);            // * just returning a box -- not hooking it up.
@@ -243,12 +291,17 @@ class AtTimeview extends HTMLElement {
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
 
+        const array = this.getRoutesFromBinding(nodeModel);
+        const shiftedArray = this.dependencyShiftRight(array, nodeModel, boxMap);  // shift items to the deepest location found
+        const widestAtDepthArray = this.findWidestAtDepth2(shiftedArray, nodeModel, boxMap);
+
         nodeDescriptor.totalLeafHeight = 0;  //  The height is the sum of the tallest part of each non-sibling-dependent node    sum(child1.maxheight + .. + childn.maxheight)
         nodeDescriptor.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
         nodeModel.children.forEach((childNodeModel) => {
             const childBox = boxMap.get(childNodeModel.id);
             let widestAtDepth = 0;
             if (childNodeModel.isTopProducerSibling()) {
+                // I never go down more than one level here ... oops
                 this.repopulateLeafSize(childNodeModel, boxMap);// leaf Size gives the height of dependent sibling leaf's boxHeights totaled
                 const widestAtDepthArray = this.findWidestAtDepth(childNodeModel, boxMap, new Array());   // widest sibling box at each depth level ex. [13,43,26]
                 widestAtDepth = widestAtDepthArray.reduce((depthWidth, a) => {                               // add those widest together.
@@ -305,12 +358,13 @@ class AtTimeview extends HTMLElement {
                 }
             } else {
                 nodeDescriptor = this.getInnerLeafBox(nodeModel);  // Actual leaf
+                console.log(JSON.stringify(nodeDescriptor));
             }
         } else {
             nodeDescriptor = this.getInnerLeafBox(nodeModel);  // Virtual leaf (isExpanded)
         }
         // this.svg.positionItem(nodeGroup, nodeDescriptor.topLeftX, nodeDescriptor.topLeftY);
-        this.boxMap.set(nodeDescriptor.id, nodeDescriptor);
+        // this.boxMap.set(nodeDescriptor.id, nodeDescriptor);
         const svgBox = this.svg.createRectangle(nodeDescriptor.width, nodeDescriptor.height, nodeModel.id);
         this.svg.applyFilter(svgBox, this.svg.chosenFilter);
         this.svg.applyLightnessDepthEffect(svgBox, nodeModel.treeDepth, this.treeHeight);
@@ -405,6 +459,35 @@ class AtTimeview extends HTMLElement {
         console.log(JSON.stringify(value));
     }
 
+    findWidestAtDepth2(routes, nodeModel, boxMap) {
+        const widestAtDepth = [];
+        const longest = routes.reduce((a, b) => {
+            return (a.length > b.length ? a : b);
+        }, []).length;
+
+
+        routes.forEach((route) => {
+            route.map((x) => {
+                console.log(boxMap.get(x.id).width)
+                return boxMap.get(x.id).width;
+            });
+        });
+
+
+        routes.forEach((route) => {
+            console.log(route.length);
+            for (let i = 0; i < route.length; i++) {
+                if (route[i]) {
+                    console.log(route[i]);
+                } else {
+                    console.log(`bloop`);
+                }
+            };
+            console.log(`---`);
+        });
+
+    }
+
 
     findWidestAtDepth(sibling, boxMap, widestAtDepth) {
         const fetchActivitiesCallback = (sibling) => {
@@ -434,6 +517,38 @@ class AtTimeview extends HTMLElement {
             }
         };
         Traversal.recurseProvidesIOPostorder(node, fetchActivitiesCallback);
+    }
+
+
+    getRoutesFromBinding(node) {
+        const routeList = [];
+        node.children.forEach((child) => {
+            const routeIndex = [];
+            if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
+                this.findRoutes(node, child, routeIndex, routeList);
+            }
+        });
+        return routeList;
+    }
+
+    findRoutes(node, child, routeIndex, routeList) {
+        if (node.activity.hasConsumingSiblings(child.activity.urn)) {
+            node.activity.bindings.forEach((bind) => {
+                if (bind.from.urn === child.activity.urn) {
+                    node.children.forEach((childSibling) => {
+                        if (childSibling.activity.urn === bind.to.urn) {
+                            routeIndex.push(child);
+                            this.findRoutes(node, childSibling, routeIndex, routeList);
+                            routeIndex.pop(); // the end consumer
+                            routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
+                        }
+                    });
+                }
+            });
+        } else {
+            routeIndex.push(child);
+            routeList.push([...routeIndex]);
+        }
     }
 
 }
