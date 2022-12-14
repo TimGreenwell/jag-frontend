@@ -28,10 +28,10 @@ class AtTimeview extends HTMLElement {
         this.svg.standardHue = 200;
         this.svg.selectedHue = 150;
         this.svg.possibleHue = 50;
-        this.svg.horizontalLeftMargin = 25;
-        this.svg.horizontalRightMargin = 25;
-        this.svg.verticalTopMargin = 25;
-        this.svg.verticalBottomMargin = 25;
+        this.svg.horizontalLeftMargin = 2;
+        this.svg.horizontalRightMargin = 2;
+        this.svg.verticalTopMargin = 2;
+        this.svg.verticalBottomMargin = 2;
         this.svg.verticalInnerMargin = 5;
         this.svg.horizontalInnerMargin = 5;
         this.svg.lineWidth = 2;
@@ -62,6 +62,7 @@ class AtTimeview extends HTMLElement {
 
         // this.boxMap = new Map();  // id, svg rectangle (id is copy of corresponding node id)
         this.zoomMap = new Map(); // id, zoom level (each node temporarily saves users zoom level)
+        this.childNodeDescriptorsMap = new Map();
 
         this._timeviewSvg.addEventListener(`mousedown`, this.svgMouseDownEvent.bind(this));
         this._timeviewSvg.addEventListener(`wheel`, this.svgWheelZoomEvent.bind(this));
@@ -124,9 +125,11 @@ class AtTimeview extends HTMLElement {
         const labelElement = this.svg.createTextElement(nodeDescriptor.label, nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
+        console.log(`----------------->  ${labelingWidth}`)
+        console.log(`----------------->  ${nodeDescriptor.label}`)
         nodeDescriptor.height = this.svg.standardBoxHeight;
         nodeDescriptor.totalLeafHeight = nodeDescriptor.height;
-        nodeDescriptor.width = (this.showTime) ? nodeModel.contextualExpectedDuration * this.pixelsPerTimeUnit : labelingWidth;
+        nodeDescriptor.width = labelingWidth;
         this.svg.positionItem(labelElement, (nodeDescriptor.width / 2) - (this.svg.labelWidth(labelElement) / 2), 0);
         return nodeDescriptor;
     }
@@ -137,6 +140,7 @@ class AtTimeview extends HTMLElement {
         const labelElement = this.svg.createTextElement(nodeDescriptor.label, nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
+        console.log(`ooooooooooooo> ${labelingWidth}`)
         let tallestChild = 0;
         let growingBoxWidth = this.svg.horizontalLeftMargin;
         nodeModel.children.forEach((childNodeModel) => {
@@ -279,7 +283,7 @@ class AtTimeview extends HTMLElement {
         //     };
         //     console.log(`---`);
         // });
-        console.log([...boxMap.entries()]);
+
         return modifiedArray;
     }
 
@@ -290,13 +294,14 @@ class AtTimeview extends HTMLElement {
         const labelElement = this.svg.createTextElement(nodeDescriptor.label, nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
+        nodeDescriptor.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
 
         const array = this.getRoutesFromBinding(nodeModel);
         const shiftedArray = this.dependencyShiftRight(array, nodeModel, boxMap);  // shift items to the deepest location found
         const widestAtDepthArray = this.findWidestAtDepth2(shiftedArray, nodeModel, boxMap);
 
         nodeDescriptor.totalLeafHeight = 0;  //  The height is the sum of the tallest part of each non-sibling-dependent node    sum(child1.maxheight + .. + childn.maxheight)
-        nodeDescriptor.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
+
         nodeModel.children.forEach((childNodeModel) => {
             const childBox = boxMap.get(childNodeModel.id);
             let widestAtDepth = 0;
@@ -346,15 +351,23 @@ class AtTimeview extends HTMLElement {
         //     y: boxCornerPoint.y + this.svg.verticalLabelShift});
         if (nodeModel.isExpanded) {
             if ((nodeModel.hasChildren())) {
-                const childNodeDescriptorsMap = this.buildChildNodeDescriptorMap(nodeModel, nodeGroup);  // at this point i have all children and heading up the recursion
+                nodeModel.children.forEach((childNodeModel) => {
+                    const newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, new Point());       // !!!
+                    this.childNodeDescriptorsMap.set(childNodeModel.id, newBox);
+                });
+
+              //  const childNodeDescriptorsMap = this.buildChildNodeDescriptorMap(nodeModel, nodeGroup);  // at this point i have all children and heading up the recursion
+                console.log(`-->`)
+                console.log([...this.childNodeDescriptorsMap.entries()]);
+                console.log(`<--`)
                 if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
-                    nodeDescriptor = this.getInnerParallelBox(nodeModel, childNodeDescriptorsMap);
+                    nodeDescriptor = this.getInnerParallelBox(nodeModel, this.childNodeDescriptorsMap);
                 }
                 if (nodeModel._activity.connector.execution === `node.execution.sequential`) {
-                    nodeDescriptor = this.getInnerSequentialBox(nodeModel, childNodeDescriptorsMap);
+                    nodeDescriptor = this.getInnerSequentialBox(nodeModel, this.childNodeDescriptorsMap);
                 }
                 if (nodeModel._activity.connector.execution === `node.execution.none`) {
-                    nodeDescriptor = this.getInnerNoneBox(nodeModel, childNodeDescriptorsMap);
+                    nodeDescriptor = this.getInnerNoneBox(nodeModel, this.childNodeDescriptorsMap);
                 }
             } else {
                 nodeDescriptor = this.getInnerLeafBox(nodeModel);  // Actual leaf
@@ -460,32 +473,46 @@ class AtTimeview extends HTMLElement {
     }
 
     findWidestAtDepth2(routes, nodeModel, boxMap) {
-        const widestAtDepth = [];
-        const longest = routes.reduce((a, b) => {
+        const longest = routes.reduce((a, b) => {            // seems to report ok
             return (a.length > b.length ? a : b);
         }, []).length;
 
+        console.log(`wwww`)
+        console.log([...boxMap.entries()]);
 
+        const maxWidthAtDepth = [];
         routes.forEach((route) => {
-            route.map((x) => {
-                console.log(boxMap.get(x.id).width)
+            const routeWidthAtDepth = route.map((x) => {
                 return boxMap.get(x.id).width;
             });
-        });
-
-
-        routes.forEach((route) => {
-            console.log(route.length);
-            for (let i = 0; i < route.length; i++) {
-                if (route[i]) {
-                    console.log(route[i]);
+            console.log(routeWidthAtDepth);
+            for (let i = 0; i < longest; i++) {
+                if (maxWidthAtDepth[i]) {
+                    if (routeWidthAtDepth[i] > maxWidthAtDepth[i]) {
+                        maxWidthAtDepth[i] = routeWidthAtDepth[i];
+                    }
                 } else {
-                    console.log(`bloop`);
+                    maxWidthAtDepth[i] = routeWidthAtDepth[i];
                 }
-            };
-            console.log(`---`);
+            }
         });
+        console.log(maxWidthAtDepth);
 
+
+        // console.log(`kkkk`)
+        // console.log(routes)
+        // console.log(`ooo`)
+        // routes.forEach((route) => {
+        //     console.log(route.length);
+        //     for (let i = 0; i < route.length; i++) {
+        //         if (route[i]) {
+        //             console.log(route[i]);
+        //         } else {
+        //             console.log(`bloop`);
+        //         }
+        //     };
+        //     console.log(`---`);
+        // });
     }
 
 
@@ -539,7 +566,6 @@ class AtTimeview extends HTMLElement {
                         if (childSibling.activity.urn === bind.to.urn) {
                             routeIndex.push(child);
                             this.findRoutes(node, childSibling, routeIndex, routeList);
-                            routeIndex.pop(); // the end consumer
                             routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
                         }
                     });
@@ -548,6 +574,7 @@ class AtTimeview extends HTMLElement {
         } else {
             routeIndex.push(child);
             routeList.push([...routeIndex]);
+            routeIndex.pop(); // the end consumer
         }
     }
 
@@ -557,37 +584,3 @@ customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);
 
 
-//
-// getRoutesFromBinding(node) {
-//     const routeList = [];
-//     const childRoutes = [];
-//     const allRoutes = [];
-//     node.children.forEach((child) => {
-//         const routeIndex = [];
-//         if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
-//             this.findRoutes(node, child, routeIndex, routeList);
-//         }
-//     });
-//     return routeList;
-// }
-//
-// findRoutes(node, child, routeIndex, routeList) {
-//     if (node.activity.hasConsumingSiblings(child.activity.urn)) {
-//         node.activity.bindings.forEach((bind) => {
-//             if (bind.from.urn === child.activity.urn) {
-//                 node.children.forEach((childSibling) => {
-//                     if (childSibling.activity.urn === bind.to.urn) {
-//                         routeIndex.push(child);
-//                         this.findRoutes(node, childSibling, routeIndex, routeList);
-//                         routeIndex.pop(); // the end consumer
-//                         routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
-//                     }
-//                 });
-//             }
-//         });
-//     } else {
-//         routeIndex.push(child);
-//         routeList.push([...routeIndex]);
-//     }
-//     return routeList;
-// }
