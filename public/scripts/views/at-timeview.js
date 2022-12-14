@@ -13,6 +13,7 @@ import TimeviewBox from '../models/svg-box.js';
 import SvgObject from "../models/svg-object.js";
 import Point from "../models/point.js";
 import Traversal from "../utils/traversal.js";
+import Route from "../models/route.js";
 
 class AtTimeview extends HTMLElement {
 
@@ -125,8 +126,6 @@ class AtTimeview extends HTMLElement {
         const labelElement = this.svg.createTextElement(nodeDescriptor.label, nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
-        console.log(`----------------->  ${labelingWidth}`)
-        console.log(`----------------->  ${nodeDescriptor.label}`)
         nodeDescriptor.height = this.svg.standardBoxHeight;
         nodeDescriptor.totalLeafHeight = nodeDescriptor.height;
         nodeDescriptor.width = labelingWidth;
@@ -140,7 +139,6 @@ class AtTimeview extends HTMLElement {
         const labelElement = this.svg.createTextElement(nodeDescriptor.label, nodeModel.id);
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
-        console.log(`ooooooooooooo> ${labelingWidth}`)
         let tallestChild = 0;
         let growingBoxWidth = this.svg.horizontalLeftMargin;
         nodeModel.children.forEach((childNodeModel) => {
@@ -239,52 +237,63 @@ class AtTimeview extends HTMLElement {
         });
     }
 
-    dependencyShiftRight(array, nodeModel, boxMap) {
-        array.sort((a, b) => {
-            return ((a.length > b.length) ? -1 : ((b.length > a.length) ? 1 : 0));
-        });
-
-        const modifiedArray = [];
-        array.forEach((route) => {
-            const modifiedRoute = [];
+    dependencyShiftRight(routeArray, nodeModel, boxMap) {
+        // routeArray.sort((a, b) => {
+        //     return ((a.nodes.length > b.nodes.length) ? -1 : ((b.nodes.length > a.nodes.length) ? 1 : 0));
+        // });
+        routeArray.forEach((route) => {
+            route.shiftedNodes = [];
             nodeModel.children.forEach((child) => {
-                const childBox = boxMap.get(child.id);
-                if (route.includes(child)) {
-                    childBox.routeMembershipCount = childBox.routeMembershipCount + 1;
-                    const depth = route.indexOf(child);
-                    if (depth > childBox.maxDepth) {
-                        childBox.maxDepth = depth;
-                    }
-                    modifiedRoute[childBox.maxDepth] = child;  // necessary?
+                // const childBox = boxMap.get(child.id);
+                if (route.nodes.includes(child)) {
+                    // childBox.routeMembershipCount = childBox.routeMembershipCount + 1;
+                    // const depth = route.nodes.indexOf(child);
+                    // if (depth > childBox.maxDepth) {
+                    //     childBox.maxDepth = depth;
+                    // }
+                    const maxDepth = this.getMaxDepth(child, routeArray);
+                    route.shiftedNodes[maxDepth] = child;
                 }
             });
-            modifiedArray.push(modifiedRoute);
         });
-        // array.forEach((route) => {
-        //     console.log(route.length);
-        //     for (let i = 0; i < route.length; i++) {
-        //         if (route[i]) {
-        //             console.log(route[i]);
-        //         } else {
-        //             console.log(`bloop`);
-        //         }
-        //     };
-        //     console.log(`---`);
-        // });
-        // console.log(`-----------------------------`);
-        // modifiedArray.forEach((route) => {
-        //     console.log(route.length);
-        //     for (let i = 0; i < route.length; i++) {
-        //         if (route[i]) {
-        //             console.log(route[i]);
-        //         } else {
-        //             console.log(`bloop`);
-        //         }
-        //     };
-        //     console.log(`---`);
-        // });
+    }
 
-        return modifiedArray;
+
+    setChildrenMaxDepth(node, boxMap, routeArray) {
+        node.children.forEach((child) => {
+            const childBox = boxMap.get(child.id);
+            childBox.maxDepth = this.getMaxDepth(child, routeArray)
+        })
+    }
+
+    getMaxDepth(node, routeArray) {
+        let maxDepth = 0;
+        routeArray.forEach((route) => {
+            if (route.nodes.includes(node)) {
+                const depth = route.nodes.indexOf(node);
+                if (depth > maxDepth) {
+                    maxDepth = depth;
+                }
+            }
+        })
+        return maxDepth;
+    }
+
+    setChildrenMembershipCount(node, boxMap, routeArray) {
+        node.children.forEach((child) => {
+            const childBox = boxMap.get(child.id);
+            childBox.routeMembershipCount = this.getMembershipCount(child, routeArray)
+        })
+    }
+
+    getMembershipCount(node, routeArray) {
+        let membershipCount = 0;
+        routeArray.forEach((route) => {
+            if (route.nodes.includes(node)) {
+                membershipCount = membershipCount + 1;
+            }
+        })
+        return membershipCount;
     }
 
 
@@ -295,12 +304,9 @@ class AtTimeview extends HTMLElement {
         nodeGroup.insertBefore(labelElement, nodeGroup.firstChild);
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
         nodeDescriptor.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
-
-        const array = this.getRoutesFromBinding(nodeModel);
-        const shiftedArray = this.dependencyShiftRight(array, nodeModel, boxMap);  // shift items to the deepest location found
-        const widestAtDepthArray = this.findWidestAtDepth2(shiftedArray, nodeModel, boxMap);
-
-        nodeDescriptor.totalLeafHeight = 0;  //  The height is the sum of the tallest part of each non-sibling-dependent node    sum(child1.maxheight + .. + childn.maxheight)
+        const routesArray = this.getRoutesFromBinding(nodeModel);
+        this.setChildrenMaxDepth(nodeModel, boxMap, routesArray);   // maybe stick routesArray in node descriptor
+        this.setChildrenMembershipCount(nodeModel, boxMap, routesArray);
 
         nodeModel.children.forEach((childNodeModel) => {
             const childBox = boxMap.get(childNodeModel.id);
@@ -308,14 +314,12 @@ class AtTimeview extends HTMLElement {
             if (childNodeModel.isTopProducerSibling()) {
                 // I never go down more than one level here ... oops
                 this.repopulateLeafSize(childNodeModel, boxMap);// leaf Size gives the height of dependent sibling leaf's boxHeights totaled
-                const widestAtDepthArray = this.findWidestAtDepth(childNodeModel, boxMap, new Array());   // widest sibling box at each depth level ex. [13,43,26]
-                widestAtDepth = widestAtDepthArray.reduce((depthWidth, a) => {                               // add those widest together.
-                    return depthWidth + this.svg.horizontalInnerMargin + a;
-                }, 0);
+
                 nodeDescriptor.totalLeafHeight = nodeDescriptor.totalLeafHeight + Math.max(childBox.totalLeafHeight, childBox.height) + this.svg.horizontalInnerMargin;
 
                 nodeDescriptor.width = Math.max(nodeDescriptor.width, widestAtDepth, childBox.width);
                 nodeDescriptor.height = Math.max(nodeDescriptor.height, nodeDescriptor.totalLeafHeight, childBox.height);
+              //                            MAX OF:                                                      one of the tall kids
             }
         });
         nodeDescriptor.width = nodeDescriptor.width + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin - this.svg.horizontalInnerMargin);
@@ -357,9 +361,7 @@ class AtTimeview extends HTMLElement {
                 });
 
               //  const childNodeDescriptorsMap = this.buildChildNodeDescriptorMap(nodeModel, nodeGroup);  // at this point i have all children and heading up the recursion
-                console.log(`-->`)
-                console.log([...this.childNodeDescriptorsMap.entries()]);
-                console.log(`<--`)
+
                 if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
                     nodeDescriptor = this.getInnerParallelBox(nodeModel, this.childNodeDescriptorsMap);
                 }
@@ -472,20 +474,28 @@ class AtTimeview extends HTMLElement {
         console.log(JSON.stringify(value));
     }
 
+    buildRouteHeightArray(routes, nodeModel, boxMap) {
+        const longest = routes.reduce((a, b) => {            // seems to report ok
+            return (a.length > b.length ? a : b);
+        }, []).length;
+
+        const maxRouteHeight = [];
+
+    }
+
     findWidestAtDepth2(routes, nodeModel, boxMap) {
         const longest = routes.reduce((a, b) => {            // seems to report ok
             return (a.length > b.length ? a : b);
         }, []).length;
 
-        console.log(`wwww`)
-        console.log([...boxMap.entries()]);
+        console.log([...boxMap.entries()]);         // id, label, maxDepth
 
         const maxWidthAtDepth = [];
         routes.forEach((route) => {
             const routeWidthAtDepth = route.map((x) => {
                 return boxMap.get(x.id).width;
             });
-            console.log(routeWidthAtDepth);
+            console.log(routeWidthAtDepth);       //    -- >  [13, 42, 12]  looks good
             for (let i = 0; i < longest; i++) {
                 if (maxWidthAtDepth[i]) {
                     if (routeWidthAtDepth[i] > maxWidthAtDepth[i]) {
@@ -555,6 +565,7 @@ class AtTimeview extends HTMLElement {
                 this.findRoutes(node, child, routeIndex, routeList);
             }
         });
+        this.dependencyShiftRight(routeList, node);
         return routeList;
     }
 
@@ -573,7 +584,8 @@ class AtTimeview extends HTMLElement {
             });
         } else {
             routeIndex.push(child);
-            routeList.push([...routeIndex]);
+            const newRoute = new Route({nodes: [...routeIndex]});
+            routeList.push(newRoute);
             routeIndex.pop(); // the end consumer
         }
     }
@@ -583,4 +595,18 @@ class AtTimeview extends HTMLElement {
 customElements.define(`jag-timeview`, AtTimeview);
 export default customElements.get(`jag-timeview`);
 
+// console.log(`------- Print array of arrays ----------------------`);
+// array.forEach((route) => {
+//     console.log(route.length);
+//     for (let i = 0; i < route.length; i++) {
+//         if (route[i]) {
+//             console.log(route[i]);
+//         } else {
+//             console.log(`bloop`);
+//         }
+//     };
+//     console.log(`---`);
+// });
 
+// console.log(`------- Print Map ----------------------`)
+// console.log([...this.childNodeDescriptorsMap.entries()]);

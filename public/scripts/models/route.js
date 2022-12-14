@@ -6,21 +6,41 @@
  */
 
 'use strict';
-
-import RouteEndpoint from "./endpoint";
-
-export default class Route extends EventTarget {
+export default class Route  {
 
     constructor({
-        id,
-        legArray
+        nodes,
+        shiftedNodes,
+        // earliestPossibleX?
+        maxHeight
     } = {}) {
-        super();
-        this._is = id;
-        this._legArray = legArray;
-        this._status = null;
+        this._nodes = nodes;
+        this._shiftedNodes = shiftedNodes;
+        this._maxHeight = maxHeight;
     }
 
 
+    get nodes() {
+        return this._nodes;
+    }
 
+    set nodes(value) {
+        this._nodes = value;
+    }
+
+    get shiftedNodes() {
+        return this._shiftedNodes;
+    }
+
+    set shiftedNodes(value) {
+        this._shiftedNodes = value;
+    }
+
+    get maxHeight() {
+        return this._maxHeight;
+    }
+
+    set maxHeight(value) {
+        this._maxHeight = value;
+    }
 }
