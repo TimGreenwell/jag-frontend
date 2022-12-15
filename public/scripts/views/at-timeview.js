@@ -262,8 +262,8 @@ class AtTimeview extends HTMLElement {
     setChildrenMaxDepth(node, boxMap, routeArray) {
         node.children.forEach((child) => {
             const childBox = boxMap.get(child.id);
-            childBox.maxDepth = this.getMaxDepth(child, routeArray)
-        })
+            childBox.maxDepth = this.getMaxDepth(child, routeArray);
+        });
     }
 
     getMaxDepth(node, routeArray) {
@@ -275,15 +275,15 @@ class AtTimeview extends HTMLElement {
                     maxDepth = depth;
                 }
             }
-        })
+        });
         return maxDepth;
     }
 
     setChildrenMembershipCount(node, boxMap, routeArray) {
         node.children.forEach((child) => {
             const childBox = boxMap.get(child.id);
-            childBox.routeMembershipCount = this.getMembershipCount(child, routeArray)
-        })
+            childBox.routeMembershipCount = this.getMembershipCount(child, routeArray);
+        });
     }
 
     getMembershipCount(node, routeArray) {
@@ -292,9 +292,91 @@ class AtTimeview extends HTMLElement {
             if (route.nodes.includes(node)) {
                 membershipCount = membershipCount + 1;
             }
-        })
+        });
         return membershipCount;
     }
+
+    findTallestRouteSegment(routesArray, boxMap) {
+        const startPoints = [];
+        const endPoints = [];
+        routesArray.forEach((route) => {
+            startPoints.push(route.shiftedNodes[0]);
+            endPoints.push(route.shiftedNodes[route.shiftedNodes.length - 1]);
+        });
+        const startPointSet = new Set(startPoints);
+        const endPointSet = new Set(endPoints);
+        startPointSet.forEach((routeStart) => {
+            endPointSet.forEach((routeEnd) => {
+                const routeNodesByDepth = [];
+                const nullsAtDepth = [];
+                routesArray.forEach((route) => {
+                    if ((route.shiftedNodes[0] === routeStart) && (route.shiftedNodes[route.shiftedNodes.length - 1] === routeEnd)) {
+                        for (let i = 0; i < route.shiftedNodes.length; i++) {
+                            if (!(routeNodesByDepth[i])) {
+                                routeNodesByDepth.push([]);
+                            }
+                            if (!(nullsAtDepth[i])) {
+                                nullsAtDepth[i] = 0;
+                            }
+                            if (route.shiftedNodes[i]) {
+                                routeNodesByDepth[i].push(route.shiftedNodes[i]);
+                            }
+                            else {nullsAtDepth[i] += 1;}
+                        }
+                    }
+                });
+                console.log(routeNodesByDepth);
+                const uniqueRouteNodesByDepth = routeNodesByDepth.map((routeNode) => {
+                    return Array.from(new Set(routeNode));
+                });
+                console.log(uniqueRouteNodesByDepth);
+                const heightByDepth = uniqueRouteNodesByDepth.map((nodesAtDepth) => {
+                    let height = 0;
+                    nodesAtDepth.forEach((node) => {
+                        const box = boxMap.get(node.id);
+                        height = height + box.height;
+                    });
+                    return height;
+                });
+                console.log(heightByDepth);
+                for (let i =0 ; i < heightByDepth.length; i++) {
+                    heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
+                }
+                console.log(heightByDepth);
+                const tallest = Math.max(...heightByDepth)
+                console.log(nullsAtDepth);
+                boxMap.get(routeStart.id).apparentHeight += tallest;
+                boxMap.get(routeEnd.id).apparentHeight += tallest;
+
+
+            });
+        });
+
+    }
+
+
+    setEarliestX(routesArray, boxMap) {
+        console.log(`--------------------------------------------->`)
+        routesArray.forEach((route) => {
+            console.log(`-----oo-->`)
+
+            let nextEarliestX = 0;
+            for (let i =0 ; i < route.nodes.length; i++) {
+                console.log(route.nodes[i].activity.urn)
+                const box = boxMap.get(route.nodes[i].id)
+                if (nextEarliestX > box.earliestPossibleX) {
+                    console.log(`${box.label} is updating earliestX to ${nextEarliestX}`)
+                    box.earliestPossibleX = nextEarliestX;
+                }
+                nextEarliestX = nextEarliestX + box.width;
+            }
+        })
+        console.log(`------- Print Map ----------------------`)
+        console.log([...boxMap.entries()]);
+    }
+
+
+
 
 
     getInnerNoneBox(nodeModel, boxMap) {
@@ -307,10 +389,13 @@ class AtTimeview extends HTMLElement {
         const routesArray = this.getRoutesFromBinding(nodeModel);
         this.setChildrenMaxDepth(nodeModel, boxMap, routesArray);   // maybe stick routesArray in node descriptor
         this.setChildrenMembershipCount(nodeModel, boxMap, routesArray);
+        this.findTallestRouteSegment(routesArray, boxMap);
+        this.setEarliestX(routesArray, boxMap);
+
 
         nodeModel.children.forEach((childNodeModel) => {
             const childBox = boxMap.get(childNodeModel.id);
-            let widestAtDepth = 0;
+            const widestAtDepth = 0;
             if (childNodeModel.isTopProducerSibling()) {
                 // I never go down more than one level here ... oops
                 this.repopulateLeafSize(childNodeModel, boxMap);// leaf Size gives the height of dependent sibling leaf's boxHeights totaled
@@ -319,7 +404,6 @@ class AtTimeview extends HTMLElement {
 
                 nodeDescriptor.width = Math.max(nodeDescriptor.width, widestAtDepth, childBox.width);
                 nodeDescriptor.height = Math.max(nodeDescriptor.height, nodeDescriptor.totalLeafHeight, childBox.height);
-              //                            MAX OF:                                                      one of the tall kids
             }
         });
         nodeDescriptor.width = nodeDescriptor.width + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin - this.svg.horizontalInnerMargin);
@@ -360,7 +444,7 @@ class AtTimeview extends HTMLElement {
                     this.childNodeDescriptorsMap.set(childNodeModel.id, newBox);
                 });
 
-              //  const childNodeDescriptorsMap = this.buildChildNodeDescriptorMap(nodeModel, nodeGroup);  // at this point i have all children and heading up the recursion
+                //  const childNodeDescriptorsMap = this.buildChildNodeDescriptorMap(nodeModel, nodeGroup);  // at this point i have all children and heading up the recursion
 
                 if (nodeModel._activity.connector.execution === `node.execution.parallel`) {               // Catch-all @TODO -> need smarter control
                     nodeDescriptor = this.getInnerParallelBox(nodeModel, this.childNodeDescriptorsMap);
@@ -480,7 +564,6 @@ class AtTimeview extends HTMLElement {
         }, []).length;
 
         const maxRouteHeight = [];
-
     }
 
     findWidestAtDepth2(routes, nodeModel, boxMap) {
