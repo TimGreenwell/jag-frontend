@@ -203,7 +203,8 @@ export default class ControllerAT extends Controller {
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
         this._properties.handleSelectionUpdate(selectedNodeArray);
-        this._timeview.refreshTimeview(selectedNodeArray[0]);
+        console.log(`NODE SELECTED`)
+        // this._timeview.refreshTimeview(selectedNodeArray[0]);    // Selecting a node also updates it.. need to look into that
         // ide.handleSelectionUpdate(e.detail);
     }
 
@@ -230,6 +231,7 @@ export default class ControllerAT extends Controller {
             this._playground._refreshPlayground(projectModel);
         } else {
             if (this._timeview) {
+                console.log(`CONNECTING EVENT NODES`)
                 this._timeview.refreshTimeview();
             }
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
@@ -453,7 +455,7 @@ export default class ControllerAT extends Controller {
      * the appropriate changes are made to the views.  Its entirely possible (and common) that the events were
      * initiated locally but that is transparent to the logic.  The origin of commands is irrelevant to the logic.
      *
-     * commandActivityCreatedHandler
+     * commandActivityCreatedHandler                console.log(JSON.stringify(nodeDescriptor));
      * commandActivityUpdatedHandler
      * commandActivityDeletedHandler
      * commandActivityClonedHandler
@@ -524,6 +526,7 @@ export default class ControllerAT extends Controller {
         console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
          this._playground._refreshPlayground(updatedNodeModel);  // <- causing issues
         this._projectLibrary.updateItem(updatedNodeModel);
+        console.log(`UPDATING NODE`)
         this._timeview.refreshTimeview(updatedNodeModel);
     }
 

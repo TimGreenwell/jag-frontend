@@ -296,7 +296,7 @@ class AtTimeview extends HTMLElement {
         return membershipCount;
     }
 
-    findTallestRouteSegment(routesArray, boxMap) {
+    adjustHeights(routesArray, boxMap) {          // currently only grows the start and end to match their routes.
         const startPoints = [];
         const endPoints = [];
         routesArray.forEach((route) => {
@@ -307,6 +307,8 @@ class AtTimeview extends HTMLElement {
         const endPointSet = new Set(endPoints);
         startPointSet.forEach((routeStart) => {
             endPointSet.forEach((routeEnd) => {
+                console.log(routeStart.activity.urn)
+                console.log(routeEnd.activity.urn)
                 const routeNodesByDepth = [];
                 const nullsAtDepth = [];
                 routesArray.forEach((route) => {
@@ -320,16 +322,16 @@ class AtTimeview extends HTMLElement {
                             }
                             if (route.shiftedNodes[i]) {
                                 routeNodesByDepth[i].push(route.shiftedNodes[i]);
+                            } else {
+                                nullsAtDepth[i] += 1;
                             }
-                            else {nullsAtDepth[i] += 1;}
                         }
                     }
                 });
-                console.log(routeNodesByDepth);
                 const uniqueRouteNodesByDepth = routeNodesByDepth.map((routeNode) => {
                     return Array.from(new Set(routeNode));
                 });
-                console.log(uniqueRouteNodesByDepth);
+                // console.log(uniqueRouteNodesByDepth);  // as expected .. [] for the nulls
                 const heightByDepth = uniqueRouteNodesByDepth.map((nodesAtDepth) => {
                     let height = 0;
                     nodesAtDepth.forEach((node) => {
@@ -338,45 +340,78 @@ class AtTimeview extends HTMLElement {
                     });
                     return height;
                 });
-                console.log(heightByDepth);
-                for (let i =0 ; i < heightByDepth.length; i++) {
+                for (let i = 0; i < heightByDepth.length; i++) {
                     heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
                 }
-                console.log(heightByDepth);
-                const tallest = Math.max(...heightByDepth)
-                console.log(nullsAtDepth);
+                console.log(heightByDepth)
+                console.log(heightByDepth.length)
+                const tallest = Math.max(...heightByDepth);
                 boxMap.get(routeStart.id).apparentHeight += tallest;
                 boxMap.get(routeEnd.id).apparentHeight += tallest;
-
-
+                console.log(boxMap.get(routeStart.id).apparentHeight);
+                console.log(boxMap.get(routeEnd.id).apparentHeight);
+                console.log();
             });
         });
-
     }
 
 
-    setEarliestX(routesArray, boxMap) {
-        console.log(`--------------------------------------------->`)
+    setEarliestX(routesArray, boxMap) {             // All seems to work good
         routesArray.forEach((route) => {
-            console.log(`-----oo-->`)
-
             let nextEarliestX = 0;
-            for (let i =0 ; i < route.nodes.length; i++) {
-                console.log(route.nodes[i].activity.urn)
-                const box = boxMap.get(route.nodes[i].id)
+            for (let i = 0; i < route.nodes.length; i++) {
+                const box = boxMap.get(route.nodes[i].id);
                 if (nextEarliestX > box.earliestPossibleX) {
-                    console.log(`${box.label} is updating earliestX to ${nextEarliestX}`)
                     box.earliestPossibleX = nextEarliestX;
                 }
                 nextEarliestX = nextEarliestX + box.width;
             }
-        })
-        console.log(`------- Print Map ----------------------`)
-        console.log([...boxMap.entries()]);
+        });
+    }
+
+    getWidestRouteWidth(routesArray, boxMap) {             // Not fully checked but could be right
+        let widestRouteLength = 0;
+        routesArray.forEach((route) => {
+            const box = boxMap.get(route.nodes[route.nodes.length - 1].id);
+            if (widestRouteLength < box.earliestPossibleX + box.width) {
+                widestRouteLength = box.earliestPossibleX + box.width;
+            }
+        });
+        return widestRouteLength;
     }
 
 
+    // The way we size boxes for visual display, the starting nodes and the ending nodes grow with their respective intermediate modes.
+    // Therefore, either the first or the last item will be the tallest.
+    getTallestDepth(routesArray, boxMap) {
+        const routeNodesByDepth = [];
+        let overallTallest = 0;
+        routesArray.forEach((route) => {
+            for (let i = 0; i < route.shiftedNodes.length; i++) {
+                if (!(routeNodesByDepth[i])) {
+                    routeNodesByDepth.push([]);
+                }
+                if (route.shiftedNodes[i]) {
+                    routeNodesByDepth[i].push(route.shiftedNodes[i]);
+                }
+            }
+        });
+        const uniqueRoutesArray = routeNodesByDepth.map((nodesAtDepth) => {
+            return Array.from(new Set(nodesAtDepth));
+        });
+        uniqueRoutesArray.forEach((nodesAtDepth) => {
+            let heightAtDepth = 0;
+            for (let i = 0; i < nodesAtDepth.length; i++) {
+                const box = boxMap.get(nodesAtDepth[i].id);
+                heightAtDepth = heightAtDepth + box.apparentHeight;
+            }
+            if (heightAtDepth > overallTallest) {
+                overallTallest = heightAtDepth;
+            }
+        });
 
+        return overallTallest;
+    }
 
 
     getInnerNoneBox(nodeModel, boxMap) {
@@ -389,25 +424,31 @@ class AtTimeview extends HTMLElement {
         const routesArray = this.getRoutesFromBinding(nodeModel);
         this.setChildrenMaxDepth(nodeModel, boxMap, routesArray);   // maybe stick routesArray in node descriptor
         this.setChildrenMembershipCount(nodeModel, boxMap, routesArray);
-        this.findTallestRouteSegment(routesArray, boxMap);
-        this.setEarliestX(routesArray, boxMap);
+        this.adjustHeights(routesArray, boxMap);         // artsy component
+        // this.adjustVerticalStart(routesArray, boxMap)    // artsy component
+        this.setEarliestX(routesArray, boxMap);         // appears to work great
+        nodeDescriptor.height = this.getTallestDepth(routesArray, boxMap);            // one of the depths (columns) takes the most space
+        nodeDescriptor.width = this.getWidestRouteWidth(routesArray, boxMap);
 
+        console.log(`tallest = ${nodeDescriptor.height}`)
+        console.log(`widest = ${nodeDescriptor.width}`)
 
-        nodeModel.children.forEach((childNodeModel) => {
-            const childBox = boxMap.get(childNodeModel.id);
-            const widestAtDepth = 0;
-            if (childNodeModel.isTopProducerSibling()) {
-                // I never go down more than one level here ... oops
-                this.repopulateLeafSize(childNodeModel, boxMap);// leaf Size gives the height of dependent sibling leaf's boxHeights totaled
-
-                nodeDescriptor.totalLeafHeight = nodeDescriptor.totalLeafHeight + Math.max(childBox.totalLeafHeight, childBox.height) + this.svg.horizontalInnerMargin;
-
-                nodeDescriptor.width = Math.max(nodeDescriptor.width, widestAtDepth, childBox.width);
-                nodeDescriptor.height = Math.max(nodeDescriptor.height, nodeDescriptor.totalLeafHeight, childBox.height);
-            }
-        });
-        nodeDescriptor.width = nodeDescriptor.width + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin - this.svg.horizontalInnerMargin);
-        nodeDescriptor.height = this.svg.verticalLabelShift + nodeDescriptor.height + (this.svg.verticalBottomMargin - this.svg.verticalInnerMargin);
+        //
+        // nodeModel.children.forEach((childNodeModel) => {
+        //     const childBox = boxMap.get(childNodeModel.id);
+        //     const widestAtDepth = 0;
+        //     if (childNodeModel.isTopProducerSibling()) {
+        //         // I never go down more than one level here ... oops
+        //         this.repopulateLeafSize(childNodeModel, boxMap);// leaf Size gives the height of dependent sibling leaf's boxHeights totaled
+        //
+        //         nodeDescriptor.totalLeafHeight = nodeDescriptor.totalLeafHeight + Math.max(childBox.totalLeafHeight, childBox.height) + this.svg.horizontalInnerMargin;
+        //
+        //         nodeDescriptor.width = Math.max(nodeDescriptor.width, widestAtDepth, childBox.width);
+        //         nodeDescriptor.height = Math.max(nodeDescriptor.height, nodeDescriptor.totalLeafHeight, childBox.height);
+        //     }
+        // });
+        // nodeDescriptor.width = nodeDescriptor.width + (this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin - this.svg.horizontalInnerMargin);
+        // nodeDescriptor.height = this.svg.verticalLabelShift + nodeDescriptor.height + (this.svg.verticalBottomMargin - this.svg.verticalInnerMargin);
         this.svg.positionItem(labelElement, (nodeDescriptor.width / 2) - (this.svg.labelWidth(labelElement) / 2), 0);
 
         // const boxCornerPoint = new Point({x: this.svg.horizontalLeftMargin,
@@ -457,7 +498,6 @@ class AtTimeview extends HTMLElement {
                 }
             } else {
                 nodeDescriptor = this.getInnerLeafBox(nodeModel);  // Actual leaf
-                console.log(JSON.stringify(nodeDescriptor));
             }
         } else {
             nodeDescriptor = this.getInnerLeafBox(nodeModel);  // Virtual leaf (isExpanded)
