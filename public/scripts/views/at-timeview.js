@@ -29,12 +29,12 @@ class AtTimeview extends HTMLElement {
         this.svg.standardHue = 200;
         this.svg.selectedHue = 150;
         this.svg.possibleHue = 50;
-        this.svg.horizontalLeftMargin = 2;
-        this.svg.horizontalRightMargin = 2;
-        this.svg.verticalTopMargin = 2;
-        this.svg.verticalBottomMargin = 2;
-        this.svg.verticalInnerMargin = 5;
-        this.svg.horizontalInnerMargin = 5;
+        this.svg.horizontalLeftMargin = 10;
+        this.svg.horizontalRightMargin = 10;
+        this.svg.verticalTopMargin = 7;
+        this.svg.verticalBottomMargin = 7;
+        this.svg.verticalInnerMargin = 6;
+        this.svg.horizontalInnerMargin = 6;
         this.svg.lineWidth = 2;
         this.svg.standardFontSize = 17;
         this.svg.stepBrightness = 5;
@@ -296,6 +296,7 @@ class AtTimeview extends HTMLElement {
         return membershipCount;
     }
 
+    // this needs to be rewritten to grow appropriately  ex: 3>1 with margins within
     adjustHeights(routesArray, boxMap) {          // currently only grows the start and end to match their routes.
         const startPoints = [];
         const endPoints = [];
@@ -305,10 +306,12 @@ class AtTimeview extends HTMLElement {
         });
         const startPointSet = new Set(startPoints);
         const endPointSet = new Set(endPoints);
+        let lastStartPoint = null;
+        let  lastEndPoint = null;
         startPointSet.forEach((routeStart) => {
             endPointSet.forEach((routeEnd) => {
-                console.log(routeStart.activity.urn)
-                console.log(routeEnd.activity.urn)
+                console.log(routeStart.activity.urn);
+                console.log(routeEnd.activity.urn);
                 const routeNodesByDepth = [];
                 const nullsAtDepth = [];
                 routesArray.forEach((route) => {
@@ -343,17 +346,88 @@ class AtTimeview extends HTMLElement {
                 for (let i = 0; i < heightByDepth.length; i++) {
                     heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
                 }
-                console.log(heightByDepth)
-                console.log(heightByDepth.length)
+                console.log(heightByDepth);
+                console.log(heightByDepth.length);
                 const tallest = Math.max(...heightByDepth);
+
                 boxMap.get(routeStart.id).apparentHeight += tallest;
+                if (routeStart === lastStartPoint) {
+                    boxMap.get(routeStart.id).apparentHeight += this.svg.verticalInnerMargin;
+                }
+
                 boxMap.get(routeEnd.id).apparentHeight += tallest;
+                if (routeEnd === lastEndPoint) {
+                    boxMap.get(routeEnd.id).apparentHeight += this.svg.verticalInnerMargin;
+                }
+                lastStartPoint = routeStart;
+                lastEndPoint = routeEnd;
                 console.log(boxMap.get(routeStart.id).apparentHeight);
                 console.log(boxMap.get(routeEnd.id).apparentHeight);
                 console.log();
             });
         });
     }
+
+
+    // adjustHeights(routesArray, boxMap) {          // currently only grows the start and end to match their routes.
+    //     let index = 0;
+    //     while (index < routesArray.length) {
+    //         let startPoint = routesArray[index].shiftedNodes[0];
+    //         let endPoint = routesArray[index].shiftedNodes[routesArray[index].shiftedNodes.length -1];
+    //         console.log(`start - ${startPoint.activity.urn}`);
+    //         console.log(`end - ${endPoint.activity.urn}`);
+    //         const routeNodesByDepth = [];
+    //         const nullsAtDepth = [];
+    //         routesArray.forEach((route) => {
+    //             if ((route.shiftedNodes[0] === startPoint) && (route.shiftedNodes[route.shiftedNodes.length - 1] === endPoint)) {
+    //                 for (let i = 0; i < route.shiftedNodes.length; i++) {
+    //                     if (!(routeNodesByDepth[i])) {
+    //                         routeNodesByDepth.push([]);
+    //                     }
+    //                     if (!(nullsAtDepth[i])) {
+    //                         nullsAtDepth[i] = 0;
+    //                     }
+    //                     if (route.shiftedNodes[i]) {
+    //                         routeNodesByDepth[i].push(route.shiftedNodes[i]);
+    //                     } else {
+    //                         nullsAtDepth[i] += 1;
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //         const uniqueRouteNodesByDepth = routeNodesByDepth.map((routeNode) => {
+    //             return Array.from(new Set(routeNode));
+    //         });
+    //         // console.log(uniqueRouteNodesByDepth);  // as expected .. [] for the nulls
+    //         const heightByDepth = uniqueRouteNodesByDepth.map((nodesAtDepth) => {
+    //             let height = 0;
+    //             nodesAtDepth.forEach((node) => {
+    //                 const box = boxMap.get(node.id);
+    //                 height = height + box.height;
+    //             });
+    //             return height;
+    //         });
+    //         for (let i = 0; i < heightByDepth.length; i++) {
+    //             heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
+    //         }
+    //         console.log(heightByDepth);
+    //         console.log(heightByDepth.length);
+    //         const tallest = Math.max(...heightByDepth);
+    //         boxMap.get(routeStart.id).apparentHeight += tallest;
+    //         boxMap.get(routeEnd.id).apparentHeight += tallest;
+    //         console.log(boxMap.get(routeStart.id).apparentHeight);
+    //         console.log(boxMap.get(routeEnd.id).apparentHeight);
+    //         console.log();
+    //         while (index < routesArray.length) &&
+    //
+    //
+    //
+    //     }
+    //
+    //
+    //         });
+    //     });
+    // }
 
 
     setEarliestX(routesArray, boxMap) {             // All seems to work good
@@ -364,9 +438,19 @@ class AtTimeview extends HTMLElement {
                 if (nextEarliestX > box.earliestPossibleX) {
                     box.earliestPossibleX = nextEarliestX;
                 }
-                nextEarliestX = nextEarliestX + box.width;
+                nextEarliestX = nextEarliestX + box.width + this.svg.horizontalInnerMargin;
             }
         });
+    }
+
+    getDepth(routesArray) {
+        let deepest = 0;
+        routesArray.forEach((route) => {
+            if (route.shiftedNodes.length > deepest) {
+                deepest = route.shiftedNodes.length;
+            }
+        });
+        return deepest;
     }
 
     getWidestRouteWidth(routesArray, boxMap) {             // Not fully checked but could be right
@@ -377,6 +461,7 @@ class AtTimeview extends HTMLElement {
                 widestRouteLength = box.earliestPossibleX + box.width;
             }
         });
+        //   widestRouteLength = widestRouteLength + (this.svg.horizontalInnerMargin * (this.getDepth(routesArray) - 1));
         return widestRouteLength;
     }
 
@@ -403,8 +488,9 @@ class AtTimeview extends HTMLElement {
             let heightAtDepth = 0;
             for (let i = 0; i < nodesAtDepth.length; i++) {
                 const box = boxMap.get(nodesAtDepth[i].id);
-                heightAtDepth = heightAtDepth + box.apparentHeight;
+                heightAtDepth = heightAtDepth + box.apparentHeight + this.svg.verticalInnerMargin;
             }
+            heightAtDepth = heightAtDepth - this.svg.verticalInnerMargin; // 1 too many
             if (heightAtDepth > overallTallest) {
                 overallTallest = heightAtDepth;
             }
@@ -427,11 +513,12 @@ class AtTimeview extends HTMLElement {
         this.adjustHeights(routesArray, boxMap);         // artsy component
         // this.adjustVerticalStart(routesArray, boxMap)    // artsy component
         this.setEarliestX(routesArray, boxMap);         // appears to work great
-        nodeDescriptor.height = this.getTallestDepth(routesArray, boxMap);            // one of the depths (columns) takes the most space
-        nodeDescriptor.width = this.getWidestRouteWidth(routesArray, boxMap);
+        nodeDescriptor.height = this.svg.verticalLabelShift + this.getTallestDepth(routesArray, boxMap) + this.svg.verticalBottomMargin;            // one of the depths (columns) takes the most space
+        nodeDescriptor.width = this.svg.horizontalLeftMargin + this.getWidestRouteWidth(routesArray, boxMap) + this.svg.horizontalRightMargin;
 
-        console.log(`tallest = ${nodeDescriptor.height}`)
-        console.log(`widest = ${nodeDescriptor.width}`)
+
+        console.log(`tallest = ${nodeDescriptor.height}`);
+        console.log(`widest = ${nodeDescriptor.width}`);
 
         //
         // nodeModel.children.forEach((childNodeModel) => {
@@ -458,19 +545,53 @@ class AtTimeview extends HTMLElement {
             x: this.svg.horizontalLeftMargin,
             y: this.svg.verticalLabelShift
         });
-        nodeModel.children.forEach((childNodeModel) => {
-            if (childNodeModel.isTopProducerSibling()) {
-                this.produceDataLayout(childCornerPoint, childNodeModel, boxMap, nodeDescriptor);
-                const box = boxMap.get(childNodeModel.id);
-                childCornerPoint.y = childCornerPoint.y + box.height + this.svg.verticalInnerMargin;
+
+
+        const whereYatDepth = [];
+        const lastVisitedAtDepth = [];
+        routesArray.forEach((route) => {
+            for (let i = 0; i < route.shiftedNodes.length; i++) {
+                if (!(whereYatDepth[i])) {
+                    whereYatDepth[i] = this.svg.verticalLabelShift;
+                }
+                if ((route.shiftedNodes[i]) && (route.shiftedNodes[i] !== lastVisitedAtDepth[i])) {
+                    const box = boxMap.get(route.shiftedNodes[i].id);
+                    console.log(`working on ...`);
+                    console.log(box);
+
+                    const x = this.svg.horizontalLeftMargin + box.earliestPossibleX;
+                    const y = whereYatDepth[i];
+                    const nodeRectangle = this.svg.fetchRectangle(box.id);
+                    const nodeGroup = this.svg.fetchNodeGroup(box.id);
+                    if (box.apparentHeight === 0) {
+                        box.apparentHeight = box.height;
+                    }
+                    console.log(`resizeRectangle   width=${box.width}  height=${box.apparentHeight}`);
+                    this.svg.resizeRectangle(nodeRectangle, box.width, box.apparentHeight);
+                    console.log(`Placing NodeGroup    x=${x}  y=${y}`);
+
+                    this.svg.positionItem(nodeGroup, x, y);
+                    // this.svg.positionItem(childLabel, (childBox.width / 2) - (this.svg.labelWidth(childLabel) / 2), 0);
+                    whereYatDepth[i] = y + box.apparentHeight + this.svg.verticalInnerMargin;
+                    lastVisitedAtDepth[i] = route.shiftedNodes[i];
+                }
             }
         });
+
+
+        // nodeModel.children.forEach((childNodeModel) => {
+        //     if (childNodeModel.isTopProducerSibling()) {
+        //         this.produceDataLayout(childCornerPoint, childNodeModel, boxMap, nodeDescriptor);
+        //         const box = boxMap.get(childNodeModel.id);
+        //         childCornerPoint.y = childCornerPoint.y + box.height + this.svg.verticalInnerMargin;
+        //     }
+        // });
 
         return nodeDescriptor;
     }
 
     buildTimelineDiagram(parentGroup, nodeModel, boxCornerPoint) {
-        const nodeGroup = this.svg.createNodeGroup(nodeModel.id);
+        const nodeGroup = this.svg.createNodeGroup(nodeModel.id);          // nodeGroup for this nodeModel
         parentGroup.appendChild(nodeGroup);
         this.svg.positionItem(nodeGroup, boxCornerPoint.x, boxCornerPoint.y);
 
@@ -481,7 +602,7 @@ class AtTimeview extends HTMLElement {
         if (nodeModel.isExpanded) {
             if ((nodeModel.hasChildren())) {
                 nodeModel.children.forEach((childNodeModel) => {
-                    const newBox = this.buildTimelineDiagram(parentGroup, childNodeModel, new Point());       // !!!
+                    const newBox = this.buildTimelineDiagram(nodeGroup, childNodeModel, new Point());       // !!!
                     this.childNodeDescriptorsMap.set(childNodeModel.id, newBox);
                 });
 
