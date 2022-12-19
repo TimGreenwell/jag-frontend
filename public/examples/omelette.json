@@ -11,14 +11,14 @@
   },
   "inputs": [
     {
-      "identity": "Specs",
-      "format": "array"
+      "exchangeName": "Specs",
+      "exchangeType": "array"
     }
   ],
   "outputs": [
     {
-      "identity": "omelette",
-      "format": "food"
+      "exchangeName": "omelette",
+      "exchangeType": "food"
     }
   ],
   "children": [
@@ -92,14 +92,14 @@
   },
   "inputs": [
     {
-      "identity": "itemsNeeded",
-      "format": "array"
+      "exchangeName": "itemsNeeded",
+      "exchangeType": "array"
     }
   ],
   "outputs": [
     {
-      "identity": "status",
-      "format": "boolean"
+      "exchangeName": "status",
+      "exchangeType": "boolean"
     }
   ],
   "children": [],
@@ -119,22 +119,22 @@
   },
   "inputs": [
     {
-      "identity": "omletteSpecs",
-      "format": "array"
+      "exchangeName": "omletteSpecs",
+      "exchangeType": "array"
     },
     {
-      "identity": "readyToPrepare",
-      "format": "boolean"
+      "exchangeName": "readyToPrepare",
+      "exchangeType": "boolean"
     }
   ],
   "outputs": [
     {
-      "identity": "prepStatus",
-      "format": "boolean"
+      "exchangeName": "prepStatus",
+      "exchangeType": "boolean"
     },
     {
-      "identity": "itemUsed",
-      "format": "array"
+      "exchangeName": "itemUsed",
+      "exchangeType": "array"
     }
   ],
   "children": [
@@ -181,12 +181,12 @@
   "inputs": [],
   "outputs": [
     {
-      "identity": "location",
-      "format": "rangeNum"
+      "exchangeName": "location",
+      "exchangeType": "rangeNum"
     },
     {
-      "identity": "outnum",
-      "format": "num"
+      "exchangeName": "outnum",
+      "exchangeType": "num"
     }
   ],
   "children": [],
@@ -206,8 +206,8 @@
   },
   "inputs": [
     {
-      "identity": "hotSpot",
-      "format": "number"
+      "exchangeName": "hotSpot",
+      "exchangeType": "number"
     }
   ],
   "outputs": [],
@@ -417,18 +417,18 @@
   },
   "inputs": [
     {
-      "identity": "itemsReady",
-      "format": "boolean"
+      "exchangeName": "itemsReady",
+      "exchangeType": "boolean"
     }
   ],
   "outputs": [
     {
-      "identity": "itemUsed",
-      "format": "array"
+      "exchangeName": "itemUsed",
+      "exchangeType": "array"
     },
     {
-      "identity": "omelette",
-      "format": "food"
+      "exchangeName": "omelette",
+      "exchangeType": "food"
     }
   ],
   "children": [
@@ -619,8 +619,8 @@
   },
   "inputs": [
     {
-      "identity": "itemUsed",
-      "format": "array"
+      "exchangeName": "itemUsed",
+      "exchangeType": "array"
     }
   ],
   "outputs": [],

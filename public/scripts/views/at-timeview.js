@@ -310,8 +310,6 @@ class AtTimeview extends HTMLElement {
         let  lastEndPoint = null;
         startPointSet.forEach((routeStart) => {
             endPointSet.forEach((routeEnd) => {
-                console.log(routeStart.activity.urn);
-                console.log(routeEnd.activity.urn);
                 const routeNodesByDepth = [];
                 const nullsAtDepth = [];
                 routesArray.forEach((route) => {
@@ -346,8 +344,6 @@ class AtTimeview extends HTMLElement {
                 for (let i = 0; i < heightByDepth.length; i++) {
                     heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
                 }
-                console.log(heightByDepth);
-                console.log(heightByDepth.length);
                 const tallest = Math.max(...heightByDepth);
 
                 boxMap.get(routeStart.id).apparentHeight += tallest;
@@ -361,9 +357,6 @@ class AtTimeview extends HTMLElement {
                 }
                 lastStartPoint = routeStart;
                 lastEndPoint = routeEnd;
-                console.log(boxMap.get(routeStart.id).apparentHeight);
-                console.log(boxMap.get(routeEnd.id).apparentHeight);
-                console.log();
             });
         });
     }
@@ -516,10 +509,6 @@ class AtTimeview extends HTMLElement {
         nodeDescriptor.height = this.svg.verticalLabelShift + this.getTallestDepth(routesArray, boxMap) + this.svg.verticalBottomMargin;            // one of the depths (columns) takes the most space
         nodeDescriptor.width = this.svg.horizontalLeftMargin + this.getWidestRouteWidth(routesArray, boxMap) + this.svg.horizontalRightMargin;
 
-
-        console.log(`tallest = ${nodeDescriptor.height}`);
-        console.log(`widest = ${nodeDescriptor.width}`);
-
         //
         // nodeModel.children.forEach((childNodeModel) => {
         //     const childBox = boxMap.get(childNodeModel.id);
@@ -556,8 +545,6 @@ class AtTimeview extends HTMLElement {
                 }
                 if ((route.shiftedNodes[i]) && (route.shiftedNodes[i] !== lastVisitedAtDepth[i])) {
                     const box = boxMap.get(route.shiftedNodes[i].id);
-                    console.log(`working on ...`);
-                    console.log(box);
 
                     const x = this.svg.horizontalLeftMargin + box.earliestPossibleX;
                     const y = whereYatDepth[i];

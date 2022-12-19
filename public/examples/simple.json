@@ -9,78 +9,42 @@
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
-  "inputs": [
-    {
-      "identity": "111in1",
-      "format": "asas"
-    },
-    {
-      "identity": "111in2",
-      "format": "dfdf"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "111out2",
-      "format": "tytyt"
-    }
-  ],
+  "endpoints": [],
   "children": [
     {
       "urn": "us:ihmc:222",
-      "id": "7d8cce29"
+      "id": "e5a2ede2"
     },
     {
       "urn": "us:ihmc:333",
-      "id": "5894134a"
+      "id": "b24b13cb"
     },
     {
-      "urn": "us:ihmc:777",
-      "id": "3a6896a4"
+      "urn": "us:ihmc:444",
+      "id": "d834f149"
     },
     {
-      "urn": "us:ihmc:888",
-      "id": "942848eb"
+      "urn": "us:ihmc:555",
+      "id": "6405533d"
     }
   ],
-  "bindings": [
-    {
-      "from": {
-        "urn": "us:ihmc:222",
-        "id": "222out2",
-        "property": "out"
-      },
-      "to": {
-        "urn": "us:ihmc:333",
-        "id": "333in1",
-        "property": "in"
-      }
-    },
-    {
-      "from": {
-        "urn": "us:ihmc:333",
-        "id": "333out1",
-        "property": "out"
-      },
-      "to": {
-        "urn": "us:ihmc:777",
-        "id": "777in",
-        "property": "in"
-      }
-    },
-    {
-      "from": {
-        "urn": "us:ihmc:333",
-        "id": "333out1",
-        "property": "out"
-      },
-      "to": {
-        "urn": "us:ihmc:888",
-        "id": "888in",
-        "property": "in"
-      }
-    }
-  ],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:222",
+  "name": "222",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "endpoints": [],
+  "children": [],
+  "bindings": [],
   "isLocked": false,
   "collapsed": false
 },{
@@ -94,34 +58,15 @@
     "returns": "node.returns.all",
     "operator": "node.operator.and"
   },
-  "inputs": [
-    {
-      "identity": "333in1",
-      "format": "erer"
-    },
-    {
-      "identity": "333in2",
-      "format": "wwww"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "333out1",
-      "format": "ioio"
-    },
-    {
-      "identity": "333ou2",
-      "format": "sdfsdf"
-    },
-    {
-      "identity": "333out",
-      "format": "fesf"
-    }
-  ],
+  "endpoints": [],
   "children": [
     {
       "urn": "us:ihmc:666",
-      "id": "14c4657e"
+      "id": "dc77a0dd"
+    },
+    {
+      "urn": "us:ihmc:777",
+      "id": "9dd84dc8"
     }
   ],
   "bindings": [],
@@ -130,7 +75,7 @@
 },{
   "urn": "us:ihmc:666",
   "name": "666",
-  "expectedDuration": "6",
+  "expectedDuration": "",
   "description": "",
   "type": "node.type.plan",
   "connector": {
@@ -138,8 +83,7 @@
     "returns": "node.returns.all",
     "operator": "node.operator.none"
   },
-  "inputs": [],
-  "outputs": [],
+  "endpoints": [],
   "children": [],
   "bindings": [],
   "isLocked": false,
@@ -155,19 +99,49 @@
     "returns": "node.returns.all",
     "operator": "node.operator.none"
   },
-  "inputs": [
-    {
-      "identity": "777in",
-      "format": "fsf"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "777out",
-      "format": "fgdg"
-    }
-  ],
+  "endpoints": [],
   "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:444",
+  "name": "444",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.none",
+    "returns": "node.returns.all",
+    "operator": "node.operator.none"
+  },
+  "endpoints": [],
+  "children": [],
+  "bindings": [],
+  "isLocked": false,
+  "collapsed": false
+},{
+  "urn": "us:ihmc:555",
+  "name": "555",
+  "expectedDuration": "",
+  "description": "",
+  "type": "node.type.plan",
+  "connector": {
+    "execution": "node.execution.sequential",
+    "returns": "node.returns.all",
+    "operator": "node.operator.and"
+  },
+  "endpoints": [],
+  "children": [
+    {
+      "urn": "us:ihmc:999",
+      "id": "6374ecbd"
+    },
+    {
+      "urn": "us:ihmc:888",
+      "id": "18c2df01"
+    }
+  ],
   "bindings": [],
   "isLocked": false,
   "collapsed": false
@@ -182,110 +156,38 @@
     "returns": "node.returns.all",
     "operator": "node.operator.none"
   },
-  "inputs": [
-    {
-      "identity": "888in",
-      "format": "fgf"
-    }
-  ],
-  "outputs": [],
+  "endpoints": [],
   "children": [],
   "bindings": [],
   "isLocked": false,
   "collapsed": false
 },{
-  "urn": "us:ihmc:222",
-  "name": "222",
+  "urn": "us:ihmc:999",
+  "name": "999",
   "expectedDuration": "",
   "description": "",
   "type": "node.type.plan",
   "connector": {
-    "execution": "node.execution.sequential",
-    "returns": "node.returns.all",
-    "operator": "node.operator.and"
-  },
-  "inputs": [
-    {
-      "identity": "222in1",
-      "format": "wqwe"
-    },
-    {
-      "identity": "222in2",
-      "format": "qweqwe"
-    }
-  ],
-  "outputs": [
-    {
-      "identity": "222out2",
-      "format": "sdfsdf"
-    },
-    {
-      "identity": "222out3",
-      "format": "sdfsdf"
-    },
-    {
-      "identity": "222out",
-      "format": "fsdfs"
-    }
-  ],
-  "children": [
-    {
-      "urn": "us:ihmc:444",
-      "id": "865973e0"
-    },
-    {
-      "urn": "us:ihmc:555",
-      "id": "44403265"
-    }
-  ],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "us:ihmc:444",
-  "name": "444",
-  "expectedDuration": "4",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
     "execution": "node.execution.none",
     "returns": "node.returns.all",
     "operator": "node.operator.none"
   },
-  "inputs": [],
-  "outputs": [],
-  "children": [],
-  "bindings": [],
-  "isLocked": false,
-  "collapsed": false
-},{
-  "urn": "us:ihmc:555",
-  "name": "555",
-  "expectedDuration": "5",
-  "description": "",
-  "type": "node.type.plan",
-  "connector": {
-    "execution": "node.execution.none",
-    "returns": "node.returns.all",
-    "operator": "node.operator.none"
-  },
-  "inputs": [],
-  "outputs": [],
+  "endpoints": [],
   "children": [],
   "bindings": [],
   "isLocked": false,
   "collapsed": false
 }], "jags" : [{
-  "id": "c3fc2c8b",
+  "id": "a7146f72",
   "urn": "us:ihmc:111",
-  "projectId": "c3fc2c8b",
+  "projectId": "a7146f72",
   "isLocked": false,
   "isExpanded": true,
-  "x": 85,
-  "y": 186,
-  "contextualName": null,
-  "contextualExpectedDuration": "15",
-  "contextualDescription": null,
+  "x": 92,
+  "y": 115,
+  "contextualName": "",
+  "contextualExpectedDuration": "0",
+  "contextualDescription": "",
   "subscriptions": [],
   "returnValue": null,
   "returnState": null,
@@ -293,17 +195,37 @@
   "testReturnState": null,
   "children": [
     {
-      "id": "69b5bbf4",
+      "id": "3101e4c8",
+      "urn": "us:ihmc:222",
+      "childId": "e5a2ede2",
+      "parentId": "a7146f72",
+      "projectId": "a7146f72",
+      "isLocked": false,
+      "isExpanded": false,
+      "x": 271,
+      "y": 20,
+      "contextualName": "",
+      "contextualExpectedDuration": "",
+      "contextualDescription": "",
+      "subscriptions": [],
+      "returnValue": null,
+      "returnState": null,
+      "testReturnValue": null,
+      "testReturnState": null,
+      "children": []
+    },
+    {
+      "id": "893137b8",
       "urn": "us:ihmc:333",
-      "childId": "5894134a",
-      "parentId": "c3fc2c8b",
-      "projectId": "c3fc2c8b",
+      "childId": "b24b13cb",
+      "parentId": "a7146f72",
+      "projectId": "a7146f72",
       "isLocked": false,
       "isExpanded": true,
-      "x": 215,
-      "y": 227,
+      "x": 269,
+      "y": 81,
       "contextualName": "",
-      "contextualExpectedDuration": "6",
+      "contextualExpectedDuration": "0",
       "contextualDescription": "",
       "subscriptions": [],
       "returnValue": null,
@@ -312,17 +234,37 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "1080ebe2",
+          "id": "0c21b9ff",
           "urn": "us:ihmc:666",
-          "childId": "14c4657e",
-          "parentId": "69b5bbf4",
-          "projectId": "c3fc2c8b",
+          "childId": "dc77a0dd",
+          "parentId": "893137b8",
+          "projectId": "a7146f72",
           "isLocked": false,
-          "isExpanded": true,
-          "x": 316,
-          "y": 227,
+          "isExpanded": false,
+          "x": 400,
+          "y": 42,
           "contextualName": "",
-          "contextualExpectedDuration": "6",
+          "contextualExpectedDuration": "",
+          "contextualDescription": "",
+          "subscriptions": [],
+          "returnValue": null,
+          "returnState": null,
+          "testReturnValue": null,
+          "testReturnState": null,
+          "children": []
+        },
+        {
+          "id": "e51043b6",
+          "urn": "us:ihmc:777",
+          "childId": "9dd84dc8",
+          "parentId": "893137b8",
+          "projectId": "a7146f72",
+          "isLocked": false,
+          "isExpanded": false,
+          "x": 401,
+          "y": 112,
+          "contextualName": "",
+          "contextualExpectedDuration": "",
           "contextualDescription": "",
           "subscriptions": [],
           "returnValue": null,
@@ -334,15 +276,15 @@
       ]
     },
     {
-      "id": "2f355cdc",
-      "urn": "us:ihmc:777",
-      "childId": "3a6896a4",
-      "parentId": "c3fc2c8b",
-      "projectId": "c3fc2c8b",
+      "id": "53bd6ef1",
+      "urn": "us:ihmc:444",
+      "childId": "d834f149",
+      "parentId": "a7146f72",
+      "projectId": "a7146f72",
       "isLocked": false,
       "isExpanded": false,
-      "x": 209,
-      "y": 313,
+      "x": 257,
+      "y": 154,
       "contextualName": "",
       "contextualExpectedDuration": "",
       "contextualDescription": "",
@@ -354,37 +296,17 @@
       "children": []
     },
     {
-      "id": "f3eae409",
-      "urn": "us:ihmc:888",
-      "childId": "942848eb",
-      "parentId": "c3fc2c8b",
-      "projectId": "c3fc2c8b",
-      "isLocked": false,
-      "isExpanded": false,
-      "x": 159,
-      "y": 382,
-      "contextualName": "",
-      "contextualExpectedDuration": "",
-      "contextualDescription": "",
-      "subscriptions": [],
-      "returnValue": null,
-      "returnState": null,
-      "testReturnValue": null,
-      "testReturnState": null,
-      "children": []
-    },
-    {
-      "id": "e970cdab",
-      "urn": "us:ihmc:222",
-      "childId": "7d8cce29",
-      "parentId": "c3fc2c8b",
-      "projectId": "c3fc2c8b",
+      "id": "3bdb547c",
+      "urn": "us:ihmc:555",
+      "childId": "6405533d",
+      "parentId": "a7146f72",
+      "projectId": "a7146f72",
       "isLocked": false,
       "isExpanded": true,
-      "x": 215,
-      "y": 149,
+      "x": 263,
+      "y": 230,
       "contextualName": "",
-      "contextualExpectedDuration": "9",
+      "contextualExpectedDuration": "0",
       "contextualDescription": "",
       "subscriptions": [],
       "returnValue": null,
@@ -393,17 +315,17 @@
       "testReturnState": null,
       "children": [
         {
-          "id": "df3a5ab4",
-          "urn": "us:ihmc:444",
-          "childId": "865973e0",
-          "parentId": "e970cdab",
-          "projectId": "c3fc2c8b",
+          "id": "7fd99616",
+          "urn": "us:ihmc:888",
+          "childId": "18c2df01",
+          "parentId": "3bdb547c",
+          "projectId": "a7146f72",
           "isLocked": false,
-          "isExpanded": true,
-          "x": 316,
-          "y": 123,
+          "isExpanded": false,
+          "x": 396,
+          "y": 192,
           "contextualName": "",
-          "contextualExpectedDuration": "4",
+          "contextualExpectedDuration": "",
           "contextualDescription": "",
           "subscriptions": [],
           "returnValue": null,
@@ -413,17 +335,17 @@
           "children": []
         },
         {
-          "id": "3d8cff52",
-          "urn": "us:ihmc:555",
-          "childId": "44403265",
-          "parentId": "e970cdab",
-          "projectId": "c3fc2c8b",
+          "id": "8fd8afe0",
+          "urn": "us:ihmc:999",
+          "childId": "6374ecbd",
+          "parentId": "3bdb547c",
+          "projectId": "a7146f72",
           "isLocked": false,
-          "isExpanded": true,
-          "x": 316,
-          "y": 175,
+          "isExpanded": false,
+          "x": 408,
+          "y": 272,
           "contextualName": "",
-          "contextualExpectedDuration": "5",
+          "contextualExpectedDuration": "",
           "contextualDescription": "",
           "subscriptions": [],
           "returnValue": null,

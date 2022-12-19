@@ -9,6 +9,7 @@
 import {uuidV4} from '../utils/uuid.js';
 import Validation from "../utils/validation.js";
 import Binding from "./binding.js";
+import Endpoint from "./endpoint.js";
 
 
 export default class Activity extends EventTarget {
@@ -23,14 +24,15 @@ export default class Activity extends EventTarget {
             operator: Activity.OPERATOR.NONE.name,
             onfail: Activity.RETURNS.NONE.name
         },
-        inputs = [],
-        outputs = [],
+        endpoints = [],
+        // inputs = [],
+        // outputs = [],
         children = [],
         bindings = [],   // list of Binding
         author,
         createdDate,
         modifiedDate,
-        expectedDuration = '',
+        expectedDuration = ``,
         lockedBy,
         isLocked = Boolean(false),
         collapsed = Boolean(false)
@@ -41,8 +43,9 @@ export default class Activity extends EventTarget {
         this._name = name;
         this._description = description;
         this._connector = connector;
-        this._inputs = inputs ? [...inputs] : [];
-        this._outputs = outputs ? [...outputs] : [];
+        this._endpoints = endpoints;
+        // this._inputs = inputs ? [...inputs] : [];
+        // this._outputs = outputs ? [...outputs] : [];
         this._children = children ? [...children] : [];
         this._bindings = bindings;
 
@@ -65,6 +68,7 @@ export default class Activity extends EventTarget {
                 child.annotations = annotations;
             }
         }
+        this._endpoints = endpoints;
     }
 
 
@@ -143,63 +147,82 @@ export default class Activity extends EventTarget {
         return this._connector;
     }
 
-    set inputs(value) {
-        this._inputs = value;
+
+    get endpoints() {
+        return this._endpoints;
     }
 
-    get inputs() {
-        return [...this._inputs];
+    set endpoints(value) {
+        this._endpoints = value;
     }
 
-    removeInput(identity) {
-        const extantInputs = this.inputs.filter((extantInput) => {
-            return extantInput.identity !== identity;
+    getInputs() {
+        const inputs = this.endpoints.filter((endpoint) => {
+            return endpoint.direction === `input`;
         });
-        this._inputs = extantInputs;
+        return inputs;
     }
 
-    addInput(input) {
-        if (this._hasInput(input.identity)) {
-            this.removeInput(input.identity);
+    getOutputs() {
+        const outputs = this.endpoints.filter((endpoint) => {
+            return endpoint.direction === `output`;
+        });
+        return outputs;
+    }
+
+    removeEndpoint(endpoint) {
+        const extantEndpoints = this.endpoints.filter((extantEndpoint) => {
+            return extantEndpoint !== endpoint;
+        });
+        this._endpoints = extantEndpoints;
+    }
+
+    addEndpoint(endpoint) {
+        if (this.hasEndpoint(endpoint)) {
+            this.removeEndpoint(endpoint.exchangeName);
         }
-        this._inputs.push(input);
+        this._endpoints.push(endpoint);
     }
 
-    _hasInput(identity) {
-        const extantIdentities = this.inputs.map((input) => {
-            return input.identity;
+    hasEndpoint(endpoint) {
+        let found = false;
+        this.endpoints.forEach((extantEndpoint) => {
+            if (extantEndpoint.equals(endpoint)) {
+                found = true;
+            }
         });
-        return extantIdentities.includes(identity);
+        return found;
     }
 
-
-    set outputs(value) {
-        this._outputs = value;
+    //
+    removeInput(exchangeName) {
+        const endpoint = new Endpoint();
+        endpoint.exchangeName = exchangeName;
+        endpoint.direction = `input`;
+        endpoint.exchangeSourceUrn = this.urn;
+        this.removeEndpoint(endpoint);
     }
 
-    get outputs() {
-        return [...this._outputs];
+    removeOutput(exchangeName) {
+        const endpoint = new Endpoint();
+        endpoint.exchangeName = exchangeName;
+        endpoint.direction = `output`;
+        endpoint.exchangeSourceUrn = this.urn;
+        this.removeEndpoint(endpoint);
     }
 
-    removeOutput(identity) {
-        const extantOutputs = this.outputs.filter((extantOutput) => {
-            return extantOutput.identity !== identity;
-        });
-        this._outputs = extantOutputs;
+    addInput(exchangeName, exchangeType) {
+        const newEndpoint = new Endpoint({exchangeName, exchangeType});
+        newEndpoint.direction = `input`;
+        newEndpoint.exchangeSourceUrn = this.urn;
+        this.addEndpoint(newEndpoint);
     }
 
-    addOutput(output) {
-        if (this._hasOutput(output.identity)) {
-            this.removeOutput(output.identity);
-        }
-        this._outputs.push(output);
-    }
-
-    _hasOutput(identity) {
-        const extantIdentities = this.outputs.map((output) => {
-            return output.identity;
-        });
-        return extantIdentities.includes(identity);
+    addOutput(exchangeName, exchangeType) {
+        const newEndpoint = new Endpoint({exchangeName, exchangeType});
+        newEndpoint.direction = `output`;
+        newEndpoint.exchangeSourceUrn = this.urn;
+        this.addEndpoint(newEndpoint);
     }
 
 
@@ -388,38 +411,38 @@ export default class Activity extends EventTarget {
      * @param {String} id ID of the child for which to seek inputs.
      * @returns {Array<{id:String,activity:Activity,property:String,type:String}>} Inputs available to the child with the given ID.
      */
-    inputsTo(id) {
-        const availableInputs = this._inputs.map((input) => {
-            return {
-                id: `this`,
-                activity: this,
-                property: input.identity,
-                type: input.format
-            };
-        });
-
-        if (this.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
-            for (const child of this._children) {
-                if (child.id === id) {
-                    break;
-                }
-                if (child.activity) {
-                    const child_outputs = child.activity.outputs;
-
-                    for (const child_output of child_outputs) {
-                        availableInputs.push({
-                            id: child.id,
-                            activity: child.activity,
-                            property: child_output.identity,
-                            type: child_output.format
-                        });
-                    }
-                }
-            }
-        }
-
-        return availableInputs;
-    }
+    // inputsTo(id) {
+    //     const availableInputs = this._inputs.map((input) => {
+    //         return {
+    //             id: `this`,
+    //             activity: this,
+    //             exchangeName: input.exchangeName,
+    //             exchangeType: input.exchangeType
+    //         };
+    //     });
+    //
+    //     if (this.connector.execution === Activity.EXECUTION.SEQUENTIAL.name) {
+    //         for (const child of this._children) {
+    //             if (child.id === id) {
+    //                 break;
+    //             }
+    //             if (child.activity) {
+    //                 const child_outputs = child.activity.outputs;
+    //
+    //                 for (const child_output of child_outputs) {
+    //                     availableInputs.push({
+    //                         id: child.id,
+    //                         activity: child.activity,
+    //                         property: child_output.exchangeName,
+    //                         type: child_output.exchangeType
+    //                     });
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     return availableInputs;
+    // }
 
     removeBinding(removedBinding) {
         let resultBindings;
@@ -540,7 +563,7 @@ export default class Activity extends EventTarget {
     getConsumingChildren(urn) {
         let leafConsumers = [];
         if (this.hasConsumingSiblings()) {
-            leafConsumers = [...this.getConsumingSiblings()]
+            leafConsumers = [...this.getConsumingSiblings()];
         }
         return leafConsumers;
     }
@@ -653,8 +676,9 @@ export default class Activity extends EventTarget {
                 returns: this.connector.returns,
                 operator: this.connector.operator
             },
-            inputs: [],
-            outputs: [],
+            endpoints: [],
+            // inputs: [],
+            // outputs: [],
             children: [],
             bindings: [],
             isLocked: this._isLocked,
@@ -687,12 +711,18 @@ export default class Activity extends EventTarget {
             json.children.push(descriptor);
         });
 
-        this._inputs.forEach((input) => {
-            json.inputs.push(input);
+        const endpointStack = [];
+        this._endpoints.forEach((endpoint) => {
+            endpointStack.push(endpoint.toJSON());
         });
-        this._outputs.forEach((output) => {
-            json.outputs.push(output);
-        });
+        json.endpoints = endpointStack;
+
+        // this._inputs.forEach((input) => {
+        //     json.inputs.push(input);
+        // });
+        // this._outputs.forEach((output) => {
+        //     json.outputs.push(output);
+        // });
         const bindingStack = [];
         this._bindings.forEach((binding) => {
             bindingStack.push(binding.toJSON());
@@ -708,24 +738,32 @@ export default class Activity extends EventTarget {
                 try {
                     Validation.validateJAG(element);
                 } catch (e) {
-                    throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+                    throw new Error(`Error fromJSON parsing ${JSON.stringify(json)}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
                 }
 
                 const returnValue = new Activity(element);
                 return returnValue;
             });
+            console.log("------------------I THINK THIS IS BAD AND SHOULD BE CHECKED OUT CLOSER  --------------------------------------------")
             return jagList;
         } else {
             try {
                 Validation.validateJAG(json);
             } catch (e) {
-                throw new Error(`Error fromJSON parsing ${json}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
+                throw new Error(`Error fromJSON parsing ${JSON.stringify(json)}: ${e.message}`);  // note to self: if you get an error bringing you here, it might be forgetting the schema.
             }
+
             const bindingStack = [];
             for (const binding of json.bindings) {
                 bindingStack.push(Binding.fromJSON(binding));
             }
             json.bindings = bindingStack;
+
+            const endpointStack = [];
+            for (const endpoint of json.endpoints) {
+                endpointStack.push(Endpoint.fromJSON(endpoint));
+            }
+            json.endpoints = endpointStack;
 
             const returnValue = new Activity(json);
             return returnValue;

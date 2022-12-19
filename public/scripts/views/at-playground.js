@@ -499,11 +499,13 @@ class AtPlayground extends Popupable {
         this.svg.hideAllBindings();
         const selectedEndpoints = [...selectedFromEndpoints, ...selectedToEndpoints];
         selectedEndpoints.forEach((endpoint) => {
+            console.log(`--->`)
+            console.log(endpoint)
             this.viewedProjects.forEach((project) => {
                 const nodeList = project.activitiesInProject(endpoint.urn);
                 nodeList.forEach((node) => {
                     let $endpoint;
-                    if (endpoint.property === `in`) {
+                    if (endpoint.direction === `input`) {
                         $endpoint = this.svg.fetchInputEndpoint(node.id, endpoint.id);
                     } else {
                         $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
@@ -881,6 +883,7 @@ class AtPlayground extends Popupable {
     }
 
 
+
     buildJointActivityGraph(parentGroup, nodeModel) {
         const nodeBox = {x: nodeModel.x,
             y: nodeModel.y,
@@ -906,7 +909,8 @@ class AtPlayground extends Popupable {
         } else {
             possibleWidth1 = this.svg.labelWidth(labelElement) + this.svg.horizontalLeftMargin + this.svg.horizontalRightMargin + this.svg.buttonSize;
         }
-        const possibleWidth2 = Math.max(nodeModel.activity.inputs.length, nodeModel.activity.inputs.length) * 10;
+
+        const possibleWidth2 = Math.max(nodeModel.activity.getInputs().length, nodeModel.activity.getOutputs().length) * 10;
         nodeBox.width = Math.max(possibleWidth1, possibleWidth2);
         const svgRect = this.svg.createRectangle(nodeBox.width, nodeBox.height, nodeModel.id);
         this.svg.positionItem(svgRect, 0, 0);
@@ -942,31 +946,31 @@ class AtPlayground extends Popupable {
             nodeContentGroup.insertBefore(addButton, svgText);
         }
 
-        if (nodeModel.activity.inputs.length !== 0) {
-            const spread = nodeBox.width / (nodeModel.activity.inputs.length + 1);  // +1 -> making space from corners
+        if (nodeModel.activity.getInputs().length !== 0) {
+            const spread = nodeBox.width / (nodeModel.activity.getInputs().length + 1);  // +1 -> making space from corners
             const topLayer = [];
-            nodeModel.activity.inputs.forEach((endpoint) => {
-                topLayer.push(endpoint.identity);
+            nodeModel.activity.getInputs().forEach((endpoint) => {
+                topLayer.push(endpoint.exchangeName);
             });
-            nodeModel.activity.inputs.forEach((endpoint) => {
-                const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.identity);
+            nodeModel.activity.getInputs().forEach((endpoint) => {
+                const endpointCircle = this.svg.createInputEndpoint(nodeModel.id, endpoint.exchangeName);
                 endpointCircle.classList.add(`hidden`);
-                const position = spread + (topLayer.indexOf(endpoint.identity) * spread);
+                const position = spread + (topLayer.indexOf(endpoint.exchangeName) * spread);
                 this.svg.positionItem(endpointCircle, position, 0);
                 nodeContentGroup.insertBefore(endpointCircle, svgText);
             });
         }
 
-        if (nodeModel.activity.outputs.length !== 0) {
-            const spread = nodeBox.width / (nodeModel.activity.outputs.length + 1);  // +1 -> making space from corners
+        if (nodeModel.activity.getOutputs().length !== 0) {
+            const spread = nodeBox.width / (nodeModel.activity.getOutputs().length + 1);  // +1 -> making space from corners
             const bottomLayer = [];
-            nodeModel.activity.outputs.forEach((endpoint) => {
-                bottomLayer.push(endpoint.identity);
+            nodeModel.activity.getOutputs().forEach((endpoint) => {
+                bottomLayer.push(endpoint.exchangeName);
             });
-            nodeModel.activity.outputs.forEach((endpoint) => {
-                const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.identity);
+            nodeModel.activity.getOutputs().forEach((endpoint) => {
+                const endpointCircle = this.svg.createOutputEndpoint(nodeModel.id, endpoint.exchangeName);
                 endpointCircle.classList.add(`hidden`);
-                const position = spread + (bottomLayer.indexOf(endpoint.identity) * spread);
+                const position = spread + (bottomLayer.indexOf(endpoint.exchangeName) * spread);
                 this.svg.positionItem(endpointCircle, position, nodeBox.height);
                 nodeContentGroup.insertBefore(endpointCircle, svgText);
             });

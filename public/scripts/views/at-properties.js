@@ -19,7 +19,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     constructor() {
         super();
         this._focusNode = undefined;
-        this._selectedFromEndpoints = [];
+        this._selectedFromBindpoints = [];
         this._selectedToEndpoints = [];
         this._elementMap = new Map();
         this._initUI();
@@ -35,7 +35,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this._elementMap.get(`name-input`).addEventListener(`blur`, this._handleActivityNameChange.bind(this));
         this._elementMap.get(`duration-input`).addEventListener(`blur`, this._handleExpectedDurationChange.bind(this));
         this._elementMap.get(`desc-input`).addEventListener(`blur`, this._handleActivityDescChange.bind(this));
-
         this._elementMap.get(`execution-select`).addEventListener(`change`, this._handleExecutionChange.bind(this));
         this._elementMap.get(`operator-select`).addEventListener(`change`, this._handleOperatorChange.bind(this));
 
@@ -59,12 +58,14 @@ customElements.define(`jag-properties`, class extends HTMLElement {
      *  Event Handlers
      * _handleUrnChange
      * _handleActivityNameChange
+     * _handleExpectedDurationChange
      * _handleActivityDescChange
      * _handleExecutionChange
      * _handleOperatorChange
      * _handleAddEndpointIn
      * _handleAddEndpointOut
      * _handleNodeNameChange
+     * _handleNodeExpectedDurationChange
      * _handleNodeDescChange
      * _handleExportJsonClick
      * _handleExportSvgClick
@@ -103,7 +104,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             }));
         }
     }
-
 
     _handleExpectedDurationChange(e) {
         e.stopImmediatePropagation();
@@ -160,45 +160,40 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     _handleAddEndpointIn() {
         if (this._focusNode) {
-            const identity = window.prompt(`Input name`);
-            if (identity === ``) {
+            const activity = this._focusNode.activity;
+            const exchangeName = window.prompt(`Input name`);
+            if (exchangeName === ``) {
                 return;
             }
-            const format = window.prompt(`Input type`);
-            if (format === ``) {
+            const exchangeType = window.prompt(`Input type`);
+            if (exchangeType === ``) {
                 return;
             }
-            const input = {identity,
-                format};
-            this._focusNode.activity.addInput(input);
+            activity.addInput(exchangeName, exchangeType);
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
-                detail: {activity: this._focusNode.activity}
+                detail: {activity}
             }));
         }
     }
 
     _handleAddEndpointOut() {
-        if (this._focusNode) { // } && !(this._focusNode instanceof UndefinedJAG)) {
-            const identity = window.prompt(`Output name`);
-            if (identity === ``) {
+        if (this._focusNode) {
+            const activity = this._focusNode.activity;
+            const exchangeName = window.prompt(`Output name`);
+            if (exchangeName === ``) {
                 return;
             }
-
-            const format = window.prompt(`Output type`);
-            if (format === ``) {
+            const exchangeType = window.prompt(`Output type`);
+            if (exchangeType === ``) {
                 return;
             }
-
-            const output = {identity,
-                format};
-
-            this._focusNode.activity.addOutput(output);
+            activity.addOutput(exchangeName, exchangeType);
             this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                 bubbles: true,
                 composed: true,
-                detail: {activity: this._focusNode.activity}
+                detail: {activity}
             }));
         }
     }
@@ -215,7 +210,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             }));
         }
     }
-
 
     _handleNodeExpectedDurationChange(e) {
         {
@@ -278,131 +272,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
     }
 
-    blacklistProviders(urn) {
-        const workStack = [];
-        const blackListedUrns = new Set();
-        const childrenArray = this._focusNode.activity.children.map((child) => {
-            return child.urn;
-        });
-        workStack.push(urn);
-        while (workStack.length > 0) {
-            const checkUrn = workStack.pop();
-            if (childrenArray.includes(checkUrn)) {
-                blackListedUrns.add(urn);
-                const forbiddenProviders = this._focusNode.activity.bindings.filter((binding) => {
-                    return ((binding.to.urn === checkUrn) && (childrenArray.includes(binding.from.urn)));
-                }).map((binding2) => {
-                    return binding2.from.urn;
-                });
-                forbiddenProviders.forEach((urn) => {
-                    blackListedUrns.add(urn);
-                    workStack.push(urn);
-                });
-            }
-        }
-        return blackListedUrns;
-    }
-
-
-    convertOptionsToEndpoints($selectedOptions) {
-        const endpointArray = Array.from($selectedOptions).map((selectedFromEndpoint) => {
-            const fromEndpointDefinition = new Endpoint();
-            fromEndpointDefinition.property = selectedFromEndpoint.value.split(`/`)[0];
-            fromEndpointDefinition.urn = selectedFromEndpoint.value.split(`/`)[1];
-            fromEndpointDefinition.id = selectedFromEndpoint.label.split(` `)[0];
-            return fromEndpointDefinition;
-        });
-        return endpointArray;
-    }
-
-    isRemovable(bindings, fromEndpoints) {
-        let removable = true;
-        fromEndpoints.forEach((endpoint) => {
-            bindings.forEach((binding) => {
-                if (((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id)) || (endpoint.urn !== this._focusNode.activity.urn)) {
-                    removable = false;
-                }
-            });
-        });
-        return removable;
-    }
-
-    isUnbindable(bindings, fromEndpoints, toEndpoints = null) {
-        let unbindable = true;
-        if (toEndpoints) {
-            fromEndpoints.forEach((fromEndpoint) => {
-                toEndpoints.forEach((toEndpoint) => {
-                    let thisPairUnbindable = false;
-                    bindings.forEach((binding) => {
-                        if ((binding.from.urn === fromEndpoint.urn) && (binding.from.id === fromEndpoint.id) && (binding.to.urn === toEndpoint.urn) && (binding.to.id === toEndpoint.id)) {
-                            thisPairUnbindable = true;
-                        }
-                    });
-                    if (!(thisPairUnbindable)) {
-                        unbindable = false;
-                    }
-                });
-            });
-        } else {
-            fromEndpoints.forEach((endpoint) => {
-                let thisFromUnbindable = false;
-                bindings.forEach((binding) => {
-                    if ((binding.from.urn === endpoint.urn) && (binding.from.id === endpoint.id)) {
-                        thisFromUnbindable = true;
-                    }
-                });
-                if (!(thisFromUnbindable)) {
-                    unbindable = false;
-                }
-            });
-        }
-        return unbindable;
-    }
-
-    areEndpointsSameType(selectedEndpoints) {
-        const activityConnectionType = selectedEndpoints[0].property;
-        let isSameType = true;
-        selectedEndpoints.forEach((endpoint) => {
-            if (endpoint.property !== activityConnectionType) {
-                isSameType = false;
-            }
-        });
-        return isSameType;
-    }
-
-    filterInvalidDestinations(selectedFromEndpoints) {
-        const blacklistedUrns = [];
-        selectedFromEndpoints.forEach((endpoint) => {
-            const blacklistedProviders = this.blacklistProviders(endpoint.urn);
-            blacklistedProviders.forEach((blacklistedProvider) => {
-                blacklistedUrns.push(blacklistedProvider);
-            });
-        });
-
-        const allowedChildIns = this._getChildIns().filter((endpoint) => {
-            return (!(blacklistedUrns.includes(endpoint.activityId)));
-        });
-        // 2) create 2nd $select of allowed endpoints to end the route.
-        // Check if property types are same or mixed (ins, outs, mixed)
-
-        const homeoTypus = this.areEndpointsSameType(selectedFromEndpoints);
-        let allowedEndpointDestination = [];
-        if (homeoTypus) {
-            if (selectedFromEndpoints[0].property === `in`) {
-                allowedEndpointDestination = allowedChildIns;
-            } else if (selectedFromEndpoints[0].property === `out`) {
-                allowedEndpointDestination = [...this._getSelfOuts(), ...allowedChildIns];
-            }
-        } else {
-            allowedEndpointDestination = allowedChildIns;
-        }
-        return allowedEndpointDestination;
-    }
-
-
     handleFromSelect(e) {
         const $selectedFromOptions = Array.from(e.target.selectedOptions);  // HTMLCollection
-        this._selectedFromEndpoints = [];
+        this._selectedFromBindpoints = [];
 
         const $bindButton = this._elementMap.get(`bind-button`);
         const $unbindButton = this._elementMap.get(`unbind-button`);
@@ -426,11 +298,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             removable = false;
             bindable = false;
         } else {
-            this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
-            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints);
+            this._selectedFromBindpoints = this.convertOptionsToEndpoints($selectedFromOptions);
+            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromBindpoints);
 
-            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
-            removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromBindpoints);
+            removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromBindpoints);
 
             $toEndpointSelect.classList.remove(`hidden`);
             this._addAllowedEndpointsToSelect($toEndpointSelect, allowedEndpointDestination, false);
@@ -438,10 +310,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $bindButton.disabled = !(bindable);
         $unbindButton.disabled = !(unbindable);
         $removeButton.disabled = !(removable);
+        console.log(`this._selectedFromBindpoints`)
+        console.log(this._selectedFromBindpoints)
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
-            detail: {fromEndpoints: this._selectedFromEndpoints,
+            detail: {fromEndpoints: this._selectedFromBindpoints,
                 toEndpoints: []}
         }));
     }
@@ -463,12 +337,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         } else {
             this._selectedToEndpoints = Array.from($selectedToEndpoints).map((selectedToEndpoint) => {
                 const fromToDefinition = new Endpoint();
-                fromToDefinition.property = selectedToEndpoint.value.split(`/`)[0];
-                fromToDefinition.urn = selectedToEndpoint.value.split(`/`)[1];
-                fromToDefinition.id = selectedToEndpoint.label.split(` `)[0];
+                fromToDefinition.exchangeType = selectedToEndpoint.value.split(`/`)[0];
+
+                fromToDefinition.exchangeSourceUrn = selectedToEndpoint.value.split(`/`)[1];
+                fromToDefinition.exchangeName = selectedToEndpoint.label.split(` `)[0];
                 return fromToDefinition;
             });
-            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints, this._selectedToEndpoints);
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromBindpoints, this._selectedToEndpoints);
 
             $bindButton.disabled = unbindable;
         }
@@ -477,14 +352,14 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
-            detail: {fromEndpoints: this._selectedFromEndpoints,
+            detail: {fromEndpoints: this._selectedFromBindpoints,
                 toEndpoints: this._selectedToEndpoints}
         }));
     }
 
     handleBindButton(e) {
         const $bindButton = this._elementMap.get(`bind-button`);
-        this._selectedFromEndpoints.forEach((from) => {
+        this._selectedFromBindpoints.forEach((from) => {
             this._selectedToEndpoints.forEach((to) => {
                 const binding = new Binding({from,
                     to});
@@ -499,23 +374,19 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }));
         $bindButton.disabled = true;
     }
-    // console.log(`removing all the items in `)
-    // console.log(this._selectedFromEndpoints)
-    // console.log(`now`)
-    // console.log(selectedFromEndpoint)
 
     handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
         if (this._selectedToEndpoints.length === 0) {
-            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
-                const removedBinding = new Binding({from: selectedFromEndpoint,
+            this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
+                const removedBinding = new Binding({from: selectedFromBindpoint,
                     to: null});
                 this._focusNode.activity.removeBinding(removedBinding);
             });
         } else {
-            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+            this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
                 this._selectedToEndpoints.forEach((selectedToEndpoint) => {
-                    const removedBinding = new Binding({from: selectedFromEndpoint,
+                    const removedBinding = new Binding({from: selectedFromBindpoint,
                         to: selectedToEndpoint});
                     this._focusNode.activity.removeBinding(removedBinding);
                 });
@@ -532,12 +403,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     handleRemoveButton() {
         const $removeButton = this._elementMap.get(`remove-button`);
-        this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
-            if (selectedFromEndpoint.property === `in`) {
-                this._focusNode.activity.removeInput(selectedFromEndpoint.id);
+        this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
+            if (selectedFromBindpoint.direction === `input`) {
+                this._focusNode.activity.removeInput(selectedFromBindpoint.id);
             }
-            if (selectedFromEndpoint.property === `out`) {
-                this._focusNode.activity.removeOutput(selectedFromEndpoint.id);
+            if (selectedFromBindpoint.direction === `output`) {
+                this._focusNode.activity.removeOutput(selectedFromBindpoint.id);
             }
         });
 
@@ -583,12 +454,13 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
 
     /**
+     * Manipulating the Property fields - populate, enable, clear, tooltips
+     *
      *  _populatePropertyFields - fill property values according to reflect this._focusNode (on Activity update or new _focusNode)
      *  _enablePropertyInputs - Property entries are turned on and flags displayed
      *  _addPropertyTooltips
      *   _clearProperties
      */
-
 
     _populatePropertyFields(focusNode) {
         const $leafs = Array.from(document.getElementsByClassName(`activity leaf-only`));
@@ -618,7 +490,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     _enablePropertyInputs(enabled, focusNode) {
-
         this._elementMap.get(`urn-input`).disabled = !enabled;
         this._elementMap.get(`name-input`).disabled = !enabled;
         this._elementMap.get(`duration-input`).disabled = !enabled;
@@ -635,11 +506,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         const $leafs = Array.from(document.getElementsByClassName(`node leaf-only`));
         $leafs.forEach((leaf) => {
             if (focusNode && focusNode.hasChildren()) {
-                let childElements = Array.from(leaf.getElementsByTagName(`input`));
+                const childElements = Array.from(leaf.getElementsByTagName(`input`));
 
                 childElements.forEach((element) => {
                     element.disabled = true;
-                })
+                });
             }
         });
     }
@@ -674,8 +545,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     /**
+     * Endpoints
+     *
      *  _populateEndpoints
      * _clearEndpoints
+     * areEndpointsSameType
      */
 
     _populateEndpoints() {                // (when properties update)
@@ -709,7 +583,273 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $removeButton.disabled = true;
     }
 
+    areEndpointsSameType(selectedEndpoints) {
+        const activityConnectionType = selectedEndpoints[0].direction;
+        let isSameType = true;
+        selectedEndpoints.forEach((endpoint) => {
+            if (endpoint.direction !== activityConnectionType) {
+                isSameType = false;
+            }
+        });
+        return isSameType;
+    }
+
+
     /**
+     * Binding Select Builders
+     * _convertEndpointsToOptions - given allowed endpoints, convert to option elements
+     * convertOptionsToEndpoints
+     * _getSelectListSize (util)
+     * _addAllowedEndpointsToSelect
+     * _getSelfIns
+     * _getSelfOuts
+     * _getChildIns
+     * _getChildOuts
+     * blacklistProviders
+     * filterInvalidDestinations
+     * isRemovable
+     * isUnbindable
+     */
+
+    _convertEndpointsToOptions(selectOptions, addBindings) {
+        let options;
+        if (selectOptions.length > 0) {
+            options = selectOptions.map((selectOption) => {
+                let label;
+                if (selectOption.activityId === this._focusNode.activity.urn) {
+                    label = `(${selectOption.activityConnectionType}) this`;
+                } else {
+                    label = `(${selectOption.activityConnectionType}) ${selectOption.activityName}`;
+                }
+
+                return [
+                    {
+                        label,
+                        options: selectOption.endpoints.map((selectOptionEndpoint) => {
+                            // urn (us:ihmc:111) id(111in1) property(in)
+                            // has a name(111in1) and type(111)
+                            let optionDisplay = selectOptionEndpoint.exchangeName;
+                            // Look to see if previous binding can be added to the option text string...
+                            if (addBindings) {   // method parameter to state whether this previous binding is desired for display
+                                const foundBindings = [];
+                                this._focusNode.activity.bindings.forEach((extantBinding) => {
+                                    if ((extantBinding.from.exchangeName === selectOptionEndpoint.exchangeName) && (extantBinding.from.exchangeSourceUrn === selectOption.activityId)) {
+                                        foundBindings.push(extantBinding.to.exchangeName);
+                                    }
+                                });
+                                if (foundBindings.length > 0) {
+                                    optionDisplay = `${optionDisplay} ${this.ARROW} `;
+                                    foundBindings.forEach((foundToEndpoints) => {
+                                        optionDisplay = `${optionDisplay} ${foundToEndpoints}`;
+                                        // optionDisplay = `${optionDisplay} ${selectOption.activityName}:${foundToEndpoints}`;  // long version -- need scrolling
+                                    });
+                                }
+                            }
+                            // }
+                            return {
+                                text: optionDisplay,
+                                value: `${selectOption.activityConnectionType}/${selectOption.activityId}`
+                            };
+                        })
+                    }
+                ];
+            }).reduce((prev, current) => {
+                return prev.concat(current);
+            });
+        } else {
+            options = [];
+        }
+        return options;
+    }
+
+    convertOptionsToEndpoints($selectedOptions) {
+        const endpointArray = Array.from($selectedOptions).map((selectedFromBindpoint) => {
+            const fromEndpointDefinition = new Endpoint();
+            fromEndpointDefinition.direction = selectedFromBindpoint.value.split(`/`)[0];
+            fromEndpointDefinition.exchangeSourceUrn = selectedFromBindpoint.value.split(`/`)[1];
+            fromEndpointDefinition.exchangeName = selectedFromBindpoint.label.split(` `)[0];
+            fromEndpointDefinition.exchangeType = `xxx`;
+            // NO EXCHANGE TYPE AVAILABLE HERE - NO BIG DEAL IF JUST DRAWING LINES
+            return fromEndpointDefinition;
+        });
+        return endpointArray;
+    }
+
+    _getSelectListSize(endpointOptions) {
+        return endpointOptions.reduce((prev, curr) => {
+            return prev + 1 + Number(curr.endpoints.length);
+        }, 0);
+    }
+
+    _addAllowedEndpointsToSelect($selectList, allowedEndpoints, addBindings) {
+        const numRows = this._getSelectListSize(allowedEndpoints);
+        const options = this._convertEndpointsToOptions(allowedEndpoints, addBindings);
+        FormUtils.updateSelect($selectList, options);
+        $selectList.multiple = true;
+        $selectList.size = numRows;
+    }
+
+    _getSelfIns() {
+        const availableInputs = [];
+        if (this._focusNode.activity.getInputs().length > 0) {
+            availableInputs.push({
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `input`,
+                endpoints: this._focusNode.activity.getInputs()
+            });
+        }
+        return availableInputs;
+    }
+
+    _getSelfOuts() {
+        const availableOutputs = [];
+        if (this._focusNode.activity.getOutputs().length > 0) {
+            availableOutputs.push({
+                activityId: this._focusNode.activity.urn,
+                activityName: this._focusNode.activity.name,
+                activityConnectionType: `output`,
+                endpoints: this._focusNode.activity.getOutputs()
+            });
+        }
+        return availableOutputs;
+    }
+
+    _getChildIns() {
+        const availableInputs = [];
+        const alreadyTallied = [];
+        this._focusNode.children.forEach((child) => {
+            if ((child.activity.getInputs().length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
+                availableInputs.push({
+                    activityId: child.activity.urn,
+                    activityName: child.activity.name,
+                    activityConnectionType: `input`,
+                    endpoints: child.activity.getInputs()
+                });
+                alreadyTallied.push(child.activity.urn);
+            }
+        });
+        return availableInputs;
+    }
+
+    _getChildOuts() {
+        const availableOutputs = [];
+        const alreadyTallied = [];
+        this._focusNode.children.forEach((child) => {
+            if ((child.activity.getOutputs().length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
+                availableOutputs.push({
+                    activityId: child.activity.urn,
+                    activityName: child.activity.name,
+                    activityConnectionType: `output`,
+                    endpoints: child.activity.getOutputs()
+                });
+                alreadyTallied.push(child.activity.urn);
+            }
+            // this._annotations;
+        });
+        return availableOutputs;
+    }
+
+    blacklistProviders(urn) {
+        const workStack = [];
+        const blackListedUrns = new Set();
+        const childrenArray = this._focusNode.activity.children.map((child) => {
+            return child.urn;
+        });
+        workStack.push(urn);
+        while (workStack.length > 0) {
+            const checkUrn = workStack.pop();
+            if (childrenArray.includes(checkUrn)) {
+                blackListedUrns.add(urn);
+                const forbiddenProviders = this._focusNode.activity.bindings.filter((binding) => {
+                    return ((binding.to.exchangeSourceUrn === checkUrn) && (childrenArray.includes(binding.from.exchangeSourceUrn)));
+                }).map((binding2) => {
+                    return binding2.from.exchangeSourceUrn;
+                });
+                forbiddenProviders.forEach((urn) => {
+                    blackListedUrns.add(urn);
+                    workStack.push(urn);
+                });
+            }
+        }
+        return blackListedUrns;
+    }
+
+    filterInvalidDestinations(selectedFromBindpoints) {
+        const blacklistedUrns = [];
+        selectedFromBindpoints.forEach((endpoint) => {
+            const blacklistedProviders = this.blacklistProviders(endpoint.urn);
+            blacklistedProviders.forEach((blacklistedProvider) => {
+                blacklistedUrns.push(blacklistedProvider);
+            });
+        });
+
+        const allowedChildIns = this._getChildIns().filter((endpoint) => {
+            return (!(blacklistedUrns.includes(endpoint.activityId)));
+        });
+        // 2) create 2nd $select of allowed endpoints to end the route.
+        // Check if property types are same or mixed (ins, outs, mixed)
+
+        const homeoTypus = this.areEndpointsSameType(selectedFromBindpoints);
+        let allowedEndpointDestination = [];
+        if (homeoTypus) {
+            if (selectedFromBindpoints[0].direction === `input`) {
+                allowedEndpointDestination = allowedChildIns;
+            } else if (selectedFromBindpoints[0].direction === `output`) {
+                allowedEndpointDestination = [...this._getSelfOuts(), ...allowedChildIns];
+            }
+        } else {
+            allowedEndpointDestination = allowedChildIns;
+        }
+        return allowedEndpointDestination;
+    }
+
+    isRemovable(bindings, fromEndpoints) {
+        let removable = true;
+        fromEndpoints.forEach((endpoint) => {
+            bindings.forEach((binding) => {
+                if (((binding.from.exchangeSourceUrn === endpoint.exchangeSourceUrn) && (binding.from.exchangeName === endpoint.exchangeName)) || (endpoint.exchangeSourceUrn !== this._focusNode.activity.urn)) {
+                    removable = false;
+                }
+            });
+        });
+        return removable;
+    }
+
+    isUnbindable(bindings, fromEndpoints, toEndpoints = null) {
+        let unbindable = true;
+        if (toEndpoints) {
+            fromEndpoints.forEach((fromEndpoint) => {
+                toEndpoints.forEach((toEndpoint) => {
+                    let thisPairUnbindable = false;
+                    bindings.forEach((binding) => {
+                        if ((binding.from.exchangeSourceUrn === fromEndpoint.exchangeSourceUrn) && (binding.from.exchangeName === fromEndpoint.exchangeName) && (binding.to.exchangeSourceUrn === toEndpoint.exchangeSourceUrn) && (binding.to.exchangeName === toEndpoint.exchangeName)) {
+                            thisPairUnbindable = true;
+                        }
+                    });
+                    if (!(thisPairUnbindable)) {
+                        unbindable = false;
+                    }
+                });
+            });
+        } else {
+            fromEndpoints.forEach((endpoint) => {
+                let thisFromUnbindable = false;
+                bindings.forEach((binding) => {
+                    if ((binding.from.exchangeSourceUrn === endpoint.exchangeSourceUrn) && (binding.from.exchangeName === endpoint.exchangeName)) {
+                        thisFromUnbindable = true;
+                    }
+                });
+                if (!(thisFromUnbindable)) {
+                    unbindable = false;
+                }
+            });
+        }
+        return unbindable;
+    }
+
+    /**
+     * Annotations
      *  _populateAnnotations - @TODO understand this
      *  _addAnnotation
      *  _clearAnnotations
@@ -873,145 +1013,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
     }
 
-
-    /**
-     * Binding Select Builders
-     * _convertEndpointsToOptions - given allowed endpoints, convert to option elements
-     * _getSelectListSize
-     * _addAllowedEndpointsToSelect
-     * _getRouters
-     * _getCollectors
-     * _getSelfIns
-     * _getSelfOuts
-     * _getChildIns
-     * _getChildOuts
-     */
-
-    _convertEndpointsToOptions(selectOptions, addBindings) {
-        let options;
-        if (selectOptions.length > 0) {
-            options = selectOptions.map((selectOption) => {
-                let label;
-                if (selectOption.activityId === this._focusNode.activity.urn) {
-                    label = `(${selectOption.activityConnectionType}) this`;
-                } else {
-                    label = `(${selectOption.activityConnectionType}) ${selectOption.activityName}`;
-                }
-
-                return [
-                    {
-                        label,
-                        options: selectOption.endpoints.map((selectOptionEndpoint) => {
-                            // urn (us:ihmc:111) id(111in1) property(in)
-                            // has a name(111in1) and type(111)
-                            let optionDisplay = selectOptionEndpoint.identity;
-                            // Look to see if previous binding can be added to the option text string...
-                            if (addBindings) {   // method parameter to state whether this previous binding is desired for display
-                                const foundBindings = [];
-                                this._focusNode.activity.bindings.forEach((extantBinding) => {
-                                    if ((extantBinding.from.id === selectOptionEndpoint.identity) && (extantBinding.from.urn === selectOption.activityId)) {
-                                        foundBindings.push(extantBinding.to.id);
-                                    }
-                                });
-                                if (foundBindings.length > 0) {
-                                    optionDisplay = `${optionDisplay} ${this.ARROW} `;
-                                    foundBindings.forEach((foundToEndpoints) => {
-                                        optionDisplay = `${optionDisplay} ${foundToEndpoints}`;
-                                        //optionDisplay = `${optionDisplay} ${selectOption.activityName}:${foundToEndpoints}`;  // long version -- need scrolling
-                                    });
-                                }
-                            }
-                            // }
-                            return {
-                                text: optionDisplay,
-                                value: `${selectOption.activityConnectionType}/${selectOption.activityId}`
-                            };
-                        })
-                    }
-                ];
-            }).reduce((prev, current) => {
-                return prev.concat(current);
-            });
-        } else {
-            options = [];
-        }
-        return options;
-    }
-
-    _getSelectListSize(endpointOptions) {
-        return endpointOptions.reduce((prev, curr) => {
-            return prev + 1 + Number(curr.endpoints.length);
-        }, 0);
-    }
-
-    _addAllowedEndpointsToSelect($selectList, allowedEndpoints, addBindings) {
-        const numRows = this._getSelectListSize(allowedEndpoints);
-        const options = this._convertEndpointsToOptions(allowedEndpoints, addBindings);
-        FormUtils.updateSelect($selectList, options);
-        $selectList.multiple = true;
-        $selectList.size = numRows;
-    }
-
-    _getSelfIns() {
-        const availableInputs = [];
-        if (this._focusNode.activity.inputs.length > 0) {
-            availableInputs.push({
-                activityId: this._focusNode.activity.urn,
-                activityName: this._focusNode.activity.name,
-                activityConnectionType: `in`,
-                endpoints: this._focusNode.activity.inputs
-            });
-        }
-        return availableInputs;
-    }
-
-    _getSelfOuts() {
-        const availableOutputs = [];
-        if (this._focusNode.activity.outputs.length > 0) {
-            availableOutputs.push({
-                activityId: this._focusNode.activity.urn,
-                activityName: this._focusNode.activity.name,
-                activityConnectionType: `out`,
-                endpoints: this._focusNode.activity.outputs
-            });
-        }
-        return availableOutputs;
-    }
-
-    _getChildIns() {
-        const availableInputs = [];
-        const alreadyTallied = [];
-        this._focusNode.children.forEach((child) => {
-            if ((child.activity.inputs.length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
-                availableInputs.push({
-                    activityId: child.activity.urn,
-                    activityName: child.activity.name,
-                    activityConnectionType: `in`,
-                    endpoints: child.activity.inputs
-                });
-                alreadyTallied.push(child.activity.urn);
-            }
-        });
-        return availableInputs;
-    }
-
-    _getChildOuts() {
-        const availableOutputs = [];
-        const alreadyTallied = [];
-        this._focusNode.children.forEach((child) => {
-            if ((child.activity.outputs.length > 0) && (!(alreadyTallied.includes(child.activity.urn)))) {
-                availableOutputs.push({
-                    activityId: child.activity.urn,
-                    activityName: child.activity.name,
-                    activityConnectionType: `out`,
-                    endpoints: child.activity.outputs
-                });
-                alreadyTallied.push(child.activity.urn);
-            }
-            // this._annotations;
-        });
-        return availableOutputs;
-    }
 
 });
 

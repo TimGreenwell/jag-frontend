@@ -7,25 +7,24 @@
 
 'use strict';
 
+import {uuidV4} from "../utils/uuid";
+
 export default class Endpoint {
 
     constructor({
-        urn,                 // activity parent
-        id,                  // name unique to parent/property
-        property             // input or output
+                    id = uuidV4(),
+        exchangeSourceUrn,
+        direction,
+        exchangeName,                 // activity parent
+        exchangeType                 // name unique to parent/property
     } = {}) {
-        this._urn = urn;
         this._id = id;
-        this._property = property;
+        this._exchangeSourceUrn = exchangeSourceUrn;
+        this._direction = direction;
+        this._exchangeName = exchangeName;
+        this._exchangeType = exchangeType;
     }
 
-    get urn() {
-        return this._urn;
-    }
-
-    set urn(value) {
-        this._urn = value;
-    }
 
     get id() {
         return this._id;
@@ -35,35 +34,58 @@ export default class Endpoint {
         this._id = value;
     }
 
-    get property() {
-        return this._property;
+    get exchangeSourceUrn() {
+        return this._exchangeSourceUrn;
     }
 
-    set property(value) {
-        this._property = value;
+    set exchangeSourceUrn(value) {
+        this._exchangeSourceUrn = value;
+    }
+
+    get direction() {
+        return this._direction;
+    }
+
+    set direction(value) {
+        this._direction = value;
+    }
+
+    get exchangeName() {
+        return this._exchangeName;
+    }
+
+    set exchangeName(value) {
+        this._exchangeName = value;
+    }
+
+    get exchangeType() {
+        return this._exchangeType;
+    }
+
+    set exchangeType(value) {
+        this._exchangeType = value;
     }
 
     equals(endpoint) {
-        return ((this.urn === endpoint.urn) &&
-            (this.id === endpoint.id) &&
-            (this.property === endpoint.property))
+        return ((this.exchangeSourceUrn === endpoint.exchangeSourceUrn) &&
+            (this.direction === endpoint.direction) &&
+            (this.exchangeName === endpoint.exchangeName))
     }
 
 
     toJSON() {
         const json = {
-            urn: this.urn,
-            id: this.id,
-            property: this.property}
+            id: this._id,
+            exchangeSourceUrn: this._exchangeSourceUrn,
+            direction: this._direction,
+            exchangeName: this._exchangeName,
+            exchangeType: this._exchangeType}
         return json;
     }
 
     static fromJSON(element) {
-
-
-
-        const returnValue = new Endpoint(element);
-        return returnValue;
+        const newEndpoint = new Endpoint(element);                // with new Endpoint(element) --> everything led with underscore (eg, _exchangeSourceUrn) - messed up a lot ----- WHY
+        return newEndpoint;
     }
 
 }

@@ -203,7 +203,6 @@ export default class ControllerAT extends Controller {
     eventNodesSelectedHandler(event) {
         const selectedNodeArray = event.detail.selectedNodeArray;
         this._properties.handleSelectionUpdate(selectedNodeArray);
-        console.log(`NODE SELECTED`)
         // this._timeview.refreshTimeview(selectedNodeArray[0]);    // Selecting a node also updates it.. need to look into that
         // ide.handleSelectionUpdate(e.detail);
     }
@@ -231,7 +230,7 @@ export default class ControllerAT extends Controller {
             this._playground._refreshPlayground(projectModel);
         } else {
             if (this._timeview) {
-                console.log(`CONNECTING EVENT NODES`)
+                console.log(`CONNECTING EVENT NODES`);
                 this._timeview.refreshTimeview();
             }
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);
@@ -298,7 +297,7 @@ export default class ControllerAT extends Controller {
     eventEndpointsSelected(event) {
         const selectedFromEndpoints = event.detail.fromEndpoints;
         const selectedToEndpoints = event.detail.toEndpoints;
-        this._playground.showEndpoint(selectedFromEndpoints, selectedToEndpoints)
+        this._playground.showEndpoint(selectedFromEndpoints, selectedToEndpoints);
     }
 
     eventExportJagHandler(event) {
@@ -390,7 +389,7 @@ export default class ControllerAT extends Controller {
 
         const deadActivityUrn = event.detail.activityUrn;
         const updatePromises = [];
-        for (let activity of this._activityMap.values()) {
+        for (const activity of this._activityMap.values()) {
             const remainingChildren = activity.children.filter((kid) => {
                 return kid.urn !== deadActivityUrn;
             });
@@ -504,7 +503,7 @@ export default class ControllerAT extends Controller {
     }
 
     async commandActivityUpdatedHandler(updatedActivity, updatedActivityUrn) {
-         this.cacheActivity(updatedActivity);
+        this.cacheActivity(updatedActivity);
         const updatePromises = [];
 
         for (const viewedProject of this._playground.viewedProjects) {
@@ -524,9 +523,8 @@ export default class ControllerAT extends Controller {
         this.addDerivedProjectData(updatedNodeModel);
         this.cacheProject(updatedNodeModel);
         console.log(`((COMMAND IN) >>  Node Updated: ${updatedNodeModel.activity.name} / ${updatedNodeId}`);
-         this._playground._refreshPlayground(updatedNodeModel);  // <- causing issues
+        this._playground._refreshPlayground(updatedNodeModel);  // <- causing issues
         this._projectLibrary.updateItem(updatedNodeModel);
-        console.log(`UPDATING NODE`)
         this._timeview.refreshTimeview(updatedNodeModel);
     }
 
