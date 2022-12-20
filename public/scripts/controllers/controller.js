@@ -28,7 +28,7 @@ export default class Controller extends EventTarget {
     constructor() {
         super();
         this._activityMap = new Map();       // Activity cache
-        this._projectMap = new Map();        // Node cache (By node! Not by JAG)
+        this._projectMap = new Map();        // Node cache (For project heads and every descendent)
         this._analysisMap = new Map();       // Analysis cache
         this._currentAnalysis = undefined;   // type: AnalysisModel
     }
@@ -110,12 +110,11 @@ export default class Controller extends EventTarget {
 
     /**
      *                                   Upward Event Handlers
-     * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
-     * the resulting data for storage and distribution.
+     * 'Upward handlers' for "locally generated events" that result in the submission of data changes
+     * for storage and distribution.
      *
-     *  'initial event' = some user interaction or detected remote change that requires initiates another local action
-     *  Data processing in this phase is minimal - it is primarily concerned with translating the initial
-     *  event into a standard command that is understood across the application.
+     *  "locally generated events" = some user interaction or detected remote change that requires another
+     *  local action.  Data processing in this phase is minimal.
      *
      *  These Handlers were identical across multiple tabs
      *   eventActivityCreatedHandler       (C)  - popup create Activity (original event in menu starts playground popup)
@@ -192,23 +191,27 @@ export default class Controller extends EventTarget {
      *
      *                Support Methods
      *
-     *      updateTreeWithActivityChange - update properties and look for updates/deletes to incorporate
-     *      buildCellTreeFromActivityUrn - build activity tree from root node
-     *      buildNodeTreeFromActivity    - build node tree from Activity Model & initial Expanded option.
-     *      getChildrenToAdd             - compares activity children to node children to determine adds needed
-     *      getChildrenToRemove          - compares activity children to node children to determine deletes needed
-     *      searchTreeForId              - return node by id
-     *      searchTreeForChildId         - return node by childID
-     *
-     *      removeAllChildNodes          - generic tree - remove children from parent (1 level deep)
-     *      addDerivedProjectData        - conglomeration of `repopulates`
-     *      repopulateParent             - re-parent nodes after structure change
-     *      repopulateActivity           - attach Activity Object (@todo maybe better to just use repeated cache/storage access)
-     *      relocateProject              - re-assign projectId after structure change
-     *      repopulateDepth              - re-assign depth in tree after structure change
-     *      relocateProject              - change all node locations after move
-     */
+     *      updateTreeWithActivityChange  - update properties and look for updates/deletes to incorporate
+     *      buildCellTreeFromActivityUrn  - build activity tree from root node
+     *      buildNodeTreeFromActivity     - build node tree from Activity Model & initial Expanded option.
+     *      getChildrenToAdd              - compares activity children to node children to determine adds needed
+     *      getChildrenToRemove           - compares activity children to node children to determine deletes needed
+     *      searchTreeForId               - return node by id
+     *      searchTreeForChildId          - return node by childID
+     *      removeAllChildNodes           - generic tree - remove children from parent (1 level deep)
+     *      findRoutes                    - find all routes of data passing between siblings.
+     *      relocateProject               - update node locations after a move
 
+     *      addDerivedProjectData         - conglomeration of `repopulates`
+     *      repopulateParent              - re-parent nodes after structure change
+     *      repopulateActivity            - attach Activity Object (@todo maybe better to just use repeated cache/storage access)
+     *      repopulateProject             - re-assign projectId after structure change
+     *      repopulateDepth               - re-assign depth in tree after structure change
+     *      establishChildInterdependency - derive which siblings need which siblings (who produces, who consumes)
+     *      repopulateExpectedDuration
+     *      resortChildrenSpatially
+     *      relocateProject               - change all node locations after move
+     */
 
     updateTreeWithActivityChange(changedActivity, projectNode) {
         const nodeStack = [];
@@ -228,9 +231,7 @@ export default class Controller extends EventTarget {
                 });
                 const validNodeChildren = changedActivity.children;
                 const kidsToAdd = this.getChildrenToAdd(existingNodeChildren, validNodeChildren);
-                // console.log(`Kids to add: ${kidsToAdd.length}`);
                 const kidsToRemove = this.getChildrenToRemove(existingNodeChildren, validNodeChildren);
-                // console.log(`Kids to remove: ${kidsToRemove.length}`);
 
                 kidsToAdd.forEach((child) => {
                     // 1) get newly created activity from map. 2) Create Node
@@ -349,7 +350,6 @@ export default class Controller extends EventTarget {
         return returnValue;
     }
 
-
     searchTreeForId(node, id) {
         const findIdCallback = (node) => {
             if (node.id === id) {
@@ -380,22 +380,33 @@ export default class Controller extends EventTarget {
         }
     }
 
-
-    establishChildInterdependency(node) {
-        const childrenUrnList = node.activity.children.map((child) => {
-            return child.urn;
-        });
-        node.activity.bindings.forEach((binding) => {
-            if ((childrenUrnList.includes(binding.from.urn)) && (childrenUrnList.includes(binding.to.urn))) {
-                node.children.forEach((fromNode) => {
-                    node.children.forEach((toNode) => {
-                        if ((fromNode.activity.urn === binding.from.urn) && (toNode.activity.urn === binding.to.urn)) {
-                            toNode.becomeConsumerOf(fromNode);
+    findRoutes(node, child, routeIndex, routeList) {
+        if (node.activity.hasConsumingSiblings(child.activity.urn)) {
+            node.activity.bindings.forEach((bind) => {
+                if (bind.from.urn === child.activity.urn) {
+                    node.children.forEach((childSibling) => {
+                        if (childSibling.activity.urn === bind.to.urn) {
+                            routeIndex.push(child);
+                            this.findRoutes(node, childSibling, routeIndex, routeList);
+                            routeIndex.pop(); // the end consumer
+                            routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
                         }
                     });
-                });
-            }
-        });
+                }
+            });
+        } else {
+            routeIndex.push(child);
+            routeList.push([...routeIndex]);
+        }
+        return routeList;
+    }
+
+    relocateProject(node, deltaX, deltaY) {
+        const changeLocationCallback = (node) => {
+            node.x = node.x + deltaX;
+            node.y = node.y + deltaY;
+        };
+        Traversal.iterate(node, changeLocationCallback);
     }
 
     addDerivedProjectData(node, projectId = node.id) {       // only to be applied at the top.
@@ -409,39 +420,6 @@ export default class Controller extends EventTarget {
         node.leafCount = node.leafcounter();          // only affects this node (@todo repopulate leaf count?)
     }
 
-    resortChildrenSpatially(node) {
-        const sortChildren = (node) => {
-            node.children.sort((a, b) => {
-                if (a.y < b.y) {
-                    return -1;
-                }
-                if (a.y > b.y) {
-                    return 1;
-                }
-                return 0;
-            });
-        };
-        Traversal.recurseChildrenPostorder(node, sortChildren);
-    }
-
-
-    repopulateExpectedDuration(node) {
-        const assignDurationCallback = (node) => {
-            const childDurationsArray = [];
-            node.children.forEach((child) => {
-                childDurationsArray.push(child.contextualExpectedDuration);
-            });
-            if (childDurationsArray.length > 0) {
-                const totalExpectedDuration = childDurationsArray.reduce((partialSum, a) => {
-                    return partialSum + Number(a);
-                }, 0);
-                node.contextualExpectedDuration = totalExpectedDuration;
-            }
-        };
-
-        Traversal.recurseChildrenPostorder(node, assignDurationCallback);
-    }
-
     repopulateParent(node) {
         const assignParentCallback = (node) => {
             node.children.forEach((child) => {
@@ -451,7 +429,6 @@ export default class Controller extends EventTarget {
         };
         Traversal.iterate(node, assignParentCallback);
     }
-
 
     repopulateActivity(node) {
         const fetchActivitiesCallback = (node) => {
@@ -474,48 +451,65 @@ export default class Controller extends EventTarget {
         Traversal.recurseChildrenPreorder(node, assignDepthCallback);
     }
 
-    relocateProject(node, deltaX, deltaY) {
-        const changeLocationCallback = (node) => {
-            node.x = node.x + deltaX;
-            node.y = node.y + deltaY;
-        };
-        Traversal.iterate(node, changeLocationCallback);
-    }
-
-
-    repopulateDataDependence(node) {
-        const routeList = [];
-        const childRoutes = [];
-        const allRoutes = [];
-        node.children.forEach((child) => {
-            const routeIndex = [];
-            if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
-                this.findRoutes(node, child, routeIndex, routeList);
-            }
+    establishChildInterdependency(node) {
+        const childrenUrnList = node.activity.children.map((child) => {
+            return child.urn;
         });
-        return routeList;
-    }
-
-
-    findRoutes(node, child, routeIndex, routeList) {
-        if (node.activity.hasConsumingSiblings(child.activity.urn)) {
-            node.activity.bindings.forEach((bind) => {
-                if (bind.from.urn === child.activity.urn) {
-                    node.children.forEach((childSibling) => {
-                        if (childSibling.activity.urn === bind.to.urn) {
-                            routeIndex.push(child);
-                            this.findRoutes(node, childSibling, routeIndex, routeList);
-                            routeIndex.pop(); // the end consumer
-                            routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)
+        node.activity.bindings.forEach((binding) => {
+            if ((childrenUrnList.includes(binding.from.urn)) && (childrenUrnList.includes(binding.to.urn))) {
+                node.children.forEach((fromNode) => {
+                    node.children.forEach((toNode) => {
+                        if ((fromNode.activity.urn === binding.from.urn) && (toNode.activity.urn === binding.to.urn)) {
+                            toNode.becomeConsumerOf(fromNode);
                         }
                     });
-                }
-            });
-        } else {
-            routeIndex.push(child);
-            routeList.push([...routeIndex]);
-        }
-        return routeList;
+                });
+            }
+        });
     }
 
+    repopulateExpectedDuration(node) {
+        const assignDurationCallback = (node) => {
+            const childDurationsArray = [];
+            node.children.forEach((child) => {
+                childDurationsArray.push(child.contextualExpectedDuration);
+            });
+            if (childDurationsArray.length > 0) {
+                const totalExpectedDuration = childDurationsArray.reduce((partialSum, a) => {
+                    return partialSum + Number(a);
+                }, 0);
+                node.contextualExpectedDuration = totalExpectedDuration;
+            }
+        };
+
+        Traversal.recurseChildrenPostorder(node, assignDurationCallback);
+    }
+
+    resortChildrenSpatially(node) {
+        const sortChildren = (node) => {
+            node.children.sort((a, b) => {
+                if (a.y < b.y) {
+                    return -1;
+                }
+                if (a.y > b.y) {
+                    return 1;
+                }
+                return 0;
+            });
+        };
+        Traversal.recurseChildrenPostorder(node, sortChildren);
+    }
+
+    // repopulateDataDependence(node) {
+    //     const routeList = [];
+    //     const childRoutes = [];
+    //     const allRoutes = [];
+    //     node.children.forEach((child) => {
+    //         const routeIndex = [];
+    //         if (!node.activity.isDependentSibling(child.activity.urn)) {                // if not dependant on a sibling...(its a starting point)
+    //             this.findRoutes(node, child, routeIndex, routeList);
+    //         }
+    //     });
+    //     return routeList;
+    // }
 }

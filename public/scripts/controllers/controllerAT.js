@@ -33,9 +33,9 @@ export default class ControllerAT extends Controller {
         StorageService.subscribe(`command-activity-deleted`, this.commandActivityDeletedHandler.bind(this));   // (a)} All from observable
         StorageService.subscribe(`command-activity-cloned`, this.commandActivityClonedHandler.bind(this));     //    } Cross-tab communications
         StorageService.subscribe(`command-activity-replaced`, this.commandActivityReplacedHandler.bind(this)); //    }
-        StorageService.subscribe(`command-node-created`, this.commandNodeCreatedHandler.bind(this)); // }
-        StorageService.subscribe(`command-node-updated`, this.commandNodeUpdatedHandler.bind(this)); // }
-        StorageService.subscribe(`command-node-deleted`, this.commandNodeDeletedHandler.bind(this)); // }
+        StorageService.subscribe(`command-node-created`, this.commandNodeCreatedHandler.bind(this));           // }
+        StorageService.subscribe(`command-node-updated`, this.commandNodeUpdatedHandler.bind(this));           // }
+        StorageService.subscribe(`command-node-deleted`, this.commandNodeDeletedHandler.bind(this));           // }
     }
 
     set menu(value) {
@@ -82,7 +82,7 @@ export default class ControllerAT extends Controller {
 
         // Event function (event parameter unused)
         window.onblur = function () {
-            console.log(`onblur() activated`);
+            console.log(`[info] onblur() activated`);  //
         };
     }
 
@@ -105,13 +105,12 @@ export default class ControllerAT extends Controller {
         this._playground.addEventListener(`event-playground-clicked`, this.eventPlaygroundClickedHandler.bind(this));       // user deselects by clicking background
         this._playground.addEventListener(`event-import-jag`, this.eventImportJagHandler.bind(this));                       // popup to import JAG JSON
 
-        this._properties.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this)); //          // Activity property updates
-        this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this)); //                  // Node property updates (contextual)
-        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));  //                     // button to export JAG and Activities to file as JSON
+        this._properties.addEventListener(`event-activity-updated`, this.eventActivityUpdatedHandler.bind(this));           // Activity property updates
+        this._properties.addEventListener(`event-node-updated`, this.eventNodeUpdatedHandler.bind(this));                   // Node property updates (contextual)
+        this._properties.addEventListener(`event-export-jag`, this.eventExportJagHandler.bind(this));                       // button to export JAG and Activities to file as JSON
         this._properties.addEventListener(`event-export-svg`, this.eventExportSvgHandler.bind(this));                       // button to export JAG as svg
-        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this)); //                    // URN changed - rename or clone actions
-        this._properties.addEventListener(`event-endpoints-selected`, this.eventEndpointsSelected.bind(this)); //                    // URN changed - rename or clone actions
-
+        this._properties.addEventListener(`event-urn-changed`, this.eventUrnChangedHandler.bind(this));                     // URN changed - rename or clone actions
+        this._properties.addEventListener(`event-endpoints-selected`, this.eventEndpointsSelected.bind(this));              // URN changed - rename or clone actions
 
         this._menu.addEventListener(`event-add-activity`, this.eventAddActivityHandler.bind(this));                         // menu item: call 'Create Activity' popup
         this._menu.addEventListener(`event-clear-playground`, this.eventClearPlaygroundHandler.bind(this));                 // menu item: clear nodes from playground
@@ -132,17 +131,19 @@ export default class ControllerAT extends Controller {
 
     /**
      *                                   Upward Event Handlers
-     * 'Upward handlers' refer to the process that starts at the initial event and ends at the submission of
-     * the resulting data for storage and distribution.
+     * 'Upward handlers' for "locally generated events" that result in the submission of data changes
+     * for storage and distribution.
      *
-     *  'initial event' = some user interaction or detected remote change that requires initiates another local action
-     *  Data processing in this phase is minimal - it is primarily concerned with translating the initial
-     *  event into a standard command that is understood across the application.
+     *  "locally generated events" = some user interaction or detected remote change that requires another
+     *  local action.  Data processing in this phase is minimal. Primarily concerned with translating the initial
+     *  event into an event dispatch that is understood across the application.
      *
-     *  example: a user changing an Activity name will produce a standardized command to 'update Activity' to be
-     *  stored and distributed.
+     *  example: a user changes an Activity name, this will produce a standardized command to 'update Activity' for
+     *  storage.  Once the Activity is stored, a notification is sent to all Panels requiring that information to
+     *  update themselves.
      *
-     * (C) indicates common methods between controllers (share code)
+     * (C) indicates common methods between controllers (share code) -- see controller.js
+     * (a) async - usually do to storage requirements.
      *
      *    -- playground --
      * eventActivityCreatedHandler    (a) (C) - popup create Activity (original event in menu starts playground popup)
@@ -454,7 +455,7 @@ export default class ControllerAT extends Controller {
      * the appropriate changes are made to the views.  Its entirely possible (and common) that the events were
      * initiated locally but that is transparent to the logic.  The origin of commands is irrelevant to the logic.
      *
-     * commandActivityCreatedHandler                console.log(JSON.stringify(nodeDescriptor));
+     * commandActivityCreatedHandler
      * commandActivityUpdatedHandler
      * commandActivityDeletedHandler
      * commandActivityClonedHandler
@@ -483,6 +484,7 @@ export default class ControllerAT extends Controller {
             }
         }
         await Promise.all(deletePromises);
+        this._playground.unselectEverything();  // for error when selected node is deleted
         this._activityLibrary.removeLibraryListItem(deletedActivityUrn);
     }
 
@@ -543,6 +545,7 @@ export default class ControllerAT extends Controller {
      * loopDetection                     -> No URN exists as both descendant and ancestor (feedback detection)
      *
      */
+    // buildNodeTreeFromActivity --- hosted by common controller.
 
     gatherDescendentUrns(childNodeModel, workStack = []) {   // need this in nodes
         workStack.push(childNodeModel.urn);
