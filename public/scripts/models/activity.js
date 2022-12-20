@@ -178,10 +178,15 @@ export default class Activity extends EventTarget {
     }
 
     addEndpoint(endpoint) {
-        if (this.hasEndpoint(endpoint)) {
-            this.removeEndpoint(endpoint.exchangeName);
+        if (Validation.validateEndpoint(endpoint)) {
+            if (this.hasEndpoint(endpoint)) {
+                this.removeEndpoint(endpoint.exchangeName);
+            }
+            this._endpoints.push(endpoint);
+            return true;
+        } else {
+            return false;
         }
-        this._endpoints.push(endpoint);
     }
 
     hasEndpoint(endpoint) {
@@ -212,17 +217,21 @@ export default class Activity extends EventTarget {
     }
 
     addInput(exchangeName, exchangeType) {
-        const newEndpoint = new Endpoint({exchangeName, exchangeType});
+        const newEndpoint = new Endpoint({exchangeName,
+            exchangeType});
         newEndpoint.direction = `input`;
         newEndpoint.exchangeSourceUrn = this.urn;
-        this.addEndpoint(newEndpoint);
+        const result = this.addEndpoint(newEndpoint);
+        return result;
     }
 
     addOutput(exchangeName, exchangeType) {
-        const newEndpoint = new Endpoint({exchangeName, exchangeType});
+        const newEndpoint = new Endpoint({exchangeName,
+            exchangeType});
         newEndpoint.direction = `output`;
         newEndpoint.exchangeSourceUrn = this.urn;
-        this.addEndpoint(newEndpoint);
+        const result = this.addEndpoint(newEndpoint);
+        return result;
     }
 
 
@@ -344,19 +353,19 @@ export default class Activity extends EventTarget {
     }
 
 
-    removeChild(childId) {
-        for (const index in this._children) {
-            if (this._children[index].id === childId) {
-                this._children.splice(index, 1);
-                break;
-            }
-        }
-        for (const binding of this._bindings) {
-            if (binding.from.id === childId || binding.to.id === childId) {
-                this.removeBinding(binding);
-            }
-        }
-    }
+    // removeChild(childId) {
+    //     for (const index in this._children) {
+    //         if (this._children[index].id === childId) {
+    //             this._children.splice(index, 1);
+    //             break;
+    //         }
+    //     }
+    //     for (const binding of this._bindings) {
+    //         if (binding.from.id === childId || binding.to.id === childId) {
+    //             this.removeBinding(binding);
+    //         }
+    //     }
+    // }
 
     /**
      * Sets the name of the child with the given ID to the given name.
@@ -478,8 +487,8 @@ export default class Activity extends EventTarget {
     isDependentSibling(urn) {
         let isDependentSibling = false;
         this.bindings.forEach((binding) => {
-            if ((binding.to.urn === urn) && (binding.to.property = `in`)) {
-                const producer = binding.from.urn;
+            if ((binding.to.exchangeSourceUrn === urn) && (binding.to.direction = `input`)) {
+                const producer = binding.from.exchangeSourceUrn;
                 if (this.isChild(producer)) {
                     isDependentSibling = true;
                 }
@@ -492,9 +501,9 @@ export default class Activity extends EventTarget {
     hasConsumingSiblings(urn) {
         let hasConsumingSiblings = false;
         this.bindings.forEach((binding) => {
-            if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
+            if ((binding.from.exchangeSourceUrn === urn) && (binding.from.direction = `output`)) {
                 const consumer = binding.to;
-                if (this.isChild(consumer.urn)) {
+                if (this.isChild(consumer.exchangeSourceUrn)) {
                     hasConsumingSiblings = true;
                 }
             }
@@ -505,9 +514,9 @@ export default class Activity extends EventTarget {
     getConsumingSiblings(urn) {
         const consumingSiblings = [];
         this.bindings.forEach((binding) => {
-            if ((binding.from.urn === urn) && (binding.from.property = `out`)) {
+            if ((binding.from.exchangeSourceUrn === urn) && (binding.from.direction = `output`)) {
                 const consumer = binding.to;
-                if (this.isChild(consumer.urn)) {
+                if (this.isChild(consumer.exchangeSourceUrn)) {
                     consumingSiblings.push(urn);
                 }
             }
@@ -744,7 +753,7 @@ export default class Activity extends EventTarget {
                 const returnValue = new Activity(element);
                 return returnValue;
             });
-            console.log("------------------I THINK THIS IS BAD AND SHOULD BE CHECKED OUT CLOSER  --------------------------------------------")
+            console.log(`------------------I THINK THIS IS BAD AND SHOULD BE CHECKED OUT CLOSER  --------------------------------------------`);
             return jagList;
         } else {
             try {

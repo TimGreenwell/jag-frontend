@@ -429,11 +429,11 @@ class AtPlayground extends Popupable {
                 if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
                     const parentActivity = destinationNode.parent.activity;
                     parentActivity.bindings = parentActivity.bindings.filter((binding) => {
-                        return ((binding.to.urn !== destinationNode.activity.urn) && (binding.from.urn !== destinationNode.activity.urn));
+                        return ((binding.to.exchangeSourceUrn !== destinationNode.activity.urn) && (binding.from.exchangeSourceUrn !== destinationNode.activity.urn));
                     });
                     const childActivityChildId = destinationNode.childId;
-                    const remainingChildren = parentActivity._children.filter((entry) => {
-                        return entry.id !== childActivityChildId;
+                    const remainingChildren = parentActivity._children.filter((child) => {
+                        return child.id !== childActivityChildId;
                     });
                     parentActivity.children = remainingChildren;
                     this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
@@ -466,6 +466,17 @@ class AtPlayground extends Popupable {
                             return entry.id !== childActivityChildId;
                         });
                         parentActivity.children = remainingChildren;
+
+                        let childUrns = parentActivity.children.map((child) => {
+                            return child.urn;
+                        })
+
+                        let newBindings = parentActivity.bindings.filter((binding) => {
+                            return ((childUrns.includes(binding.from.exchangeSourceUrn)) && (childUrns.includes(binding.to.exchangeSourceUrn)))
+                        })
+
+                        parentActivity.bindings = newBindings;
+
                         this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                             detail: {activity: parentActivity}
                         }));
@@ -499,16 +510,14 @@ class AtPlayground extends Popupable {
         this.svg.hideAllBindings();
         const selectedEndpoints = [...selectedFromEndpoints, ...selectedToEndpoints];
         selectedEndpoints.forEach((endpoint) => {
-            console.log(`--->`)
-            console.log(endpoint)
             this.viewedProjects.forEach((project) => {
-                const nodeList = project.activitiesInProject(endpoint.urn);
+                const nodeList = project.activitiesInProject(endpoint.exchangeSourceUrn);
                 nodeList.forEach((node) => {
                     let $endpoint;
                     if (endpoint.direction === `input`) {
-                        $endpoint = this.svg.fetchInputEndpoint(node.id, endpoint.id);
+                        $endpoint = this.svg.fetchInputEndpoint(node.id, endpoint.exchangeName);
                     } else {
-                        $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.id);
+                        $endpoint = this.svg.fetchOutputEndpoint(node.id, endpoint.exchangeName);
                     }
                     $endpoint.classList.remove(`hidden`);
 
@@ -875,7 +884,7 @@ class AtPlayground extends Popupable {
     isEndpointBoundToChild(activity, endpointId) {
         let isBound = false;
         activity.bindings.forEach((binding) => {
-            if ((binding.from.urn === activity.urn) && (binding.from.id === endpointId)) {
+            if ((binding.from.exchangeSourceUrn === activity.urn) && (binding.from.exchangeName === endpointId)) {
                 isBound = true;
             }
         });
@@ -995,7 +1004,7 @@ class AtPlayground extends Popupable {
             checkStack.push(...nodeModel.children);
             while (checkStack.length > 0) {
                 const checkNodeModel = checkStack.pop();
-                if (checkNodeModel.activity.urn === binding.from.urn) {
+                if (checkNodeModel.activity.urn === binding.from.exchangeSourceUrn) {
                     fromNodes.push(checkNodeModel);
                 }
             }
@@ -1006,7 +1015,7 @@ class AtPlayground extends Popupable {
             checkStack.push(...nodeModel.children);
             while (checkStack.length > 0) {
                 const checkNodeModel = checkStack.pop();
-                if (checkNodeModel.activity.urn === binding.to.urn) {
+                if (checkNodeModel.activity.urn === binding.to.exchangeSourceUrn) {
                     toNodes.push(checkNodeModel);
                 }
             }

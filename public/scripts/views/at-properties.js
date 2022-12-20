@@ -19,7 +19,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     constructor() {
         super();
         this._focusNode = undefined;
-        this._selectedFromBindpoints = [];
+        this._selectedFromEndpoints = [];
         this._selectedToEndpoints = [];
         this._elementMap = new Map();
         this._initUI();
@@ -169,12 +169,16 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             if (exchangeType === ``) {
                 return;
             }
-            activity.addInput(exchangeName, exchangeType);
-            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                bubbles: true,
-                composed: true,
-                detail: {activity}
-            }));
+
+
+            const success = activity.addInput(exchangeName, exchangeType);
+            if (success) {
+                this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {activity}
+                }));
+            }
         }
     }
 
@@ -274,7 +278,7 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     handleFromSelect(e) {
         const $selectedFromOptions = Array.from(e.target.selectedOptions);  // HTMLCollection
-        this._selectedFromBindpoints = [];
+        this._selectedFromEndpoints = [];
 
         const $bindButton = this._elementMap.get(`bind-button`);
         const $unbindButton = this._elementMap.get(`unbind-button`);
@@ -298,11 +302,11 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             removable = false;
             bindable = false;
         } else {
-            this._selectedFromBindpoints = this.convertOptionsToEndpoints($selectedFromOptions);
-            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromBindpoints);
+            this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
+            const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints);
 
-            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromBindpoints);
-            removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromBindpoints);
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
+            removable = this.isRemovable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
 
             $toEndpointSelect.classList.remove(`hidden`);
             this._addAllowedEndpointsToSelect($toEndpointSelect, allowedEndpointDestination, false);
@@ -310,12 +314,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         $bindButton.disabled = !(bindable);
         $unbindButton.disabled = !(unbindable);
         $removeButton.disabled = !(removable);
-        console.log(`this._selectedFromBindpoints`)
-        console.log(this._selectedFromBindpoints)
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
-            detail: {fromEndpoints: this._selectedFromBindpoints,
+            detail: {fromEndpoints: this._selectedFromEndpoints,
                 toEndpoints: []}
         }));
     }
@@ -337,13 +339,14 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         } else {
             this._selectedToEndpoints = Array.from($selectedToEndpoints).map((selectedToEndpoint) => {
                 const fromToDefinition = new Endpoint();
-                fromToDefinition.exchangeType = selectedToEndpoint.value.split(`/`)[0];
+                fromToDefinition.direction = selectedToEndpoint.value.split(`/`)[0];
 
                 fromToDefinition.exchangeSourceUrn = selectedToEndpoint.value.split(`/`)[1];
                 fromToDefinition.exchangeName = selectedToEndpoint.label.split(` `)[0];
+
                 return fromToDefinition;
             });
-            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromBindpoints, this._selectedToEndpoints);
+            unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints, this._selectedToEndpoints);
 
             $bindButton.disabled = unbindable;
         }
@@ -352,14 +355,14 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
-            detail: {fromEndpoints: this._selectedFromBindpoints,
+            detail: {fromEndpoints: this._selectedFromEndpoints,
                 toEndpoints: this._selectedToEndpoints}
         }));
     }
 
     handleBindButton(e) {
         const $bindButton = this._elementMap.get(`bind-button`);
-        this._selectedFromBindpoints.forEach((from) => {
+        this._selectedFromEndpoints.forEach((from) => {
             this._selectedToEndpoints.forEach((to) => {
                 const binding = new Binding({from,
                     to});
@@ -378,15 +381,15 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     handleUnbindButton() {
         const $unbindButton = this._elementMap.get(`unbind-button`);
         if (this._selectedToEndpoints.length === 0) {
-            this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
-                const removedBinding = new Binding({from: selectedFromBindpoint,
+            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+                const removedBinding = new Binding({from: selectedFromEndpoint,
                     to: null});
                 this._focusNode.activity.removeBinding(removedBinding);
             });
         } else {
-            this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
+            this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
                 this._selectedToEndpoints.forEach((selectedToEndpoint) => {
-                    const removedBinding = new Binding({from: selectedFromBindpoint,
+                    const removedBinding = new Binding({from: selectedFromEndpoint,
                         to: selectedToEndpoint});
                     this._focusNode.activity.removeBinding(removedBinding);
                 });
@@ -403,12 +406,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
 
     handleRemoveButton() {
         const $removeButton = this._elementMap.get(`remove-button`);
-        this._selectedFromBindpoints.forEach((selectedFromBindpoint) => {
-            if (selectedFromBindpoint.direction === `input`) {
-                this._focusNode.activity.removeInput(selectedFromBindpoint.id);
+        this._selectedFromEndpoints.forEach((selectedFromEndpoint) => {
+            if (selectedFromEndpoint.direction === `input`) {
+                this._focusNode.activity.removeInput(selectedFromEndpoint.id);
             }
-            if (selectedFromBindpoint.direction === `output`) {
-                this._focusNode.activity.removeOutput(selectedFromBindpoint.id);
+            if (selectedFromEndpoint.direction === `output`) {
+                this._focusNode.activity.removeOutput(selectedFromEndpoint.id);
             }
         });
 
@@ -662,15 +665,33 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return options;
     }
 
+    retrieveEndpoint(exchangeSourceUrn, exchangeName, direction) {    // @TODO This would have been cleaner with a simple urn lookup in an activityCache or something.
+        let possessor;
+        if (this._focusNode.activity.urn === exchangeSourceUrn) {
+            possessor = this._focusNode;
+        } else {
+            possessor = this._focusNode.childrenWithActivity(exchangeSourceUrn).pop();
+        }
+        let matchingEndpoint;
+        const checkEndpoint = new Endpoint({exchangeSourceUrn,
+            exchangeName,
+            direction});
+        possessor.activity.endpoints.forEach((endpoint) => {
+            if (checkEndpoint.equals(endpoint)) {
+                matchingEndpoint = endpoint;
+            }
+        });
+
+        return matchingEndpoint;
+    }
+
     convertOptionsToEndpoints($selectedOptions) {
-        const endpointArray = Array.from($selectedOptions).map((selectedFromBindpoint) => {
-            const fromEndpointDefinition = new Endpoint();
-            fromEndpointDefinition.direction = selectedFromBindpoint.value.split(`/`)[0];
-            fromEndpointDefinition.exchangeSourceUrn = selectedFromBindpoint.value.split(`/`)[1];
-            fromEndpointDefinition.exchangeName = selectedFromBindpoint.label.split(` `)[0];
-            fromEndpointDefinition.exchangeType = `xxx`;
+        const endpointArray = Array.from($selectedOptions).map((selectedFromEndpoint) => {
+            const direction = selectedFromEndpoint.value.split(`/`)[0];
+            const exchangeSourceUrn = selectedFromEndpoint.value.split(`/`)[1];
+            const exchangeName = selectedFromEndpoint.label.split(` `)[0];
             // NO EXCHANGE TYPE AVAILABLE HERE - NO BIG DEAL IF JUST DRAWING LINES
-            return fromEndpointDefinition;
+            return this.retrieveEndpoint(exchangeSourceUrn, exchangeName, direction);
         });
         return endpointArray;
     }
@@ -775,9 +796,9 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         return blackListedUrns;
     }
 
-    filterInvalidDestinations(selectedFromBindpoints) {
+    filterInvalidDestinations(selectedFromEndpoints) {
         const blacklistedUrns = [];
-        selectedFromBindpoints.forEach((endpoint) => {
+        selectedFromEndpoints.forEach((endpoint) => {
             const blacklistedProviders = this.blacklistProviders(endpoint.urn);
             blacklistedProviders.forEach((blacklistedProvider) => {
                 blacklistedUrns.push(blacklistedProvider);
@@ -790,12 +811,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         // 2) create 2nd $select of allowed endpoints to end the route.
         // Check if property types are same or mixed (ins, outs, mixed)
 
-        const homeoTypus = this.areEndpointsSameType(selectedFromBindpoints);
+        const homeoTypus = this.areEndpointsSameType(selectedFromEndpoints);
         let allowedEndpointDestination = [];
         if (homeoTypus) {
-            if (selectedFromBindpoints[0].direction === `input`) {
+            if (selectedFromEndpoints[0].direction === `input`) {
                 allowedEndpointDestination = allowedChildIns;
-            } else if (selectedFromBindpoints[0].direction === `output`) {
+            } else if (selectedFromEndpoints[0].direction === `output`) {
                 allowedEndpointDestination = [...this._getSelfOuts(), ...allowedChildIns];
             }
         } else {

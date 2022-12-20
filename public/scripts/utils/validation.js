@@ -15,11 +15,8 @@ export default class JAGATValidation {
         if (jagDescriptor.connector) {
             JAGATValidation.validateConnector(jagDescriptor.connector);
         }
-        if (jagDescriptor.inputs) {
-            JAGATValidation.validateInputs(jagDescriptor.inputs);
-        }
-        if (jagDescriptor.outputs) {
-            JAGATValidation.validateOutputs(jagDescriptor.outputs);
+        if (jagDescriptor.endpoints) {
+            JAGATValidation.validateEndpoints(jagDescriptor.endpoints);
         }
         if (jagDescriptor.children) {
             JAGATValidation.validateChildren(jagDescriptor.children);
@@ -130,105 +127,67 @@ export default class JAGATValidation {
         //     throw new Error(`Connector contains unknown properties: only accepts execution and operator types.`);
     }
 
-    static validateInputs(inputs) {
-        if (!(inputs instanceof Array)) {
-            throw new Error(`Expected inputs to be an array of objects.`);
+    static validateEndpoints(endpoints) {
+        if (!(endpoints instanceof Array)) {
+            throw new Error(`Expected endpoints to be an array of objects.`);
         }
 
-        for (let i = 0; i < inputs.length; ++i) {
-            const input = inputs[i];
+        for (let i = 0; i < endpoints.length; ++i) {
+            const endpoint = endpoints[i];
 
             try {
-                JAGATValidation.validateInput(input);
+                JAGATValidation.validateEndpoint(endpoint);
             } catch (e) {
-                throw new Error(`Failed to validate input ${i}: ${e.message}`);
+                throw new Error(`Failed to validate endpoint ${i}: ${e.message}`);
             }
         }
     }
 
-    static validateInput(input) {
-        if (input == undefined) {
-            throw new Error(`Input must be an object with name and type strings.`);
+    static validateEndpoint(endpoint) {
+        let success = true;
+        if (endpoint == undefined) {
+            success = false;
+            throw new Error(`Endpoint must be an object with name and type strings.`);
         }
 
-        if (input.exchangeName == undefined) {
-            throw new Error(`Input does not have a name.`);
+        if (endpoint.exchangeName == undefined) {
+            success = false;
+            throw new Error(`Endpoint does not have a name.`);
         }
 
-        if (typeof input.exchangeName !== `string`) {
-            throw new Error(`Input must have a name which is a string.`);
+        if (typeof endpoint.exchangeName !== `string`) {
+            success = false;
+            throw new Error(`Endpoint must have a name which is a string.`);
         }
 
-        if (input.exchangeName.length === 0) {
-            throw new Error(`Input must have a name at least 1 character long.`);
+        if (endpoint.exchangeName.length === 0) {
+            success = false;
+            throw new Error(`Endpoint must have a name at least 1 character long.`);
         }
 
-        if (input.exchangeType == undefined) {
-            throw new Error(`Input (${input.exchangeName}) does not have a type.`);
+        if (endpoint.exchangeType == undefined) {
+            success = false;
+            throw new Error(`Endpoint (${endpoint.exchangeName}) does not have a type.`);
         }
 
-        if (typeof input.exchangeType !== `string`) {
-            throw new Error(`Input (${input.exchangeName}) must have a type which is a string.`);
+        if (typeof endpoint.exchangeType !== `string`) {
+            success = false;
+            throw new Error(`Endpoint (${endpoint.exchangeName}) must have a type which is a string.`);
         }
 
-        if (input.exchangeType.length === 0) {
-            throw new Error(`Input (${input.exchangeName}) must have a type at least 1 character long.`);
+        if (endpoint.exchangeType.length === 0) {
+            success = false;
+            throw new Error(`Endpoint (${endpoint.exchangeName}) must have a type at least 1 character long.`);
         }
 
-        if (Object.keys(input).length !== 2) {
-            throw new Error(`Input (${input.exchangeName}) contains unknown properties: only accepts name and type strings.`);
+        if (Object.keys(endpoint).length !== 5) {
+            success = false;
+            throw new Error(`Endpoint (${endpoint.exchangeName}) contains unknown properties: only accepts name and type strings.`);
         }
+        return success;
     }
 
-    static validateOutputs(outputs) {
-        if (!(outputs instanceof Array)) {
-            throw new Error(`Expected outputs to be an array of objects.`);
-        }
 
-        for (let i = 0; i < outputs.length; ++i) {
-            const output = outputs[i];
-
-            try {
-                JAGATValidation.validateOutput(output);
-            } catch (e) {
-                throw new Error(`Failed to validate output ${i} (${output.name}): ${e.message}`);
-            }
-        }
-    }
-
-    static validateOutput(output) {
-        if (output == undefined) {
-            throw new Error(`Output must be an object with name and type strings.`);
-        }
-
-        if (output.exchangeName == undefined) {
-            throw new Error(`Output does not have a name.`);
-        }
-
-        if (typeof output.exchangeName !== `string`) {
-            throw new Error(`Output must have a name which is a string.`);
-        }
-
-        if (output.exchangeName.length === 0) {
-            throw new Error(`Output must have a name at least 1 character long.`);
-        }
-
-        if (output.exchangeType == undefined) {
-            throw new Error(`Output (${output.exchangeName}) does not have a type.`);
-        }
-
-        if (typeof output.exchangeType !== `string`) {
-            throw new Error(`Output (${output.exchangeName}) must have a type which is a string.`);
-        }
-
-        if (output.exchangeType.length === 0) {
-            throw new Error(`Output (${output.exchangeName}) must have a type at least 1 character long.`);
-        }
-
-        if (Object.keys(output).length !== 2) {
-            throw new Error(`Output (${output.exchangeName}) contains unknown properties: only accepts name and type strings.`);
-        }
-    }
 
     static validateChildren(children) {
         if (!(children instanceof Array)) {

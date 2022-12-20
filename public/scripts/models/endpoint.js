@@ -7,7 +7,7 @@
 
 'use strict';
 
-import {uuidV4} from "../utils/uuid";
+import {uuidV4} from "../utils/uuid.js";
 
 export default class Endpoint {
 

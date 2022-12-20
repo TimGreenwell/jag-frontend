@@ -511,15 +511,15 @@ export default class SvgObject {
     createBinding(fromNode, fromEndpoint, toNode, toEndpoint) {
         let fromElement;
         let toElement;
-        if (fromEndpoint.property === `in`) {
-            fromElement = this.fetchInputEndpoint(fromNode.id, fromEndpoint.id);
+        if (fromEndpoint.direction === `input`) {
+            fromElement = this.fetchInputEndpoint(fromNode.id, fromEndpoint.exchangeName);
         } else {
-            fromElement = this.fetchOutputEndpoint(fromNode.id, fromEndpoint.id);
+            fromElement = this.fetchOutputEndpoint(fromNode.id, fromEndpoint.exchangeName);
         }
-        if (toEndpoint.property === `in`) {
-            toElement = this.fetchInputEndpoint(toNode.id, toEndpoint.id);
+        if (toEndpoint.direction === `input`) {
+            toElement = this.fetchInputEndpoint(toNode.id, toEndpoint.exchangeName);
         } else {
-            toElement = this.fetchOutputEndpoint(toNode.id, toEndpoint.id);
+            toElement = this.fetchOutputEndpoint(toNode.id, toEndpoint.exchangeName);
         }
 
         const fromNodeGroup = this.fetchNodeGroup(fromNode.id);
@@ -540,9 +540,9 @@ export default class SvgObject {
 
         const delta_y = this.standardBoxHeight * 1.5;
         const fromPullX = fromX;
-        const fromPullY = (fromEndpoint.property === `in`) ? fromY - delta_y : fromY + delta_y;
+        const fromPullY = (fromEndpoint.direction === `input`) ? fromY - delta_y : fromY + delta_y;
         const toPullX = toX;
-        const toPullY = (toEndpoint.property === `in`) ? toY - delta_y : toY + delta_y;
+        const toPullY = (toEndpoint.direction === `input`) ? toY - delta_y : toY + delta_y;
         const cubicCurve = `M ${fromX} ${fromY} C ${fromPullX} ${fromPullY}, ${toPullX} ${toPullY}, ${toX} ${toY}`;
 
         const binding = document.createElementNS(this.SVGNS, `path`);

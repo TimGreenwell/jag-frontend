@@ -298,6 +298,7 @@ class AtTimeview extends HTMLElement {
 
     // this needs to be rewritten to grow appropriately  ex: 3>1 with margins within
     adjustHeights(routesArray, boxMap) {          // currently only grows the start and end to match their routes.
+
         const startPoints = [];
         const endPoints = [];
         routesArray.forEach((route) => {
@@ -344,7 +345,15 @@ class AtTimeview extends HTMLElement {
                 for (let i = 0; i < heightByDepth.length; i++) {
                     heightByDepth[i] += nullsAtDepth[i] * this.svg.standardBoxHeight;
                 }
-                const tallest = Math.max(...heightByDepth);
+
+                let tallest;
+                if (heightByDepth.length === 0) {
+                    tallest = 0;
+                }
+                else {
+                    tallest = Math.max(...heightByDepth);
+                }
+
 
                 boxMap.get(routeStart.id).apparentHeight += tallest;
                 if (routeStart === lastStartPoint) {
@@ -501,6 +510,7 @@ class AtTimeview extends HTMLElement {
         const labelingWidth = this.svg.horizontalLeftMargin + this.svg.labelWidth(labelElement) + this.svg.horizontalRightMargin;
         nodeDescriptor.width = labelingWidth;  // The width is the maximum of the non-sibling-dependent node's total widths  max(child1.totalWidth... childn.totalwidth)
         const routesArray = this.getRoutesFromBinding(nodeModel);
+
         this.setChildrenMaxDepth(nodeModel, boxMap, routesArray);   // maybe stick routesArray in node descriptor
         this.setChildrenMembershipCount(nodeModel, boxMap, routesArray);
         this.adjustHeights(routesArray, boxMap);         // artsy component
@@ -553,9 +563,7 @@ class AtTimeview extends HTMLElement {
                     if (box.apparentHeight === 0) {
                         box.apparentHeight = box.height;
                     }
-                    console.log(`resizeRectangle   width=${box.width}  height=${box.apparentHeight}`);
                     this.svg.resizeRectangle(nodeRectangle, box.width, box.apparentHeight);
-                    console.log(`Placing NodeGroup    x=${x}  y=${y}`);
 
                     this.svg.positionItem(nodeGroup, x, y);
                     // this.svg.positionItem(childLabel, (childBox.width / 2) - (this.svg.labelWidth(childLabel) / 2), 0);
@@ -801,11 +809,12 @@ class AtTimeview extends HTMLElement {
     }
 
     findRoutes(node, child, routeIndex, routeList) {
+
         if (node.activity.hasConsumingSiblings(child.activity.urn)) {
             node.activity.bindings.forEach((bind) => {
-                if (bind.from.urn === child.activity.urn) {
+                if (bind.from.exchangeSourceUrn === child.activity.urn) {
                     node.children.forEach((childSibling) => {
-                        if (childSibling.activity.urn === bind.to.urn) {
+                        if (childSibling.activity.urn === bind.to.exchangeSourceUrn) {
                             routeIndex.push(child);
                             this.findRoutes(node, childSibling, routeIndex, routeList);
                             routeIndex.pop(); // current producerUrn (it gets re-added if another binding found)

@@ -429,6 +429,16 @@ export default class Node extends EventTarget {
     //     return matchStack;
     // }
 
+    childrenWithActivity(urn) {
+        const matchStack = [];
+        this.children.forEach((child) => {
+            if (child.activity.urn === urn) {
+                matchStack.push(child)
+            }
+        })
+        return matchStack
+    }
+
     activitiesInProject(urn) {    // return array of nodes matching urn
         const matchStack = [];
         const workStack = [];
