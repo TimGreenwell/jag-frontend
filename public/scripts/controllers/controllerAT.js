@@ -14,6 +14,7 @@ import UserPrefs from "../utils/user-prefs.js";
 import Controller from "./controller.js";
 import Activity from "../models/activity.js";
 
+
 //  DuplicatedCode,JSUnusedGlobalSymbols,JSUnresolvedFunction,JSUnresolvedVariable
 
 // noinspection JSUnresolvedFunction,JSUnusedLocalSymbols
@@ -63,6 +64,7 @@ export default class ControllerAT extends Controller {
     }
 
     async initialize() {
+
         await this.initializeCache();
         this.initializePanels();
         this.initializeHandlers();
