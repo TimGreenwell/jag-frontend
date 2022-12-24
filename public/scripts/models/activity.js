@@ -29,7 +29,7 @@ export default class Activity extends EventTarget {
         // outputs = [],
         children = [],
         bindings = [],   // list of Binding
-        author,
+        author = '',
         createdDate,
         modifiedDate,
         expectedDuration = ``,

@@ -24,20 +24,25 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 
 
 document.addEventListener(`DOMContentLoaded`, async () => {
-    // Initializes local storage
-    const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
-    await idb_storage.init();
-    StorageService.addStorageInstance(`idb-service`, idb_storage);
-
-    // Initializes a rest storage
-    const rest_storage = new RESTStorage(`192.158.6.64`, 1, `http://192.168.6.64:8080/api/v1`);
-    await rest_storage.init();
-    StorageService.addStorageInstance(`local-rest-service`, rest_storage);
-
     // storage choices
+
     StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = `jag-at`;                         // Cross-tab identifier
+
+    if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
+       // Initializes a rest storage
+        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8888/api/v1`);
+        await rest_storage.init();
+        StorageService.addStorageInstance(`local-rest-service`, rest_storage);
+    }
+
+    if ((StorageService.getPreferredStorage() === `idb-service`) || (StorageService.areStoragesSynced())) {
+        // Initializes local storage
+        const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
+        await idb_storage.init();
+        StorageService.addStorageInstance(`idb-service`, idb_storage);
+    }
 
     const controller = new ControllerAT();
 

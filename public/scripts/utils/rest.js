@@ -72,6 +72,9 @@ export default class RESTUtils {
     }
 
     static async create(url, description) {
+        console.log(`Trying to post...`)
+        console.log(url)
+        console.log(description)
         //    const csrfToken = document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1');
         const options = {
             method: `POST`,

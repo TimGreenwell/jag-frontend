@@ -3,10 +3,10 @@ const Pool = require(`pg`).Pool;
 
 const pool = new Pool({
     host: `localhost`,
-    database: `team`, // `my_todos_db`
-    user: `postgres`, // default postgres
-    password: `d0r0thee`, // added during PostgreSQL and pgAdmin installation
-    port: `5432` // default port
+    database: `teamworks`,
+    user: `postgres`,
+    password: `d0r0thee`,
+    port: `5433` //  (pg15 using 5433)   (pg14 on 5432)
 });
 
 // const execute = async (query) => {
