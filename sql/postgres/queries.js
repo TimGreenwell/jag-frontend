@@ -324,7 +324,6 @@ const deleteJagByProjectId = async (id) => {
 };
 
 
-
 const createActivity = async (activity) => {
     const values = [
         activity.urn,
@@ -381,8 +380,6 @@ const createActivity = async (activity) => {
 
 
 const createEndpoint = async (endpoint, owner_id) => {
-    console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`)
-    console.log(endpoint);
     const values = [
         endpoint.id,
         endpoint.direction,
@@ -399,7 +396,15 @@ const createEndpoint = async (endpoint, owner_id) => {
                     endpoint_exchange_source_urn,
                     endpoint_exchange_type,
                     endpoint_activity_fk)
-              VALUES ($1, $2, $3, $4, $5, $6)`, values).then((result) => {
+              VALUES ($1, $2, $3, $4, $5, $6)
+              ON CONFLICT (endpoint_id) 
+              DO UPDATE SET
+                    endpoint_direction            = excluded.endpoint_direction,
+                    endpoint_exchange_name        = excluded.endpoint_exchange_name,
+                    endpoint_exchange_source_urn  = excluded.endpoint_exchange_source_urn,
+                    endpoint_exchange_type        = excluded.endpoint_exchange_type,
+                    endpoint_activity_fk          = excluded.endpoint_activity_fk               
+              `, values).then((result) => {
         queryResult = result;
         return result;
     }).catch((e) => {
@@ -409,7 +414,6 @@ const createEndpoint = async (endpoint, owner_id) => {
 };
 
 const createSubactivity = async (subactivity, owner_id) => {
-    console.log(subactivity);
     const values = [
         subactivity.id,
         subactivity.urn,
@@ -420,7 +424,12 @@ const createSubactivity = async (subactivity, owner_id) => {
                      subactivity_id,
                      subactivity_urn,
                      subactivity_parent_fk)
-              VALUES ($1, $2, $3)`, values).then((result) => {
+              VALUES ($1, $2, $3)
+              ON CONFLICT (subactivity_id)
+              DO UPDATE SET
+                            subactivity_urn            = excluded.subactivity_urn,
+                            subactivity_parent_fk        = excluded.subactivity_parent_fk
+                            `, values).then((result) => {
         queryResult = result;
         return result;
     }).catch((e) => {
@@ -430,25 +439,34 @@ const createSubactivity = async (subactivity, owner_id) => {
 };
 
 const createBinding = async (binding, owner_id) => {
+    console.log(`Creating a BINDING`);
     console.log(binding);
     const values = [
         binding.id,
-        binding.to,
-        binding.from,
+        binding.from.id,
+        binding.to.id,
         owner_id
     ];
+    console.log(values);
     let queryResult;
     await pool.query(`INSERT INTO binding (
                      binding_id,
-                     binding_to,
                      binding_from,
+                     binding_to,
                      binding_activity_fk)
-              VALUES ($1, $2, $3, $4)`, values).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
+              VALUES ($1, $2, $3, $4)
+              ON CONFLICT (binding_id)
+              DO UPDATE SET
+                            binding_to           = excluded.binding_to,
+                            binding_from         = excluded.binding_from,
+                            binding_activity_fk  = excluded.binding_activity_fk`, values).
+        then((result) => {
+            console.log(result);
+            queryResult = result;
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
     return queryResult;
 };
 
@@ -508,7 +526,6 @@ const createJag = async (node, ownerId) => {
                       node_x = excluded.node_x,
                       node_y = excluded.node_y                           
                       `, values).then((result) => {
-        console.log(`query says - I updated nodeId = ${node.id} and ownerId = ${ownerId}`);
         queryResult = result;
         return result;
     }).catch((e) => {

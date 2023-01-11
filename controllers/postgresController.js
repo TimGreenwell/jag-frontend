@@ -4,24 +4,13 @@ const createActivity = async (request, response) => {
     const activity = request.body;
     await queries.createActivity(activity).then((result) => {
         if (result) {
-            console.log(`-- ${result.rowCount} Activity created --`);
-            console.log(activity);
+            console.log(`Activity upserted`)
         }
     }).catch((e) => {
         console.log(`bad: ${e}`);
     });
 
-    console.log(`AM I GOING TO BE SAVING ENDPOINT TO DB?`)
-    const endpoints = activity.endpoints;
-    for (const endpoint of endpoints) {
-        console.log(`SAVING ENDPOINT TO DB`)
-        await queries.createEndpoint(endpoint, activity.urn).then((result) => {
-            if (result) {
-                console.log(`-- Endpoint created --`);
-                // response.status(200).json(result.rows);
-            }
-        });
-    }
+
 
     const children = activity.children;
     for (const child of children) {
@@ -30,6 +19,16 @@ const createActivity = async (request, response) => {
             if (result) {
                 console.log(`-- Subactivity created --`);
                 // response.status(200).json(result.rows);
+            }
+        });
+    }
+
+
+    const endpoints = activity.endpoints;
+    for (const endpoint of endpoints) {
+        await queries.createEndpoint(endpoint, activity.urn).then((result) => {
+            if (result) {
+                console.log(`-- Endpoint created --`);
             }
         });
     }
@@ -54,13 +53,10 @@ const createJag = async (request, response) => {
 
     while (workStack.length > 0) {
         const currentNode = workStack.pop();
-        console.log(`popped.......`);
-        console.log(currentNode);
 
         await queries.createJag(currentNode).then((result) => {
             if (result) {
                 console.log(`-- Controller says => ${result.rowCount} Node created --`);
-                console.log(currentNode);
             }
         }).catch((e) => {
             console.log(`bad: ${e}`);
@@ -69,7 +65,7 @@ const createJag = async (request, response) => {
         currentNode.children.forEach((child) => {
             workStack.push(child);
             console.log(`Pushing child`);
-            console.log(child);
+
         });
     }
 
@@ -121,8 +117,7 @@ const getAllActivities = async (request, response) => {
 };
 
 const getActivityById = async (request, response) => {
-    console.log(`Special Activity lookup for......`);
-    console.log(request.params);
+
     const activitiesReply = await queries.getActivityById(request.params.activityId);
     const activity = activitiesReply.rows;
 
@@ -203,8 +198,6 @@ const getJagByProjectId = async (request, response) => {
 const deleteJagByProjectId = async (request, response) => {
     console.log(`DELETING with ${request.params.projectId}`);
     const jagsReply = await queries.deleteJagByProjectId(request.params.projectId);
-    console.log(`DELETED`);
-    console.log(jagsReply);
     response.status(204).send(`{}`);
 };
 

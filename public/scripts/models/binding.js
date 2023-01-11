@@ -8,15 +8,27 @@
 'use strict';
 
 import Endpoint from "./endpoint.js";
+import {uuidV4} from '../utils/uuid.js';
 
 export default class Binding {
 
     constructor({
+        id = uuidV4(),
         from = null,  // endpoint
         to = null     // endpoint
     } = {}) {
+        this._id = id;
         this._from = from;
         this._to = to;
+    }
+
+
+    get id() {
+        return this._id;
+    }
+
+    set id(value) {
+        this._id = value;
     }
 
     get from() {
@@ -37,17 +49,17 @@ export default class Binding {
 
 
     sameFromEndpoint(endpoint) {
-        return this.from.equals(endpoint)
+        return this.from.equals(endpoint);
     }
 
     sameToEndpoint(endpoint) {
-        return this.to.equals(endpoint)
+        return this.to.equals(endpoint);
     }
 
     toJSON() {
-        const json = {
+        const json = {id: this._id,
             from: this.from.toJSON(),
-            to: this.to.toJSON()}
+            to: this.to.toJSON()};
         return json;
     }
 

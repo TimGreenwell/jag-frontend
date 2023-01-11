@@ -180,10 +180,10 @@ export default class JAGATValidation {
             throw new Error(`Endpoint (${endpoint.exchangeName}) must have a type at least 1 character long.`);
         }
 
-        if (Object.keys(endpoint).length !== 5) {
-            success = false;
-            throw new Error(`Endpoint (${endpoint.exchangeName}) contains unknown properties: only accepts name and type strings.`);
-        }
+        // if (Object.keys(endpoint).length !== 5) {
+        //     success = false;
+        //     throw new Error(`Endpoint (${endpoint.exchangeName}) contains unknown properties: only accepts name and type strings.`);
+        // }
         return success;
     }
 
