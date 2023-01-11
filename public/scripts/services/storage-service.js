@@ -49,7 +49,8 @@ export default class StorageService extends SharedObservable {
         if (typeof this._preferredStorage === `undefined`) {
             this._preferredStorage = id;
         }
-        console.log(`{} - IndexedDB Storage linked to StorageService`);
+        console.log(`{} - ${id} linked to StorageService`);
+        console.log(JSON.stringify(instance, null, 3))
     }
 
     /**
@@ -73,7 +74,7 @@ export default class StorageService extends SharedObservable {
     /**
      * preferredStorage determines which of the registered storage instance will be used for reads.
      */
-    getPreferredStorage() {
+    static getPreferredStorage() {
         return this._preferredStorage;
     }
 

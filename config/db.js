@@ -1,27 +1,22 @@
 const Pool = require(`pg`).Pool;
 // or//   const { Pool } = require('pg')
 
+
+
+
 const pool = new Pool({
     host: `localhost`,
-    database: `team`, // `my_todos_db`
-    user: `postgres`, // default postgres
-    password: `d0r0thee`, // added during PostgreSQL and pgAdmin installation
-    port: `5432` // default port
+    database: `teamworks`,
+    user: `postgres`,
+    password: `d0r0thee`,
+    port: `5433` //  (pg15 using 5433)   (pg14 on 5432)
 });
 
-// const execute = async (query) => {
-//     try {
-//         await client.connect();     // gets connection
-//         await client.query(query);  // sends queries
-//         return true;
-//     } catch (error) {
-//         console.error(error.stack);
-//         return false;
-//     } finally {
-//         await client.end();         // closes connection
-//     }
-// };
-
+(async () => {
+    const res = await pool.query(`SELECT $1::text as connected`, [`Connection to postgres successful!`]);
+    console.log(`Checking connection to DB`)
+    console.log(res.rows[0].connected);
+})();
 
 module.exports = {
     query: (text, params, callback) => {

@@ -180,10 +180,10 @@ export default class JAGATValidation {
             throw new Error(`Endpoint (${endpoint.exchangeName}) must have a type at least 1 character long.`);
         }
 
-        if (Object.keys(endpoint).length !== 5) {
-            success = false;
-            throw new Error(`Endpoint (${endpoint.exchangeName}) contains unknown properties: only accepts name and type strings.`);
-        }
+        // if (Object.keys(endpoint).length !== 5) {
+        //     success = false;
+        //     throw new Error(`Endpoint (${endpoint.exchangeName}) contains unknown properties: only accepts name and type strings.`);
+        // }
         return success;
     }
 
@@ -275,9 +275,9 @@ export default class JAGATValidation {
             opt_params = opt_params + 1;
         }
 
-        if (Object.keys(child).length !== 2 + opt_params) {
-            throw new Error(`Child contains unknown properties: only accepts URN, UUID, optional annotations, and optional contextual name and description strings.`);
-        }
+        // if (Object.keys(child).length !== 2 + opt_params) {
+        //     throw new Error(`Child contains unknown properties: only accepts URN, UUID, optional annotations, and optional contextual name and description strings.`);
+        // }
     }
 
     static validateBindings(bindings) {

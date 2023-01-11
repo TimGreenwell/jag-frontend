@@ -21,7 +21,8 @@ export default class RESTStorage {
             get: `/{urlHandle}/{id}`,
             has: `/{urlHandle}/{id}`,
             create: `/{urlHandle}`,
-            update: `/{urlHandle}/{id}`,
+            update: `/{urlHandle}`,
+   //         update: `/{urlHandle}/{id}`,
             delete: `/{urlHandle}/{id}`,
             clear: `/{urlHandle}`,
             help: ``

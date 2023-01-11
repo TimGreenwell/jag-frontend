@@ -986,7 +986,6 @@ AtPlayground.NOTICE_PASTE_JAG = Popupable._createPopup({
 
                 const reader = new FileReader();
                 reader.addEventListener(`load`, function (event) {
-                    console.log(`File read...... and passed to event`);
                     this.dispatchEvent(new CustomEvent(`event-import-jag`, {
                         bubbles: true,
                         composed: true,

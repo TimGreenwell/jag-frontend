@@ -6,7 +6,7 @@
  * @version 0.89
  */
 
-import {uuidV4} from '../utils/uuid.js';
+import {uuidV4} from "../utils/uuid.js";
 import Validation from "../utils/validation.js";
 import Binding from "./binding.js";
 import Endpoint from "./endpoint.js";
@@ -29,7 +29,7 @@ export default class Activity extends EventTarget {
         // outputs = [],
         children = [],
         bindings = [],   // list of Binding
-        author,
+        author = '',
         createdDate,
         modifiedDate,
         expectedDuration = ``,
