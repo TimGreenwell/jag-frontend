@@ -753,7 +753,6 @@ export default class Activity extends EventTarget {
                 const returnValue = new Activity(element);
                 return returnValue;
             });
-            console.log(`------------------I THINK THIS IS BAD AND SHOULD BE CHECKED OUT CLOSER  --------------------------------------------`);
             return jagList;
         } else {
             try {

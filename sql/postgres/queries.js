@@ -152,12 +152,11 @@ const getAllBindings = async () => {
            b.binding_to AS "to",
            b.binding_from AS "from",
            b.binding_activity_fk AS "fk"
-         FROM binding b 
-         ORDER BY b.binding_activity_fk`).
+         FROM binding b`).
         then((result) => {
             return result;
         }).catch((e) => {
-            console.log(`bad: ${e}`);
+            console.log(`bad binding all select: ${e}`);
         });
     return bindingResult;
 };
@@ -170,12 +169,11 @@ const getBindingsFor = async (urn) => {
            b.binding_from AS "from",
            b.binding_activity_fk AS "fk"
          FROM binding b 
-         WHERE b.binding_activity_fk = $1
-         ORDER BY b.binding_activity_fk`, [urn]).
+         WHERE b.binding_activity_fk = $1`, [urn]).
         then((result) => {
             return result;
         }).catch((e) => {
-            console.log(`bad: ${e}`);
+            console.log(`bad binding for select: ${e}`);
         });
     return bindingResult;
 };
@@ -240,7 +238,6 @@ const getAllJags = async () => {
     });
     return queryResult;
 };
-
 
 const getJagByProjectId = async (id) => {
     const queryResult = await pool.query(`SELECT 
@@ -309,7 +306,6 @@ const deleteActivityById = async (id) => {
     return deleteResult;
 };
 
-
 const deleteJagByProjectId = async (id) => {
     const queryResult = await pool.query(`
       DELETE 
@@ -322,7 +318,6 @@ const deleteJagByProjectId = async (id) => {
     });
     return queryResult;
 };
-
 
 const createActivity = async (activity) => {
     const values = [
@@ -377,7 +372,6 @@ const createActivity = async (activity) => {
     });
     return queryResult;
 };
-
 
 const createEndpoint = async (endpoint, owner_id) => {
     const values = [
@@ -443,29 +437,29 @@ const createBinding = async (binding, owner_id) => {
     console.log(binding);
     const values = [
         binding.id,
-        binding.from.id,
         binding.to.id,
+        binding.from.id,
         owner_id
     ];
     console.log(values);
     let queryResult;
     await pool.query(`INSERT INTO binding (
                      binding_id,
-                     binding_from,
                      binding_to,
+                     binding_from,
                      binding_activity_fk)
               VALUES ($1, $2, $3, $4)
               ON CONFLICT (binding_id)
               DO UPDATE SET
-                            binding_to           = excluded.binding_to,
                             binding_from         = excluded.binding_from,
+                            binding_to           = excluded.binding_to,
                             binding_activity_fk  = excluded.binding_activity_fk`, values).
         then((result) => {
             console.log(result);
             queryResult = result;
             return result;
         }).catch((e) => {
-            console.log(`bad: ${e}`);
+            console.log(`bad binding create: ${e}`);
         });
     return queryResult;
 };

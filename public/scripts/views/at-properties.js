@@ -169,16 +169,12 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             if (exchangeType === ``) {
                 return;
             }
-
-
-            const success = activity.addInput(exchangeName, exchangeType);
-            if (success) {
-                this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
-                    bubbles: true,
-                    composed: true,
-                    detail: {activity}
-                }));
-            }
+            activity.addInput(exchangeName, exchangeType);
+            this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
+                bubbles: true,
+                composed: true,
+                detail: {activity}
+            }));
         }
     }
 
@@ -303,6 +299,8 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             bindable = false;
         } else {
             this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
+            console.log(`HERE? - `)
+            console.log(this._selectedFromEndpoints)
             const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints);
 
             unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
@@ -337,21 +335,32 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             $toEndpointSelect.size = 0;
             $bindButton.disabled = true;
         } else {
-            this._selectedToEndpoints = Array.from($selectedToEndpoints).map((selectedToEndpoint) => {
-                const fromToDefinition = new Endpoint();
-                fromToDefinition.direction = selectedToEndpoint.value.split(`/`)[0];
+            // this._selectedToEndpoints = Array.from($selectedToEndpoints).map((selectedToEndpoint) => {
+            //     const fromToDefinition = new Endpoint();
+            //     fromToDefinition.direction = selectedToEndpoint.value.split(`/`)[0];
+            //
+            //     fromToDefinition.exchangeSourceUrn = selectedToEndpoint.value.split(`/`)[1];
+            //     fromToDefinition.exchangeName = selectedToEndpoint.label.split(` `)[0];
+            //
+            //     return fromToDefinition;
+            // });
 
-                fromToDefinition.exchangeSourceUrn = selectedToEndpoint.value.split(`/`)[1];
-                fromToDefinition.exchangeName = selectedToEndpoint.label.split(` `)[0];
+            this._selectedToEndpoints = this.convertOptionsToEndpoints($selectedToEndpoints);
 
-                return fromToDefinition;
-            });
+
+
+
+
             unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints, this._selectedToEndpoints);
-
             $bindButton.disabled = unbindable;
         }
         $unbindButton.disabled = !(unbindable);
         $removeButton.disabled = !(removable);
+        console.log(`++++++++++++++++++++++++++`);
+        console.log(`++++++++++++++++++++++++++`);
+        console.log(`++++++++++++++++++++++++++`);
+        console.log(this._selectedToEndpoints); // broke - no exchangeType
+        console.log(this._selectedFromEndpoints);
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
@@ -366,6 +375,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._selectedToEndpoints.forEach((to) => {
                 const binding = new Binding({from,
                     to});
+                console.log(`++++++++++++++++++++++++++`);
+                console.log(`++++++++++++++++++++++++++`);
+                console.log(`++++++++++++++++++++++++++`);
+                console.log(binding);
                 this._focusNode.activity.addBinding(binding);
             });
         });
@@ -686,10 +699,10 @@ customElements.define(`jag-properties`, class extends HTMLElement {
     }
 
     convertOptionsToEndpoints($selectedOptions) {
-        const endpointArray = Array.from($selectedOptions).map((selectedFromEndpoint) => {
-            const direction = selectedFromEndpoint.value.split(`/`)[0];
-            const exchangeSourceUrn = selectedFromEndpoint.value.split(`/`)[1];
-            const exchangeName = selectedFromEndpoint.label.split(` `)[0];
+        const endpointArray = Array.from($selectedOptions).map((selectedEndpoint) => {
+            const direction = selectedEndpoint.value.split(`/`)[0];
+            const exchangeSourceUrn = selectedEndpoint.value.split(`/`)[1];
+            const exchangeName = selectedEndpoint.label.split(` `)[0];
             // NO EXCHANGE TYPE AVAILABLE HERE - NO BIG DEAL IF JUST DRAWING LINES
             return this.retrieveEndpoint(exchangeSourceUrn, exchangeName, direction);
         });

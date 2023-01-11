@@ -235,7 +235,6 @@ export default class ControllerAT extends Controller {
             this._playground._refreshPlayground(projectModel);
         } else {
             if (this._timeview) {
-                console.log(`CONNECTING EVENT NODES`);
                 this._timeview.refreshTimeview();
             }
             const childId = parentNodeModel.activity.addChild(childNodeModel.urn);

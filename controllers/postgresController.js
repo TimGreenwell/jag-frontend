@@ -4,21 +4,18 @@ const createActivity = async (request, response) => {
     const activity = request.body;
     await queries.createActivity(activity).then((result) => {
         if (result) {
-            console.log(`Activity upserted`)
+            console.log(`Activity upserted`);
         }
     }).catch((e) => {
         console.log(`bad: ${e}`);
     });
 
 
-
     const children = activity.children;
     for (const child of children) {
-        // children.forEach((child) => {
         await queries.createSubactivity(child, activity.urn).then((result) => {
             if (result) {
                 console.log(`-- Subactivity created --`);
-                // response.status(200).json(result.rows);
             }
         });
     }
@@ -35,7 +32,7 @@ const createActivity = async (request, response) => {
 
     const bindings = activity.bindings;
     for (const binding of bindings) {
-    // bindings.forEach((binding) => {
+    // At this point binding.to does not have exchangeType -?-
         await queries.createBinding(binding, activity.urn).then((result) => {
             if (result) {
                 console.log(`-- Binding created --`);
@@ -56,7 +53,7 @@ const createJag = async (request, response) => {
 
         await queries.createJag(currentNode).then((result) => {
             if (result) {
-                console.log(`-- Controller says => ${result.rowCount} Node created --`);
+                console.log(`-- Controller says => ${result.rowCount} node updated --`);
             }
         }).catch((e) => {
             console.log(`bad: ${e}`);
@@ -64,8 +61,6 @@ const createJag = async (request, response) => {
 
         currentNode.children.forEach((child) => {
             workStack.push(child);
-            console.log(`Pushing child`);
-
         });
     }
 
@@ -76,70 +71,52 @@ const getAllActivities = async (request, response) => {
     const activitiesReply = await queries.getAllActivities();
     const activities = activitiesReply.rows;
 
-    const endpointsReply = await queries.getAllEndpoints();
-    const endpoints = endpointsReply.rows;
+    for (const activity of activities) {
+        const endpointsForReply = await queries.getEndpointsFor(activity.urn);
+        const endpointsFor = endpointsForReply.rows;
+        activity.endpoints = endpointsFor;
 
-    const bindingsReply = await queries.getAllBindings();
-    const bindings = bindingsReply.rows;
+        const bindingsForReply = await queries.getBindingsFor(activity.urn);
+        const bindingsFor = bindingsForReply.rows;
 
-    const subactivitiesReply = await queries.getAllSubActivities();
-    const subactivities = subactivitiesReply.rows;
+        for (const bindingFor of bindingsFor) {
+            const fromEndpointReply = await queries.getEndpointById(bindingFor.from);
+            const toEndpointReply = await queries.getEndpointById(bindingFor.to);
+            bindingFor.from = fromEndpointReply.rows[0];
+            bindingFor.to = toEndpointReply.rows[0];
+        }
+        activity.bindings = bindingsFor;
 
-    const endpointMap = new Map();
-    endpoints.forEach((endpoint) => {
-        endpointMap.set(endpoint.id, endpoint);
-    });
-
-    activities.forEach((activity) => {
-        activity.endpoints = [];
-        endpoints.forEach((endpoint) => {
-            if (endpoint.fk === activity.urn) {
-                activity.endpoints.push(endpoint);
-            }
-        });
-        activity.bindings = [];
-        bindings.forEach((binding) => {
-            if (binding.fk === activity.urn) {
-                binding.from = endpointMap.get(binding.from);
-                binding.to = endpointMap.get(binding.to);
-                activity.bindings.push(binding);
-            }
-        });
-        activity.children = [];
-        subactivities.forEach((subactivity) => {
-            if (subactivity.fk === activity.urn) {
-                activity.children.push(subactivity);
-            }
-        });
-    });
+        const subactivitiesForReply = await queries.getSubActivitiesFor(activity.urn);
+        const subactivitiesFor = subactivitiesForReply.rows;
+        activity.children = subactivitiesFor;
+    }
 
     response.status(200).json(activities);
 };
 
 const getActivityById = async (request, response) => {
-
     const activitiesReply = await queries.getActivityById(request.params.activityId);
     const activity = activitiesReply.rows;
 
     const endpointsForReply = await queries.getEndpointsFor(request.params.activityId);
     const endpointsFor = endpointsForReply.rows;
-    activity.endpoints.push(endpointsFor);
+    activity.endpoints = endpointsFor;
 
     const bindingsForReply = await queries.getBindingsFor(request.params.activityId);
     const bindingsFor = bindingsForReply.rows;
-
     for (const bindingFor of bindingsFor) {
-        const fromEndpointById = await queries.getEndpointById(bindingFor.from);
-        bindingFor.from = fromEndpointById;
-        const toEndpointById = await queries.getEndpointById(bindingFor.to);
-        bindingFor.to = toEndpointById;
+        const fromEndpointReply = await queries.getEndpointById(bindingFor.from);
+        const toEndpointReply = await queries.getEndpointById(bindingFor.to);
+        bindingFor.from = fromEndpointReply.rows[0];
+        bindingFor.to = toEndpointReply.rows[0];
     }
-
-    activity.bindings.push(endpointsFor);
+    activity.bindings = bindingsFor;
 
     const subactivitiesForReply = await queries.getSubActivitiesFor(request.params.activityId);
     const subactivitiesFor = subactivitiesForReply.rows;
-    activity.children.push(subactivitiesFor);
+    activity.children = subactivitiesFor;
+
     response.status(200).json(activity);
 };
 

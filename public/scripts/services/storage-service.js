@@ -49,8 +49,6 @@ export default class StorageService extends SharedObservable {
         if (typeof this._preferredStorage === `undefined`) {
             this._preferredStorage = id;
         }
-        console.log(`{} - ${id} linked to StorageService`);
-        console.log(JSON.stringify(instance, null, 3))
     }
 
     /**
