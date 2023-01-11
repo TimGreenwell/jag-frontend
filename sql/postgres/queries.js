@@ -558,6 +558,9 @@ const dropTables = async () => {
 
 
 (async () => {
+    const res = await pool.query(`SELECT $1::text as connected`, [`Connection to postgres successful!`]);
+    console.log(`Checking connection to DB`)
+    console.log(res.rows[0].connected);
     await createTables();
     console.log(`Created Tables( if necessary)`);
 })();

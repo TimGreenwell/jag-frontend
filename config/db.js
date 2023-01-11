@@ -1,5 +1,5 @@
 const Pool = require(`pg`).Pool;
-// or//   const { Pool } = require('pg')
+// or --  const { Pool } = require('pg')
 
 const pool = new Pool({
     host: `localhost`,
@@ -8,12 +8,6 @@ const pool = new Pool({
     password: `d0r0thee`,
     port: `5433` //  postgresql.conf (locate)
 });
-
-(async () => {
-    const res = await pool.query(`SELECT $1::text as connected`, [`Connection to postgres successful!`]);
-    console.log(`Checking connection to DB`)
-    console.log(res.rows[0].connected);
-})();
 
 module.exports = {
     query: (text, params, callback) => {
