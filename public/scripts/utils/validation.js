@@ -275,9 +275,9 @@ export default class JAGATValidation {
             opt_params = opt_params + 1;
         }
 
-        if (Object.keys(child).length !== 2 + opt_params) {
-            throw new Error(`Child contains unknown properties: only accepts URN, UUID, optional annotations, and optional contextual name and description strings.`);
-        }
+        // if (Object.keys(child).length !== 2 + opt_params) {
+        //     throw new Error(`Child contains unknown properties: only accepts URN, UUID, optional annotations, and optional contextual name and description strings.`);
+        // }
     }
 
     static validateBindings(bindings) {

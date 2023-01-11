@@ -9,10 +9,8 @@
  */
 
 const express = require(`express`);
-const bodyParser = require(`body-parser`)
 const https = require(`https`);
 const path = require(`path`);
-console.log(`requiring ../routes/postgresRoutes`)
 const postgresRoutes = require(`../routes/postgresRoutes`)
 
 const cors = require(`cors`);             // added
@@ -27,15 +25,6 @@ app.use(express.static(path.join(process.cwd(), root)));   // original
 app.use(express.json());             // added
 app.use(cors());                     // added
 app.use(morgan(`common`));    // added
-// app.use(todoRoutes);                 // added
-
-//
-// app.get('/users', db.getUsers)
-// app.get('/users/:id', db.getUserById)
-// app.post('/users', db.createUser)
-// app.put('/users/:id', db.updateUser)
-// app.delete('/users/:id', db.deleteUser)
-
 
 const server = app.listen(port);
 

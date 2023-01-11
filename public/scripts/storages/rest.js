@@ -21,7 +21,8 @@ export default class RESTStorage {
             get: `/{urlHandle}/{id}`,
             has: `/{urlHandle}/{id}`,
             create: `/{urlHandle}`,
-            update: `/{urlHandle}/{id}`,
+            update: `/{urlHandle}`,
+   //         update: `/{urlHandle}/{id}`,
             delete: `/{urlHandle}/{id}`,
             clear: `/{urlHandle}`,
             help: ``
@@ -50,6 +51,8 @@ export default class RESTStorage {
     async all(schema) {
         const urlHandle = SchemaManager.getRest(schema);
         const path = this.__REST_PATHS.all.replace(`{urlHandle}`, urlHandle);
+        console.log(this._endpoint + path)
+        console.log(path)
         const all = await RESTUtils.all(this._endpoint + path);
         return all;
     }

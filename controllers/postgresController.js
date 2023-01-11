@@ -1,30 +1,4 @@
-
-const fs = require(`fs`);
-// controller       --  called by controller to make the query
 const queries = require(`../sql/postgres/queries`);
-// const {Pool, Client} = require(`pg`);     // added
-//
-// There are two style of calling the database here.  I think we really only need the Controller part.  The router part is already made?
-
-
-const getAllActivities = async (request, response) => {
-    await queries.getAllActivities().then((result) => {
-        if (result) {
-            console.log(`-- Activities read --`);
-            response.status(200).json(result.rows);
-        }
-    });
-};
-
-const getAllJags = async (request, response) => {
-    await queries.getAllJags().then((result) => {
-        if (result) {
-            console.log(`-- Jags read --`);
-            response.status(200).json(result.rows);
-        }
-    });
-};
-
 
 const createActivity = async (request, response) => {
     const activity = request.body;
@@ -33,198 +7,266 @@ const createActivity = async (request, response) => {
             console.log(`-- Activity created --`);
             response.status(200).json(result.rows);
         }
-    });
+    }).catch((e) => {
+        console.log(`bad: ${e}`);
+    });;
+
+
     const endpoints = activity.endpoints;
-    endpoints.forEach((endpoint) => {
-        queries.createEndpoint(endpoint).then((result) => {
+    for (const endpoint of endpoints) {
+        await queries.createEndpoint(endpoint, activity.urn).then((result) => {
             if (result) {
                 console.log(`-- Endpoint created --`);
+                // response.status(200).json(result.rows);
+            }
+        });
+    };
+
+    const children = activity.children;
+    console.log("...........1...........")
+    for (const child of children) {
+        console.log("......................")
+        console.log(child)
+    // children.forEach((child) => {
+        await queries.createSubactivity(child, activity.urn).then((result) => {
+            if (result) {
+                console.log(`-- Subactivity created --`);
+                // response.status(200).json(result.rows);
+            }
+        });
+    };
+
+    const bindings = activity.bindings;
+    for (const binding of bindings) {
+    // bindings.forEach((binding) => {
+        await queries.createBinding(binding, activity.urn).then((result) => {
+            if (result) {
+                console.log(`-- Binding created --`);
+                // response.status(200).json(result.rows);
+            }
+        });
+    };
+};
+
+const createJag = async (request, response) => {
+    const jag = request.body;
+    const workStack = [];
+    workStack.push(jag);
+
+    while (workStack.length > 0) {
+        const currentNode = workStack.pop();
+
+        await queries.createJag(jag).then((result) => {
+            if (result) {
+                console.log(`-- Activity created --`);
                 response.status(200).json(result.rows);
             }
         });
-    })
+
+        currentNode.children.forEach((child) => {
+            workStack.push(child);
+        });
+    }
 };
 
-const createEndpoint = async (request, response) => {
-    const endpoint = request.body;
-    await queries.createEndpoint(endpoint).then((result) => {
-        if (result) {
-            console.log(`-- Activity created --`);
-            response.status(200).json(result.rows);
+const getAllActivities = async (request, response) => {
+    const activitiesReply = await queries.getAllActivities();
+    const activities = activitiesReply.rows;
+    console.log(`Get all Activities.........................................`);
+
+    const endpointsReply = await queries.getAllEndpoints();
+    const endpoints = endpointsReply.rows;
+    console.log(`Get all Endpoints.........................................`);
+    console.log(endpoints);
+
+
+    const bindingsReply = await queries.getAllBindings();
+    const bindings = bindingsReply.rows;
+    console.log(`Get all Bindpoints.........................................`);
+    console.log(bindings);
+
+
+    const subactivitiesReply = await queries.getAllSubActivities();
+    const subactivities = subactivitiesReply.rows;
+    console.log(`Get all Subactivities......................................`);
+    console.log(subactivities);
+
+    const endpointMap = new Map();
+    endpoints.forEach((endpoint) => {
+        endpointMap.set(endpoint.id, endpoint);
+    });
+
+    activities.forEach((activity) => {
+        activity.endpoints = [];
+        endpoints.forEach((endpoint) => {
+            if (endpoint.fk === activity.urn) {
+                activity.endpoints.push(endpoint);
+            }
+        });
+        activity.bindings = [];
+        bindings.forEach((binding) => {
+            if (binding.fk === activity.urn) {
+                binding.from = endpointMap.get(binding.from);
+                binding.to = endpointMap.get(binding.to);
+                activity.bindings.push(binding);
+            }
+        });
+        activity.children = [];
+        subactivities.forEach((subactivity) => {
+            if (subactivity.fk === activity.urn) {
+                activity.children.push(subactivity);
+            }
+        });
+    });
+
+    response.status(200).json(activities);
+};
+
+const getActivityById = async (request, response) => {
+    console.log(`Special Activity lookup for......`);
+    console.log(request.params);
+    const activitiesReply = await queries.getActivityById(request.params.activityId);
+    const activity = activitiesReply.rows;
+    console.log(`Activity.by id........................................`);
+    console.log(activity);
+
+    const endpointsForReply = await queries.getEndpointsFor(request.params.activityId);
+    const endpointsFor = endpointsForReply.rows;
+    console.log(`Endpoints..for.......................................`);
+    console.log(endpointsFor);
+    activity.endpoints.push(endpointsFor);
+
+    const bindingsForReply = await queries.getBindingsFor(request.params.activityId);
+    const bindingsFor = bindingsForReply.rows;
+    console.log(`bindingsFor.........................................`);
+    console.log(bindingsFor);
+
+    for (const bindingFor of bindingsFor) {
+        const fromEndpointById = await queries.getEndpointById(bindingFor.from);
+        bindingFor.from = fromEndpointById;
+        const toEndpointById = await queries.getEndpointById(bindingFor.to);
+        bindingFor.to = toEndpointById;
+    }
+
+    activity.bindings.push(endpointsFor);
+
+    const subactivitiesForReply = await queries.getSubActivitiesFor(request.params.activityId);
+    const subactivitiesFor = subactivitiesForReply.rows;
+    console.log(`Subactivities.for......................................`);
+    console.log(subactivitiesFor);
+    activity.children.push(subactivitiesFor);
+    console.log(`finally...`);
+    console.log(JSON.stringify(activity, null, 2));
+    response.status(200).json(activity);
+};
+
+const getAllJags = async (request, response) => {
+    console.log(`Getting all jags........................`);
+    const jagMap = new Map();
+    const jagList = [];
+    const jagsReply = await queries.getAllJags();
+    const jags = jagsReply.rows;
+    console.log(`My query replay is`);
+    jags.forEach((jag) => {
+        if (jag.projectId === jag.id) {
+            console.log(`see ${jag.projectId} as head`);
+            jag.children = [];
+            jagList.push(jag);
+        }
+        jagMap.set(jag.id, jag);
+    });
+    jags.forEach((jag) => {
+        if (jag.fk) {  // has a parent
+            const parent = jagMap.get(jag.fk);
+            parent.children.add(jag);
         }
     });
+    // console.log(`My complete head list is`)
+    // console.log(jagList)
+    // jagList.forEach((jag) => {
+    //     const workStack = [];
+    //     workStack.push(jag);
+    //     console.log(`pushing`);
+    //     console.log(jag);
+    //     while (workStack.length > 0) {
+    //         const workJag = workStack.pop();
+    //         workJag.children.forEach((child) => {
+    //             child = jagMap.get(child);
+    //             workStack.push(child);
+    //         });
+    //     }
+    // });
+    console.log(`Jag List ===`);
+    console.log(jagList);
+    response.status(200).json(jagList);
 };
 
-const createSubactivity = async (request, response) => {
-    const subactivity = request.body;
-    await queries.createEndpoint(subactivity).then((result) => {
-        if (result) {
-            console.log(`-- Subactivity created --`);
-            response.status(200).json(result.rows);
+const getJagByProjectId = async (request, response) => {
+    const jagMap = new Map();
+    const jagList = [];
+    const jagsReply = await queries.getJagByProjectId(request.params.projectId);
+    const jags = jagsReply.rows;
+    jags.forEach((jag) => {
+        if (jag.projectId === jag.id) {
+            jagList.push(jag);
+        }
+        jagMap.set(jag.id, jag);
+    });
+    jagList.forEach((jag) => {
+        const workStack = [];
+        workStack.push(jag);
+        console.log(`pushing`);
+        console.log(jag);
+        while (workStack.length > 0) {
+            const workJag = workStack.pop();
+            workJag.children.forEach((child) => {
+                child = jagMap.get(child);
+                workStack.push(child);
+            });
         }
     });
+    console.log(`Jag List ===`);
+    console.log(jagList);
+    response.status(200).json(jagList);
 };
 
+const deleteJagByProjectId = async (request, response) => {
+    console.log(`DELETING with ${request.params.projectId}`);
+    const jagsReply = await queries.deleteJagByProjectId(request.params.projectId);
+    console.log(`DELETED`);
+    console.log(jagsReply);
+    response.status(204).send(`{}`);
+};
 
-//
-// const createItem = (request, response) => {
-//     console.log(request)
-//     const {name, email} = request.body;
-//
-//     pool.query(`INSERT INTO users (name, email) VALUES ($1, $2)`, [name, email], (error, results) => {
-//         if (error) {
-//             throw error;
-//         }
-//         response.status(201).send(`User added with ID: ${results.insertId}`);
-//     });
-// };
-//
-// // create a todo.
-// // async createItem(todo) {
-// //     await pool.query(`INSERT INTO todos (title, checked)
-// //                       VALUES ($1, $2)`, [todo.title, false]).catch(console.log);
-// // }
-//
-//
-//
-// const getItemById = (request, response) => {
-//     const id = parseInt(request.params.id);
-//
-//     pool.query(`SELECT * FROM users1 WHERE id = $1`, [id], (error, results) => {
-//         if (error) {
-//             throw error;
-//         }
-//         response.status(200).json(results.rows);
-//     });
-// };
-//
-//
-//
-// const updateItem = (request, response) => {
-//     const id = parseInt(request.params.id);
-//     const {name, email} = request.body;
-//
-//     pool.query(
-//         `UPDATE users SET name = $1, email = $2 WHERE id = $3`,
-//         [name, email, id],
-//         (error, results) => {
-//             if (error) {
-//                 throw error;
-//             }
-//             response.status(200).send(`User modified with ID: ${id}`);
-//         }
-//     );
-// };
-//
-// // update a todo.
-// // async updateItem(todoId) {
-// //     // get the previous todo.
-// //     const original_todo = await pool.query(`SELECT *
-// //                                             FROM todos
-// //                                             WHERE id = $1`, [parseInt(todoId)]).catch(console.log);
-// //     const new_checked_value = !original_todo.rows[0].checked;
-// //
-// //     // update the checked todo
-// //     await pool.query(`UPDATE todos
-// //                       SET checked=$1
-// //                       WHERE id = $2`, [new_checked_value, parseInt(todoId)]).catch(console.log);
-// // }
-//
-// const deleteItem = (request, response) => {
-//     const id = parseInt(request.params.id);
-//
-//     pool.query(`DELETE FROM users WHERE id = $1`, [id], (error, results) => {
-//         if (error) {
-//             throw error;
-//         }
-//         response.status(200).send(`User deleted with ID: ${id}`);
-//     });
-// };
-//
-// // delete a todo.
-// // async deleteItem(todoId) {
-// //     await pool.query(`DELETE
-// //                       FROM todos
-// //                       WHERE id = $1`, [parseInt(todoId)]).catch(console.log);
-// // }
-//
+const deleteActivityById = async (request, response) => {
+    await queries.deleteActivityById(request.params.activityId);
+    response.status(204).send(`{}`);
+};
 
 
 const createTables = async (request, response) => {
-    const activityCreateTable = fs.readFileSync(`sql/postgres/create-table/activity.sql`).toString();
-    const agentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent.sql`).toString();
-    const agent_assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent_assessment.sql`).toString();
-    const analysisCreateTable = fs.readFileSync(`sql/postgres/create-table/analysis.sql`).toString();
-    const assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/assessment.sql`).toString();
-    const bindingCreateTable = fs.readFileSync(`sql/postgres/create-table/binding.sql`).toString();
-    const endpointCreateTable = fs.readFileSync(`sql/postgres/create-table/endpoint.sql`).toString();
-    const nodeCreateTable = fs.readFileSync(`sql/postgres/create-table/node.sql`).toString();
-    const performerCreateTable = fs.readFileSync(`sql/postgres/create-table/performer.sql`).toString();
-    const subactivityCreateTable = fs.readFileSync(`sql/postgres/create-table/subactivity.sql`).toString();
-    const subscriptionCreateTable = fs.readFileSync(`sql/postgres/create-table/subscription.sql`).toString();
-    const teamCreateTable = fs.readFileSync(`sql/postgres/create-table/team.sql`).toString();
-    const dbCreateTables = [];
-    dbCreateTables.push(activityCreateTable);
-    dbCreateTables.push(analysisCreateTable);
-    dbCreateTables.push(teamCreateTable);
-    dbCreateTables.push(endpointCreateTable);          // ref: activity
-    dbCreateTables.push(subactivityCreateTable);       // ref: activity
-    dbCreateTables.push(bindingCreateTable);           // ref: endpoint and activity
-    dbCreateTables.push(nodeCreateTable);              // ref: itself
-    dbCreateTables.push(subscriptionCreateTable);      // ref: node
-    dbCreateTables.push(performerCreateTable);         // ref: team
-    dbCreateTables.push(agentCreateTable);             // ref: team
-    dbCreateTables.push(agent_assessmentCreateTable); // ref: agent
-    dbCreateTables.push(assessmentCreateTable);        // ref: agent
-    const resultPromises = [];
-    for (const dbCreateTable of dbCreateTables) {
-        await queries.createTable(dbCreateTable);
-        console.log(`Created: ${dbCreateTable} `);
-    }
+    await queries.createTables();
     response.json({message: `Created all tables`});
 };
 
 
 const dropTables = async (request, response) => {
-    const activityDrop = fs.readFileSync(`sql/postgres/drop/activity.sql`).toString();
-    const agentDrop = fs.readFileSync(`sql/postgres/drop/agent.sql`).toString();
-    const agent_assessmentDrop = fs.readFileSync(`sql/postgres/drop/agent_assessment.sql`).toString();
-    const analysisDrop = fs.readFileSync(`sql/postgres/drop/analysis.sql`).toString();
-    const assessmentDrop = fs.readFileSync(`sql/postgres/drop/assessment.sql`).toString();
-    const bindingDrop = fs.readFileSync(`sql/postgres/drop/binding.sql`).toString();
-    const endpointDrop = fs.readFileSync(`sql/postgres/drop/endpoint.sql`).toString();
-    const nodeDrop = fs.readFileSync(`sql/postgres/drop/node.sql`).toString();
-    const performerDrop = fs.readFileSync(`sql/postgres/drop/performer.sql`).toString();
-    const subactivityDrop = fs.readFileSync(`sql/postgres/drop/subactivity.sql`).toString();
-    const subscriptionDrop = fs.readFileSync(`sql/postgres/drop/subscription.sql`).toString();
-    const teamDrop = fs.readFileSync(`sql/postgres/drop/team.sql`).toString();
-    const dbDropTables = [];
-
-    dbDropTables.push(assessmentDrop);        // ref: agent
-    dbDropTables.push(agent_assessmentDrop); // ref: agent
-    dbDropTables.push(agentDrop);             // ref: team
-    dbDropTables.push(performerDrop);         // ref: team
-    dbDropTables.push(subscriptionDrop);      // ref: node
-    dbDropTables.push(nodeDrop);              // ref: itself
-    dbDropTables.push(bindingDrop);           // ref: endpoint and activity
-    dbDropTables.push(subactivityDrop);       // ref: activity
-    dbDropTables.push(endpointDrop);          // ref: activity
-    dbDropTables.push(teamDrop);
-    dbDropTables.push(analysisDrop);
-    dbDropTables.push(activityDrop);
-
-    for (const dbDropTable of dbDropTables) {
-        await queries.dropTable(dbDropTable);
-        console.log(`Dropped: ${dbDropTable} `);
-    }
+    await queries.dropTables();
     response.json({message: `Dropped all tables`});
 };
 
 
+
+
 module.exports = {
-    getAllJags,
-    getAllActivities,
     createActivity,
+    createJag,
+    getAllActivities,
+    getActivityById,
+    getAllJags,
+    getJagByProjectId,
+    deleteActivityById,
+    deleteJagByProjectId,
     // getItemById,
     // createItem,
     // updateItem,

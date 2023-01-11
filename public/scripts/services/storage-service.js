@@ -197,7 +197,11 @@ export default class StorageService extends SharedObservable {
      */
     static async delete(deletedId, schema = this._schema) {
         console.log(`{<>} StorageService - DELETE}   (${schema}) ${deletedId}`);
+        console.log("vvvvvvvv")
+        console.log(this._storageInstancesMap.get(this._preferredStorage))
         const result = await this._storageInstancesMap.get(this._preferredStorage).delete(schema, deletedId);
+        console.log("^^^^^^^^")
+        console.log(`command-${schema}-deleted`)
         this.confirmStorageChange({
             topic: `command-${schema}-deleted`,
             schema,

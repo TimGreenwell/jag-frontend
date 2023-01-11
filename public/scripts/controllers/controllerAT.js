@@ -563,6 +563,9 @@ export default class ControllerAT extends Controller {
         const projectNode = this.fetchProject(projectModelId);
         do {
             const checkNode = projectNode.findChildById(nextParentId);
+            console.log(`22`)
+            console.log(checkNode)
+            console.log(`221`)
             urnStack.push(checkNode.urn);
             nextParentId = checkNode.parentId;
         } while (nextParentId !== undefined);
