@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS "performer"
     CONSTRAINT "PK_performer" PRIMARY KEY ("performer_id"),
     CONSTRAINT "FK_team_id" FOREIGN KEY ("performer_team_fk")
     REFERENCES team ("team_id") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );

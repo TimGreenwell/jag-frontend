@@ -7,14 +7,14 @@ CREATE TABLE IF NOT EXISTS "binding"
     CONSTRAINT "PK_binding" PRIMARY KEY ("binding_id"),
     CONSTRAINT "FK_binding_to" FOREIGN KEY ("binding_to")
     REFERENCES endpoint ("endpoint_id") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION,
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
     CONSTRAINT "FK_binding_from" FOREIGN KEY ("binding_from")
     REFERENCES endpoint ("endpoint_id") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION,
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
     CONSTRAINT "FK_activity_id" FOREIGN KEY ("binding_activity_fk")
     REFERENCES activity ("activity_urn") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );

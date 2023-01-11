@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS "subactivity"
     CONSTRAINT "PK_subactivity" PRIMARY KEY ("subactivity_id"),
     CONSTRAINT "FK_subactivity_parent" FOREIGN KEY ("subactivity_parent_fk")
     REFERENCES activity ("activity_urn") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );

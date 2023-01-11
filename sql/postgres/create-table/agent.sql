@@ -10,6 +10,6 @@ CREATE TABLE IF NOT EXISTS "agent"
     CONSTRAINT "PK_agent" PRIMARY KEY ("agent_id"),
     CONSTRAINT "FK_team_id" FOREIGN KEY ("agent_team_fk")
         REFERENCES team ("team_id") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );

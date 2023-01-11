@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS "subscription"
     CONSTRAINT "PK_subscription" PRIMARY KEY ("subscription_id"),
     CONSTRAINT "FK_node_id" FOREIGN KEY ("subscription_node_fk")
     REFERENCES node ("node_id") MATCH SIMPLE
-                                 ON UPDATE NO ACTION
-                                 ON DELETE NO ACTION
+                                 ON UPDATE CASCADE
+                                 ON DELETE CASCADE
 );

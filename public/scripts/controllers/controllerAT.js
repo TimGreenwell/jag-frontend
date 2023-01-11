@@ -192,6 +192,7 @@ export default class ControllerAT extends Controller {
     // eventActivityUpdatedHandler --- hosted by common controller.
 
     async eventNodeUpdatedHandler(event) {
+        console.log(`inside - eventNodeUpdatedHandler `)
         let projectNode;
         const updatedNodeModel = event.detail.nodeModel;
         if (updatedNodeModel.parentId) {  // Not same as root... this handles the root node of tree that has just been claimed by another project.  (parent comes next step)
@@ -218,6 +219,7 @@ export default class ControllerAT extends Controller {
     }
 
     async eventNodesConnectedHandler(event) {            // only needed id's
+        console.log(`inside - eventNodesConnectedHandler `)
         const projectNodeId = event.detail.projectNodeId;
         const parentNodeId = event.detail.parentNodeId;
         const childNodeId = event.detail.childNodeId;
@@ -563,9 +565,6 @@ export default class ControllerAT extends Controller {
         const projectNode = this.fetchProject(projectModelId);
         do {
             const checkNode = projectNode.findChildById(nextParentId);
-            console.log(`22`)
-            console.log(checkNode)
-            console.log(`221`)
             urnStack.push(checkNode.urn);
             nextParentId = checkNode.parentId;
         } while (nextParentId !== undefined);

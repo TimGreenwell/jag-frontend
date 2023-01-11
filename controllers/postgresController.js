@@ -4,37 +4,35 @@ const createActivity = async (request, response) => {
     const activity = request.body;
     await queries.createActivity(activity).then((result) => {
         if (result) {
-            console.log(`-- Activity created --`);
-            response.status(200).json(result.rows);
+            console.log(`-- ${result.rowCount} Activity created --`);
+            console.log(activity);
         }
     }).catch((e) => {
         console.log(`bad: ${e}`);
-    });;
+    });
 
-
+    console.log(`AM I GOING TO BE SAVING ENDPOINT TO DB?`)
     const endpoints = activity.endpoints;
     for (const endpoint of endpoints) {
+        console.log(`SAVING ENDPOINT TO DB`)
         await queries.createEndpoint(endpoint, activity.urn).then((result) => {
             if (result) {
                 console.log(`-- Endpoint created --`);
                 // response.status(200).json(result.rows);
             }
         });
-    };
+    }
 
     const children = activity.children;
-    console.log("...........1...........")
     for (const child of children) {
-        console.log("......................")
-        console.log(child)
-    // children.forEach((child) => {
+        // children.forEach((child) => {
         await queries.createSubactivity(child, activity.urn).then((result) => {
             if (result) {
                 console.log(`-- Subactivity created --`);
                 // response.status(200).json(result.rows);
             }
         });
-    };
+    }
 
     const bindings = activity.bindings;
     for (const binding of bindings) {
@@ -45,7 +43,8 @@ const createActivity = async (request, response) => {
                 // response.status(200).json(result.rows);
             }
         });
-    };
+    }
+    response.status(204).send(`{}`);
 };
 
 const createJag = async (request, response) => {
@@ -55,41 +54,40 @@ const createJag = async (request, response) => {
 
     while (workStack.length > 0) {
         const currentNode = workStack.pop();
+        console.log(`popped.......`);
+        console.log(currentNode);
 
-        await queries.createJag(jag).then((result) => {
+        await queries.createJag(currentNode).then((result) => {
             if (result) {
-                console.log(`-- Activity created --`);
-                response.status(200).json(result.rows);
+                console.log(`-- Controller says => ${result.rowCount} Node created --`);
+                console.log(currentNode);
             }
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
         });
 
         currentNode.children.forEach((child) => {
             workStack.push(child);
+            console.log(`Pushing child`);
+            console.log(child);
         });
     }
+
+    response.status(204).send(`{}`);
 };
 
 const getAllActivities = async (request, response) => {
     const activitiesReply = await queries.getAllActivities();
     const activities = activitiesReply.rows;
-    console.log(`Get all Activities.........................................`);
 
     const endpointsReply = await queries.getAllEndpoints();
     const endpoints = endpointsReply.rows;
-    console.log(`Get all Endpoints.........................................`);
-    console.log(endpoints);
-
 
     const bindingsReply = await queries.getAllBindings();
     const bindings = bindingsReply.rows;
-    console.log(`Get all Bindpoints.........................................`);
-    console.log(bindings);
-
 
     const subactivitiesReply = await queries.getAllSubActivities();
     const subactivities = subactivitiesReply.rows;
-    console.log(`Get all Subactivities......................................`);
-    console.log(subactivities);
 
     const endpointMap = new Map();
     endpoints.forEach((endpoint) => {
@@ -127,19 +125,13 @@ const getActivityById = async (request, response) => {
     console.log(request.params);
     const activitiesReply = await queries.getActivityById(request.params.activityId);
     const activity = activitiesReply.rows;
-    console.log(`Activity.by id........................................`);
-    console.log(activity);
 
     const endpointsForReply = await queries.getEndpointsFor(request.params.activityId);
     const endpointsFor = endpointsForReply.rows;
-    console.log(`Endpoints..for.......................................`);
-    console.log(endpointsFor);
     activity.endpoints.push(endpointsFor);
 
     const bindingsForReply = await queries.getBindingsFor(request.params.activityId);
     const bindingsFor = bindingsForReply.rows;
-    console.log(`bindingsFor.........................................`);
-    console.log(bindingsFor);
 
     for (const bindingFor of bindingsFor) {
         const fromEndpointById = await queries.getEndpointById(bindingFor.from);
@@ -152,82 +144,60 @@ const getActivityById = async (request, response) => {
 
     const subactivitiesForReply = await queries.getSubActivitiesFor(request.params.activityId);
     const subactivitiesFor = subactivitiesForReply.rows;
-    console.log(`Subactivities.for......................................`);
-    console.log(subactivitiesFor);
     activity.children.push(subactivitiesFor);
-    console.log(`finally...`);
-    console.log(JSON.stringify(activity, null, 2));
     response.status(200).json(activity);
 };
 
 const getAllJags = async (request, response) => {
-    console.log(`Getting all jags........................`);
-    const jagMap = new Map();
     const jagList = [];
     const jagsReply = await queries.getAllJags();
     const jags = jagsReply.rows;
-    console.log(`My query replay is`);
-    jags.forEach((jag) => {
-        if (jag.projectId === jag.id) {
-            console.log(`see ${jag.projectId} as head`);
-            jag.children = [];
-            jagList.push(jag);
-        }
-        jagMap.set(jag.id, jag);
-    });
-    jags.forEach((jag) => {
-        if (jag.fk) {  // has a parent
-            const parent = jagMap.get(jag.fk);
-            parent.children.add(jag);
-        }
-    });
-    // console.log(`My complete head list is`)
-    // console.log(jagList)
-    // jagList.forEach((jag) => {
-    //     const workStack = [];
-    //     workStack.push(jag);
-    //     console.log(`pushing`);
-    //     console.log(jag);
-    //     while (workStack.length > 0) {
-    //         const workJag = workStack.pop();
-    //         workJag.children.forEach((child) => {
-    //             child = jagMap.get(child);
-    //             workStack.push(child);
-    //         });
-    //     }
-    // });
-    console.log(`Jag List ===`);
-    console.log(jagList);
-    response.status(200).json(jagList);
-};
-
-const getJagByProjectId = async (request, response) => {
-    const jagMap = new Map();
-    const jagList = [];
-    const jagsReply = await queries.getJagByProjectId(request.params.projectId);
-    const jags = jagsReply.rows;
     jags.forEach((jag) => {
         if (jag.projectId === jag.id) {
             jagList.push(jag);
         }
-        jagMap.set(jag.id, jag);
     });
     jagList.forEach((jag) => {
         const workStack = [];
         workStack.push(jag);
-        console.log(`pushing`);
-        console.log(jag);
         while (workStack.length > 0) {
             const workJag = workStack.pop();
-            workJag.children.forEach((child) => {
-                child = jagMap.get(child);
-                workStack.push(child);
+            workJag.children = [];
+            jags.forEach((jag) => {
+                if (jag.parentId === workJag.id) {
+                    workJag.children.push(jag);
+                    workStack.push(jag);
+                }
             });
         }
     });
-    console.log(`Jag List ===`);
-    console.log(jagList);
     response.status(200).json(jagList);
+};
+
+const getJagByProjectId = async (request, response) => {
+    let projectHead;
+    const jagsReply = await queries.getJagByProjectId(request.params.projectId);
+    const jags = jagsReply.rows;
+    jags.forEach((jag) => {
+        if (jag.projectId === jag.id) {
+            projectHead = jag;
+        }
+    });
+
+    const workStack = [];
+    workStack.push(projectHead);
+    while (workStack.length > 0) {
+        const workJag = workStack.pop();
+        workJag.children = [];
+        jags.forEach((jag) => {
+            if (jag.parentId === workJag.id) {
+                workJag.children.push(jag);
+                workStack.push(jag);
+            }
+        });
+    }
+
+    response.status(200).json(projectHead);
 };
 
 const deleteJagByProjectId = async (request, response) => {
@@ -254,8 +224,6 @@ const dropTables = async (request, response) => {
     await queries.dropTables();
     response.json({message: `Dropped all tables`});
 };
-
-
 
 
 module.exports = {
