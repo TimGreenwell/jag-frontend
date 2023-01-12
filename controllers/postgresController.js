@@ -1,69 +1,37 @@
 const queries = require(`../sql/postgres/queries`);
 
-const createActivity = async (request, response) => {
+const updateActivity = async (request, response) => {
     const activity = request.body;
-    await queries.createActivity(activity).then((result) => {
-        if (result) {
-            console.log(`Activity upserted`);
-        }
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-
+    await queries.updateActivity(activity);
 
     const children = activity.children;
     for (const child of children) {
-        await queries.createSubactivity(child, activity.urn).then((result) => {
-            if (result) {
-                console.log(`-- Subactivity created --`);
-            }
-        });
+        await queries.updateSubactivity(child, activity.urn);
     }
-
 
     const endpoints = activity.endpoints;
     for (const endpoint of endpoints) {
-        await queries.createEndpoint(endpoint, activity.urn).then((result) => {
-            if (result) {
-                console.log(`-- Endpoint created --`);
-            }
-        });
+        await queries.updateEndpoint(endpoint, activity.urn);
     }
 
     const bindings = activity.bindings;
     for (const binding of bindings) {
-    // At this point binding.to does not have exchangeType -?-
-        await queries.createBinding(binding, activity.urn).then((result) => {
-            if (result) {
-                console.log(`-- Binding created --`);
-                // response.status(200).json(result.rows);
-            }
-        });
+        await queries.updateBinding(binding, activity.urn);
     }
     response.status(204).send(`{}`);
 };
 
-const createJag = async (request, response) => {
+const updateJag = async (request, response) => {
     const jag = request.body;
     const workStack = [];
     workStack.push(jag);
-
     while (workStack.length > 0) {
         const currentNode = workStack.pop();
-
-        await queries.createJag(currentNode).then((result) => {
-            if (result) {
-                console.log(`-- Controller says => ${result.rowCount} node updated --`);
-            }
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-
+        await queries.updateJag(currentNode);
         currentNode.children.forEach((child) => {
             workStack.push(child);
         });
     }
-
     response.status(204).send(`{}`);
 };
 
@@ -168,13 +136,11 @@ const getJagByProjectId = async (request, response) => {
             }
         });
     }
-
     response.status(200).json(projectHead);
 };
 
 const deleteJagByProjectId = async (request, response) => {
-    console.log(`DELETING with ${request.params.projectId}`);
-    const jagsReply = await queries.deleteJagByProjectId(request.params.projectId);
+    await queries.deleteJagByProjectId(request.params.projectId);
     response.status(204).send(`{}`);
 };
 
@@ -189,26 +155,20 @@ const createTables = async (request, response) => {
     response.json({message: `Created all tables`});
 };
 
-
 const dropTables = async (request, response) => {
     await queries.dropTables();
     response.json({message: `Dropped all tables`});
 };
 
-
 module.exports = {
-    createActivity,
-    createJag,
+    updateActivity,
+    updateJag,
     getAllActivities,
     getActivityById,
     getAllJags,
     getJagByProjectId,
     deleteActivityById,
     deleteJagByProjectId,
-    // getItemById,
-    // createItem,
-    // updateItem,
-    // deleteItem,
     createTables,
     dropTables
 };

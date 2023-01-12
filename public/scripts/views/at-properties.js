@@ -299,8 +299,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             bindable = false;
         } else {
             this._selectedFromEndpoints = this.convertOptionsToEndpoints($selectedFromOptions);
-            console.log(`HERE? - `)
-            console.log(this._selectedFromEndpoints)
             const allowedEndpointDestination = this.filterInvalidDestinations(this._selectedFromEndpoints);
 
             unbindable = this.isUnbindable(this._focusNode.activity.bindings, this._selectedFromEndpoints);
@@ -356,11 +354,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
         }
         $unbindButton.disabled = !(unbindable);
         $removeButton.disabled = !(removable);
-        console.log(`++++++++++++++++++++++++++`);
-        console.log(`++++++++++++++++++++++++++`);
-        console.log(`++++++++++++++++++++++++++`);
-        console.log(this._selectedToEndpoints); // broke - no exchangeType
-        console.log(this._selectedFromEndpoints);
         this.dispatchEvent(new CustomEvent(`event-endpoints-selected`, {
             bubbles: true,
             composed: true,
@@ -375,10 +368,6 @@ customElements.define(`jag-properties`, class extends HTMLElement {
             this._selectedToEndpoints.forEach((to) => {
                 const binding = new Binding({from,
                     to});
-                console.log(`++++++++++++++++++++++++++`);
-                console.log(`++++++++++++++++++++++++++`);
-                console.log(`++++++++++++++++++++++++++`);
-                console.log(binding);
                 this._focusNode.activity.addBinding(binding);
             });
         });

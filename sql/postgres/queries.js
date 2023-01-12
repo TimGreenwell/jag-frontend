@@ -1,6 +1,299 @@
 const pool = require(`../../config/db`);
 const fs = require(`fs`);
-// const bodyParser = require(`body-parser`);
+
+const getAllActivities = async () => {
+    console.log(`Query> getAllActivities`);
+    const selectActivities = fs.readFileSync(`sql/postgres/select/activities.sql`).toString();
+    const queryResult = await pool.query(selectActivities).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getActivityById = async (id) => {
+    console.log(`Query> getActivityById`);
+    const selectActivitiesById = fs.readFileSync(`sql/postgres/select/activity-by-id.sql`).toString();
+    const queryResult = await pool.query(selectActivitiesById, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getAllEndpoints = async () => {
+    console.log(`Query> getAllEndpoints`);
+    const selectEndpoints = fs.readFileSync(`sql/postgres/select/endpoints.sql`).toString();
+    const queryResult = await pool.query(selectEndpoints).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getEndpointsFor = async (urn) => {
+    console.log(`Query> getEndpointsFor`);
+    const selectEndpointsFor = fs.readFileSync(`sql/postgres/select/endpoints-for-activity.sql`).toString();
+    const queryResult = await pool.query(selectEndpointsFor, [urn]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getEndpointById = async (id) => {
+    console.log(`Query> getEndpointById`);
+    const selectEndpointById = fs.readFileSync(`sql/postgres/select/endpoint-by-id.sql`).toString();
+    const queryResult = await pool.query(selectEndpointById, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getAllBindings = async () => {
+    console.log(`Query> getAllBindings`);
+    const selectBindings = fs.readFileSync(`sql/postgres/select/bindings.sql`).toString();
+    const queryResult = await pool.query(selectBindings).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad binding all select: ${e}`);
+        });
+    return queryResult;
+};
+
+const getBindingsFor = async (urn) => {
+    console.log(`Query> getBindingsFor`);
+    const selectBindingsFor = fs.readFileSync(`sql/postgres/select/bindings-for-activity.sql`).toString();
+    const queryResult = await pool.query(selectBindingsFor, [urn]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad binding for select: ${e}`);
+        });
+    return queryResult;
+};
+
+const getAllSubActivities = async () => {
+    console.log(`Query> getAllSubActivities`);
+    const selectSubactivities = fs.readFileSync(`sql/postgres/select/subactivities.sql`).toString();
+    const queryResult = await pool.query(selectSubactivities).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getSubActivitiesFor = async (urn) => {
+    console.log(`Query> getSubActivitiesFor`);
+    const selectSubactivitiesFor = fs.readFileSync(`sql/postgres/select/subactivities-for-activity.sql`).toString();
+    const queryResult = await pool.query(selectSubactivitiesFor, [urn]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getAllJags = async () => {
+    console.log(`Query> getAllJags`);
+    const selectJags = fs.readFileSync(`sql/postgres/select/jags.sql`).toString();
+    const queryResult = await pool.query(selectJags).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getJagByProjectId = async (id) => {
+    console.log(`Query> getJagByProjectId`);
+    const selectJagsByProjectId = fs.readFileSync(`sql/postgres/select/jags-by-project-id.sql`).toString();
+    const queryResult = await pool.query(selectJagsByProjectId, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const getJagById = async (id) => {
+    console.log(`Query> getJagById`);
+    const selectJagById = fs.readFileSync(`sql/postgres/select/jag-by-id.sql`).toString();
+    const queryResult = await pool.query(selectJagById, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const deleteActivityById = async (id) => {
+    console.log(`Query> deleteActivityById`);
+    const deleteActivityById = fs.readFileSync(`sql/postgres/delete/activity-by-id.sql`).toString();
+    const queryResult = await pool.query(deleteActivityById, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const deleteJagByProjectId = async (id) => {
+    console.log(`Query> deleteJagByProjectId`);
+    const deleteJagsByProjectId = fs.readFileSync(`sql/postgres/delete/jags-by-project-id.sql`).toString();
+    const queryResult = await pool.query(deleteJagsByProjectId, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const updateActivity = async (activity) => {
+    console.log(`Query> updateActivity`);
+    const upsertActivity = fs.readFileSync(`sql/postgres/upsert/activity.sql`).toString();
+    const values = [
+        activity.urn,
+        activity.author,
+        activity.collapsed,
+        activity.connector.execution,
+        activity.connector.operator,
+        activity.connector.returns,
+        activity.createdDate,
+        activity.description,
+        activity.expectedDuration,
+        activity.isLocked,
+        activity.lockedBy,
+        activity.modifiedDate,
+        activity.name
+    ];
+    const queryResult = await pool.query(upsertActivity, values).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const updateEndpoint = async (endpoint, owner_id) => {
+    console.log(`Query> updateEndpoint`);
+    const upsertEndpoint = fs.readFileSync(`sql/postgres/upsert/endpoint.sql`).toString();
+
+    const values = [
+        endpoint.id,
+        endpoint.direction,
+        endpoint.exchangeName,
+        endpoint.exchangeSourceUrn,
+        endpoint.exchangeType,
+        owner_id
+    ];
+    const queryResult = await pool.query(upsertEndpoint, values).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const updateSubactivity = async (subactivity, owner_id) => {
+    console.log(`Query> updateSubactivity`);
+    const upsertSubactivity = fs.readFileSync(`sql/postgres/upsert/subactivity.sql`).toString();
+    const values = [
+        subactivity.id,
+        subactivity.urn,
+        owner_id
+    ];
+    const queryResult = await pool.query(upsertSubactivity, values).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+const updateBinding = async (binding, owner_id) => {
+    console.log(`Query> updateBinding`);
+    const upsertBinding = fs.readFileSync(`sql/postgres/upsert/binding.sql`).toString();
+    const values = [
+        binding.id,
+        binding.to.id,
+        binding.from.id,
+        owner_id
+    ];
+    console.log(values);
+    const queryResult = await pool.query(upsertBinding, values).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+
+const updateJag = async (node) => {
+    console.log(`Query> updateJag`);
+    const upsertJag = fs.readFileSync(`sql/postgres/upsert/jag.sql`).toString();
+    const values = [
+        node.id,
+        node.childId,
+        node.contextualDescription,
+        node.contextualName,
+        node.contextualExpectedDuration,
+        node.isExpanded,
+        node.isLocked,
+        node.parentId,
+        node.projectId,
+        node.returnState,
+        node.returnValue,
+        node.testReturnState,
+        node.testReturnValue,
+        node.urn,
+        node.x,
+        node.y
+    ];
+    const queryResult = await pool.query(upsertJag, values).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+
+const createTable = async (tableDefinition) => {
+    const queryResult = await pool.query(tableDefinition).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
 
 
 const assembleTables = () => {
@@ -32,537 +325,48 @@ const assembleTables = () => {
     return dbCreateTables;
 };
 
-const getAllActivities = async () => {
-    console.log(`in queries -- Getting All activities`);
-    const activityResult = await pool.query(`
-          SELECT 
-           a.activity_urn AS "urn", 
-           a.activity_author AS "author",
-           a.activity_collapsed AS "collapsed",
-           a.connector_exec AS "execution",
-           a.connector_oper AS "operator",
-           a.connector_rtns AS "returns",
-           a.activity_created_date AS "createdDate",
-           a.activity_description AS "description",
-           a.activity_expected_duration AS "expectedDuration",
-           a.activity_is_locked AS "isLocked",
-           a.activity_locked_by AS "lockedBy",
-           a.activity_modified_date AS "modifiedDate",
-           a.activity_name AS "name"
-         FROM activity a 
-         ORDER BY a.activity_urn`).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return activityResult;
-};
-
-const getActivityById = async (id) => {
-    const activityResult = await pool.query(`
-          SELECT 
-           a.activity_urn AS "urn", 
-           a.activity_author AS "author",
-           a.activity_collapsed AS "collapsed",
-           a.connector_exec AS "execution",
-           a.connector_oper AS "operator",
-           a.connector_rtns AS "returns",
-           a.activity_created_date AS "createdDate",
-           a.activity_description AS "description",
-           a.activity_expected_duration AS "expectedDuration",
-           a.activity_is_locked AS "isLocked",
-           a.activity_locked_by AS "lockedBy",
-           a.activity_modified_date AS "modifiedDate",
-           a.activity_name AS "name"
-         FROM activity a 
-         WHERE a.activity_urn = $1
-         ORDER BY a.activity_urn`, [id]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return activityResult;
-};
-
-const getAllEndpoints = async () => {
-    const endpointResult = await pool.query(`
-          SELECT 
-           e.endpoint_id AS "id", 
-           e.endpoint_direction AS "direction",
-           e.endpoint_exchange_name AS "exchangeName",
-           e.endpoint_exchange_source_urn AS "exchangeSourceUrn",
-           e.endpoint_exchange_type AS "exchangeType",
-          e.endpoint_activity_fk AS "fk"
-         FROM endpoint e 
-         ORDER BY e.endpoint_id`).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return endpointResult;
-};
-
-const getEndpointsFor = async (urn) => {
-    const endpointResult = await pool.query(`
-          SELECT 
-           e.endpoint_id AS "id", 
-           e.endpoint_direction AS "direction",
-           e.endpoint_exchange_name AS "exchangeName",
-           e.endpoint_exchange_source_urn AS "exchangeSourceUrn",
-           e.endpoint_exchange_type AS "exchangeType",
-          e.endpoint_activity_fk AS "fk"
-         FROM endpoint e 
-         WHERE e.endpoint_exchange_source_urn = $1
-         ORDER BY e.endpoint_id`, [urn]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return endpointResult;
-};
-
-const getEndpointById = async (id) => {
-    const endpointResult = await pool.query(`
-          SELECT 
-           e.endpoint_id AS "id", 
-           e.endpoint_direction AS "direction",
-           e.endpoint_exchange_name AS "exchangeName",
-           e.endpoint_exchange_source_urn AS "exchangeSourceUrn",
-           e.endpoint_exchange_type AS "exchangeType",
-          e.endpoint_activity_fk AS "fk"
-         FROM endpoint e 
-         WHERE e.endpoint_id = $1
-         ORDER BY e.endpoint_id`, [id]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return endpointResult;
-};
-
-const getAllBindings = async () => {
-    const bindingResult = await pool.query(`
-          SELECT 
-           b.binding_id AS "id", 
-           b.binding_to AS "to",
-           b.binding_from AS "from",
-           b.binding_activity_fk AS "fk"
-         FROM binding b`).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad binding all select: ${e}`);
-        });
-    return bindingResult;
-};
-
-const getBindingsFor = async (urn) => {
-    const bindingResult = await pool.query(`
-          SELECT 
-           b.binding_id AS "id", 
-           b.binding_to AS "to",
-           b.binding_from AS "from",
-           b.binding_activity_fk AS "fk"
-         FROM binding b 
-         WHERE b.binding_activity_fk = $1`, [urn]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad binding for select: ${e}`);
-        });
-    return bindingResult;
-};
-
-const getAllSubActivities = async () => {
-    const subactivityResult = await pool.query(`
-          SELECT 
-           s.subactivity_id AS "id", 
-           s.subactivity_urn AS "urn",
-           s.subactivity_parent_fk AS "fk"
-         FROM subactivity s 
-         ORDER BY s.subactivity_urn`).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return subactivityResult;
-};
-
-const getSubActivitiesFor = async (urn) => {
-    const subactivityResult = await pool.query(`
-          SELECT 
-           s.subactivity_id AS "id", 
-           s.subactivity_urn AS "urn",
-           s.subactivity_parent_fk AS "fk"
-         FROM subactivity s 
-         WHERE s.subactivity_parent_fk = $1
-         ORDER BY s.subactivity_urn`, [urn]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return subactivityResult;
-};
-
-const getAllJags = async () => {
-    let queryResult;
-    await pool.query(`SELECT 
-      n.node_id AS "id",
-      n.node_urn AS "urn",
-      n.node_child_id AS "childId",
-      n.node_parent_id_fk AS "parentId",
-      n.node_project_id AS "projectId",
-      n.node_is_expanded As "isExpanded",
-      n.node_is_locked AS "isLocked",
-      n.node_con_name AS "contextualName",
-      n.node_con_desc AS "contextualDescription",
-      n.node_x AS "x",
-      n.node_y AS "y",
-      n.node_return_value AS "returnValue",
-      n.node_return_state AS "returnState",
-      n.node_test_return_value AS "testReturnValue",
-      n.node_test_return_state AS "testReturnState",
-      n.node_contextual_expected_duration AS "contextualExpectedDuration"
-      FROM node n `).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const getJagByProjectId = async (id) => {
-    const queryResult = await pool.query(`SELECT 
-      n.node_id AS "id",
-      n.node_urn AS "urn",
-      n.node_child_id AS "childId",
-      n.node_parent_id_fk AS "parentId",
-      n.node_project_id AS "projectId",
-      n.node_is_expanded As "isExpanded",
-      n.node_is_locked AS "isLocked",
-      n.node_con_name AS "contextualName",
-      n.node_con_desc AS "contextualDescription",
-      n.node_x AS "x",
-      n.node_y AS "y",
-      n.node_return_value AS "returnValue",
-      n.node_return_state AS "returnState",
-      n.node_test_return_value AS "testReturnValue",
-      n.node_test_return_state AS "testReturnState",
-      n.node_contextual_expected_duration AS "contextualExpectedDuration"
-      FROM node n
-      WHERE n.node_project_id = $1
-      `, [id]).then((result) => {
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const getJagById = async (id) => {
-    const queryResult = await pool.query(`SELECT 
-      n.node_id AS "id",
-      n.node_urn AS "urn",
-      n.node_child_id AS "childId",
-      n.node_parent_id_fk AS "parentId",
-      n.node_project_id AS "projectId",
-      n.node_is_expanded As "isExpanded",
-      n.node_is_locked AS "isLocked",
-      n.node_con_name AS "contextualName",
-      n.node_con_desc AS "contextualDescription",
-      n.node_x AS "x",
-      n.node_y AS "y",
-      n.node_return_value AS "returnValue",
-      n.node_return_state AS "returnState",
-      n.node_test_return_value AS "testReturnValue",
-      n.node_test_return_state AS "testReturnState",
-      n.node_contextual_expected_duration AS "contextualExpectedDuration"
-      FROM node n
-      WHERE n.node_id = $1
-      `, [id]).then((result) => {
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const deleteActivityById = async (id) => {
-    const deleteResult = await pool.query(`DELETE 
-      FROM activity a
-      WHERE a.activity_urn = $1`, [id]).then((result) => {
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return deleteResult;
-};
-
-const deleteJagByProjectId = async (id) => {
-    const queryResult = await pool.query(`
-      DELETE 
-      FROM node n
-      WHERE n.node_project_id = $1
-      `, [id]).then((result) => {
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const createActivity = async (activity) => {
-    const values = [
-        activity.urn,
-        activity.author,
-        activity.collapsed,
-        activity.connector.execution,
-        activity.connector.operator,
-        activity.connector.returns,
-        activity.createdDate,
-        activity.description,
-        activity.expectedDuration,
-        activity.isLocked,
-        activity.lockedBy,
-        activity.modifiedDate,
-        activity.name
-    ];
-    let queryResult;
-    await pool.query(`INSERT INTO activity (
-                      activity_urn, 
-                      activity_author,
-                      activity_collapsed,
-                      connector_exec,
-                      connector_oper,
-                      connector_rtns,
-                      activity_created_date,
-                      activity_description,
-                      activity_expected_duration,
-                      activity_is_locked,
-                      activity_locked_by,
-                      activity_modified_date,
-                      activity_name)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-              ON CONFLICT (activity_urn) DO UPDATE SET
-                  activity_author = excluded.activity_author,
-                  activity_collapsed = excluded.activity_collapsed,
-                  connector_exec = excluded.connector_exec,
-                  connector_oper = excluded.connector_oper,
-                  connector_rtns = excluded.connector_rtns,
-                  activity_created_date = excluded.activity_created_date,
-                  activity_description = excluded.activity_description,
-                  activity_expected_duration = excluded.activity_expected_duration,
-                  activity_is_locked = excluded.activity_is_locked,
-                  activity_locked_by = excluded.activity_locked_by,
-                  activity_modified_date = excluded.activity_modified_date,
-                  activity_name = excluded.activity_name
-                  `, values).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const createEndpoint = async (endpoint, owner_id) => {
-    const values = [
-        endpoint.id,
-        endpoint.direction,
-        endpoint.exchangeName,
-        endpoint.exchangeSourceUrn,
-        endpoint.exchangeType,
-        owner_id
-    ];
-    let queryResult;
-    await pool.query(`INSERT INTO endpoint (
-                    endpoint_id, 
-                    endpoint_direction,
-                    endpoint_exchange_name,
-                    endpoint_exchange_source_urn,
-                    endpoint_exchange_type,
-                    endpoint_activity_fk)
-              VALUES ($1, $2, $3, $4, $5, $6)
-              ON CONFLICT (endpoint_id) 
-              DO UPDATE SET
-                    endpoint_direction            = excluded.endpoint_direction,
-                    endpoint_exchange_name        = excluded.endpoint_exchange_name,
-                    endpoint_exchange_source_urn  = excluded.endpoint_exchange_source_urn,
-                    endpoint_exchange_type        = excluded.endpoint_exchange_type,
-                    endpoint_activity_fk          = excluded.endpoint_activity_fk               
-              `, values).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const createSubactivity = async (subactivity, owner_id) => {
-    const values = [
-        subactivity.id,
-        subactivity.urn,
-        owner_id
-    ];
-    let queryResult;
-    await pool.query(`INSERT INTO subactivity (
-                     subactivity_id,
-                     subactivity_urn,
-                     subactivity_parent_fk)
-              VALUES ($1, $2, $3)
-              ON CONFLICT (subactivity_id)
-              DO UPDATE SET
-                            subactivity_urn            = excluded.subactivity_urn,
-                            subactivity_parent_fk        = excluded.subactivity_parent_fk
-                            `, values).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-const createBinding = async (binding, owner_id) => {
-    console.log(`Creating a BINDING`);
-    console.log(binding);
-    const values = [
-        binding.id,
-        binding.to.id,
-        binding.from.id,
-        owner_id
-    ];
-    console.log(values);
-    let queryResult;
-    await pool.query(`INSERT INTO binding (
-                     binding_id,
-                     binding_to,
-                     binding_from,
-                     binding_activity_fk)
-              VALUES ($1, $2, $3, $4)
-              ON CONFLICT (binding_id)
-              DO UPDATE SET
-                            binding_from         = excluded.binding_from,
-                            binding_to           = excluded.binding_to,
-                            binding_activity_fk  = excluded.binding_activity_fk`, values).
-        then((result) => {
-            console.log(result);
-            queryResult = result;
-            return result;
-        }).catch((e) => {
-            console.log(`bad binding create: ${e}`);
-        });
-    return queryResult;
-};
-
-
-const createJag = async (node, ownerId) => {
-    const values = [
-        node.id,
-        node.childId,
-        node.contextualDescription,
-        node.contextualName,
-        node.contextualExpectedDuration,
-        node.isExpanded,
-        node.isLocked,
-        node.parentId,
-        node.projectId,
-        node.returnState,
-        node.returnValue,
-        node.testReturnState,
-        node.testReturnValue,
-        node.urn,
-        node.x,
-        node.y
-    ];
-    let queryResult;
-    await pool.query(`INSERT INTO node (
-                      node_id,
-                      node_child_id,
-                      node_con_desc,
-                      node_con_name,
-                      node_contextual_expected_duration,
-                      node_is_expanded,
-                      node_is_locked,
-                      node_parent_id_fk,
-                      node_project_id,
-                      node_return_state,
-                      node_return_value,
-                      node_test_return_state,
-                      node_test_return_value,
-                      node_urn,
-                      node_x,
-                      node_y)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-              ON CONFLICT (node_id) DO UPDATE SET
-                      node_child_id = excluded.node_child_id,
-                      node_con_desc = excluded.node_con_desc,
-                      node_con_name = excluded.node_con_name,
-                      node_contextual_expected_duration = excluded.node_contextual_expected_duration,
-                      node_is_expanded = excluded.node_is_expanded,
-                      node_is_locked = excluded.node_is_locked,
-                      node_parent_id_fk = excluded.node_parent_id_fk,
-                      node_project_id = excluded.node_project_id,
-                      node_return_state = excluded.node_return_state,
-                      node_return_value = excluded.node_return_value,
-                      node_test_return_state = excluded.node_test_return_state,
-                      node_test_return_value = excluded.node_test_return_value,
-                      node_urn = excluded.node_urn,
-                      node_x = excluded.node_x,
-                      node_y = excluded.node_y                           
-                      `, values).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-    return queryResult;
-};
-
-
-const createTable = async (tableDefinition) => {
-    await pool.query(tableDefinition).then((result) => {
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
-};
 
 const createTables = async () => {
+    console.log(`Query> createTables`);
     const dbCreateTables = assembleTables();
+    const queryResultArray = [];
     for (const dbCreateTable of dbCreateTables) {
-        await createTable(dbCreateTable);
+        const queryResult = await createTable(dbCreateTable).
+            then((result) => {
+                return result;
+            }).catch((e) => {
+                console.log(`bad: ${e}`);
+            });
+        queryResultArray.push(queryResult);
     }
+    return queryResultArray;
 };
 
 const dropTables = async () => {
-    let queryResult;
+    console.log(`Query> dropTables`);
     const tableDrop = fs.readFileSync(`sql/postgres/drop/orderedTableDrops.sql`).toString();
-    await pool.query(tableDrop).then((result) => {
-        queryResult = result;
-        return result;
-    }).catch((e) => {
-        console.log(`bad: ${e}`);
-    });
+    const queryResult = await pool.query(tableDrop).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
     return queryResult;
 };
 
 
 (async () => {
-    const res = await pool.query(`SELECT $1::text as connected`, [`Connection to postgres successful!`]);
-    console.log(`Checking connection to DB`)
-    console.log(res.rows[0].connected);
+    const testConnection = fs.readFileSync(`sql/postgres/other/test-connection.sql`).toString();
+    const showTables = fs.readFileSync(`sql/postgres/other/show-tables.sql`).toString();
+    let queryResult = await pool.query(testConnection, [`Connection to postgres successful!`]);
+    console.log(`Checking connection to DB`);
+    console.log(queryResult.rows[0].connected);
+    console.log(`Create tables (if necessary)`);
     await createTables();
-    console.log(`Created Tables( if necessary)`);
+    queryResult = await pool.query({text: showTables,
+        rowMode: `array`});
+    const tableArray = queryResult.rows;
+    console.log(`Existing tables include: ${tableArray}`);
 })();
 
 
@@ -579,17 +383,13 @@ module.exports = {
     getBindingsFor,
     getAllSubActivities,
     getSubActivitiesFor,
-    createActivity,
-    createEndpoint,
-    createSubactivity,
-    createBinding,
-    createJag,
+    updateActivity,
+    updateEndpoint,
+    updateSubactivity,
+    updateBinding,
+    updateJag,
     deleteActivityById,
     deleteJagByProjectId,
-    // getItemById,
-    // createItem,
-    // updateItem,
-    // deleteItem,
     createTables,
     dropTables
 };

@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS "activity"
     "activity_modified_date" timestamp without time zone,
     "activity_name" VARCHAR(255) NOT NULL,
     CONSTRAINT "PK_activity" PRIMARY KEY ("activity_urn")
-    );
+);
