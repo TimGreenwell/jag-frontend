@@ -296,55 +296,55 @@ const createTable = async (tableDefinition) => {
 };
 
 
-const assembleTables = () => {
-    const activityCreateTable = fs.readFileSync(`sql/postgres/create-table/activity.sql`).toString();
-    const agentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent.sql`).toString();
-    const agent_assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent_assessment.sql`).toString();
-    const analysisCreateTable = fs.readFileSync(`sql/postgres/create-table/analysis.sql`).toString();
-    const assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/assessment.sql`).toString();
-    const bindingCreateTable = fs.readFileSync(`sql/postgres/create-table/binding.sql`).toString();
-    const endpointCreateTable = fs.readFileSync(`sql/postgres/create-table/endpoint.sql`).toString();
-    const nodeCreateTable = fs.readFileSync(`sql/postgres/create-table/node.sql`).toString();
-    const performerCreateTable = fs.readFileSync(`sql/postgres/create-table/performer.sql`).toString();
-    const subactivityCreateTable = fs.readFileSync(`sql/postgres/create-table/subactivity.sql`).toString();
-    const subscriptionCreateTable = fs.readFileSync(`sql/postgres/create-table/subscription.sql`).toString();
-    const teamCreateTable = fs.readFileSync(`sql/postgres/create-table/team.sql`).toString();
-    const dbCreateTables = [];
-    dbCreateTables.push(activityCreateTable);
-    dbCreateTables.push(analysisCreateTable);
-    dbCreateTables.push(teamCreateTable);
-    dbCreateTables.push(endpointCreateTable);          // ref: activity
-    dbCreateTables.push(subactivityCreateTable);       // ref: activity
-    dbCreateTables.push(bindingCreateTable);           // ref: endpoint and activity
-    dbCreateTables.push(nodeCreateTable);              // ref: itself
-    dbCreateTables.push(subscriptionCreateTable);      // ref: node
-    dbCreateTables.push(performerCreateTable);         // ref: team
-    dbCreateTables.push(agentCreateTable);             // ref: team
-    dbCreateTables.push(agent_assessmentCreateTable); // ref: agent
-    dbCreateTables.push(assessmentCreateTable);        // ref: agent
-    return dbCreateTables;
-};
+// const assembleTables = () => {
+//     const activityCreateTable = fs.readFileSync(`sql/postgres/create-table/activity.sql`).toString();
+//     const agentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent.sql`).toString();
+//     const agent_assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/agent_assessment.sql`).toString();
+//     const analysisCreateTable = fs.readFileSync(`sql/postgres/create-table/analysis.sql`).toString();
+//     const assessmentCreateTable = fs.readFileSync(`sql/postgres/create-table/assessment.sql`).toString();
+//     const bindingCreateTable = fs.readFileSync(`sql/postgres/create-table/binding.sql`).toString();
+//     const endpointCreateTable = fs.readFileSync(`sql/postgres/create-table/endpoint.sql`).toString();
+//     const nodeCreateTable = fs.readFileSync(`sql/postgres/create-table/node.sql`).toString();
+//     const performerCreateTable = fs.readFileSync(`sql/postgres/create-table/performer.sql`).toString();
+//     const subactivityCreateTable = fs.readFileSync(`sql/postgres/create-table/subactivity.sql`).toString();
+//     const subscriptionCreateTable = fs.readFileSync(`sql/postgres/create-table/subscription.sql`).toString();
+//     const teamCreateTable = fs.readFileSync(`sql/postgres/create-table/team.sql`).toString();
+//     const dbCreateTables = [];
+//     dbCreateTables.push(activityCreateTable);
+//     dbCreateTables.push(analysisCreateTable);
+//     dbCreateTables.push(teamCreateTable);
+//     dbCreateTables.push(endpointCreateTable);          // ref: activity
+//     dbCreateTables.push(subactivityCreateTable);       // ref: activity
+//     dbCreateTables.push(bindingCreateTable);           // ref: endpoint and activity
+//     dbCreateTables.push(nodeCreateTable);              // ref: itself
+//     dbCreateTables.push(subscriptionCreateTable);      // ref: node
+//     dbCreateTables.push(performerCreateTable);         // ref: team
+//     dbCreateTables.push(agentCreateTable);             // ref: team
+//     dbCreateTables.push(agent_assessmentCreateTable); // ref: agent
+//     dbCreateTables.push(assessmentCreateTable);        // ref: agent
+//     return dbCreateTables;
+// };
 
+
+// const createTables = async () => {
+//     console.log(`Query> createTables`);
+//     const dbCreateTables = assembleTables();
+//     const queryResultArray = [];
+//     for (const dbCreateTable of dbCreateTables) {
+//         const queryResult = await createTable(dbCreateTable).
+//             then((result) => {
+//                 return result;
+//             }).catch((e) => {
+//                 console.log(`bad: ${e}`);
+//             });
+//         queryResultArray.push(queryResult);
+//     }
+//     return queryResultArray;
+// };
 
 const createTables = async () => {
-    console.log(`Query> createTables`);
-    const dbCreateTables = assembleTables();
-    const queryResultArray = [];
-    for (const dbCreateTable of dbCreateTables) {
-        const queryResult = await createTable(dbCreateTable).
-            then((result) => {
-                return result;
-            }).catch((e) => {
-                console.log(`bad: ${e}`);
-            });
-        queryResultArray.push(queryResult);
-    }
-    return queryResultArray;
-};
-
-const dropTables = async () => {
     console.log(`Query> dropTables`);
-    const tableDrop = fs.readFileSync(`sql/postgres/drop/orderedTableDrops.sql`).toString();
+    const tableDrop = fs.readFileSync(`sql/postgres/db/create-tables.sql`).toString();
     const queryResult = await pool.query(tableDrop).
         then((result) => {
             return result;
@@ -354,20 +354,32 @@ const dropTables = async () => {
     return queryResult;
 };
 
+const dropTables = async () => {
+    console.log(`Query> dropTables`);
+    const tableDrop = fs.readFileSync(`sql/postgres/db/drop-tables.sql`).toString();
+    const queryResult = await pool.query(tableDrop).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
 
-(async () => {
-    const testConnection = fs.readFileSync(`sql/postgres/other/test-connection.sql`).toString();
-    const showTables = fs.readFileSync(`sql/postgres/other/show-tables.sql`).toString();
-    let queryResult = await pool.query(testConnection, [`Connection to postgres successful!`]);
-    console.log(`Checking connection to DB`);
-    console.log(queryResult.rows[0].connected);
-    console.log(`Create tables (if necessary)`);
-    await createTables();
-    queryResult = await pool.query({text: showTables,
-        rowMode: `array`});
-    const tableArray = queryResult.rows;
-    console.log(`Existing tables include: ${tableArray}`);
-})();
+//
+// (async () => {
+//     const testConnection = fs.readFileSync(`sql/postgres/other/test-connection.sql`).toString();
+//     const showTables = fs.readFileSync(`sql/postgres/other/show-tables.sql`).toString();
+//     let queryResult = await pool.query(testConnection, [`Connection to postgres successful!`]);
+//     console.log(`Checking connection to DB`);
+//     console.log(queryResult.rows[0].connected);
+//     console.log(`Create tables (if necessary)`);
+//     await createTables();
+//     queryResult = await pool.query({text: showTables,
+//         rowMode: `array`});
+//     const tableArray = queryResult.rows;
+//     console.log(`Existing tables include: ${tableArray}`);
+// })();
 
 
 module.exports = {

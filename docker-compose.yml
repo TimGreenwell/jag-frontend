@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  server:
+    build: .
+    ports:
+      - '8888:8888'
+  db:
+    image: 'postgres:15.1-alpine3.17'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: 'teamworks'
+      POSTGRES_USER: 'teamworks'
+      POSTGRES_DB: 'teamworks'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./sql/postgres/db/create-tables.sql:/docker-entrypoint-initdb.d/10-create-tables.sql
+
