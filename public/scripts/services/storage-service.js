@@ -22,10 +22,10 @@ import SchemaManager from '../storages/schemas.js';
 export default class StorageService extends SharedObservable {
 
     static {
-        this._storageInstancesMap = new Map();         // map  {service name -> service instance}
-        this._preferredStorage = undefined;  // service instance for all reads
-        this._storagesSynced = false;         // write to (all storages) or just (preferredStorage)
-        this._schema = undefined;            // specific schema within Storage
+        this._storageInstancesMap = new Map(); // map  {service name -> service instance}
+        this._preferredStorage = null;         // service instance for all reads
+        this._storagesSynced = false;          // write to (all storages) or just (preferredStorage)
+        this._schema = null;              // specific schema within Storage
     }
 
     /**
@@ -104,8 +104,11 @@ export default class StorageService extends SharedObservable {
      * Retrieves all existing records from the schema defining store.
      * @TODO: Should add filtering options.
      * @TODO  Might consider limiting options.
+     * @param {string} schema
      * No notification made. (Not a storage change)
      */
+
+
     static async all(schema = this._schema) {
         console.log(`{<>} StorageService - all (${schema})`);
         const descriptions = await this._storageInstancesMap.get(this._preferredStorage).all(schema);
@@ -120,6 +123,8 @@ export default class StorageService extends SharedObservable {
     /**
      * Retrieves the record for the schema-defined id.
      * No notification made. (Not a storage change)
+     * @param {string} id
+     * @param {string} schema
      */
     static async get(id, schema = this._schema) {
         console.log(`{<>} StorageService - get (${schema})  ${id}`);
@@ -131,6 +136,8 @@ export default class StorageService extends SharedObservable {
     /**
      * Check for existence of the schema-defined id.
      * No notification made. (Not a storage change)
+     * @param {string} id
+     * @param {string} schema
      */
     static async has(id, schema = this._schema) {
         await this._storageInstancesMap.get(this._preferredStorage).has(schema, id);
@@ -140,6 +147,7 @@ export default class StorageService extends SharedObservable {
      * Clear all records in the schema-defined store.
      * @TODO Tested but not used.
      * Notification (null,null)  @TODO Anything useful to return?
+     * @param {string} schema
      */
     static async clear(schema = this._schema) {
         console.log(`{<>} StorageService - clear (${schema})`);
@@ -156,6 +164,7 @@ export default class StorageService extends SharedObservable {
      * Add a new record. The schema determines the key and store.
      * The _preferredStorage determines the location if _storagesSynced=false (default)
      * Notification (object created, id of object created)
+     * @param {string} schema
      */
     static async create(createdModel, schema = this._schema) {
         const createdId = SchemaManager.getKeyValue(schema, createdModel);   // this is not needed - just the log
@@ -175,6 +184,7 @@ export default class StorageService extends SharedObservable {
     /**
      * Updates an existing record.
      * Notification (object updated, id of object updated)
+     * @param {string} schema
      */
     static async update(updatedModel, schema = this._schema) {
         const updatedId = SchemaManager.getKeyValue(schema, updatedModel);
@@ -192,6 +202,7 @@ export default class StorageService extends SharedObservable {
     /**
      * Removes the record from the schema-defined store.
      * Notification (null, id of object deleted)
+     * @param {string} schema
      */
     static async delete(deletedId, schema = this._schema) {
         console.log(`{<>} StorageService - DELETE}   (${schema}) ${deletedId}`);
@@ -208,6 +219,9 @@ export default class StorageService extends SharedObservable {
     /**
      * Replace the key-field.  All other properties remain unchanged. ( Copy - Delete )
      * Notification (object created, id of object replace)
+     * @param {string} origId
+     * @param {string} newId
+     * @param {string} schema
      */
     static async replace(origId, newId, schema = this._schema) {
         console.log(`{<>} StorageService - REPLACED   (${schema}) ${origId} with ${newId}`);
