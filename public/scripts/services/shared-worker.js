@@ -6,14 +6,13 @@
 
 const browserInstances = [];
 
-onconnect = function(e) {
-    console.log("--Worker making initial connection--");
+onconnect = (e) => {
     const port = e.ports[0];
     browserInstances.push(port);
 
-    port.onmessage = function(event) {
-        browserInstances.forEach(instance => {
+    port.onmessage = function (event) {
+        browserInstances.forEach((instance) => {
             instance.postMessage(event.data);
         });
-    }
-}
+    };
+};

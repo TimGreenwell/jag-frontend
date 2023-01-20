@@ -1,0 +1,98 @@
+/* Menu bar */
+jag-menu, def-menu, ia-menu {
+    display: flex;
+    flex-flow: row nowrap;
+    flex: 1;
+    flex-grow: 0;
+    flex-shrink: 0;
+    background: var(--main-bg-lighter);
+}
+
+jag-menu ul, def-menu ul, ia-menu ul {
+    width: 100%;
+    list-style: none;
+}
+
+jag-menu li, def-menu li, ia-menu li {
+    float: left;
+}
+
+jag-menu li:first-child, def-menu li:first-child, ia-menu li:first-child {
+    border-right: 1px solid darkgray;
+    width: 240px;
+}
+
+jag-menu li:last-child, def-menu li:last-child, ia-menu li:last-child {
+    float: right;
+    border-left: 1px solid darkgray;
+    width: 240px;
+}
+
+jag-menu li div, def-menu li div, ia-menu li div {
+    display: table;
+    height: 5vh;
+    float: left;
+}
+
+
+jag-menu li:last-child div, def-menu li:last-child div, ia-menu li:last-child div {
+    float: left;
+}
+
+jag-menu .menu-item , def-menu .menu-item, ia-menu .menu-item {
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+
+jag-menu #menu-image , def-menu #menu-image, ia-menu #menu-image {
+    display: table-cell;
+    vertical-align: top;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+
+
+jag-menu .menu-item:hover, def-menu .menu-item:hover, ia-menu .menu-item:hover {
+    background: var(--main-fg-lighter);
+}
+
+jag-menu .menu-item img, def-menu .menu-item img, ia-menu .menu-item:hover {
+    height: 80%;
+    vertical-align: middle;
+}
+
+
+jag-menu .selector, def-menu .selector, ia-menu .selector {
+    width: max-content;
+    border: 1px solid blue;
+    padding: 5px 5px 5px 5px;
+    margin: 10px;
+}
+
+jag-menu .menu-select, def-menu .menu-select, ia-menu .menu-select {
+    display: flex;
+    width: 120px;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 5px;
+}
+
+jag-menu #menu-title, def-menu #menu-title, ia-menu #menu-title {
+    font-size: 19px;
+    font-weight: bold;
+    text-align: center;
+}
+
+jag-menu #menu-title:hover, def-menu #menu-title:hover, ia-menu #menu-title:hover {
+    background: none;
+    cursor: default;
+}
+

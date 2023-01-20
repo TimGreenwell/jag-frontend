@@ -7,106 +7,151 @@
 
 'use strict';
 
-import StorageService from '../services/storage-service.js';
-//import AgentService from '../services/agent.js';
-//import TeamService from '../services/team.js';
-import { UUIDv4 }  from '../utils/uuid.js'
-import AgentModel from './agent.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class TeamModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = TeamModel.DEFAULT_NAME, agents = [], performers = new Set() } = {}) {
-		super();
-		this._id = id;
-		this._name = name;
-		this._agents = agents;
-		this._performers = performers;
-	}
+    constructor({id = uuidV4(), name = TeamModel.DEFAULT_NAME, agentIds = [], performerIds = new Set()} = {}) {
+        super();
+        this._id = id;
+        this._name = name;
+        this._agentIds = agentIds;
+        this._performerIds = performerIds;
+        // non-persistent
+        this._agents = [];
+    }
 
-	static async fromJSON(json) {
-		const agents = [];
-		for (const agent_id of json.agents) {
-			//let agent = await AgentService.instance('idb-service').get(agent_id);
-			let agent = await StorageService.get(agent_id,'agent');
+    get id() {
+        return this._id;
+    }
 
-			if (agent == undefined) {
-				agent = new AgentModel();
-				//await AgentService.instance('idb-service').create(agent);
-				await StorageService.create(agent,'agent');
-			}
+    get name() {
+        return this._name;
+    }
 
-			agents.push(agent);
-		}
-		json.agents = agents;
+    set name(name) {
+        this._name = name;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `name`,
+                extra: {name: this._name}
+            }
+        }));
+    }
 
-		json.performers = new Set(json.performers);
-        let returnValue = new TeamModel(json);
-		return returnValue;
-	}
+    get agentIds() {
+        return this._agentIds;
+    }
 
-	get id() {
-		return this._id;
-	}
+    set agentIds(value) {
+        this._agentIds = value;
+    }
 
-	get name() {
-		return this._name;
-	}
+    get performerIds() {
+        return this._performerIds;
+    }
 
-	set name(name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "name", "extra": { "name": this._name }}}));
-	}
+    set performerIds(value) {
+        this._performerIds = value;
+    }
 
-	get agents() {
-		return this._agents;
-	}
+    get agents() {
+        return this._agents;
+    }
 
-	addAgent(agent) {
-		this._agents.push(agent);
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
-	}
+    set agents(value) {
+        this._agents = value;
+    }
 
-	removeAgent(agent) {
-		this._agents.splice(this._agents.indexOf(agent), 1);
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "agents", "extra": { "agents": this._agents }}}));
-	}
+    addAgent(agent) {
+        this._agents.push(agent);
+        this._agentIds.push(agent.id);
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `agents`,
+                extra: {agents: this._agents}
+            }
+        }));
+    }
 
-	setPerformer(id, performer) {
-		if (this._performers.has(id) && !performer) {
-			this._performers.delete(id);
-		} else if (!this._performers.has(id) && performer) {
-			this._performers.add(id);
-		} else {
-			return;
-		}
+    removeAgent(agent) {
+        this._agents.splice(this._agents.indexOf(agent), 1);
+        this._agentIds.splice(this._agentIds.indexOf(agent.id), 1);
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `agents`,
+                extra: {agents: this._agents}
+            }
+        }));
+    }
 
-		this.dispatchEvent(new CustomEvent('update', { detail: { id: this._id, "property": "performers", "extra": { "performers": this._performers }}}));
-	}
+    setPerformer(id, performer) {
+        if (this._performerIds.has(id) && !performer) {
+            this._performerIds.delete(id);
+        } else if (!this._performerIds.has(id) && performer) {
+            this._performerIds.add(id);
+        } else {
+            return;
+        }
 
-	performer(id) {
-		const ids = this._agents.map(agent => agent.id);
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `performers`,
+                extra: {performers: this._performerIds}
+            }
+        }));
+    }
 
-		if (ids.indexOf(id) >= 0)
-			return this._performers.has(id);
+    performer(id) {
+        const ids = this._agents.map((agent) => {
+            return agent.id;
+        });
 
-		return undefined;
-	}
+        if (ids.indexOf(id) >= 0) {
+            return this._performerIds.has(id);
+        }
 
-	save() {
-		//TeamService.store(this);
-	}
+        return undefined;
+    }
 
-	toJSON() {
-		const json = {
-			id: this._id,
-			name: this._name,
-			agents: this._agents.map(agent => agent.id),
-			performers: Array.from(this._performers)
-		};
-		return json;
-	}
+    save() {
+        // TeamService.store(this);
+    }
+
+    toJSON() {
+        const json = {
+            id: this._id,
+            name: this._name,
+            agentIds: this._agentIds,
+            performerIds: Array.from(this._performerIds)
+        };
+        return json;
+    }
+
+    static fromJSON(json) {
+        // const agents = [];
+        // for (const agent_id of json.agents) {
+        //     let agent = await StorageService.get(agent_id,'agent');
+        //
+        //     // if (agent == undefined) {
+        //     //     agent = new AgentModel();
+        //     //     await StorageService.create(agent,'agent');
+        //     //}
+        //
+        //     agents.push(agent);
+        // }
+        // json.agents = agents;
+
+        // json.performers = new Set(json.performers);
+        const returnValue = new TeamModel(json);
+        return returnValue;
+    }
 
 }
 
-TeamModel.DEFAULT_NAME = 'Team name';
+TeamModel.DEFAULT_NAME = `Team name`;
 

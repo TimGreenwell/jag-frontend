@@ -1,52 +1,119 @@
-/* Library panel */
+/* Library panels */
 
-jag-library, analysis-library {  /*analysis-library new */
-	display: flex;
-	flex-direction: column;
-	height: 100%;          /* was 95 */
-	width: 20%;
+
+jag-library, analysis-library, agent-library, node-library {
+    display: flex;
+    flex-direction: column;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    min-height: 20%;
     z-index: 100;                      /* new */
-    background: var(--main-bg-darker); /* new */
-	color: var(--main-fg);             /* new */
+    overflow-y: auto;
+    background: var(--main-bg-lighter);
+    color: var(--main-fg);             /* new */
+
 }
 
-jag-library ol, analysis-library ol {
-	height: 100%;
-	overflow-y: scroll;
+jag-library .library-search, analysis-library .library-search, node-library .library-search, agent-library .library-search {
+    display: flex;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 30px;
+    /*height: 30px;*/
+    font-size: 15px;
+    background-image: url('../icons/search_mag_20.png');
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding-left: 40px;
+    background-color: #fff;
+    border: 1px solid darkgray;
+    box-shadow: none;
 }
 
-jag-library li, analysis-library li {
-	padding: 0.25em;
-	border-bottom: 1px solid white;
-	cursor: pointer;
-	transition: background-color 350ms var(--transition-function);
+jag-library .library-list, analysis-library .library-list, node-library .library-list, agent-library .library-list {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: content;
+    overflow-y: auto;
 }
 
-jag-library li:hover, analysis-library li:hover {
-	background-color: var(--main-fg-lighter);
+analysis-library .name-entry, node-library .name-entry {
+    font-size: 20px;
 }
 
-jag-library h3, analysis-library h3 {
-	padding: 0.25em;
+jag-library .name-entry, jag-library .name-entry {
+    font-size: 15px;
 }
 
-jag-library p, analysis-library p {
-	padding: 0.25em;
+jag-library .description-entry, analysis-library .description-entry, node-library .description-entry, agent-library .description-entry {
+    font-size: 10px;
 }
 
-jag-library .library-search {
-	height: 30px;
-	font-size: 14px;
-	background-image: url('../icons/search_mag_20.png');
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 40px;
-	background-color: #fff;
-	border: 1px solid darkgray;
-	box-shadow: none;
+
+
+jag-library .list-item, analysis-library .list-item, node-library .list-item, agent-library .list-item {
+    padding: 0.25em;
+    border-bottom: 1px solid white;
+    cursor: pointer;
+    transition: background-color 350ms var(--transition-function);
+    box-shadow: inset 0 0 8px lightblue;
+
+
+
+
 }
 
-analysis-library pre {
-	padding: 0.25em;
-	margin: 0em;
+jag-library .list-item:hover, analysis-library .list-item:hover, node-library .list-item:hover, agent-library .list-item:hover {
+    background-color: var(--main-bg-active);
+}
+
+jag-library .top-half, analysis-library .top-half, node-library .top-half, agent-library .top-half {
+    font-size: 19px;
+}
+
+jag-library .item-line, analysis-library .item-line, node-library .item-line, agent-library .item-line  {
+    display: flex;
+    flex-flow: row;
+    padding: 0.25em;
+}
+
+
+input::placeholder {
+    font-weight: bold;
+    opacity: .4;
+    color: black;
+    text-align: center;
+}
+
+jag-library  .library-button, analysis-library .library-button, node-library .library-button, agent-library .library-button {
+    display: flex;
+    flex-direction: row;
+    opacity: 0.07;
+    transition: opacity 250ms ease-in-out;
+    background-size: cover;
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+jag-library .library-button:hover, analysis-library .library-button:hover, node-library .library-button:hover, agent-library .library-button:hover {
+    opacity: 0.75;
+}
+
+jag-library .locked, analysis-library .locked, node-library .locked, agent-library .locked {
+    opacity: 0.75;
+}
+
+jag-library .lock-button, analysis-library .lock-button, node-library .lock-button, agent-library .lock-button {
+    background-image: url('/icons/lock-20.png');
+}
+
+jag-library .delete-button, analysis-library .delete-button, node-library .delete-button, agent-library .delete-button {
+    background-image: url('/icons/ic_delete_black_18dp_1x.png');
 }

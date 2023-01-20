@@ -28,10 +28,11 @@ export default class SharedService {
      * SenderId could be sent to provide message origin or prevent feedback.
      * @TODO not used or tested
      */
-    static set senderId(newSenderId){
+    static set senderId(newSenderId) {
         this._senderId = newSenderId;
     }
-    static get senderId(){
+
+    static get senderId() {
         return this._senderId;
     }
 

@@ -7,96 +7,161 @@
 
 'use strict';
 
-import {UUIDv4} from '../utils/uuid.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class AgentModel extends EventTarget {
 
-	constructor({ id = UUIDv4(), name = AgentModel.DEFAULT_NAME, assessments = new Map() } = {}) {
-		super();
-		this._id = id;
-		this._name = name;
-		this._assessments = assessments;
-	}
+    constructor({
+        id = uuidV4(),
+        name = AgentModel.DEFAULT_NAME,
+        urn,
+        description,
+        dateCreated,
+        isLocked,
+        assessments = new Map()
+    } = {}) {
+        super();
+        this._id = id;
+        this._name = name;
+        this._description = description;
+        this._urn = urn;
+        this._dateCreated = dateCreated;
 
-	static fromJSON(json) {
-		const assessments = new Map();
-		for (const urn in json.assessments) {
-			const value = json.assessments[urn];
-			let assessment = undefined;
+        this._isLocked = isLocked;
+        this._assessments = assessments;     // a Map of urn to assessment
+    }
 
-			if (value == 1) {
-				assessment = AgentModel.CAN_DO_PERFECTLY;
-			} else if (value == 2) {
-				assessment = AgentModel.CAN_DO;
-			} else if (value == 3) {
-				assessment = AgentModel.CAN_HELP;
-			} else if (value == 4) {
-				assessment = AgentModel.CANNOT_DO;
-			}
+    get id() {
+        return this._id;
+    }
 
-			assessments.set(urn, assessment);
-		}
-		json.assessments = assessments;
+    get name() {
+        return this._name;
+    }
 
-		return new AgentModel(json);
-	}
+    set name(name) {
+        this._name = name;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `name`,
+                extra: {name}
+            }
+        }));
+    }
 
-	get id() {
-		return this._id;
-	}
+    get urn() {
+        return this._urn;
+    }
 
-	get name() {
-		return this._name;
-	}
+    set urn(value) {
+        this._urn = value;
+    }
 
-	set name(name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "name", "extra": { "name": name }}}));
-	}
+    get dateCreated() {
+        return this._dateCreated;
+    }
 
-	setAssessment(urn, assessment) {
-		this._assessments.set(urn, assessment);
-		this.dispatchEvent(new CustomEvent('update', { detail: { "id": this._id, "property": "assessment", "extra": { "urn": urn, "assessment": assessment }}}));
-	}
+    set dateCreated(value) {
+        this._dateCreated = value;
+    }
 
-	assessment(node) {
-		if (node.urn === '')
-			return undefined;
+    get description() {
+        return this._description;
+    }
 
-		return this._assessments.get(node.urn);
-	}
+    set description(value) {
+        this._description = value;
+    }
 
-	toJSON() {
-		let json = {
-			id: this._id,
-			name: this._name,
-			assessments: {}
-		};
+    get isLocked() {
+        return this._isLocked;
+    }
 
-		for (let assessment of this._assessments.keys()) {
-			const symbol = this._assessments.get(assessment);
-			let value = 0;
+    set isLocked(value) {
+        this._isLocked = value;
+    }
 
-			if (symbol == AgentModel.CAN_DO_PERFECTLY) {
-				value = 1;
-			} else if (symbol == AgentModel.CAN_DO) {
-				value = 2;
-			} else if (symbol == AgentModel.CAN_HELP) {
-				value = 3;
-			} else if (symbol == AgentModel.CANNOT_DO) {
-				value = 4;
-			}
+    setAssessment(urn, assessment) {
+        this._assessments.set(urn, assessment);
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `assessment`,
+                extra: {
+                    urn,
+                    assessment
+                }
+            }
+        }));
+    }
 
-			json.assessments[assessment] = value;
-		}
+    assessment(node) {
+        if (node.urn === ``) {
+            return undefined;
+        }
 
-		return json;
-	}
+        return this._assessments.get(node.urn);
+    }
+
+    static fromJSON(json) {
+        const assessments = new Map();
+        for (const urn in json.assessments) {
+            const value = json.assessments[urn];
+            let assessment;
+
+            if (value === 1) {
+                assessment = AgentModel.CAN_DO_PERFECTLY;
+            } else if (value === 2) {
+                assessment = AgentModel.CAN_DO;
+            } else if (value === 3) {
+                assessment = AgentModel.CAN_HELP;
+            } else if (value === 4) {
+                assessment = AgentModel.CANNOT_DO;
+            }
+
+            assessments.set(urn, assessment);
+        }
+        json.assessments = assessments;
+
+        return new AgentModel(json);
+    }
+
+    toJSON() {
+        const json = {
+            id: this._id,
+            name: this._name,
+            urn: this._urn,
+            description: this._description,
+            isLocked: this._isLocked,
+            dateCreated: this._dateCreated,
+            assessments: {}
+        };
+
+        for (const assessment of this._assessments.keys()) {
+            const symbol = this._assessments.get(assessment);
+            let value = 0;
+
+            if (symbol === AgentModel.CAN_DO_PERFECTLY) {
+                value = 1;
+            } else if (symbol === AgentModel.CAN_DO) {
+                value = 2;
+            } else if (symbol === AgentModel.CAN_HELP) {
+                value = 3;
+            } else if (symbol === AgentModel.CANNOT_DO) {
+                value = 4;
+            }
+
+            json.assessments[assessment] = value;
+        }
+
+        return json;
+    }
+
 }
 
-AgentModel.CAN_DO_PERFECTLY = Symbol();
-AgentModel.CAN_DO = Symbol();
-AgentModel.CAN_HELP = Symbol();
-AgentModel.CANNOT_DO = Symbol();
-
-AgentModel.DEFAULT_NAME = 'Agent';
+AgentModel.CAN_DO_PERFECTLY = Symbol(`Can Do Perfectly`);
+AgentModel.CAN_DO = Symbol(`Can Do`);
+AgentModel.CAN_HELP = Symbol(`Can Help`);
+AgentModel.CANNOT_DO = Symbol(`Cannot Do`);
+AgentModel.DEFAULT_NAME = `Agent`;

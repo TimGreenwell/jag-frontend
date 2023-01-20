@@ -5,113 +5,143 @@
  * @copyright Copyright © 2019 IHMC, all rights reserved.
  * @version 0.57
  *
- * Concepts and vocabulary clarification:
- *   JAG Record: the bare JSON used for storage and transmission
- *   JAG Entity: Defined by models/jag, {id,name,desc,childrenID, inputs, outputs, bindings, annotations, ...}
- *               and events on data changes and functions to construct JAG Models  [type JAG]
- *   JAG Model: set[JAG Entity] - JAG parent entity with descendent entities
- *   JAG (AT) Node: Defined by views/jag - JAG Entity +  AT graphics + events on graphics
  *
  */
 
-import Playground from './playground.js';                     // AT - Center graphic view of JAG Nodes
-import IDE from './ide.js';                                   // ?? - seems unused currently
-import Library from './views/library.js';                     // AT - Left view of available JAG Entities
-import Menu from './views/menu.js';                           // AT - Top view of user actions (plus title/logo)
-import Properties from './views/properties.js';               // AT - Right view of JAG Node data entry fields
-import GraphService from './services/graph-service.js';       // ?? - seems unused currently
+import Playground from './views/at-playground.js';                     // AT - Center graphic view of JAG Nodes // ?? - seems unused currently
+import TimeView from "./views/at-timeview.js";
+import Library from './views/at-activity-library.js';                     // AT - Left view of available Activities
+import ProjectLibrary from './views/at-node-library.js';         // AT - Left view(2) of current JAGs
+import Menu from './views/at-menu.js';                           // AT - Top view of user actions (plus title/logo)
+import Properties from './views/at-properties.js';               // AT - Right view of JAG Node data entry fields
 import StorageService from './services/storage-service.js';   // Interface services with JAG in storage(s)
 import IndexedDBStorage from './storages/indexed-db.js';      // Available storage option (IndexedDB)
-import RESTStorage from './storages/rest.js';
+import RESTStorage from './storages/rest.js';                 // Available storage option (tested with Postgres)
+import ControllerAT from "./controllers/controllerAT.js";
+import UserPrefs from "./utils/user-prefs.js";     // Controller - injection point
 
-document.addEventListener('DOMContentLoaded', async () => {
+// import IDE from './ide.js';                                   // ?? - seems unused currently
+// import GraphService from './services/graph-service.js';       // ?? - seems unused currently
+
+document.addEventListener(`DOMContentLoaded`, async () => {
+    // storage choices
+    // dotenv.config({path: `./environment.env`});
+    // const port = process.env.PORT || 8888;
+    // console.log(`--------------------------------------------------------`)
+    // console.log(port)
+
+    StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
+    StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+    StorageService.senderId = `jag-at`;                         // Cross-tab identifier
+
+    if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
+        // Initializes a rest storage
+        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8888/api/v1`);
+        await rest_storage.init();
+        StorageService.addStorageInstance(`local-rest-service`, rest_storage);
+    }
+
+    if ((StorageService.getPreferredStorage() === `idb-service`) || (StorageService.areStoragesSynced())) {
+        // Initializes local storage
+        const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
+        await idb_storage.init();
+        StorageService.addStorageInstance(`idb-service`, idb_storage);
+    }
+
+    const controller = new ControllerAT();
+
+    // @TODO - I need to better understand these two
+    // const ide = new IDE();
+    // const graph_service = new GraphService();
+
+    // Load DOM outer skeleton for Authoring Tool
+    const body = document.querySelector(`body`);
+
+    const allPanels = document.createElement(`div`);
+    allPanels.setAttribute(`id`, `all-panels`);
+
+    const mainPanels = document.createElement(`div`);
+    mainPanels.setAttribute(`id`, `main-panels`);
+
+    const leftPanel = document.createElement(`div`);
+    leftPanel.setAttribute(`id`, `left-panel`);
+
+    const centerPanel = document.createElement(`div`);
+    centerPanel.setAttribute(`id`, `center-panel`);
+
+    const centerGutter = document.createElement(`div`);
+    centerGutter.setAttribute(`id`, `center-gutter`);
+
+    const rightPanel = document.createElement(`div`);
+    rightPanel.setAttribute(`id`, `right-panel`);
+
+    const library = new Library();
+    const projectLibrary = new ProjectLibrary();
+    const menu = new Menu();
+    const playground = new Playground();
+    const properties = new Properties();
+    const timeview = new TimeView();
+
+    timeview.classList.toggle(`hidden`);
+    centerGutter.classList.toggle(`hidden`);
+
+    body.appendChild(allPanels);
+    allPanels.appendChild(menu);
+    allPanels.appendChild(mainPanels);
+
+    mainPanels.appendChild(leftPanel);
+    mainPanels.appendChild(centerPanel);
+    mainPanels.appendChild(rightPanel);
+
+    leftPanel.appendChild(projectLibrary);
+    leftPanel.appendChild(library);
+
+    centerPanel.appendChild(playground);
+    centerPanel.appendChild(centerGutter);
+    centerPanel.appendChild(timeview);
+
+    rightPanel.appendChild(properties);
+
+    controller.menu = menu;
+    controller.activityLibrary = library;
+    controller.projectLibrary = projectLibrary;
+    controller.playground = playground;
+    controller.timeview = timeview;
+    controller.properties = properties;
+    await controller.initialize();
+
+    function eventToggleTimeviewHandler() {
+        centerGutter.classList.toggle(`hidden`);
+        timeview.classList.toggle(`hidden`);
+        if (!playground.style.height) {
+            playground.style.height = `50%`;
+        }
+        const selectedNodes = playground.selectedNodes;
+        timeview.refreshTimeview(selectedNodes[0]);
+    }
+    menu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
 
 
-	// Initializes local storage
-	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
-	await idb_storage.init();
-
-	// @TODO: put this name in a default/configuration object globally accessible and frozen.
-	// JAGService.createInstance('idb-service', idb_storage);
-	StorageService.addStorageInstance('idb-service', idb_storage);
-
-	// @TODO: this should be setup by the user (configuration file).
-	// Initializes a rest storage
-	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:8080/api/v1');
-	//JAGService.createInstance('local-rest-service', rest_storage);
-
-	StorageService.addStorageInstance('local-rest-service', rest_storage);
-	StorageService.setPreferredStorage('local-rest-service');          // which storage used for reads
-	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
-	StorageService.senderId = 'jag-at';
-
-	const ide = new IDE();
-	const graph_service = new GraphService();
-
-	// Load DOM outer skeleton for Authoring Tool
-	const body = document.querySelector('body');
-	const library = new Library();
-	const menu = new Menu();
-	const playground = new Playground();
-	const properties = new Properties();
-
-	body.appendChild(menu)
-	body.appendChild(library);
-	body.appendChild(playground);
-	body.appendChild(properties);
-
-	/**
-	 * EventListeners triggering action in different panel
-	 * Event: 'item-selected' (menu-item-selected) or (library-item-selected)
-	 *        menu:'clear'      detail": { "action": "clear" }
-	 *        library:<JAGentity>  detail: {model: model, model_set: all_models, expanded: event.shiftKey}
-	 * @TODO Add more menu events (New Node, Clear Workspace, Delete Node, ...)
-	 * @TODO Move library selection to its own unique event (after 'New' to moved to menu)
-	 */
-
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'clear-playground' - menu item selected to clear nodes from playground
-	menu.addEventListener('clear-playground', (e) => {
-		playground.clearPlayground();
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'add-new-node-to-playground' - when menu or library adds a (new or existing) node to playground
-	// @TODO
-	menu.addEventListener('add-new-node', (e) => {
-		playground._handleNewNodePopup(e);
-	});
-    //////////////////////////////////////////////////////////////////////
-	// Event: 'delete item' - when menu or library adds a (new or existing) node to playground
-	// @TODO
-	menu.addEventListener('delete-selected', (e) => {
-		playground.handleDeleteSelected(e);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'item-selected' from library (defined-node-added)
-	// @TODO Playgrounds handlers can be combined or merged.
-	library.addEventListener('library-lineItem-selected', (e) => {
-		playground.handleLibraryListItemSelected(e.detail);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'playground-nodes-selected' (playground-node-selected)
-	playground.addEventListener('playground-nodes-selected', (e) => {
-		properties.handleSelectionUpdate(e.detail);
-		//ide.handleSelectionUpdate(e.detail);
-	});
-
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'refresh' (storage-sync-requested)(?)
-	playground.addEventListener('refresh', (e) => {
-		library.refreshItem(e.detail.model, e.detail.refreshed);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'resources' (???)
-	graph_service.addEventListener('resources', (e) => {
-		library.handleResourceUpdate(e.detail);
-	});
-	//////////////////////////////////////////////////////////////////////
-	// Event: 'refresh' (storage-sync-requested)(?)
-	library.addEventListener('refresh', (e) => {
-		playground.handleRefresh(e.detail);
-	});
+    let isMouseDown = false;
+    function mV(event) {
+        if (isMouseDown) {
+            const change = event.clientY - menu.getBoundingClientRect().height - 35;
+            playground.style.height = `${change}px`;
+        } else {
+            // eslint-disable-next-line no-use-before-define
+            end();
+        }
+    }
+    const end = (e) => {
+        isMouseDown = false;
+        document.body.removeEventListener(`mouseup`, end);
+        document.body.removeEventListener(`mousemove`, mV);
+        timeview.refreshTimeview();
+    };
+    function mD(event) {
+        isMouseDown = true;
+        document.body.addEventListener(`mousemove`, mV);
+        document.body.addEventListener(`mouseup`, end);
+    }
+    centerGutter.addEventListener(`mousedown`, mD);
 });

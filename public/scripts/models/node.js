@@ -5,328 +5,653 @@
  * @version 1.65
  */
 
-// These are the
-
 'use strict';
 
-import { UUIDv4 }  from '../utils/uuid.js';
-import JAG from './jag.js';
-import StorageService from '../services/storage-service.js';
-import JAGATValidation from '../utils/validation.js';
+import {uuidV4} from '../utils/uuid.js';
+import Validation from '../utils/validation.js';
 
-// node (with view/jag)  = at's jag-node       -- both syn with JAG model
+// noinspection JSUnusedGlobalSymbols
 export default class Node extends EventTarget {
 
-	constructor({ id = UUIDv4(), jag, color, link_status = true, collapsed = false, is_root = false } = {}) {
-		super();
-		this._id = id;
-		this._jag = jag;
-		this._color = color;
-		this._link_status = link_status;
-		this._collapsed = collapsed;
-		this._is_root = is_root;
+    constructor({
+        id = uuidV4(),
+        urn,
+        childId,
+        parentId,
+        projectId = id,
+        isExpanded = Boolean(true),
+        isLocked = Boolean(false),
+        contextualName = ``,
+        contextualDescription = ``,
+        x = 0,        // this.unselectEverything();
+        // this._selectedNodesMap.set(projectNodeModel.id, projectNodeModel);
+        y = 0,
+        subscriptions = [],        // still unknown implementation (hopefully observer)
+        returnValue = null,
+        returnState = null,
+        testReturnValue = null,
+        testReturnState = null,
+        children = [],
+        contextualExpectedDuration,
+        contextualTimeAllowance
+    } = {}) {
+        super();
+        this._id = id;                       // An assigned unique ID given at construction
+        this._urn = urn;
+        this._childId = childId;                       // child differentiating id
+        this._parentId = parentId;
+        this._projectId = projectId;
+        this._isExpanded = isExpanded;         // Expanded (table) or folded in (graph)
+        this._isLocked = isLocked;
+        this._contextualName = contextualName;
+        this._contextualDescription = contextualDescription;
+        this._x = x;
+        this._y = y;
+        this._subscriptions = subscriptions;    // Array<Subscription>
+        this._returnValue = returnValue;
+        this._returnState = returnState;
+        this._testReturnValue = testReturnValue;
+        this._testReturnState = testReturnState;
+        this._children = children;            // Links to actual children [objects]
+        this._contextualExpectedDuration = contextualExpectedDuration;
+        this._contextualTimeAllowance = contextualTimeAllowance;
+        // Derived
+        this._parent = null;
+        this._activity = undefined;
+        this._leafCount = 1;
+        this._treeDepth = 0;
+        // derived
+        this._requiresOutputFrom = [];
+        this._providesOutputTo = [];
+        this._dependencySlot = 0;
+    }
 
-		// Transient properties
-		this._parent = undefined;
-		this._breadth = 1;
-		this._height = 0;
-		this._children = Array();
-	}
+    becomeConsumerOf(node) {
+        if (!(node.providesOutputTo.includes(this))) {
+            node.providesOutputTo.push(this);
+        }
+        if (!(this._requiresOutputFrom.includes(node))) {
+            this._requiresOutputFrom.push(node);
+            if (this._dependencySlot < (node.dependencySlot + 1)) {
+                this.adjustDependencySlot(node.dependencySlot + 1);
+            }
+        }
+    }
 
-
-	get id() {
-		return this._id;
-	}
-
-	get children() {
-		return this._children;
-	}
-
-	get breadth() {
-		return this._breadth;
-	}
-
-	get height() {
-		return this._height;
-	}
-
-	get collapsed() {
-		return this._collapsed;
-	}
-
-	set collapsed(collapsed) {
-		this._collapsed = collapsed;
-	}
-
-	get isRoot()  {
-		return this._is_root;
-	}
-
-	get jag() {
-		return this._jag;
-	}
-
-	get name() {
-		return (this.jag === undefined) ? Node.DEFAULT_JAG_NAME : this.jag.name;
-	}
-
-	get urn() {
-		return (this.jag === undefined) ? '' : this.jag.urn;
-	}
-
-
-	get linkStatus() {
-		return this._link_status;
-	}
-
-	get parent() {
-		return this._parent;
-	}
-
-	set parent(parent) {
-		this._parent = parent;
-	}
-
-	/**
-	 * Recursively get the left(?) most leaf from this node
-	 * tlg - Wht?  gets the last child's last child's lasts child... whatfer?
-	 */
-	get lastLeaf() {
-		if(this._children.length === 0)
-			return this;
-
-		return this._children[this._children.length - 1].lastLeaf;
-	}
-
-	get childCount() {
-		return this._children.length;
-	}
-
-	get canHaveChildren() {
-		return true;//this.jag !== undefined;// && this.jag.hasValidURN;
-	}
+    adjustDependencySlot(n) {
+        this.dependencySlot = n;
+        const workStack = [...this.providesOutputTo];
+        while (workStack.length > 0) {
+            const childNode = workStack.pop();
+            childNode.adjustDependencySlot(n + 1);
+        }
+    }
 
 
-	async save() {
-		if (await StorageService.has(this, 'node')){
-			await StorageService.update(this,'node');
-		}
-		else {
-		await StorageService.create(this,'node');}
-	}
+    get id() {
+        return this._id;
+    }
+
+    set id(value) {
+        this._id = value;
+    }
+
+    get urn() {
+        return this._urn;
+    }
+
+    set urn(value) {
+        this._urn = value;
+    }
+
+    get childId() {
+        return this._childId;
+    }
+
+    set childId(value) {
+        this._childId = value;
+    }
+
+    get parentId() {
+        return this._parentId;
+    }
+
+    set parentId(value) {
+        this._parentId = value;
+    }
+
+    get activity() {
+        return this._activity;
+    }
+
+    set activity(value) {
+        this._activity = value;
+    }
+
+    get projectId() {
+        return this._projectId;
+    }
+
+    set projectId(value) {
+        this._projectId = value;
+    }
+
+    get children() {
+        return this._children;
+    }
+
+    set children(value) {
+        this._children = value;
+    }
+
+    get contextualExpectedDuration() {
+        if (!Validation.isNumeric(this._contextualExpectedDuration) && (this.activity)) {
+            this.contextualExpectedDuration = this.activity.expectedDuration;
+        }
+        return this._contextualExpectedDuration;
+    }
+
+    set contextualExpectedDuration(value) {
+        this._contextualExpectedDuration = value.toString();
+    }
+
+    get contextualTimeAllowance() {
+        return this._contextualTimeAllowance;
+    }
+
+    set contextualTimeAllowance(value) {
+        this._contextualTimeAllowance = value;
+    }
+
+    get parent() {
+        return this._parent;
+    }
+
+    set parent(parent) {
+        this._parent = parent;
+        this._parentId = parent ? parent.id : null;
+    }
+
+    getAncestor() {
+        let topAncestor = this;
+        while (!topAncestor.isRoot()) {
+            topAncestor = topAncestor.parent;
+        }
+        return topAncestor;
+    }
+
+    get subscriptions() {
+        return this._subscriptions;
+    }
+
+    set subscriptions(value) {
+        this._subscriptions = value;
+    }
+
+    removeSubscription(subscriptionName) {
+        for (const index in this._subscriptions) {
+            if (this._subscriptions[index].name === subscriptionName) {
+                this._subscriptions.splice(index, 1);
+                break;
+            }
+        }
+    }
 
 
+    get isLocked() {
+        return this._isLocked;
+    }
 
-	async newChild() {
-		// @TODO: Show user feedback message when trying to create a child on an unsaved jag.
-		if (!this.canHaveChildren)
-			return;
-
-		const child = new Node();
-		//NodeService.instance('idb-service').create(child);
-		await StorageService.create(child,'node');
-		this.addChild(child);
-	}
-
-	addChild(child, layout = true) {
-		child.parent = this;
-		this._children.push(child);
-
-		this.dispatchEvent(new CustomEvent('attach', { detail: {
-			target: child,
-			reference: this,
-			layout: layout
-		}}));
-
-	//	this.save();
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
-
-	deleteChild(child) {
-		const index = this._children.indexOf(child);
-		this._children.splice(index, 1);
-
-		this.save();
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
-
-	deleteAllChildren() {
-		const safe_children_list = this.children.slice();
-		safe_children_list.forEach(child => {
-			child.deleteAllChildren();
-			this.dispatchEvent(new CustomEvent('detach', { detail: {
-				target: child,
-				layout: false
-			}}));
-		});
-
-		this._children = [];
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
-
-	delete() {
-		this.deleteAllChildren();
-		this.parent.deleteChild(this);
-		this.dispatchEvent(new CustomEvent('detach', { detail: {
-			target: this
-		}}));
-	}
-
-	unlink() {
-		this._link_status = false;
-	}
-
-	toggleCollapse() {
-		this._collapsed = !this._collapsed;
-		this.dispatchEvent(new CustomEvent('layout'));
-	}
-
-	async commitNameChange(view) {
-		if (this.linkStatus)
-			await this.syncJAG(view, false);
-		else
-			this.jag.name = view.name;
-		await StorageService.update(this,'node');
-	}
-
-	syncView() {
-		this.dispatchEvent(new CustomEvent('sync'));
-	}
-
-	/**
-	 * Synchronizes the display values with the underlying jag model.
-	 * Actions could be, load a new jag model, create a new jag model or change the name of the current jag.
-	 * tlg - if nodes are instances of a jag, why should their change affect the jag itself?
-	 */
-	async syncJAG(view, replace = true) {
-		const urn = view.urn;
-		const name = view.name;
-
-		// If the urn is not valid just notify and revert to previous state
-		// @TODO: Implement the notification.
-		try {
-			JAGATValidation.validateURN(urn);
-		} catch (e) {
-			this.syncView();
-			return;
-		}
-
-		//let jag = await JAGService.instance('idb-service').get(urn);
-		let jag = await StorageService.get(urn,'jag');
-
-		// If the model does not exists create one from the view values.
-		// if the model does exists, reset to previous state unless replace is true.
-		if (!jag) {
-			jag = new JAG({
-				urn: urn,
-				name: name
-			});
-			
-			//await JAGService.instance('idb-service').create(jag);
-			await StorageService.create(jag,'jag');
-		} else if (!replace) {
-			// If the jag already exists we want to abort unless replace is set to true.
-			//@TODO: notify the user why this is prevented and how to go about doing it (edit the urn manually).
-			// Potentially we could ask the user if s/he wants to load the existing jag.
-			this.syncView();
-			return;
-		}
-
-		this._updateJAG(jag);
-
-		const valid = true;//this.jag.hasValidURN;
-		view.valid = valid;
-		if(valid)
-			this.unlink();
-
-		this.dispatchEvent(new CustomEvent('layout'));
-	}
+    set isLocked(value) {
+        this._isLocked = value;
+    }
 
 
-	update() {
-		this._breadth = 1;
-		this._height = 0;
+    get isExpanded() {
+        return this._isExpanded;
+    }
 
-		if(this._children.length !== 0 && !this._collapsed)
-		{
-			this._breadth = 0;
-			let max_height = 0;
+    set isExpanded(value) {
+        this._isExpanded = value;
+    }
 
-			for(let child of this._children) {
-				child.update();
-				this._breadth += child.breadth;
-				max_height = Math.max(max_height, child.height);
-			}
+    get x() {
+        return this._x;
+    }
 
-			this._height = max_height + 1;
-		}
-	}
+    set x(x) {
+        this._x = Math.round(x);
+    }
 
-	toJSON() {
-		const json = {
-			id: this._id,
-			jag: this.urn,
-			color: this._color,
-			link_status: this._link_status,
-			collapsed: this._collapsed
-		};
+    get y() {
+        return this._y;
+    }
 
-		json.children = this._children.map(child => child.id);
+    set y(y) {
+        this._y = Math.round(y);
+    }
 
-		return json;
-	}
+    setPosition(x, y) {
+        this._x = x;
+        this._y = y;
+    }
 
-	static async fromJSON(json) {
-		// Replaces the id with the actual jag model.
-		//const jag = await JAGService.instance('idb-service').get(json.jag);
+    getPosition() {
+        return [this._x, this._y];
+    }
 
-		const jag = await StorageService.get(json.jag,'jag');
-		if (jag instanceof JAG) {
-			json.jag = jag;
-		}
-		else {
-			json.jag = undefined;
-		}
-		//json.jag = (jag != null) ? jag : undefined;
+    get treeDepth() {
+        return this._treeDepth;
+    }
 
-		const node = new Node(json);
+    set treeDepth(depth) {
+        this._treeDepth = depth;
+    }
 
-		// // @TODO: Can we lazy load these ?
-		// const promisedChildren = json.children.map(async child_node_id => {
-		// 	const child = await StorageService.get(child_node_id,'jag');
-		// 	return child;
-		// });
-		//
-		// const children = await Promise.all(promisedChildren);
-		// children.forEach(child => {
-		// 	if(child === undefined)
-		// 		child = new Node();
-		// 	node.addChild(child);
-		// });
+    get leafCount() {
+        return this._leafCount;
+    }
 
-		return node;
-	}
+    set leafCount(value) {
+        this._leafCount = value;
+    }
 
-	async _createChildren() {
-		for (let child of this.jag.children) {
-			//const jag = await JAGService.instance('idb-service').get(child.urn);
-			const jag = await StorageService.get(child.urn,'jag');
-			const model = new Node({jag: jag});
-			//await NodeService.instance('idb-service').create(model);
-			await StorageService.create(model,'node');
-			this.addChild(model, true);
-		}
-	}
+    get contextualName() {
+        let returnName = null;
+        if ((this._contextualName === ``) || (this._contextualName == undefined)) {
+            if (this._activity) {
+                returnName = this._activity.name;
+            }
+        } else {
+            returnName = this._contextualName;
+        }
+        return returnName;
+    }
 
-	async _updateJAG(jag) {
-		this._jag = jag;
-		this.save();
-		this.deleteAllChildren();
-		await this._createChildren();
-		this.syncView();
-	}
+    set contextualName(value) {
+        this._contextualName = value;
+    }
+
+    get contextualDescription() {
+        let returnDescription = null;
+        if ((this._contextualDescription === ``) || (this._contextualName == undefined)) {
+            if (this._activity) {
+                returnDescription = this.activity.description;
+            }
+        } else {
+            returnDescription = this._contextualDescription;
+        }
+        return returnDescription;
+    }
+
+    set contextualDescription(value) {
+        this._contextualDescription = value;
+    }
+
+
+    get returnValue() {
+        return this._returnValue;
+    }
+
+    set returnValue(value) {
+        this._returnValue = value;
+    }
+
+
+    get returnState() {
+        return this._returnState;
+    }
+
+    set returnState(value) {
+        this._returnState = value;
+    }
+
+    get testReturnValue() {
+        return this._testReturnValue;
+    }
+
+    set testReturnValue(value) {
+        this._testReturnValue = value;
+    }
+
+    get testReturnState() {
+        return this._testReturnState;
+    }
+
+    set testReturnState(value) {
+        this._testReturnState = value;
+    }
+
+
+    get requiresOutputFrom() {
+        return this._requiresOutputFrom;
+    }
+
+    set requiresOutputFrom(value) {
+        this._requiresOutputFrom = value;
+    }
+
+    addRequiresOutputFrom(node) {
+        this._requiresOutputFrom.push(node);
+    }
+
+    get providesOutputTo() {
+        return this._providesOutputTo;
+    }
+
+    set providesOutputTo(value) {
+        this._providesOutputTo = value;
+    }
+
+    addProvidesOutputTo(node) {
+        this._providesOutputTo(node);
+    }
+
+    get dependencySlot() {
+        return this._dependencySlot;
+    }
+
+    set dependencySlot(value) {
+        this._dependencySlot = value;
+    }
+
+    isTopProducerSibling() {
+        return this._dependencySlot === 0;
+    }
+
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////// Inner Jag Assignments  ////////////////////////////////
+    // ///////////////////   ( This will go away once extending JAG Model )    /////////////////
+    // /////////////////////////////////////////////////////////////////////////////////////////
+    get name() {
+        return (this.activity === undefined) ? `` : this.activity.name;
+    }
+
+    set name(name) {
+        if (this.activity !== undefined) {
+            this.activity.name = name;
+        }
+    }
+
+    get description() {
+        return (this.activity === undefined) ? `` : this.activity.description;
+    }
+
+    set description(name) {
+        if (this.activity !== undefined) {
+            this.activity.name = name;
+        }
+    }
+
+    getShortUrn() {
+        const parts = this.urn.split(`:`);
+        const lastPart = parts.pop().trim();
+        return lastPart;
+    }
+
+    gatherDescendentUrns(childNodeModel = this, workStack = []) {   // need this in nodes
+        workStack.push(childNodeModel.urn);
+        childNodeModel.children.forEach((child) => {
+            this.gatherDescendentUrns(child, workStack);
+        });
+        return workStack;
+    }
+
+    gatherDescendentIds(childNodeModel = this, workStack = []) {   // need this in nodes
+        workStack.push(childNodeModel.id);
+        childNodeModel.children.forEach((child) => {
+            this.gatherDescendentIds(child, workStack);
+        });
+        return workStack;
+    }
+
+    gatherDescendents(childNodeModel = this, workStack = []) {   // need this in nodes
+        workStack.push(childNodeModel);
+        childNodeModel.children.forEach((child) => {
+            this.gatherDescendents(child, workStack);
+        });
+        return workStack;
+    }
+
+
+    // activitiesInDataScope(urn) {    // return array of nodes matching urn
+    //     const matchStack = [];
+    //     const workStack = [];
+    //
+    //     workStack.push(this);
+    //     workStack.push(this.children);
+    //     while (workStack.length > 0) {
+    //         const nodeModel = workStack.pop();
+    //         if (nodeModel.activity.urn === urn) {
+    //             matchStack.push(nodeModel);
+    //         }
+    //     }
+    //     return matchStack;
+    // }
+
+    childrenWithActivity(urn) {
+        const matchStack = [];
+        this.children.forEach((child) => {
+            if (child.activity.urn === urn) {
+                matchStack.push(child)
+            }
+        })
+        return matchStack
+    }
+
+    activitiesInProject(urn) {    // return array of nodes matching urn
+        const matchStack = [];
+        const workStack = [];
+
+        workStack.push(this);
+        while (workStack.length > 0) {
+            const nodeModel = workStack.pop();
+
+            if (nodeModel.activity.urn === urn) {
+                matchStack.push(nodeModel);
+            }
+            nodeModel.children.forEach((kid) => {
+                workStack.push(kid);
+            });
+        }
+        return matchStack;
+    }
+
+    isActivityInProject(urn) {
+        return (this.activitiesInProject(urn).length > 0);
+    }
+
+    setDepth() {
+        if (this.isRoot()) {
+            this.treeDepth = 0;
+        } else {
+            this.treeDepth = this.parent.treeDepth + 1;
+        }
+    }
+
+
+    incrementDepth(depthCount) {
+        this._treeDepth = depthCount + 1;
+        this._children.forEach((child) => {
+            child.incrementDepth(this._treeDepth);
+        });
+    }
+
+    incrementLeafCount(moreLeaves) {
+        this._leafCount = this._leafCount + moreLeaves;
+        if (this.parent) {
+            this.parent.incrementLeafCount();
+        }
+    }
+
+    hasChildren() {
+        return (this.children.length !== 0);
+    }
+
+    addChild(node) {                              // moved to controller
+        if (this.canHaveChildren) {
+            this._children.push(node);
+            node.parent = this;
+            node.incrementDepth(this._treeDepth);
+        } else {
+            alert(`Node must first be assigned a valid URN`);
+        }
+    }
+
+    findTreeHeight() {
+        return this.findDeepestLeaf() - this.treeDepth;
+    }
+
+    findDeepestLeaf() {
+        const depths = [];
+        if (this.hasChildren()) {
+            this.children.forEach((child) => {
+                depths.push(child.findDeepestLeaf());
+            });
+        } else {
+            depths.push(this.treeDepth);
+        }
+        return Math.max(...depths);
+    }
+
+
+    leafcounter() {
+        if (this.hasChildren()) {
+            let sum = 0;
+            this.children.forEach((child) => {
+                child.leafCount = child.leafcounter();
+                sum = sum + child.leafCount;
+            });
+            this.leafCount = sum;
+            return sum;
+        } else {
+            this.leafCount = 1;
+            return this.leafCount;
+        }
+    }
+
+    getChildrenDependencyDepth() {
+        let depth = 0;
+        this.children.forEach((childNodeModel) => {
+            if (childNodeModel.dependencySlot > depth) {
+                depth = childNodeModel.dependencySlot;
+            }
+        });
+        return depth;
+    }
+
+
+    removeChild(child) {
+        const filtered = this.children.filter((entry) => {
+            // if (entry.id !== child.id) {
+            //     return entry;
+            // }
+            // xxxxx
+            return entry.id !== child.id;
+        });
+        this.children = filtered;
+    }
+
+
+    replaceChild(newChild) {
+        const workStack = [];
+        if (this.id === newChild.id) {
+            return newChild;
+        } else {
+            workStack.push(this);
+            while (workStack.length > 0) {
+                const workingNode = workStack.pop();
+                workingNode.children.forEach((child) => {
+                    if (child.id === newChild.id) {
+                        workingNode.removeChild(child);
+                        workingNode.addChild(newChild);
+                        return this;
+                    } else {
+                        workStack.push(child);
+                    }
+                });
+            }
+        }
+    }
+
+
+    findChildById(id) {
+        const workStack = [];
+        workStack.push(this);
+        while (workStack.length > 0) {
+            const checkNode = workStack.pop();
+            if (checkNode.id === id) {
+                return checkNode;
+            } else {
+                checkNode.children.forEach((child) => {
+                    workStack.push(child);
+                });
+            }
+        }
+        return null;
+    }
+
+    getLastChild() {
+        return this._children[this.children.length - 1];
+    }
+
+    canHaveChildren() {  // already pushed to activity model
+        return ((this.activity !== undefined) && (Validation.isValidUrn(this.activity.urn)));
+    }
+
+    childCount() {
+        return this._children.length;
+    }
+
+
+    isRoot() {
+        return this._id === this._projectId;
+    }         // is determined by lack of parent.
+
+    isLeaf() {
+        return this.childCount() === 0;
+    }
+
+    toJSON() {
+        const json = {
+            id: this._id,
+            urn: this._urn,
+            childId: this._childId,
+            parentId: this._parentId,
+            projectId: this._projectId,
+            isLocked: this._isLocked,
+            isExpanded: this._isExpanded,
+            x: this._x,
+            y: this._y,
+            contextualName: this._contextualName,
+            contextualExpectedDuration: this._contextualExpectedDuration,
+            contextualTimeAllowance: this._contextualTimeAllowance,
+            contextualDescription: this._contextualDescription,
+            subscriptions: [],
+            returnValue: this._returnValue,
+            returnState: this._returnState,
+            testReturnValue: this._testReturnValue,
+            testReturnState: this._testReturnState
+
+        };
+        const childStack = [];
+        for (const child of this._children) {
+            childStack.push(child.toJSON());
+        }
+        json.children = childStack;
+        return json;
+    }
+
+    static fromJSON(json) {
+        const childStack = [];
+        for (const child of json.children) {
+            childStack.push(Node.fromJSON(child));
+        }
+        json.children = childStack;
+        const node = new Node(json);
+        return node;
+    }
+
 
 }
-
-Node.DEFAULT_JAG_NAME = 'Activity';
 

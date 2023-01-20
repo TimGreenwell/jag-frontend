@@ -7,163 +7,128 @@
 
 'use strict';
 
-import { UUIDv4 } from '../utils/uuid.js';
-import NodeModel from './node.js';
-import TeamModel from './team.js';
-import StorageService from '../services/storage-service.js';
+import {uuidV4} from '../utils/uuid.js';
 
 export default class AnalysisModel extends EventTarget {
 
-	// constructor : why pass in root into a new NodeModel? results in same.  hrm
-	constructor({
-					id = UUIDv4(),
-					name = AnalysisModel.DEFAULT_NAME,
-					description = AnalysisModel.DEFAULT_DESCRIPTION,
-					root = new NodeModel({is_root: true}),
-		            rootUrn,
-					team,
-				} = {}) {
-		super();
-		this._id = id;
-		this._name = name;
-		this._description = description;
-		this._rootNodeModel = root;
-		this._rootUrn = rootUrn;
-		this._team = team;
-		this._nodeSet = new Set();
-	//	StorageService.subscribe("jag-storage-updated", this.updateJagNode.bind(this));
-	//	StorageService.subscribe("jag-storage-created", this._addJagNodeTree.bind(this));
+    // constructor : why pass in root into a new CellModel? results in same.  hrm
+    constructor({
+        id = uuidV4(),
+        name = AnalysisModel.DEFAULT_NAME,
+        description = AnalysisModel.DEFAULT_DESCRIPTION,
+        rootUrn,
+        teamId,
+        isLocked
+    } = {}) {
+        super();
+        this._id = id;
+        this._name = name;
+        this._description = description;
+        this._rootUrn = rootUrn;
+        this._teamId = teamId;
+        this._isLocked = isLocked;
 
-	};
-
-	async buildDefaultTeam() {
-
-	}
-// same thing but no recursion
-	async buildAnalysisJagNodes2(newRootNodeModel) {
-		const nodeStack = [];
-		const myNodeSet = new Set();
-		myNodeSet.clear();
-		nodeStack.push(newRootNodeModel);
-		while (nodeStack.length != 0) {
-			let currentNode = nodeStack.pop();
-			for (const child of currentNode.jag.children) {
-				const childJagModel = await StorageService.get(child.urn, 'jag');
-				const childNodeModel = new NodeModel({jag: childJagModel, is_root: false});
-				currentNode.addChild(childNodeModel, true);
-				nodeStack.push(childNodeModel);
-							}
-			myNodeSet.add(currentNode);
-		}
-	}
-
-	async buildAnalysisJagNodes(currentNode) { // this was newRootNodeModel
-
-	//	let currentNode = newRootNodeModel;     // this was uncommented
-		let children = currentNode.jag.children;// this was newRootNodeModel
-
-		await Promise.all(
-		children.map(async ({urn, id}) => {
-			const childJagModel = await StorageService.get(urn, 'jag');
-			const childNodeModel = new NodeModel({jag: childJagModel});
-			currentNode.addChild(childNodeModel, true);
-			await this.buildAnalysisJagNodes(childNodeModel);
-		}))
-		this._nodeSet.add(currentNode);
-		await StorageService.create(currentNode,'node');
+        this._team = undefined;
+        this._rootCellModel = undefined;
+    }
 
 
-	}
+    // @TODO - Model is pumping out Dispatches in the setters.  Not bad idea - but convention..
+    get id() {
+        return this._id;
+    }
 
-	static async fromJSON(json) {
-		const rootUrn = json.rootUrn;
-		const node_id = json.root;
-		console.log("Reminder: if you are breaking here - its because a JAGModel change triggered a rebuild of the Nodes which destroyed your Analysis root reference.")
-        console.log("We really should be using jag model root reference")
-		const rootNode = await StorageService.get(node_id, 'node');
-		// Replace id by the actual model.
-		json.root = rootNode;
-		const team_id = json.team;
-		let teamNode = await StorageService.get(team_id, 'team');
-		if (teamNode == undefined) {
-			teamNode = new TeamModel();
-			await StorageService.create(teamNode, 'team');
-		}
+    get name() {
+        return this._name;
+    }
 
-		json.team = teamNode;
-		const newAnalysis = new AnalysisModel(json);
-		return newAnalysis;
-	}
+    set name(name) {
+        this._name = name;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `name`,
+                extra: {name: this._name}
+            }
+        }));
+    }
 
-	get id() {
-		return this._id;
-	}
+    get description() {
+        return this._description;
+    }
 
-	get name() {
-		return this._name;
-	}
+    set description(description) {
+        this._description = description;
+        this.dispatchEvent(new CustomEvent(`update`, {
+            detail: {
+                id: this._id,
+                property: `description`,
+                extra: {description: this._description}
+            }
+        }));
+    }
+
+    get rootUrn() {
+        return this._rootUrn;
+    }
+
+    set rootUrn(value) {
+        this._rootUrn = value;
+    }
+
+    get teamId() {
+        return this._teamId;
+    }
+
+    set teamId(value) {
+        this._teamId = value;
+    }
+
+    get isLocked() {
+        return this._isLocked;
+    }
+
+    set isLocked(value) {
+        this._isLocked = value;
+    }
 
 
-// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
-	// StorageService.setSchema('analysis'); is a temp fix
-	set name(name) {
-		this._name = name;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'name','extra': { 'name': this._name }}}));
-	}
+    get team() {
+        return this._team;
+    }
 
-	get description() {
-		return this._description;
-	}
+    set team(value) {
+        this._team = value;
+    }
 
+    get rootCellModel() {
+        return this._rootCellModel;
+    }
 
-// @TODO Looking for something more direct than multiple identical customevents (creating race conditions)
-	// StorageService.setSchema('analysis'); is a temp fix
-	set description(description) {
-		this._description = description;
-		this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id, 'property': 'description','extra': { 'description': this._description }}}));
-	}
+    set rootCellModel(value) {
+        this._rootCellModel = value;
+    }
 
-	get root() {
-		return this._rootNodeModel;
-	}
+    static fromJSON(json) {
+        // const team_id = json.team;
+        // let teamNode = await StorageService.get(team_id, 'team');                      // This should be rebuild at controller.
+        // json.team = teamNode;                                                          // Exists only to store its data (team is in team)
+        const newAnalysis = new AnalysisModel(json);
+        return newAnalysis;
+    }
 
-set root(newRootNodeModel) {
-		this._rootNodeModel = newRootNodeModel
-}
-
-get nodeSet() {
-		return this._nodeSet;
-}
-
-	get team() {
-		return this._team;
-	}
-
-	set team(newTeam){
-		this._team = newTeam;
-	}
-
-	save() {
-		// THIS BEING USED ANYWHERE?
-console.log("(((DISPLATCHING UPDATE)) - doesnt seem to be problem but dont know what it does")
-		 this.dispatchEvent(new CustomEvent('update', { 'detail': { 'id': this._id } }));
-	}
-
-	toJSON() {
-
-		const json = {
-			id: this._id,
-			name: this._name,
-			description: this._description,
-			root: this.root.id,
-			rootUrn: this.root.urn,
-			team: this._team.id
-		};
-
-		return json;
-	}
+    toJSON() {
+        const json = {
+            id: this._id,
+            name: this._name,
+            description: this._description,
+            rootUrn: this._rootUrn,
+            teamId: this._teamId,
+            isLocked: this._isLocked
+        };
+        return json;
+    }
 
 }
-
-AnalysisModel.DEFAULT_NAME = '';
-AnalysisModel.DEFAULT_DESCRIPTION = '';
+AnalysisModel.DEFAULT_NAME = ``;
+AnalysisModel.DEFAULT_DESCRIPTION = ``;

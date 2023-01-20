@@ -12,61 +12,103 @@
  * @TODO Should we incorporate a yml/xml config file?  Probably no benefit.
  */
 
-
-
-import JAG from  '../models/jag.js';
-import Node from  '../models/node.js';
 import AnalysisModel from '../models/analysis-model.js';
-import Agent from  '../models/agent.js';
-import Team from  '../models/team.js';
+import Activity from "../models/activity.js";
+import Agent from '../models/agent.js';
+import Team from '../models/team.js';
+import NodeModel from '../models/node.js';
 
 export default class Schemas {
 
-	static
-	{
-		const JAG_STORE = {
-			name: 'jag',
-			rest: 'jagActivities',
-			deserialize: JAG.fromJSON,
-			index: 'urn'
-		};
+    static {
+        const ACTIVITY_STORE = {
+            name: `activity`,
+            key: `urn`,
+            deserialize: Activity.fromJSON,
+            rest: `activities`,
+            indexList: [
+                {
+                    name: `urn-index`,
+                    property: `urn`,
+                    options: {
+                        unique: true
+                    }
+                }
+            ]
+        };
 
-		const NODE_STORE = {
-			name: 'node',
-			rest: 'nodes',
-			deserialize: Node.fromJSON,
-			index: 'id'
-		};
+        const NODE_STORE = {
+            name: `node`,
+            key: `id`,
+            deserialize: NodeModel.fromJSON,
+            rest: `jags`,
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
+                }
+            ]
+        };
 
-		const ANALYSIS_STORE = {
-			name: 'analysis',
-			rest: 'analyses',
-			deserialize: AnalysisModel.fromJSON,
-			index: 'id'
-		};
+        const ANALYSIS_STORE = {
+            name: `analysis`,
+            key: `id`,
+            deserialize: AnalysisModel.fromJSON,
+            rest: `analyses`,
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
+                }
+            ]
+        };
 
-		const AGENT_STORE = {
-			name: 'agent',
-			rest: 'agents',
-			deserialize: Agent.fromJSON,
-			index: 'id'
-		};
+        const AGENT_STORE = {
+            name: `agent`,
+            key: `id`,
+            deserialize: Agent.fromJSON,
+            rest: `agents`,
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
+                }
+            ]
+        };
 
-		const TEAM_STORE = {
-			name: 'team',
-			rest: 'teams',
-			deserialize: Team.fromJSON,
-			index: 'id'
-		}
+        const TEAM_STORE = {
+            name: `team`,
+            key: `id`,
+            deserialize: Team.fromJSON,
+            rest: `teams`,
+            indexList: [
+                {
+                    name: `id-index`,
+                    property: `id`,
+                    options: {
+                        unique: true
+                    }
+                }
+            ]
+        };
 
-		Schemas.SCHEMA_SET = {
-			'jag': JAG_STORE,
-			'node': NODE_STORE,
-			'analysis': ANALYSIS_STORE,
-			'agent': AGENT_STORE,
-			'team': TEAM_STORE
-		};
-	}
+        Schemas.SCHEMA_SET = {
+            activity: ACTIVITY_STORE,
+            node: NODE_STORE,
+            analysis: ANALYSIS_STORE,
+            agent: AGENT_STORE,
+            team: TEAM_STORE
+        };
+    }
 
     static all() {
         return Object.values(Schemas.SCHEMA_SET);
@@ -76,27 +118,29 @@ export default class Schemas {
         if (schema in Schemas.SCHEMA_SET) {
             return Schemas.SCHEMA_SET[schema];
         }
-        throw new Error("Schema '" + schema + "' does not exist.");
+        throw new Error(`Schema '${schema}' does not exist.`);
     }
 
-	static getRest(schema) {
-		return Schemas.get(schema).rest;
-	}
+    static getRest(schema) {
+        const restSchema = Schemas.get(schema).rest;
+        return restSchema;
+    }
 
-	static getKeyValue(schema,obj) {
-		let key = Schemas.get(schema).index;
-		return(obj[key]);
-	}
+    static getKeyValue(schema, obj) {
+        const key = Schemas.get(schema).key;
+        return (obj[key]);
+    }
 
-	static getKey(schema) {
-		return Schemas.get(schema).index;
-	}
+    static getKey(schema) {
+        return Schemas.get(schema).key;
+    }
 
-	static async deserialize(schema,description) {;
-		const newObj =  await Schemas.get(schema).deserialize(description)
-		return newObj;
-	}
+    static async deserialize(schema, description) {
+        const newObj = await Schemas.get(schema).deserialize(description);
+
+        return newObj;
+    }
+
 }
-
 
 

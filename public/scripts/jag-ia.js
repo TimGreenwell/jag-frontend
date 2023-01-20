@@ -7,83 +7,134 @@
 
 'use strict';
 
-//import JAGService from './services/jag.js';
-//import NodeService from './services/node.js';
-//import AgentService from './services/agent.js';
-//import TeamService from './services/team.js';
-//import AnalysisService from './services/analysis-model.js';
+import IATable from './views/ia-table.js';
+import IAMenu from './views/ia-menu.js';
+import IAAnalysisLibrary from './views/ia-analysis-library.js';
+import IAProperties from './views/ia-properties.js';
+import IAAgentLibrary from './views/ia-agent-library.js';
 import IndexedDBStorage from './storages/indexed-db.js';
-import IATable from './ui/ia-table.js';
-import AnalysisLibrary from './views/analysis-library.js';
 import RESTStorage from './storages/rest.js';
-import TeamEditor from './views/team.js';
 import StorageService from "./services/storage-service.js";
 import SharedService from "./services/shared-service.js";
+import ControllerIA from "./controllers/controllerIA.js";
+import UserPrefs from "./utils/user-prefs.js";
+import TimeView from "./views/at-timeview.js";
 
-document.addEventListener('DOMContentLoaded', async () => {
+
+document.addEventListener(`DOMContentLoaded`, async () => {
+    // Initializes local storage
+    const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
+    await idb_storage.init();
+    StorageService.addStorageInstance(`idb-service`, idb_storage);
+
+    // Initializes a rest storage
+    const rest_storage = new RESTStorage(`10.100.4.240`, 1, `http://10.100.4.240:8080/api/v1`);
+    await rest_storage.init();
+    StorageService.addStorageInstance(`local-rest-service`, rest_storage);
+
+    // storage choices
+
+    StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());          // which storage used for reads
+    StorageService.setStoragesSynced(false);                                           // write to all storages or just preferred
+    SharedService.senderId = `jag-ia`;
+
+    const controller = new ControllerIA();
+
+    // Load DOM outer skeleton for Authoring Tool
+    const body = document.querySelector(`body`);
+
+    const allPanels = document.createElement(`div`);
+    allPanels.setAttribute(`id`, `all-panels`);
+
+    const mainPanels = document.createElement(`div`);
+    mainPanels.setAttribute(`id`, `main-panels`);
+
+    const leftPanel = document.createElement(`div`);
+    leftPanel.setAttribute(`id`, `left-panel`);
+
+    const centerPanel = document.createElement(`div`);
+    centerPanel.setAttribute(`id`, `center-panel`);
+
+    const centerGutter = document.createElement(`div`);
+    centerGutter.setAttribute(`id`, `center-gutter`);
+
+    const rightPanel = document.createElement(`div`);
+    rightPanel.setAttribute(`id`, `right-panel`);
+
+    const analysisLibrary = new IAAnalysisLibrary();
+    const agentLibrary = new IAAgentLibrary();
+    const iaMenu = new IAMenu();
+    const iaTable = new IATable();
+    const iaProperties = new IAProperties();
+    const timeview = new TimeView();
+
+    timeview.classList.toggle(`hidden`);
+    centerGutter.classList.toggle(`hidden`);
+
+    body.appendChild(allPanels);
+    allPanels.appendChild(iaMenu);
+    allPanels.appendChild(mainPanels);
+
+    mainPanels.appendChild(leftPanel);
+    mainPanels.appendChild(centerPanel);
+    mainPanels.appendChild(rightPanel);
+
+    leftPanel.appendChild(analysisLibrary);
+    leftPanel.appendChild(agentLibrary);
+
+    centerPanel.appendChild(iaTable);
+
+    rightPanel.appendChild(iaProperties);
 
 
-	// SharedService.worker = new SharedWorker('scripts/services/shared-worker.js');
-	// SharedService.senderId = 'jag-ia';
-	//
-	// SharedService.worker.port.onmessage = handleNewMessage;
-	//
-	// function handleNewMessage({ data }) {
-	// 	console.log("Don't think I will need this handler - but checking out this new data");
-	// 	console.log({ data });
-	// }
-	//
-	// function postStorageMessage(command, paramList) {
-	// 	console.log("Posting new data from jagat");
-	// }
-    
-	// Initializes local storage
-	const idb_storage = new IndexedDBStorage('joint-activity-graphs', 1);
-	await idb_storage.init();
+    controller.analysisLibrary = analysisLibrary;
+    controller.iaTable = iaTable;
+    controller.iaMenu = iaMenu;
+    controller.iaProperties = iaProperties;
+    controller.agentLibrary = agentLibrary;
+    await controller.initialize();
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    //JAGService.createInstance('idb-service', idb_storage);
-	StorageService.addStorageInstance('idb-service', idb_storage);
+    // Event: 'create-analysis' -
+    iaTable.addEventListener(`create-analysis`, () => {
+        console.log(`Obsolete?`);
+    });
 
-	// @TODO: this should be setup by the user (configuration file).
-	// Initializes a rest storage
-	const rest_storage = new RESTStorage('localhost', 1, 'http://localhost:7465/api');
-	//JAGService.createInstance('local-rest-service', rest_storage);
-	StorageService.addStorageInstance('local-rest-service', rest_storage);
 
-	StorageService.setPreferredStorage('idb-service');          // which storage used for reads
-	StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
+    function eventToggleTimeviewHandler() {
+        centerGutter.classList.toggle(`hidden`);
+        timeview.classList.toggle(`hidden`);
+        if (!iaTable.style.height) {
+            iaTable.style.height = `50%`;
+        }
+        const selectedNodes = iaTable.selectedNodes;
+        timeview.refreshTimeview(selectedNodes[0]);
+    }
+    iaMenu.addEventListener(`event-toggle-timeview`, eventToggleTimeviewHandler);
 
-	SharedService.senderId = 'jag-ia';
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-    //NodeService.createInstance('idb-service', idb_storage);
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//AgentService.createInstance('idb-service', idb_storage);
+    let isMouseDown = false;
+    function mV(event) {
+        if (isMouseDown) {
+            const change = event.clientY - iaMenu.getBoundingClientRect().height - 35;
+            iaTable.style.height = `${change}px`;
+        } else {
+            // eslint-disable-next-line no-use-before-define
+            end();
+        }
+    }
+    const end = (e) => {
+        isMouseDown = false;
+        document.body.removeEventListener(`mouseup`, end);
+        document.body.removeEventListener(`mousemove`, mV);
+        timeview.refreshTimeview();
+    };
+    function mD(event) {
+        isMouseDown = true;
+        document.body.addEventListener(`mousemove`, mV);
+        document.body.addEventListener(`mouseup`, end);
+    }
+    centerGutter.addEventListener(`mousedown`, mD);
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//TeamService.createInstance('idb-service', idb_storage);
 
-	// @TODO: put this name in a default/configuration object globaly accessible and frozen.
-	//AnalysisService.createInstance('idb-service', idb_storage);
 
-	const body = document.querySelector('body');
-
-	const table = new IATable();
-	const library = new AnalysisLibrary();
-	const editor = new TeamEditor();
-
-	body.appendChild(library);
-	body.appendChild(table);
-	body.appendChild(editor);
-
-	library.addEventListener('item-selected', (e) => {
-		table.analysisModel = e.detail.model;
-		editor.team = e.detail.model.team;
-	});
-
-	table.addEventListener('create-analysis', (e) => {
-	//	library.addItem(e.detail.analysis, 0);
-		editor.team = e.detail.analysis.team;
-	});
 });

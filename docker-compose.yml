@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  server:
+    build: .
+    ports:
+      - '8888:8888'
+  db:
+    container_name: db
+    image: 'postgres:15.1-alpine3.17'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: 'teamworks'
+      POSTGRES_USER: 'teamworks'
+      POSTGRES_DB: 'teamworks'
+    volumes:
+      - ./sql/postgres/db/create_tables.sql:/docker-entrypoint-initdb.d/10_create_tables.sql
+      - pgdata:/var/lib/postgresql/data
+      - pgconf:/etc/postgresql
+      - pglog:/var/log/postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tim@greenwell.de
+      PGADMIN_DEFAULT_PASSWORD: Vinson00!!
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    links:
+      - "db:pgsql-server"
+    logging:
+      driver: none
+
+
+volumes:
+  pgdata:
+  pgconf:
+  pglog:
+  pgadmin-data:
+
