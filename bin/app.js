@@ -8,7 +8,7 @@
  * Delete after dev -- morgan(HTTP logger)
  */
 
-require('dotenv').config({path: `./environment.env`});
+require('dotenv').config({path: `./.env`});
 console.log(process.env);
 const express = require(`express`);
 const https = require(`https`);

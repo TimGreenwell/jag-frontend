@@ -25,7 +25,7 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 
 document.addEventListener(`DOMContentLoaded`, async () => {
     // storage choices
-    // dotenv.config({path: `./environment.env`});
+    // dotenv.config({path: `./.env`});
     // const port = process.env.PORT || 8888;
     // console.log(`--------------------------------------------------------`)
     // console.log(port)
