@@ -7,48 +7,81 @@ services:
     ports:
       - '8888:8888'
     depends_on:
-      - postgres
-    links:
-      - 'postgres:pgsql-server'
+      - db
+#    links:
+#      - 'postgres:pgsql-server'
 
-  postgres:
+  db:
     container_name: ${COMPOSE_PROJECT_NAME}-postgres
     image: 'postgres:15.1-alpine3.17'
     ports:
       - '5432:5432'
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: 'teamworks'
-      POSTGRES_USER: 'teamworks'
       POSTGRES_DB: 'teamworks'
+      POSTGRES_USER: 'teamworks'
+      POSTGRES_PASSWORD: 'teamworks'
     volumes:
       - ./sql/postgres/db/create_tables.sql:/docker-entrypoint-initdb.d/10_create_tables.sql
       - pgdata:/var/lib/postgresql/data
       - pgconf:/etc/postgresql
       - pglog:/var/log/postgresql
 
-#  pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin4
-#    ports:
-#      - "5050:80"
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: tim@greenwell.de
-#      PGADMIN_DEFAULT_PASSWORD: Vinson00!!
-#      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
-#      GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
-#    volumes:
-#      - pgadmin-data:/var/lib/pgadmin
-#    links:
-#      - "postgres:pgsql-server"
-#    logging:
-#      driver: none
-#    depends_on:
-#      - postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ihmc.moc
+      PGADMIN_DEFAULT_PASSWORD: abc123
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
+      GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    links:
+      - "db:pgsql-server"
+    logging:
+      driver: none
+    depends_on:
+      - db
+
+  auth:
+    image: jboss/keycloak
+    container_name: ${COMPOSE_PROJECT_NAME}-keycloak
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      DB_VENDOR: postgres
+      DB_ADDR: db
+      DB_DATABASE: teamworks
+      DB_USER: teamworks
+      DB_PASSWORD: teamworks
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: abc123
+#      VIRTUAL_HOST: ${VIRTUAL_HOST}
+#      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+#      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+#      VIRTUAL_PORT: "8080"
+#      HTTPS_METHOD: redirect
+#      PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
 
 
 volumes:
   pgdata:
   pgconf:
   pglog:
-#  pgadmin-data:
+  pgadmin-data:
 
+
+
+#Use this configuration in production with nginx-proxy container
+#networks:
+#  default:
+#    external:
+#      name: nginx-proxy
