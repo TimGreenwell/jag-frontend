@@ -4,9 +4,6 @@
     "es2021": true,
     "node": true
   },
-  "plugins": [
-    "sql"
-  ],
   // "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -638,22 +635,7 @@
     // Require parentheses around immediate `function` invocations
     "wrap-regex": "warn",
     // Require parenthesis around regex literals
-    "yield-star-spacing": "warn",
+    "yield-star-spacing": "warn"
     // Require or disallow spacing around the `*` in `yield*` expressions
-
-    "sql/format": [
-      2,
-      {
-        "ignoreExpressions": false,
-        "ignoreInline": true,
-        "ignoreTagless": true
-      }
-    ],
-    "sql/no-unsafe-query": [
-      2,
-      {
-        "allowLiteral": false
-      }
-    ]
   }
 }

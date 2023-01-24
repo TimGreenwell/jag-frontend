@@ -3,6 +3,9 @@ version: '3.9'
 services:
   server:
     container_name: ${COMPOSE_PROJECT_NAME}-server
+#    build:
+#      dockerfile: Dockerfile
+#      context: ./docker
     build: .
     ports:
       - '8888:8888'
@@ -71,6 +74,16 @@ services:
 #      HTTPS_METHOD: redirect
 #      PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
 
+
+#  proxy:
+#    hostname: proxy
+#    image: nginx:latest
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./nGinxServers/nginx.conf:/etc/nginx/nginx.conf
+#    depends_on:
+#      - pgadmin
 
 volumes:
   pgdata:
