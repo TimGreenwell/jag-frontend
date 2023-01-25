@@ -4,7 +4,7 @@ services:
   server:
     env_file:
       - .env
-    container_name: ${COMPOSE_PROJECT_NAME}-server
+    container_name: server
     build:
       context: ..
       dockerfile: docker/node/Dockerfile
@@ -12,16 +12,19 @@ services:
       - '8888:8888'
     depends_on:
       - db
-#    links:
-#      - 'postgres:pgsql-server'
+    links:
+      - 'db:boops'
+    networks:
+      - "net"
 
   db:
-    container_name: ${COMPOSE_PROJECT_NAME}-postgres
+    container_name: JAG-postgres
     image: 'postgres:15.1-alpine3.17'
     ports:
       - '5432:5432'
     restart: unless-stopped
     environment:
+      NGINX_PROXY_CONTAINER: "reverse-proxy"
       POSTGRES_DB: 'teamworks'
       POSTGRES_USER: 'teamworks'
       POSTGRES_PASSWORD: 'teamworks'
@@ -30,25 +33,30 @@ services:
       - pgdata:/var/lib/postgresql/data
       - pgconf:/etc/postgresql
       - pglog:/var/log/postgresql
+    networks:
+      - "net"
 
-#  pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin4
-#    ports:
-#      - "5050:80"
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: admin@ihmc.moc
-#      PGADMIN_DEFAULT_PASSWORD: abc123
-#      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
-#      GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
-#    volumes:
-#      - pgadmin-data:/var/lib/pgadmin
-#    links:
-#      - "db:pgsql-server"
-#    logging:
-#      driver: none
-#    depends_on:
-#      - db
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      NGINX_PROXY_CONTAINER: "reverse-proxy"
+      PGADMIN_DEFAULT_EMAIL: admin@ihmc.moc
+      PGADMIN_DEFAULT_PASSWORD: abc123
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
+      GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    links:
+      - "db:pgsql-server"
+    logging:
+      driver: none
+    depends_on:
+      - db
+    networks:
+      - "net"
 
 #  auth:
 #    image: jboss/keycloak
@@ -77,37 +85,57 @@ services:
 #      PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
 
 
-  proxy:
+  reverse-proxy:
     image: nginx:latest
     restart: unless-stopped
-    container_name: ${COMPOSE_PROJECT_NAME}-proxy
+    container_name: reverse-proxy
     ports:
-      - "8081:8082"
+      - "8082:8082"
+    depends_on:
+      - server
+      - pgadmin
+    links:
+      - 'server:poops'
     volumes:
-#      - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
       - "html:/usr/share/nginx/html"
       - "dhparam:/etc/nginx/dhparam"
       - "vhost:/etc/nginx/vhost.d"
       - "certs:/etc/nginx/certs"
       - "/run/docker.sock:/tmp/docker.sock:ro"
-    network_mode: host
+#    network_mode: host
     networks:
       - "net"
+
+#  letsencrypt:
+#    image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
+#    container_name: "letsencrypt-helper"
+#    volumes:
+#      - "html:/usr/share/nginx/html"
+#      - "dhparam:/etc/nginx/dhparam"
+#      - "vhost:/etc/nginx/vhost.d"
+#      - "certs:/etc/nginx/certs"
+#      - "/run/docker.sock:/var/run/docker.sock:ro"
+#    environment:
+#      NGINX_PROXY_CONTAINER: "reverse-proxy"
+#      DEFAULT_EMAIL: "tim@greenwell.de"
+#    restart: "always"
+#    depends_on:
+#      - "reverse-proxy"
+#    networks:
+#      - "net"
 
 volumes:
   pgdata:
   pgconf:
   pglog:
   pgadmin-data:
+  html:
+  dhparam:
+  vhost:
+  certs:
 
 networks:
   net:
     external: true
 
-
-
-#Use this configuration in production with nginx-proxy container
-#networks:
-#  default:
-#    external:
-#      name: nginx-proxy
