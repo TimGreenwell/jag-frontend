@@ -9,7 +9,7 @@
  */
 
 require('dotenv').config({path: `./.env`});
-console.log(process.env);
+
 const express = require(`express`);
 const https = require(`https`);
 const path = require(`path`);
@@ -51,7 +51,7 @@ process.on(`SIGINT`, () => {
  * npm run dev - to use nodemon (auto server restarts)
  *
  *
- * Middleware we can delete after devving --
+ * Middleware we can delete after dev --
  * morgan - logging HTTP requests on the terminal
  *
  * Dotenv useful as dev for setting environment variables... used by node's process and docker-compose

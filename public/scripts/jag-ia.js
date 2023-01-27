@@ -28,7 +28,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.addStorageInstance(`idb-service`, idb_storage);
 
     // Initializes a rest storage
-    const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8888/api/v1`);
+    const rest_storage = new RESTStorage(`localhost`, 1, `http://localhost:8082/api/v1`);
     await rest_storage.init();
     StorageService.addStorageInstance(`local-rest-service`, rest_storage);
 

@@ -24,11 +24,8 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 // import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 
 document.addEventListener(`DOMContentLoaded`, async () => {
-    // storage choices
     // dotenv.config({path: `./.env`});
     // const port = process.env.PORT || 8888;
-    // console.log(`--------------------------------------------------------`)
-    // console.log(port)
 
     StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
@@ -36,7 +33,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
         // Initializes a rest storage
-        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8888/api/v1`);
+        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8082/api/v1`);
         await rest_storage.init();
         StorageService.addStorageInstance(`local-rest-service`, rest_storage);
     }

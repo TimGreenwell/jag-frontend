@@ -4,7 +4,8 @@ services:
   server:
     env_file:
       - .env
-    container_name: server
+    hostname: server2
+    container_name: server1
     build:
       context: ..
       dockerfile: docker/node/Dockerfile
