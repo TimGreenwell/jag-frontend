@@ -1,23 +1,11 @@
 version: '3.9'
 
-services:
-  server:
-    env_file:
-      - .env
-    hostname: server2
-    container_name: server1
-    build:
-      context: ..
-      dockerfile: docker/node/Dockerfile
-    ports:
-      - '8888:8888'
-    depends_on:
-      - db
-    links:
-      - 'db:boops'
-    networks:
-      - "net"
+networks:
+  jagnet:
+    name: jagnet
+    external: true
 
+services:
   db:
     container_name: JAG-postgres
     image: 'postgres:15.1-alpine3.17'
@@ -35,7 +23,25 @@ services:
       - pgconf:/etc/postgresql
       - pglog:/var/log/postgresql
     networks:
-      - "net"
+      - jagnet
+
+  server:
+    env_file:
+      - .env
+    hostname: node
+    container_name: node
+    build:
+      context: ..
+      dockerfile: docker/node/Dockerfile
+    ports:
+      - '8888:8888'
+      - '8083:8083'
+    depends_on:
+      - db
+    networks:
+      - jagnet
+
+
 
   pgadmin:
     image: dpage/pgadmin4
@@ -50,14 +56,12 @@ services:
       GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-    links:
-      - "db:pgsql-server"
     logging:
       driver: none
     depends_on:
       - db
     networks:
-      - "net"
+      - jagnet
 
 #  auth:
 #    image: jboss/keycloak
@@ -89,14 +93,13 @@ services:
   reverse-proxy:
     image: nginx:latest
     restart: unless-stopped
+    hostname: reverse-proxy
     container_name: reverse-proxy
     ports:
       - "8082:8082"
     depends_on:
       - server
       - pgadmin
-    links:
-      - 'server:poops'
     volumes:
       - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
       - "html:/usr/share/nginx/html"
@@ -106,7 +109,7 @@ services:
       - "/run/docker.sock:/tmp/docker.sock:ro"
 #    network_mode: host
     networks:
-      - "net"
+      - jagnet
 
 #  letsencrypt:
 #    image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
@@ -136,7 +139,5 @@ volumes:
   vhost:
   certs:
 
-networks:
-  net:
-    external: true
+
 
