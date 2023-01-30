@@ -19,30 +19,59 @@ const postgresRoutes = require(`../routes/postgresRoutes`);
 const cors = require(`cors`);             // added
 const morgan = require(`morgan`);         // added
 
-const port = process.env.PORT || 8888;
+const frontPort = process.env.PORT || 8888;
+const backPort = 8083;
 const root = process.argv[2] || `.`;
-const app = express();
+const frontApp = express();
+const backApp = express();
 
-app.use(`/api/v1`, postgresRoutes);
-app.use(express.static(path.join(process.cwd(), root)));   // original
-app.use(express.json());             // added
-app.use(cors());                     // added
-app.use(morgan(`dev`));    // added
-
-const server = app.listen(port);
-
-server.on(`listening`, () => {
-    return console.log(`HTTP server started on ${port}`);
+frontApp.use(express.static(path.join(process.cwd(), root)));   // original
+frontApp.use(express.json());             // added
+frontApp.use(cors());                     // added
+frontApp.use(morgan(`dev`));    // added
+frontApp.use(cors({
+    origin: '*'
+}));
+frontApp.use(function(req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
+    res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+    next();
 });
 
+backApp.use(express.static(path.join(process.cwd(), root)));   // original
+backApp.use(`/api/v1`, postgresRoutes);
+backApp.use(function(req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
+    res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
+    next();
+});
+
+backApp.use(express.json());             // added
+backApp.use(cors({
+    origin: '*'
+}));                     // added
+backApp.use(morgan(`dev`));    // added
+
+const frontServer = frontApp.listen(frontPort);
+const backServer = backApp.listen(backPort);
+frontServer.on(`listening`, () => {
+    return console.log(`HTTP server started on ${frontPort}`);
+});
+backServer.on(`listening`, () => {
+    return console.log(`API server started on ${backPort}`);
+});
 process.on(`SIGTERM`, () => {
     console.error(`\nTerminating server.`);
-    server.close();
+    frontServer.close();
+    backServer.close();
 });
 
 process.on(`SIGINT`, () => {
     console.error(`\nInterrupting server.`);
-    server.close();
+    frontServer.close();
+    backServer.close();
 });
 
 /**
