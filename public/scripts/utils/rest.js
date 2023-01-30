@@ -49,8 +49,13 @@ export default class RESTUtils {
 
     static async all(url) {
         // TODO: safely join URL paths (perhaps Node package?)
-        const details = {};
-        const reply = await RESTUtils.request(url, details, `Error listing`);
+        const options = {};
+        //     method: `HEAD`,
+        //     headers: {
+        //         mode: `cors`
+        //     }
+        // };
+        const reply = await RESTUtils.request(url, options, `Error listing`);
         return reply;
     }
 

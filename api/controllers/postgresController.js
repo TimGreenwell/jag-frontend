@@ -1,4 +1,4 @@
-const queries = require(`./api/sql/postgres/queries`);
+const queries = require(`../sql/postgres/queries`);
 
 const updateActivity = async (request, response) => {
     const activity = request.body;
@@ -34,6 +34,27 @@ const updateJag = async (request, response) => {
     }
     response.status(204).send(`{}`);
 };
+
+
+const updateAgent = async (request, response) => {
+    const agent = request.body;
+    await queries.updateAgent(agent);
+    response.status(204).send(`{}`);
+};
+
+
+const updateTeam = async (request, response) => {
+    const team = request.body;
+    await queries.updateTeam(team);
+    response.status(204).send(`{}`);
+};
+
+const updateAnalysis = async (request, response) => {
+    const analysis = request.body;
+    await queries.updateAnalysis(analysis);
+    response.status(204).send(`{}`);
+};
+
 
 const getAllActivities = async (request, response) => {
     const activitiesReply = await queries.getAllActivities();
@@ -139,6 +160,31 @@ const getJagByProjectId = async (request, response) => {
     response.status(200).json(projectHead);
 };
 
+
+const getAllAgents = async (request, response) => {
+    const agentsReply = await queries.getAllAgents();
+    const agents = agentsReply.rows;
+    console.log(`curious-->> ${agentsReply}`)
+    console.log(agentsReply)
+    response.status(200).json(agents);
+};
+
+const getAllTeams = async (request, response) => {
+    const teamsReply = await queries.getAllTeams();
+    const teams = teamsReply.rows;
+    response.status(200).json(teams);
+};
+
+const getAllAnalyses = async (request, response) => {
+    const analysesReply = await queries.getAllAnalyses();
+    const analyses = analysesReply.rows;
+    console.log(`curious-->> ${analysesReply}`)
+    console.log(analysesReply)
+    response.status(200).json(analyses);
+};
+
+
+
 const deleteJagByProjectId = async (request, response) => {
     await queries.deleteJagByProjectId(request.params.projectId);
     response.status(204).send(`{}`);
@@ -166,6 +212,12 @@ module.exports = {
     getAllActivities,
     getActivityById,
     getAllJags,
+    getAllAgents,
+    getAllTeams,
+    getAllAnalyses,
+    updateAgent,
+    updateTeam,
+    updateAnalysis,
     getJagByProjectId,
     deleteActivityById,
     deleteJagByProjectId,

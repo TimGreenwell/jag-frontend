@@ -13,10 +13,13 @@ require('dotenv').config({path: `./.env`});
 const express = require(`express`);
 const https = require(`https`);
 const path = require(`path`);
+const { PREFERRED_SOURCE } = require('../config/environment');
+console.log(`Your port is ${PREFERRED_SOURCE}`); // 8626
 
-const postgresRoutes = require(`../routes/postgresRoutes`);
+// const PREFERRED_SOURCE = process.env.PREFERRED_SOURCE || "postgresdb";
+console.log(`Preferred source set as :> ${PREFERRED_SOURCE}`)
+const postgresRoutes = require(`../api/routes/postgresRoutes`);
 
-const cors = require(`cors`);             // added
 const morgan = require(`morgan`);         // added
 
 const frontPort = process.env.PORT || 8888;
@@ -38,6 +41,10 @@ frontApp.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", req.header('access-control-request-headers'));
     next();
 });
+app.use(`/api/v1`, postgresRoutes);
+app.use(express.static(path.join(process.cwd(), root)));   // original
+app.use(express.json());             // added
+app.use(morgan(`dev`));    // added
 
 backApp.use(express.static(path.join(process.cwd(), root)));   // original
 backApp.use(`/api/v1`, postgresRoutes);
