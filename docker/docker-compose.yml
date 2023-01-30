@@ -18,7 +18,7 @@ services:
       POSTGRES_USER: 'teamworks'
       POSTGRES_PASSWORD: 'teamworks'
     volumes:
-      - ../sql/postgres/db/create_tables.sql:/docker-entrypoint-initdb.d/10_create_tables.sql
+      - ../api/sql/postgres/db/create_tables.sql:/docker-entrypoint-initdb.d/10_create_tables.sql
       - pgdata:/var/lib/postgresql/data
       - pgconf:/etc/postgresql
       - pglog:/var/log/postgresql
@@ -97,6 +97,7 @@ services:
     container_name: reverse-proxy
     ports:
       - "8082:8082"
+      - "443:443"
     depends_on:
       - server
       - pgadmin
@@ -107,7 +108,9 @@ services:
       - "vhost:/etc/nginx/vhost.d"
       - "certs:/etc/nginx/certs"
       - "/run/docker.sock:/tmp/docker.sock:ro"
-#    network_mode: host
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /tmp/acme_challenge:/tmp/acme_challenge
+      - ./config:/config
     networks:
       - jagnet
 
@@ -127,7 +130,7 @@ services:
 #    depends_on:
 #      - "reverse-proxy"
 #    networks:
-#      - "net"
+#      - "jagnet"
 
 volumes:
   pgdata:

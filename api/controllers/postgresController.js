@@ -1,4 +1,4 @@
-const queries = require(`../sql/postgres/queries`);
+const queries = require(`./api/sql/postgres/queries`);
 
 const updateActivity = async (request, response) => {
     const activity = request.body;

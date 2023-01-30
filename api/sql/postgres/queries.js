@@ -1,4 +1,4 @@
-const pool = require(`../../config/db`);
+const pool = require(`../../api/db/postgres-config.js`);
 const fs = require(`fs`);
 
 const getAllActivities = async () => {
