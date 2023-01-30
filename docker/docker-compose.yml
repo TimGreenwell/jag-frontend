@@ -6,7 +6,7 @@ networks:
     external: true
 
 services:
-  db:
+  jag-postgres:
     container_name: JAG-postgres
     image: 'postgres:15.1-alpine3.17'
     ports:
@@ -26,7 +26,26 @@ services:
     networks:
       - jagnet
 
-  server:
+  id-postgres:
+    container_name: id-postgres
+    image: 'postgres:15.1-alpine3.17'
+    ports:
+      - '5431:5432'
+    restart: unless-stopped
+    environment:
+      NGINX_PROXY_CONTAINER: "reverse-proxy"
+      POSTGRES_DB: 'keycloak'
+      POSTGRES_USER: 'keycloak'
+      POSTGRES_PASSWORD: 'keycloak'
+      POSTGRES_HOST_AUTH_METHOD: 'trust'
+    volumes:
+      - pgdata2:/var/lib/postgresql/data
+      - pgconf2:/etc/postgresql
+      - pglog2:/var/log/postgresql
+    networks:
+      - jagnet
+
+  jag-server:
     env_file:
       - .env
     hostname: node
@@ -38,10 +57,41 @@ services:
       - '8888:8888'
       - '8083:8083'
     depends_on:
-      - db
+      - jag-postgres
     networks:
       - jagnet
 
+
+
+  jag-id:
+    image: quay.io/keycloak/keycloak
+    container_name: ${COMPOSE_PROJECT_NAME}-id
+    restart: unless-stopped
+    depends_on:
+      - id-postgres
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      DB_VENDOR: postgres
+      DB_ADDR: jag-postgres
+      DB_DATABASE: identity
+      DB_USER: identity
+      DB_PASSWORD: identity
+      KEYCLOAK_USER: abc123
+      KEYCLOAK_PASSWORD: abc123
+#      VIRTUAL_HOST: ${VIRTUAL_HOST}
+#      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+#      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      VIRTUAL_PORT: "8080"
+      HTTPS_METHOD: redirect
+      PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - id-volume:/opt/keycloak/data/import/realm.json
 
 
   pgadmin:
@@ -60,35 +110,10 @@ services:
     logging:
       driver: none
     depends_on:
-      - db
+      - jag-postgres
+      - id-postgres
     networks:
       - jagnet
-
-#  auth:
-#    image: jboss/keycloak
-#    container_name: ${COMPOSE_PROJECT_NAME}-keycloak
-#    restart: unless-stopped
-#    depends_on:
-#      - db
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      KEYCLOAK_ADMIN: admin
-#      KEYCLOAK_ADMIN_PASSWORD: admin
-#      DB_VENDOR: postgres
-#      DB_ADDR: db
-#      DB_DATABASE: teamworks
-#      DB_USER: teamworks
-#      DB_PASSWORD: teamworks
-#      KEYCLOAK_USER: admin
-#      KEYCLOAK_PASSWORD: abc123
-
-#      VIRTUAL_HOST: ${VIRTUAL_HOST}
-#      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
-#      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-#      VIRTUAL_PORT: "8080"
-#      HTTPS_METHOD: redirect
-#      PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
 
 
   reverse-proxy:
@@ -100,7 +125,8 @@ services:
       - "8082:8082"
       - "443:443"
     depends_on:
-      - server
+      - jag-server
+      - jag-id
       - pgadmin
     volumes:
       - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
@@ -137,11 +163,15 @@ volumes:
   pgdata:
   pgconf:
   pglog:
+  pgdata2:
+  pgconf2:
+  pglog2:
   pgadmin-data:
   html:
   dhparam:
   vhost:
   certs:
+  id-volume:
 
 
 
