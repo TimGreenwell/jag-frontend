@@ -46,19 +46,33 @@ class JagCellControls extends HTMLElement {
         });
 
         this._removeButton.addEventListener(`click`, () => {
-            const parentCellActivity = this._cell.parent.activity;
-            const childChildId = this._cell.childId;
-            parentCellActivity.removeChild(childChildId);
-            this.dispatchEvent(new CustomEvent(
-                `event-activity-updated`,
-                {
+            console.log(this._cell)
+            if (window.confirm(`Are you sure you want to disconnect this node as a child? (This will change all instances of the parent node to reflect this change.)`)) {
+                // const parentActivity = destinationNode.parent.activity;
+                const parentActivity = this._cell.parent.activity;
+                parentActivity.bindings = parentActivity.bindings.filter((binding) => {
+                    return ((binding.to.exchangeSourceUrn !== this._cell.activity.urn) && (binding.from.exchangeSourceUrn !== this._cell.activity.urn));
+                });
+                const childActivityChildId = this._cell.childId;
+                const remainingChildren = parentActivity._children.filter((child) => {
+                    return child.id !== childActivityChildId;
+                });
+                parentActivity.children = remainingChildren;
+                this.dispatchEvent(new CustomEvent(`event-activity-updated`, {
                     bubbles: true,
                     composed: true,
-                    detail: {activity: parentCellActivity}
-                }
-            ));
+                    detail: {activity: parentActivity}
+                }));
+                // this.dispatchEvent(new CustomEvent(`event-promote-project`, {
+                //     detail: {node: this._cell}
+                // }));
 
-            // this.dispatchEvent(new CustomEvent('event-cell-prunechild',
+                // this._selectedNodesMap.delete(selectedNodeModel.id);
+                // this.unselectEverything();
+                this.dispatchEvent(new CustomEvent(`event-playground-clicked`));
+            }
+
+               // this.dispatchEvent(new CustomEvent('event-cell-prunechild',
             //     { bubbles: true,
             //     composed: true,
             //     detail: {cell: this._cell}}));

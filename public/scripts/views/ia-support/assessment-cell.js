@@ -30,7 +30,7 @@ class AssessmentView extends AnalysisCell {
 
     _init() {
         this._setFillColorToAssessmentValue(this._agent.assessment(this._node));
-        this._agent.addEventListener(`update`, this._handleAgentUpdate.bind(this));
+        // this._agent.addEventListener(`update`, this._handleAgentUpdate.bind(this));
         this.addEventListener(`contextmenu`, (_) => {
             this.addContextMenuListener(ContextMenu.SELECT_EVENT, this._processContextMenuChoice.bind(this));
         });

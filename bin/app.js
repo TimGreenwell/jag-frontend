@@ -10,13 +10,17 @@
 
 require('dotenv').config({path: `./.env`});
 
+
 const express = require(`express`);
 const https = require(`https`);
 const path = require(`path`);
+const { PREFERRED_SOURCE } = require('../config/environment');
+console.log(`Your port is ${PREFERRED_SOURCE}`); // 8626
 
-const postgresRoutes = require(`../routes/postgresRoutes`);
+// const PREFERRED_SOURCE = process.env.PREFERRED_SOURCE || "postgresdb";
+console.log(`Preferred source set as :> ${PREFERRED_SOURCE}`)
+const postgresRoutes = require(`../api/routes/postgresRoutes`);
 
-const cors = require(`cors`);             // added
 const morgan = require(`morgan`);         // added
 
 const port = process.env.PORT || 8888;
@@ -26,7 +30,6 @@ const app = express();
 app.use(`/api/v1`, postgresRoutes);
 app.use(express.static(path.join(process.cwd(), root)));   // original
 app.use(express.json());             // added
-app.use(cors());                     // added
 app.use(morgan(`dev`));    // added
 
 const server = app.listen(port);

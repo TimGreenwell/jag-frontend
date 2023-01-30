@@ -24,8 +24,6 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 // import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 
 document.addEventListener(`DOMContentLoaded`, async () => {
-    // dotenv.config({path: `./.env`});
-    // const port = process.env.PORT || 8888;
 
     StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
@@ -33,13 +31,15 @@ document.addEventListener(`DOMContentLoaded`, async () => {
 
     if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
         // Initializes a rest storage
-        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8082/api/v1`);
+        console.log(`Initializes a rest storage`);
+        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8888/api/v1`);
         await rest_storage.init();
         StorageService.addStorageInstance(`local-rest-service`, rest_storage);
     }
 
     if ((StorageService.getPreferredStorage() === `idb-service`) || (StorageService.areStoragesSynced())) {
         // Initializes local storage
+        console.log(`Initializes local storage`);
         const idb_storage = new IndexedDBStorage(`joint-activity-graphs`, 1);
         await idb_storage.init();
         StorageService.addStorageInstance(`idb-service`, idb_storage);

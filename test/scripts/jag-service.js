@@ -8,7 +8,7 @@
 // import '/scripts/mocha.js';
 // import JAG from '/src-scripts/models/jag-cell.js';
 // import JAGService from '/src-scripts/services/jag-cell.js';
-// import IndexedDBStorage from '/src-scripts/storages/indexed-db.js';
+// import IndexedDBStorage from '/src-scripts/storages/indexed-postgres-config.js';
 // import BasicMapStorage from '/scripts/utils/map-storage.js';
 //
 // const test_jag_a = new JAG({
