@@ -2,7 +2,7 @@ const Pool = require(`pg`).Pool;
 // or --  const { Pool } = require('pg')
 
 const pool = new Pool({
-    host: `db`,
+    host: `jag-postgres`,
     database: `teamworks`,
     user: `teamworks`,
     password: `teamworks`,

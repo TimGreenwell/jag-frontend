@@ -7,7 +7,8 @@ networks:
 
 services:
   jag-postgres:
-    container_name: JAG-postgres
+    container_name: jag-postgres
+    hostname: jag-postgres
     image: 'postgres:15.1-alpine3.17'
     ports:
       - '5432:5432'
@@ -28,6 +29,7 @@ services:
 
   id-postgres:
     container_name: id-postgres
+    hostname: id-postgres
     image: 'postgres:15.1-alpine3.17'
     ports:
       - '5431:5432'
@@ -46,10 +48,11 @@ services:
       - jagnet
 
   jag-server:
+    container_name: jag-server
+    hostname: jag-server
     env_file:
       - .env
-    hostname: node
-    container_name: node
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: docker/node/Dockerfile
@@ -61,11 +64,10 @@ services:
     networks:
       - jagnet
 
-
-
   jag-id:
+    container_name: jag-id
+    hostname: jag-id
     image: quay.io/keycloak/keycloak
-    container_name: ${COMPOSE_PROJECT_NAME}-id
     restart: unless-stopped
     depends_on:
       - id-postgres
@@ -93,10 +95,10 @@ services:
     volumes:
       - id-volume:/opt/keycloak/data/import/realm.json
 
-
   pgadmin:
+    container_name: pgadmin
+    hostname: pgadmin
     image: dpage/pgadmin4
-    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin4
     ports:
       - "5050:80"
     environment:
@@ -115,12 +117,11 @@ services:
     networks:
       - jagnet
 
-
   reverse-proxy:
+    container_name: reverse-proxy
+    hostname: reverse-proxy
     image: nginx:latest
     restart: unless-stopped
-    hostname: reverse-proxy
-    container_name: reverse-proxy
     ports:
       - "8082:8082"
       - "443:443"
@@ -134,6 +135,7 @@ services:
       - "dhparam:/etc/nginx/dhparam"
       - "vhost:/etc/nginx/vhost.d"
       - "certs:/etc/nginx/certs"
+      - "proxy_logs:/var/log/nginx"
       - "/run/docker.sock:/tmp/docker.sock:ro"
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /tmp/acme_challenge:/tmp/acme_challenge
@@ -172,6 +174,7 @@ volumes:
   vhost:
   certs:
   id-volume:
+  proxy_logs:
 
 
 
