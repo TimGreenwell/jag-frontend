@@ -83,10 +83,12 @@ services:
       DB_PASSWORD: identity
       KEYCLOAK_USER: abc123
       KEYCLOAK_PASSWORD: abc123
+      KC_HTTP_RELATIVE_PATH: auth
+      KC_HTTP_PORT: 8080
 #      VIRTUAL_HOST: ${VIRTUAL_HOST}
 #      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
 #      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-      VIRTUAL_PORT: "8080"
+      VIRTUAL_PORT: 8080
       HTTPS_METHOD: redirect
       PROXY_ADDRESS_FORWARDING: "true" # <==== very important if you use reverse proxy
     command:
@@ -94,6 +96,8 @@ services:
       - --import-realm
     volumes:
       - id-volume:/opt/keycloak/data/import/realm.json
+    networks:
+      - jagnet
 
   pgadmin:
     container_name: pgadmin

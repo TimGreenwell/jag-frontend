@@ -1,4 +1,3 @@
-/* Menu bar */
 jag-menu, def-menu, ia-menu {
     display: flex;
     flex-flow: row nowrap;

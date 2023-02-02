@@ -17,14 +17,14 @@ export default class RESTStorage {
         this._version = version;
         this._endpoint = endpoint;
         this.__REST_PATHS = {
-            all: `/{urlHandle}`,
-            get: `/{urlHandle}/{id}`,
-            has: `/{urlHandle}/{id}`,
-            create: `/{urlHandle}`,
-            update: `/{urlHandle}`,
-   //         update: `/{urlHandle}/{id}`,
-            delete: `/{urlHandle}/{id}`,
-            clear: `/{urlHandle}`,
+            all: `{urlHandle}`,
+            get: `{urlHandle}/{id}`,
+            has: `{urlHandle}/{id}`,
+            create: `{urlHandle}`,
+            update: `{urlHandle}`,
+   //         update: `{urlHandle}/{id}`,
+            delete: `{urlHandle}/{id}`,
+            clear: `{urlHandle}`,
             help: ``
         };
         console.log(`{} - Rest Storage Service initialized at (${endpoint})`);

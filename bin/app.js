@@ -24,9 +24,13 @@ const morgan = require(`morgan`);         // added
 
 const port = process.env.PORT || 8888;
 const app = express();
-const root = process.argv[2] || `.`;
-
-app.use(express.static(path.join(process.cwd(), root)));   // original
+const root = process.argv[2]  || `.`;
+// [
+//     '/usr/bin/node',
+//     '/home/tgreenwell/IdeaProjects/hubbed-joint-activity-graph/bin/app.js',
+//     './public'
+// ]
+app.use( express.static(path.join(process.cwd(), root)));   // original
 app.use(`/api/v1`, postgresRoutes);
 app.use(express.json());             // added
 app.use(morgan(`dev`));    // added

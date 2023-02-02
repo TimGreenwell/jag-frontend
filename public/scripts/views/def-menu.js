@@ -134,7 +134,7 @@ customElements.define(`def-menu`, class extends HTMLElement {
 
         const $logoImage = document.createElement(`img`);
         $logoImage.id = `menu-logo`;
-        $logoImage.setAttribute(`src`, `icons/ihmc_logo.png`);
+        $logoImage.setAttribute(`src`, `/jaggy/icons/ihmc_logo.png`);
         $rightLiDiv.appendChild($logoImage);
 
         this.appendChild($ul);
