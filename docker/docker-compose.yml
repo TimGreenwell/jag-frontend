@@ -14,7 +14,7 @@ services:
       - '5432:5432'
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "pg_isready -d teamworks -U teamworks"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
     hostname: id-postgres
     image: 'postgres:15.1-alpine3.17'
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "pg_isready -d keycloak -U keycloak" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -59,8 +59,6 @@ services:
       - jagnet
 
 
-
-
   jag-auth:
     container_name: jag-auth
     hostname: jag-auth
@@ -69,7 +67,7 @@ services:
       test: "curl -f localhost:8080/auth/realms/realm1"
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
     restart: unless-stopped
     depends_on:
       id-postgres:
@@ -112,7 +110,7 @@ services:
     container_name: jag-server
     hostname: jag-server
     healthcheck:
-      test: "curl -f localhost:8888"
+      test: "curl -f localhost:8888/jaggy"
       interval: 5s
       timeout: 5s
       retries: 20
@@ -171,7 +169,7 @@ services:
       - "443:443"
     depends_on:
       jag-server:
-        condition: "service_healthy"
+        condition: "service_started"
       jag-auth:
         condition: "service_healthy"
       pgadmin:

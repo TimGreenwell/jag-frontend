@@ -1,6 +1,8 @@
 import express from "express";
 import * as pgController from "../controllers/postgresController.js";
 
+import {getAllActivities} from "../controllers/postgresController.js";
+
 import parser from 'body-parser';
 const {json} = parser;
 
@@ -9,11 +11,12 @@ const bodyParser = json();
 
 postgresRouter.use((req, res, next) => {
     // console.log(`Time: `, new Date());
-    // console.log(`-insert middleware here-`);
+    console.log(`---`);
+    console.log(`-inside postgresRouter-`);
     next();
 });
-postgresRouter.get(`/`, pgController.getAllActivities);
-postgresRouter.get(`/activities`, pgController.getAllActivities);
+
+postgresRouter.get(`/activities`, getAllActivities);
 postgresRouter.get(`/activities/:activityId`, pgController.getActivityById);
 postgresRouter.get(`/jags`, pgController.getAllJags);
 postgresRouter.get(`/agents`, pgController.getAllAgents);
@@ -27,8 +30,6 @@ postgresRouter.put(`/teams`, bodyParser, pgController.updateTeam);
 postgresRouter.put(`/analyses`, bodyParser, pgController.updateAnalysis);
 postgresRouter.delete(`/activities/:activityId`, pgController.deleteActivityById);
 postgresRouter.delete(`/jags/:projectId`, pgController.deleteJagByProjectId);
-
-
 postgresRouter.get(`/createTables`, pgController.createTables);
 postgresRouter.get(`/dropTables`, pgController.dropTables);
 

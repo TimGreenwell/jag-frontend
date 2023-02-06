@@ -28,11 +28,12 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = `jag-at`;                         // Cross-tab identifier
-
+    console.log(`--------->`);
+    console.log(StorageService.getPreferredStorage());
     if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
         // Initializes a rest storage
         console.log(`Initializes a rest storage`);
-        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8082/jaggy/api/v1/`);
+        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8082/api/v1/`);
         await rest_storage.init();
         StorageService.addStorageInstance(`local-rest-service`, rest_storage);
     }

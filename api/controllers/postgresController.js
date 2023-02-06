@@ -57,6 +57,7 @@ const updateAnalysis = async (request, response) => {
 
 
 const getAllActivities = async (request, response) => {
+    console.log(`getAllActivities  getAllActivities getAllActivities getAllActivities`)
     const activitiesReply = await queries.getAllActivities();
     const activities = activitiesReply.rows;
 
