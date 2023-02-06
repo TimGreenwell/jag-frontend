@@ -1,5 +1,5 @@
-const pool = require(`../../db/postgres-config`);
-const fs = require(`fs`);
+import * as pool from "../../db/postgres-config.js" ;
+import fs from "fs";
 
 const getAllActivities = async () => {
     console.log(`Query> getAllActivities`);
@@ -479,7 +479,7 @@ const dropTables = async () => {
 // })();
 
 
-module.exports = {
+export {
     getAllJags,
     getJagById,
     getJagByProjectId,

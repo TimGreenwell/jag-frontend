@@ -1,4 +1,6 @@
-const Pool = require(`pg`).Pool;
+import pkg from 'pg';
+const {Pool} = pkg;
+
 // or --  const { Pool } = require('pg')
 
 const pool = new Pool({
@@ -9,8 +11,8 @@ const pool = new Pool({
     port: `5432` //  postgresql.conf (locate)
 });
 
-module.exports = {
-    query: (text, params, callback) => {
-        return pool.query(text, params, callback);
-    }
-};
+function query(text, params, callback) {
+    return pool.query(text, params, callback);
+}
+
+export {query};

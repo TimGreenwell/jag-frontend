@@ -1,6 +1,7 @@
 {
     "name": "jag",
     "version": "2.0.2",
+    "type": "module",
     "description": "",
     "main": "",
     "dependencies": {

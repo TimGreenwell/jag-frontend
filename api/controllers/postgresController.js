@@ -1,4 +1,4 @@
-const queries = require(`../sql/postgres/queries`);
+import * as queries from "../sql/postgres/queries.js";
 
 const updateActivity = async (request, response) => {
     const activity = request.body;
@@ -206,7 +206,7 @@ const dropTables = async (request, response) => {
     response.json({message: `Dropped all tables`});
 };
 
-module.exports = {
+export {
     updateActivity,
     updateJag,
     getAllActivities,

@@ -1,36 +1,35 @@
-const express = require(`express`);
-const router = express.Router();
-const pgController = require(`../controllers/postgresController`);
-const bodyParser = require(`body-parser`).json()
+import express from "express";
+import * as pgController from "../controllers/postgresController.js";
 
-// middleware that is specific to this router
-router.use((req, res, next) => {
+import parser from 'body-parser';
+const {json} = parser;
+
+const postgresRouter = express.Router();
+const bodyParser = json();
+
+postgresRouter.use((req, res, next) => {
     // console.log(`Time: `, new Date());
     // console.log(`-insert middleware here-`);
     next();
 });
-
-router.get(`/`, pgController.getAllActivities);
-router.get(`/activities`, pgController.getAllActivities);
-router.get(`/activities/:activityId`, pgController.getActivityById);
-router.get(`/jags`, pgController.getAllJags);
-router.get(`/agents`, pgController.getAllAgents);
-router.get(`/teams`, pgController.getAllTeams);
-router.get(`/analyses`, pgController.getAllAnalyses);
-router.get(`/jags/:projectId`, pgController.getJagByProjectId);
-router.put(`/activities`, bodyParser, pgController.updateActivity);
-router.put(`/jags`, bodyParser, pgController.updateJag);
-router.put(`/agents`, bodyParser, pgController.updateAgent);
-router.put(`/teams`, bodyParser, pgController.updateTeam);
-router.put(`/analyses`, bodyParser, pgController.updateAnalysis);
-router.delete(`/activities/:activityId`, pgController.deleteActivityById);
-router.delete(`/jags/:projectId`, pgController.deleteJagByProjectId);
-
+postgresRouter.get(`/`, pgController.getAllActivities);
+postgresRouter.get(`/activities`, pgController.getAllActivities);
+postgresRouter.get(`/activities/:activityId`, pgController.getActivityById);
+postgresRouter.get(`/jags`, pgController.getAllJags);
+postgresRouter.get(`/agents`, pgController.getAllAgents);
+postgresRouter.get(`/teams`, pgController.getAllTeams);
+postgresRouter.get(`/analyses`, pgController.getAllAnalyses);
+postgresRouter.get(`/jags/:projectId`, pgController.getJagByProjectId);
+postgresRouter.put(`/activities`, bodyParser, pgController.updateActivity);
+postgresRouter.put(`/jags`, bodyParser, pgController.updateJag);
+postgresRouter.put(`/agents`, bodyParser, pgController.updateAgent);
+postgresRouter.put(`/teams`, bodyParser, pgController.updateTeam);
+postgresRouter.put(`/analyses`, bodyParser, pgController.updateAnalysis);
+postgresRouter.delete(`/activities/:activityId`, pgController.deleteActivityById);
+postgresRouter.delete(`/jags/:projectId`, pgController.deleteJagByProjectId);
 
 
-router.get(`/createTables`, pgController.createTables);
-router.get(`/dropTables`, pgController.dropTables);
+postgresRouter.get(`/createTables`, pgController.createTables);
+postgresRouter.get(`/dropTables`, pgController.dropTables);
 
-module.exports = router;
-
-
+export {postgresRouter};
