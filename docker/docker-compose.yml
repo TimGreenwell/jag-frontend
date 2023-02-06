@@ -13,6 +13,11 @@ services:
     ports:
       - '5432:5432'
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
       POSTGRES_DB: 'teamworks'
@@ -31,6 +36,11 @@ services:
     container_name: id-postgres
     hostname: id-postgres
     image: 'postgres:15.1-alpine3.17'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     ports:
       - '5431:5432'
     restart: unless-stopped
@@ -49,14 +59,21 @@ services:
       - jagnet
 
 
-  jag-id:
-    container_name: jag-id
-    hostname: jag-id
+
+
+  jag-auth:
+    container_name: jag-auth
+    hostname: jag-auth
     image: quay.io/keycloak/keycloak
+    healthcheck:
+      test: "curl -f localhost:8080/auth/realms/realm1"
+      interval: 5s
+      timeout: 5s
+      retries: 20
     restart: unless-stopped
     depends_on:
       id-postgres:
-        condition: "service_started"
+        condition: "service_healthy"
     ports:
       - "8080:8080"
     environment:
@@ -94,6 +111,11 @@ services:
   jag-server:
     container_name: jag-server
     hostname: jag-server
+    healthcheck:
+      test: "curl -f localhost:8888"
+      interval: 5s
+      timeout: 5s
+      retries: 20
     env_file:
       - .env
     restart: unless-stopped
@@ -104,10 +126,10 @@ services:
       - '8888:8888'
       - '8083:8083'
     depends_on:
-      jag-id:
-        condition: "service_started"
+      jag-auth:
+        condition: "service_healthy"
       jag-postgres:
-        condition: "service_started"
+        condition: "service_healthy"
     networks:
       - jagnet
 
@@ -117,6 +139,8 @@ services:
     container_name: pgadmin
     hostname: pgadmin
     image: dpage/pgadmin4
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
     ports:
       - "5050:80"
     environment:
@@ -131,9 +155,9 @@ services:
       driver: none
     depends_on:
       jag-postgres:
-        condition: "service_started"
+        condition: "service_healthy"
       id-postgres:
-        condition: "service_started"
+        condition: "service_healthy"
     networks:
       - jagnet
 
@@ -147,11 +171,11 @@ services:
       - "443:443"
     depends_on:
       jag-server:
-        condition: "service_started"
-      jag-id:
-        condition: "service_started"
+        condition: "service_healthy"
+      jag-auth:
+        condition: "service_healthy"
       pgadmin:
-        condition: "service_started"
+        condition: "service_healthy"
     volumes:
       - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf
       - "html:/usr/share/nginx/html"

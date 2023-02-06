@@ -29,49 +29,59 @@ import {postgresRouter as router} from "../api/routes/postgresRoutes.js";
 import cookieParser from "cookie-parser";
 
 console.log(`start`);
-const keycloakIssuer = await Issuer.discover(`http://localhost:8082/auth/realms/realm1`);
-
-console.log(`finish`);
-console.log(`Discovered issuer %s %O`, keycloakIssuer.issuer, keycloakIssuer.metadata);
 
 
+const keycloakIssuer = await Issuer.discover(`http://jag-auth:8080/auth/realms/realm1`);
+
+
+const client = new keycloakIssuer.Client({
+    client_id: `keycloak-express`,
+    client_secret: `long_secret-here`,
+    redirect_uris: [`http://localhost:3000/auth/callback`],
+    post_logout_redirect_uris: [`http://localhost:3000/logout/callback`],
+    response_types: [`code`]
+});
 console.log(`10`);
-// Issuer.discover(`http://localhost:8082/auth/realms/realm1`).
-//     then((keycloakIssuer) => {
-//         const client = new keycloakIssuer.Client({
-//             client_id: `client1`,
-//             client_secret: `j9wYVyD3zXZPMo3LTq/xSU/sMu9/shiFKpTHKfqAutM=`,
-//             redirect_uris: [`http://localhost:8084/auth/callback`],
-//             post_logout_redirect_uris: [`http://localhost:8085/logout/callback`],
-//             token_endpoint_auth_method: `client_secret_post`
-//         });
-//         //  ? - const keycloakIssuer = await Issuer.discover(`http://localhost:8082/auth/realms/jag`);
-//         console.log(`Discovered issuer %s %O`, keycloakIssuer.issuer, keycloakIssuer.metadata);
-//         const memoryStore = new expressSession.MemoryStore();
+
+const memoryStore = new expressSession.MemoryStore();
+app.use(expressSession({
+    secret: `another_long_secret`,
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore
+}));
+
+app.use(passport.initialize());
+app.use(passport.authenticate(`session`));
+
+// this creates the strategy
+passport.use(`oidc`, new Strategy({client}, (tokenSet, userinfo, done) => {
+    return done(null, tokenSet.claims());
+}));
+
+passport.serializeUser(function (user, done) {
+    done(null, user);
+});
+passport.deserializeUser(function (user, done) {
+    done(null, user);
+});
+
 //         app.use(express.json({limit: `15mb`}));
-//         app.use(expressSession({
-//             secret: `another_long_secret`,
-//             resave: false,
-//             saveUninitialized: true
-//             // store: memoryStore
-//         }));
-//         console.log(`2`);
-//
-//         app.use(passport.initialize());
-//         app.use(passport.session());
+
+
 //         console.log(`3`);
 //         // default protected route /test
-//         app.get(`/test`, (req, res, next) => {
-//             passport.authenticate(`oidc`)(req, res, next);
-//         });
+app.get(`/test`, (req, res, next) => {
+    passport.authenticate(`oidc`)(req, res, next);
+});
 //         console.log(`4`);
 //         // callback always routes to test
-//         app.get(`/auth/callback`, (req, res, next) => {
-//             passport.authenticate(`oidc`, {
-//                 successRedirect: `/testauth`,
-//                 failureRedirect: `/`
-//             })(req, res, next);
-//         });
+app.get(`/auth/callback`, (req, res, next) => {
+    passport.authenticate(`oidc`, {
+        successRedirect: `/testauth`,
+        failureRedirect: `/`
+    })(req, res, next);
+});
 //         console.log(`5`);
 //
 //         // start logout request
@@ -130,9 +140,10 @@ const checkAuthenticated = (req, res, next) => {
     }
     res.redirect(`/test`);
 };
+
 app.use(express.static(path.join(process.cwd(), root)));   // original
 // app.use(`/api/v1`, router);
-app.get(`/api/v1`, checkAuthenticated, router);
+app.get(`/api/v1`, router);
 app.use(express.json());             // added
 app.use(morgan(`dev`));    // added
 const server = app.listen(port);
