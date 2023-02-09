@@ -28,7 +28,7 @@ console.log(`start`);
 console.log(`10`);
 const port = process.env.PORT || 8888;
 const root = process.argv[2] || `.`;
-app.use(`/jaggy`, express.static(path.join(process.cwd(), root)));   // /app/public
+app.use(`/jag`, express.static(path.join(process.cwd(), root)));   // /app/public
 app.use(`/api/v1`, postgresRouter);
 
 // app.use(express.static("public"));   // /app/public
@@ -82,8 +82,8 @@ process.on(`SIGINT`, () => {
 // const client = new keycloakIssuer.Client({
 //     client_id: `clientid`,
 //     client_secret: `long_secret-here`,
-//     redirect_uris: [`http://localhost:8082/jaggy/*`],
-//     post_logout_redirect_uris: [`http://localhost:8082/jaggy/*`],
+//     redirect_uris: [`http://localhost:8082/jag/*`],
+//     post_logout_redirect_uris: [`http://localhost:8082/jag/*`],
 //     response_types: [`code`]
 // });
 // console.log(`10`);

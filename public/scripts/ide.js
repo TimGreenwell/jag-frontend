@@ -114,7 +114,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
 
     stop() {
         const icon = this._run.querySelector(`.button-icon`);
-        icon.style.backgroundImage = `url("/jaggy/icons/ic_play_arrow_black_24dp.png")`;
+        icon.style.backgroundImage = `url("/jag/icons/ic_play_arrow_black_24dp.png")`;
     }
 
 
@@ -178,7 +178,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
     _handleNewConnection() {
         const progress = this._connect.querySelector(`.button-progress`);
         const icon = this._connect.querySelector(`.button-icon`);
-        icon.style.backgroundImage = `url('/jaggy/icons/ic_engine_black_24dp.png')`;
+        icon.style.backgroundImage = `url('/jag/icons/ic_engine_black_24dp.png')`;
         progress.style.transform = `translateY(-120%) scaleX(1.0)`;
         setTimeout(this._resetButtonProgress.bind(this, progress), 1500);
         this._setFeedback(`Connection successfull`);

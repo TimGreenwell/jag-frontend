@@ -20,7 +20,7 @@ jag-library .library-search, analysis-library .library-search, node-library .lib
     flex-basis: 30px;
     /*height: 30px;*/
     font-size: 15px;
-    background-image: url('/jaggy/icons/search_mag_20.png');
+    background-image: url('/jag/icons/search_mag_20.png');
     background-repeat: no-repeat;
     background-position: left center;
     padding-left: 40px;
@@ -108,9 +108,9 @@ jag-library .locked, analysis-library .locked, node-library .locked, agent-libra
 }
 
 jag-library .lock-button, analysis-library .lock-button, node-library .lock-button, agent-library .lock-button {
-    background-image: url('/jaggy/icons/lock-20.png');
+    background-image: url('/jag/icons/lock-20.png');
 }
 
 jag-library .delete-button, analysis-library .delete-button, node-library .delete-button, agent-library .delete-button {
-    background-image: url('/jaggy/icons/ic_delete_black_18dp_1x.png');
+    background-image: url('/jag/icons/ic_delete_black_18dp_1x.png');
 }
