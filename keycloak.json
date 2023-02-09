@@ -2,16 +2,16 @@
   "clientId": "JAGapp",
   "name": "JAG app",
   "description": "yug",
-  "rootUrl": "http://localhost:8082/jaggy",
-  "adminUrl": "http://localhost:8082/auth/admin",
-  "baseUrl": "http://localhost:8082/jaggy",
+  "rootUrl": "http://localhost/jaggy",
+  "adminUrl": "http://localhost/auth/admin",
+  "baseUrl": "http://localhost/jaggy",
   "surrogateAuthRequired": false,
   "enabled": true,
   "alwaysDisplayInConsole": false,
   "clientAuthenticatorType": "client-secret",
   "secret": "NyDvPDJqqNysVh2cKgwiynJgCzLJs2yt",
   "redirectUris": [
-    "http://localhost:8082/jaggy"
+    "http://localhost:80/jaggy"
   ],
   "webOrigins": [
     "*"
@@ -30,7 +30,7 @@
     "oidc.ciba.grant.enabled": "false",
     "client.secret.creation.time": "1675454528",
     "backchannel.logout.session.required": "true",
-    "post.logout.redirect.uris": "http://localhost:8082/jaggy",
+    "post.logout.redirect.uris": "http://localhost/jaggy",
     "oauth2.device.authorization.grant.enabled": "false",
     "display.on.consent.screen": "false",
     "backchannel.logout.revoke.offline.tokens": "false"

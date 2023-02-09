@@ -1,0 +1,6 @@
+docker tag  9c52dcedfde1   registry.digitalocean.com/store01/snagged/keycloak
+docker push registry.digitalocean.com/store01/snagged/keycloak
+
+
+API for 'docker login registry.digitalocean.com' as username and password
+dop_v1_52a4437baa08e07818748740b8f51e6a616d9fc45bcba78220531a0564cccfed

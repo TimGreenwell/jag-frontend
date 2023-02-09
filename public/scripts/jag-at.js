@@ -33,7 +33,7 @@ document.addEventListener(`DOMContentLoaded`, async () => {
     if ((StorageService.getPreferredStorage() === `local-rest-service`) || (StorageService.areStoragesSynced())) {
         // Initializes a rest storage
         console.log(`Initializes a rest storage`);
-        const rest_storage = new RESTStorage(`teamworks`, 1, `http://localhost:8082/api/v1/`);
+        const rest_storage = new RESTStorage(`teamworks`, 1, `https://localhost/api/v1/`);
         await rest_storage.init();
         StorageService.addStorageInstance(`local-rest-service`, rest_storage);
     }
