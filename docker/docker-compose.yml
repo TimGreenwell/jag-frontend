@@ -8,14 +8,14 @@ services:
     # CONFIG
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
-      POSTGRES_DB: 'teamworks'
-      POSTGRES_USER: 'teamworks'
-      POSTGRES_PASSWORD: 'teamworks'
+      POSTGRES_DB: ${JAG_POSTGRES_DB}
+      POSTGRES_USER: ${JAG_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${JAG_POSTGRES_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: 'trust'
     expose:
-      - '${JAG_POSTGRES_PORT}'
+      - 5432
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d teamworks -U teamworks" ]
+      test: [ "CMD-SHELL", "pg_isready -d ${JAG_POSTGRES_DB} -U ${JAG_POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,21 +37,21 @@ services:
         source: pglog
         target: /var/log/postgresql
 
-  id-postgres:
+  auth-postgres:
     image: 'postgres:15.1-alpine3.17'
-    container_name: id-postgres
-    hostname: id-postgres
+    container_name: auth-postgres
+    hostname: auth-postgres
     # CONFIG
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
-      POSTGRES_DB: 'keycloak'
-      POSTGRES_USER: 'keycloak'
-      POSTGRES_PASSWORD: 'keycloak'
+      POSTGRES_DB: ${AUTH_POSTGRES_DB}
+      POSTGRES_USER: ${AUTH_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AUTH_POSTGRES_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: 'trust'
     expose:
-      - ${AUTH_POSTGRES_PORT}
+      - 5432
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d keycloak -U keycloak" ]
+      test: [ "CMD-SHELL", "pg_isready -d ${AUTH_POSTGRES_DB} -U ${AUTH_POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,25 +66,25 @@ services:
       - pglog2:/var/log/postgresql
 
 
-  jag-auth:
+  auth:
     image: quay.io/keycloak/keycloak
-    container_name: jag-auth
-    hostname: jag-auth
+    container_name: auth
+    hostname: auth
     # CONFIG
     command:
       - start-dev
       - --import-realm
       - --features=account-api
     depends_on:
-      id-postgres:
+      auth-postgres:
         condition: "service_healthy"
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      DB_USER: keycloak
-      DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: ${AUTH_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD}
+      DB_USER: ${AUTH_POSTGRES_USER}
+      DB_PASSWORD: ${AUTH_POSTGRES_PASSWORD}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://id-postgres:5432/keycloak
+      KC_DB_URL: jdbc:postgresql://auth-postgres:5432/${AUTH_POSTGRES_DB}
       KC_HTTP_RELATIVE_PATH: auth
       KC_HOSTNAME_ADMIN_URL: https://localhost/auth    # not req'd but more clear. (can use to move admin later)
       KC_HOSTNAME_URL: https://localhost/auth         # not req'd but more clear.
@@ -96,16 +96,21 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HOSTNAME_PORT: 80
     expose:
-      - "8080"
+      - 8080
     healthcheck:
-      test: "curl -f jag-auth:8080/auth/realms/master"
+      test: "curl -f auth:8080/auth/realms/master"
       interval: 5s
       timeout: 5s
       retries: 30
     restart: unless-stopped
     # RESOURCES
     volumes:
-      - id-volume:/opt/keycloak/data/import/realm.json
+      - type: bind
+        source: ./auth/config/
+        target: /opt/keycloak/data/import/
+#      - type: volume
+#        source: auth-volume
+#        target: /opt/keycloak/data/import/
     networks:
       - jagnet
 
@@ -118,16 +123,16 @@ services:
       context: ..
       dockerfile: docker/node/Dockerfile
     depends_on:
-      jag-auth:
+      auth:
         condition: "service_healthy"
       jag-postgres:
         condition: "service_healthy"
     env_file:
       - .env
     ports:
-      - '8888:${JAG_PORT}'
+      - '8888:8888'
     healthcheck:
-      test: "curl -f jag-server:${JAG_PORT}/jag"
+      test: "curl -f jag-server:8888/jag"
       interval: 5s
       timeout: 5s
       retries: 20
@@ -144,7 +149,7 @@ services:
     depends_on:
       jag-postgres:
         condition: "service_healthy"
-      id-postgres:
+      auth-postgres:
         condition: "service_healthy"
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
@@ -153,9 +158,9 @@ services:
       PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
       GUNICORN_ACCESS_LOGFILE: '/var/lib/pgadmin/access.log'
     expose:
-      - ${PGADMIN_PORT}
+      - 80
     healthcheck:
-      test: ["CMD", "wget", "-O", "-", "http://pgadmin:${PGADMIN_PORT}/misc/ping"]
+      test: ["CMD", "wget", "-O", "-", "http://pgadmin:80/misc/ping"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -176,22 +181,15 @@ services:
     depends_on:
       jag-server:
         condition: "service_healthy"
-      jag-auth:
+      auth:
         condition: "service_healthy"
       pgadmin:
         condition: "service_healthy"
     environment:
       PROXY_IP: ${PROXY_IP}
       PROXY_NAME: ${PROXY_NAME}
-      JAG_POSTGRES_PORT: ${JAG_POSTGRES_PORT}
-      AUTH_POSTGRES_PORT: ${AUTH_POSTGRES_PORT}
-      AUTH_PORT: ${AUTH_PORT}
-      PGADMIN_PORT: ${PGADMIN_PORT}
       PROXY_HTTP_PORT: ${PROXY_HTTP_PORT}
       PROXY_HTTPS_PORT: ${PROXY_HTTPS_PORT}
-      PUBLIC_HTTP_PORT: ${PUBLIC_HTTP_PORT}
-      PUBLIC_HTTPS_PORT: ${PUBLIC_HTTPS_PORT}
-      JAG_PORT: ${JAG_PORT}
       REPLACE_VARS: ${REPLACE_VARS}
     healthcheck:
       test: "curl -k https://reverse-proxy:${PROXY_HTTPS_PORT}/jag"
@@ -224,7 +222,10 @@ services:
       && nginx -g \'daemon off;\'
       && while :; do sleep 6h & wait $${!}; nginx -s reload; done
       && echo 'ALL DONE'"
-  #    && export REPLACE_VARS='$$PORT:$$GLOOP'
+
+
+
+
 
   certbot:
     image: certbot/certbot
@@ -274,8 +275,8 @@ volumes:
     name: "vhost"
   certs:
     name: "certs"
-  id-volume:
-    name: "id-volume"
+  auth-volume:
+    name: "auth-volume"
   proxy_logs:
     name: "proxy_logs"
 
