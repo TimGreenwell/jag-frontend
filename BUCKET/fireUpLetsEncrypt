@@ -4,7 +4,7 @@ Situation:  Temp assign ssl
     openssl req -x509 -nodes -newkey rsa:4096 -days 1\
     -keyout '/etc/letsencrypt/live/jag.baby/privkey.pem' \
     -out '/etc/letsencrypt/live/jag.baby/fullchain.pem' \
-    -subj '/CN=localhost'" certbot
+    -subj '/CN=jag.baby'" certbot
 
 docker-compose up --force-recreate -d <nginx-container>
 

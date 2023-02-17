@@ -22,7 +22,7 @@ customElements.define(`jag-ide`, class extends HTMLElement {
             this._handleNewConnection();
         } else if (event.type === `error`) {
             const progress = this._container.querySelector(`#connect .button-progress`);
-            this._setFeedback(`Connection failed ! Try accepting the certificate at this address <a href="https://localhost:8887">    localhost</a>.`, true);
+            this._setFeedback(`Connection failed ! Try accepting the certificate at this address <a href="https://jag.baby:8887">    localhost</a>.`, true);
             this._resetButtonProgress(progress);
         }
     }

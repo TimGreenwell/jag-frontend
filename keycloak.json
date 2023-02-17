@@ -2,16 +2,16 @@
   "clientId": "JAGapp",
   "name": "JAG app",
   "description": "yug",
-  "rootUrl": "http://localhost/jag",
-  "adminUrl": "http://localhost/auth/admin",
-  "baseUrl": "http://localhost/jag",
+  "rootUrl": "http://jag.baby/jag",
+  "adminUrl": "http://jag.baby/auth/admin",
+  "baseUrl": "http://jag.baby/jag",
   "surrogateAuthRequired": false,
   "enabled": true,
   "alwaysDisplayInConsole": false,
   "clientAuthenticatorType": "client-secret",
   "secret": "NyDvPDJqqNysVh2cKgwiynJgCzLJs2yt",
   "redirectUris": [
-    "http://localhost:80/jag"
+    "http://jag.baby:80/jag"
   ],
   "webOrigins": [
     "*"
@@ -30,7 +30,7 @@
     "oidc.ciba.grant.enabled": "false",
     "client.secret.creation.time": "1675454528",
     "backchannel.logout.session.required": "true",
-    "post.logout.redirect.uris": "http://localhost/jag",
+    "post.logout.redirect.uris": "http://jag.baby/jag",
     "oauth2.device.authorization.grant.enabled": "false",
     "display.on.consent.screen": "false",
     "backchannel.logout.revoke.offline.tokens": "false"

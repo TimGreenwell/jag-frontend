@@ -28,8 +28,8 @@ http {
 
 
   server {
-    listen ${PROXY_IP}:${PROXY_HTTP_PORT};
-    server_name ${PROXY_NAME};
+    listen ${PROXY_HTTP_PORT};
+    server_name ${PUBLIC_NAME};
 
     location ~ /.well-known/acme-challenge/ {
         allow all;
@@ -42,19 +42,22 @@ http {
   }
 
   server {
-    listen ${PROXY_IP}:${PROXY_HTTPS_PORT} ssl;
-    server_name ${PROXY_NAME};
+    listen ${PROXY_HTTPS_PORT} ssl;
+    server_name ${PUBLIC_NAME};
 
-    ssl_certificate /etc/letsencrypt/live/${PROXY_NAME}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${PROXY_NAME}/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/jag.baby/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/jag.baby/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-    access_log /var/log/nginx/localhost.access.log;
-    error_log  /var/log/nginx/localhost.error.log error;
+    access_log /var/log/nginx/jag.baby.access.log;
+    error_log  /var/log/nginx/jag.baby.error.log error;
     rewrite_log on;
 
+
+
     location / {
-        rewrite ^/(.*)$ https://$host:${PROXY_HTTPS_PORT}/jag/$1 redirect;
+
+            rewrite ^([^.]*[^/])$ $1/ permanent;
     }
 
     location /jag {
