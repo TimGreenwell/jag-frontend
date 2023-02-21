@@ -43,17 +43,16 @@ const root = process.argv[2] || `.`;
 
 
 const keycloakIssuer = await Issuer.discover(`http://auth:8080/auth/realms/realm1`);
+//const keycloakIssuer = await Issuer.discover(`https://jag.baby/auth/realms/realm1`);         // breaks jag-server
 console.log(`Discovered issuer %s %O`, keycloakIssuer.issuer, keycloakIssuer.metadata);
 console.log(`------------------------------------------------------------------------`);
 const client = new keycloakIssuer.Client({
     client_id: `client1`,
     client_secret: `long_secret-here`,
     redirect_uris: [`https://jag.baby/jag/auth/callback`],
-    post_logout_redirect_uris: [`https://jag.baby/logout/callback`],
+    post_logout_redirect_uris: [`https://jag.baby/jag/logout/callback`],
     response_types: [`code`]
 });
-
-
 
 const memoryStore = new expressSession.MemoryStore();
 app.use(expressSession({
@@ -81,6 +80,7 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 });
 
+
 // callback always routes to test
 app.get(`/jag/auth/callback`, (req, res, next) => {
     console.log(`About to authenticate2`);
@@ -88,6 +88,20 @@ app.get(`/jag/auth/callback`, (req, res, next) => {
         successRedirect: `/jag`,
         failureRedirect: `/`
     })(req, res, next);
+});
+
+// start logout request
+app.get(`/jag/logout`, (req, res) => {
+    res.redirect(client.endSessionUrl());
+});
+
+// logout callback
+app.get(`/jag/logout/callback`, (req, res) => {
+    console.log(`Calling logout`);
+    // clears the persisted user from the local storage
+    req.logout();
+    // redirects the user to a public route
+    res.redirect(`https://work.greenwell.de`);
 });
 
 
@@ -105,19 +119,7 @@ app.use(`/jag`, checkAuthenticated, express.static(path.join(process.cwd(), root
 app.use(`/api/v1`, checkAuthenticated, postgresRouter);
 
 
-// start logout request
-app.get(`/jag/logout`, (req, res) => {
-    res.redirect(client.endSessionUrl());
-});
 
-// logout callback
-app.get(`/logout/callback`, (req, res) => {
-    console.log(`Calling logout`);
-    // clears the persisted user from the local storage
-    req.logout();
-    // redirects the user to a public route
-    res.redirect(`https://work.greenwell.de`);
-});
 
 
 const server = app.listen(port);
