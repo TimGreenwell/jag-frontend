@@ -92,7 +92,6 @@ app.get(`/jag/auth/callback`, (req, res, next) => {
 app.get(`/jag/logout`, (req, res) => {
     res.redirect(client.endSessionUrl());
 });
-app.get(`/logout/callback`, (req, res) => {
 
 // logout callback
 app.get(`/jag/logout/callback`, (req, res) => {

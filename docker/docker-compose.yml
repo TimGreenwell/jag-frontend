@@ -129,8 +129,8 @@ services:
 #        source: ./auth/config/
 #        target: /opt/keycloak/data/import/
 #      - type: volume
-#        source: startup/master-realm.json
-#        target: /opt/keycloak/data/import/master-realm.json
+#        source: startup/master-realm.json1
+#        target: /opt/keycloak/data/import/master-realm.json1
     networks:
       - jagnet
 
