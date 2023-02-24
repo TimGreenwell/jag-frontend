@@ -1,10 +1,21 @@
 version: '3.9'
 
 services:
+#  stager:
+#    container_name: stager
+#    hostname: stager
+#    build:
+#      context: ..
+#      dockerfile: docker/Dockerfile
+
+
   jag-postgres:
-    image: 'postgres:15.1-alpine3.17'
+#    image: 'postgres:15.1-alpine3.17'
     container_name: jag-postgres
     hostname: jag-postgres
+    build:
+      context: ..
+      dockerfile: docker/jag-postgres/Dockerfile
     # CONFIG
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
@@ -24,9 +35,12 @@ services:
     networks:
       - jagnet
     volumes:
-      - type: bind
-        source: ../api/sql/postgres/db/create_tables.sql
-        target: /docker-entrypoint-initdb.d/10_create_tables.sql
+#      - type: bind
+#        source: ../api/sql/postgres/db/create_tables.sql
+#        target: /docker-entrypoint-initdb.d/10_create_tables.sql
+#      - type: volume
+#        source: startup/create_tables.sql
+#        target: /docker-entrypoint-initdb.d/10_create_tables.sql
       - type: volume
         source: pgdata
         target: /var/lib/postgresql/data
@@ -38,9 +52,12 @@ services:
         target: /var/log/postgresql
 
   auth-postgres:
-    image: 'postgres:15.1-alpine3.17'
+#    image: 'postgres:15.1-alpine3.17'
     container_name: auth-postgres
     hostname: auth-postgres
+    build:
+      context: ..
+      dockerfile: docker/auth-postgres/Dockerfile
     # CONFIG
     environment:
       NGINX_PROXY_CONTAINER: "reverse-proxy"
@@ -60,16 +77,19 @@ services:
     networks:
       - jagnet
     volumes:
-      - ./sql:/docker-entrypoint-initdb.d/:ro
+#      - ./sql:/docker-entrypoint-initdb.d/:ro
       - pgdata2:/var/lib/postgresql/data
       - pgconf2:/etc/postgresql
       - pglog2:/var/log/postgresql
 
 
   auth:
-    image: quay.io/keycloak/keycloak
+#    image: quay.io/keycloak/keycloak
     container_name: auth
     hostname: auth
+    build:
+      context: ..
+      dockerfile: docker/auth/Dockerfile
     # CONFIG
     command:
       - start-dev
@@ -85,7 +105,6 @@ services:
       DB_PASSWORD: ${AUTH_POSTGRES_PASSWORD}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://auth-postgres:5432/${AUTH_POSTGRES_DB}
-
       KC_HTTP_RELATIVE_PATH: /auth
       KC_HOSTNAME_ADMIN_URL: https://jag.baby/auth    # not req'd but more clear. (can use to move admin later)
       KC_HTTP_ENABLED: true
@@ -105,13 +124,13 @@ services:
       retries: 30
     restart: unless-stopped
     # RESOURCES
-    volumes:
-      - type: bind
-        source: ./auth/config/
-        target: /opt/keycloak/data/import/
-#      - type: volume
-#        source: auth-volume
+#    volumes:
+#      - type: bind
+#        source: ./auth/config/
 #        target: /opt/keycloak/data/import/
+#      - type: volume
+#        source: startup/master-realm.json
+#        target: /opt/keycloak/data/import/master-realm.json
     networks:
       - jagnet
 
@@ -122,7 +141,7 @@ services:
     # CONFIG
     build:
       context: ..
-      dockerfile: docker/node/Dockerfile
+      dockerfile: docker/jag-server/Dockerfile
     depends_on:
       auth:
         condition: "service_healthy"
@@ -176,9 +195,14 @@ services:
 
 
   reverse-proxy:
-    image: nginx:latest
+#    image: nginx:latest
     container_name: reverse-proxy
     hostname: reverse-proxy
+    # CONFIG
+    build:
+      context: ..
+      dockerfile: docker/reverse-proxy/Dockerfile
+
     # CONFIG
     depends_on:
       jag-server:
@@ -204,11 +228,11 @@ services:
     restart: unless-stopped
     # RESOURCES
     volumes:
-      - ./config:/config
-      - ./nginx-proxy/templates:/etc/nginx/templates
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-      - /tmp/acme_challenge:/tmp/acme_challenge
+#?      - ./config:/config
+#      - ./nginx-proxy/templates:/etc/nginx/templates
+#      - ./certbot/conf:/etc/letsencrypt
+#      - ./certbot/www:/var/www/certbot
+#?      - /tmp/acme_challenge:/tmp/acme_challenge
       - "html:/usr/share/nginx/html"
       - "dhparam:/etc/nginx/dhparam"
       - "vhost:/etc/nginx/vhost.d"
@@ -225,15 +249,15 @@ services:
       && echo 'ALL DONE'"
 
 
-
-
-
   certbot:
-    image: certbot/certbot
+#    image: certbot/certbot
+    build:
+      context: ..
+      dockerfile: docker/certbot/Dockerfile
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+#    volumes:
+#      - ./certbot/conf:/etc/letsencrypt
+#      - ./certbot/www:/var/www/certbot
 
 #  letsencrypt:
 #    image: "jrcs/letsencrypt-nginx-proxy-companion:latest"
@@ -254,6 +278,9 @@ services:
 #      - "jagnet"
 
 volumes:
+#  setup:
+#    name: "startup"
+#    external: true
   pgdata:
     name: "pgdata"
   pgconf:

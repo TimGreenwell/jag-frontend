@@ -1,8 +1,6 @@
 import express from "express";
 import * as pgController from "../controllers/postgresController.js";
 
-import {getAllActivities} from "../controllers/postgresController.js";
-
 import parser from 'body-parser';
 const {json} = parser;
 
@@ -11,12 +9,12 @@ const bodyParser = json();
 
 postgresRouter.use((req, res, next) => {
     // console.log(`Time: `, new Date());
-    console.log(`---`);
-    console.log(`-inside postgresRouter-`);
+    console.log(`-a do-nothing middleware`);
+    console.log(`-inside API postgresRouter-`);
     next();
 });
 
-postgresRouter.get(`/activities`, getAllActivities);
+postgresRouter.get(`/activities`, pgController.getAllActivities);
 postgresRouter.get(`/activities/:activityId`, pgController.getActivityById);
 postgresRouter.get(`/jags`, pgController.getAllJags);
 postgresRouter.get(`/agents`, pgController.getAllAgents);

@@ -1,0 +1,28 @@
+[[ I have given up on the ssh connection with JetBrains Gateway.  It requires 4 gig memory on the server. ]]
+
+0) One <remoteserver>: add user <remoteuser>
+0.1) give <remoteuser> a password
+1) From development box: ssh-keygen
+2) Copy public key to server: ssh-copy-id -i ~/.ssh/<keyname> <remoteuser>@<remoteserver>   (need <remoteuser>'s password)
+3) Verify key exists in <remotesystem> unders <remoteuser's> ~/.ssh/authorized_keys
+4) Verify passwordless login : ssh <remoteuser>@<remoteserver>
+() If not working: check that "PubkeyAuthentication yes" in <remoteserver>'s /etc/ssh/sshd_config (default)
+
+----------- Alt
+Using docker context:
+docker context create ssh-box --docker "host=ssh://<remoteuser>@<remoteserver>"
+docker context use ssh-box
+() make sure /var/run/docker.sock is owned by <remoteuser>:docker  (srw-rw----)
+() doublecheck <remoteuser> is in docker group : sudo usermod -aG docker <remoteuser>
+
+Passwordless: (add IdentityFile)
+On client: vi ~/.ssh/config
+Add:Host home.jag.baby
+        User dock-worker
+        HostName home.jag.baby
+        Port 22
+        IdentitiesOnly yes
+        IdentityFile /home/tgreenwell/.ssh/dig-ocean-docker-pair
+
+
+
