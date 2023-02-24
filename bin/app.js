@@ -52,7 +52,7 @@ const client = new keycloakIssuer.Client({
     client_id: `client1`,
     client_secret: `long_secret-here`,
     redirect_uris: [`https://jag.baby/jag/auth/callback`],
-    post_logout_redirect_uris: [`https://jag.baby/logout/callback`],
+    post_logout_redirect_uris: [`https://jag.baby/jag/logout/callback`],
     response_types: [`code`]
 });
 passport.use(`oidc`, new Strategy({client}, (tokenSet, userinfo, done) => {
@@ -87,10 +87,15 @@ app.get(`/jag/auth/callback`, (req, res, next) => {
         failureRedirect: `/`
     })(req, res, next);
 });
+
+// start logout request
 app.get(`/jag/logout`, (req, res) => {
     res.redirect(client.endSessionUrl());
 });
 app.get(`/logout/callback`, (req, res) => {
+
+// logout callback
+app.get(`/jag/logout/callback`, (req, res) => {
     console.log(`Calling logout`);
     // clears the persisted user from the local storage
     req.logout();
