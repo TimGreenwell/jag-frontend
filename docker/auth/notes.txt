@@ -16,9 +16,14 @@ for specific realm:
 done) This json will then be used to rebuild the keycloak realm if not in the db.
 
 
-
+----------------------------------------------------------------------------------------------------
 ***!!  If it screws up after clicking google - then good chance (pretty certainly) that the import messed up
 the google identity provider secret got messed up.  Go to:
 https://console.cloud.google.com/apis/credentials/oauthclient
-and reset client secret and update it in the jag.baby/auth - realm - provider section.
+and 'reset secret' and update it in the jag.baby/auth - realm - identity providers - client secret.
+
+Error is:
+ ERROR [org.keycloak.broker.oidc.AbstractOAuth2IdentityProvider]
+  Failed to make identity provider oauth callback: org.keycloak.broker.provider.IdentityBrokerException:
+  No access_token from server. error='invalid_client', error_description='Unauthorized', error_uri='null'
 x) Copying the secret into the json does not work.  No further ideas.. (prolly related to keycloak export/import)

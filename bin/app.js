@@ -33,15 +33,16 @@ import passport from 'passport';
 import {Issuer, Strategy} from "openid-client";
 
 const memoryStore = new expressSession.MemoryStore();
-app.use(expressSession({
-    secret: `another_long_secret`,
-    resave: false,
-    saveUninitialized: true,
+const session = {
+    secret: `another_long_secret`,      //used to sign the session ID cookie,
+    cookie: {},
+    resave: false,                      // forces session to be saved back to session store (unwanted)
+    saveUninitialized: true,            // something about uninitialized sessions being saved (bots & tourists)
     store: memoryStore                  // not exist in one demo
-}));
+};
+app.use(expressSession(session));
 
-app.use(passport.initialize());
-app.use(passport.authenticate(`session`));         // ? app.use(passport.session())
+
 // I think here the req.session object is added.
 
 const keycloakIssuer = await Issuer.discover(`http://auth:8080/auth/realms/realm1`);
@@ -58,6 +59,8 @@ passport.use(`oidc`, new Strategy({client}, (tokenSet, userinfo, done) => {
     return done(null, tokenSet.claims());
 }));
 // I think here the req.session.passport object is added.
+app.use(passport.initialize());
+app.use(passport.authenticate(`session`));         // ? app.use(passport.session())
 
 passport.serializeUser(function (user, done) {
     console.log('-----------------------------');
@@ -110,6 +113,23 @@ const checkAuthenticated = (req, res, next) => {
     console.log(`It was not...`);
     passport.authenticate(`oidc`)(req, res, next);
 };
+// app.get('/jag', (req, res, next) => {
+//
+// })
+
+function myMiddleware1(req, res, next) {
+    if (req.user) {
+        req.newProperty = req.user;
+        res.newProperty = req.user;
+        res.set({
+            'whoami': req.user,
+        });
+
+    }
+    next();
+}
+
+app.use(myMiddleware1);
 
 app.use(`/jag`, checkAuthenticated, express.static(path.join(process.cwd(), root)));
 app.use(`/api/v1`, checkAuthenticated, postgresRouter);

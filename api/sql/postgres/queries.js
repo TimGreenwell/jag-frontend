@@ -1,5 +1,6 @@
-import * as pool from "../../db/postgres-config.js" ;
+import * as pool from "../../db/postgres-config.js";
 import fs from "fs";
+import {request} from "express";
 
 const getAllActivities = async () => {
     console.log(`Query> getAllActivities`);
@@ -17,6 +18,20 @@ const getActivityById = async (id) => {
     console.log(`Query> getActivityById`);
     const selectActivitiesById = fs.readFileSync(`api/sql/postgres/select/activity-by-id.sql`).toString();
     const queryResult = await pool.query(selectActivitiesById, [id]).
+        then((result) => {
+            return result;
+        }).catch((e) => {
+            console.log(`bad: ${e}`);
+        });
+    return queryResult;
+};
+
+
+const getActivityByOwner = async (owner) => {
+    const owner = request.
+    console.log(`Query> getActivityByOwner`);
+    const selectActivitiesById = fs.readFileSync(`api/sql/postgres/select/activity-by-owner.sql`).toString();
+    const queryResult = await pool.query(selectActivitiesById, [owner]).
         then((result) => {
             return result;
         }).catch((e) => {
@@ -98,6 +113,7 @@ const getEndpointById = async (id) => {
         });
     return queryResult;
 };
+
 
 const getAllBindings = async () => {
     console.log(`Query> getAllBindings`);
