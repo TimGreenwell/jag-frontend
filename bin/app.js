@@ -28,7 +28,6 @@ import express from "express";
 const app = express();
 
 // Import Express Session Authentication
-// xxx import {checkAuthenticated} from "../api/authentication/authenticate.js";
 import expressSession from 'express-session';
 import passport from 'passport';
 import {Issuer, Strategy} from "openid-client";
@@ -46,8 +45,8 @@ app.use(passport.authenticate(`session`));         // ? app.use(passport.session
 // I think here the req.session object is added.
 
 const keycloakIssuer = await Issuer.discover(`http://auth:8080/auth/realms/realm1`);
-console.log(`Discovered issuer %s %O`, keycloakIssuer.issuer, keycloakIssuer.metadata);
-console.log(`------------------------------------------------------------------------`);
+// console.log(`Discovered issuer %s %O`, keycloakIssuer.issuer, keycloakIssuer.metadata);
+// console.log(`------------------------------------------------------------------------`);
 const client = new keycloakIssuer.Client({
     client_id: `client1`,
     client_secret: `long_secret-here`,

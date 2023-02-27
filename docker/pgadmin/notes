@@ -1,0 +1,6 @@
+The way it is now => configs will persist until the volume is deleted - then a reconfig is required
+The below link offers a way to send this data into a brand new pgadmin. Its a bit of a workaround with the passwords.
+
+https://technology.amis.nl/continuous-delivery/provisioning/pgadmin-in-docker-provision-connections-and-passwords/
+
+Ok. Give up.  Can not even get it to load the json - but it is there for Tools-> Import/Export.  Password still required.

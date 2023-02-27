@@ -84,8 +84,8 @@ http {
       add_header         'Access-Control-Allow-Methods' 'GET, PUT, PATCH, POST, DELETE, OPTIONS';
     }
 
-    location /pgadm/ {
-      proxy_set_header   X-Script-Name           /pgadm;
+    location /pgadmin/ {
+      proxy_set_header   X-Script-Name           /pgadmin;
       proxy_pass         http://pgadmin:80/;
       proxy_redirect     off;
       proxy_set_header   Host $host;

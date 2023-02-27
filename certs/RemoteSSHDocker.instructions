@@ -12,7 +12,7 @@
 Using docker context:
 docker context create ssh-box --docker "host=ssh://<remoteuser>@<remoteserver>"
 docker context use ssh-box
-() make sure /var/run/docker.sock is owned by <remoteuser>:docker  (srw-rw----)
+() make sure /var/run/docker.sock is owned by <remoteuser>:docker  (srw-rw----)               <---!!!!!
 () doublecheck <remoteuser> is in docker group : sudo usermod -aG docker <remoteuser>
 
 Passwordless: (add IdentityFile)

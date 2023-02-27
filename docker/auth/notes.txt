@@ -15,3 +15,10 @@ for specific realm:
        b) docker cp auth:/opt/keycloak/data/import/<filename>.json .
 done) This json will then be used to rebuild the keycloak realm if not in the db.
 
+
+
+***!!  If it screws up after clicking google - then good chance (pretty certainly) that the import messed up
+the google identity provider secret got messed up.  Go to:
+https://console.cloud.google.com/apis/credentials/oauthclient
+and reset client secret and update it in the jag.baby/auth - realm - provider section.
+x) Copying the secret into the json does not work.  No further ideas.. (prolly related to keycloak export/import)
