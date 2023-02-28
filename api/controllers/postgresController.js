@@ -2,7 +2,7 @@ import * as queries from "../sql/postgres/queries.js";
 
 const updateActivity = async (request, response) => {
     const activity = request.body;
-    await queries.updateActivity(activity);
+    await queries.updateActivity(activity, request.user.email);
 
     const children = activity.children;
     for (const child of children) {
@@ -57,8 +57,9 @@ const updateAnalysis = async (request, response) => {
 
 
 const getAllActivities = async (request, response) => {
+    let includeShared = request.query.includeShared.toLowerCase() === "true";
     console.log(`getAllActivities  getAllActivities getAllActivities getAllActivities`)
-    const activitiesReply = await queries.getAllActivities();
+    const activitiesReply = await queries.getAllActivities(includeShared, request.user.email);
     const activities = activitiesReply.rows;
 
     for (const activity of activities) {
@@ -85,34 +86,7 @@ const getAllActivities = async (request, response) => {
     response.status(200).json(activities);
 };
 
-const getActivitiesByOwner = async (request, response) => {
-    console.log(`getActivitiesByOwner`)
-    const activitiesReply = await queries.getAllActivities();
-    const activities = activitiesReply.rows;
 
-    for (const activity of activities) {
-        const endpointsForReply = await queries.getEndpointsFor(activity.urn);
-        const endpointsFor = endpointsForReply.rows;
-        activity.endpoints = endpointsFor;
-
-        const bindingsForReply = await queries.getBindingsFor(activity.urn);
-        const bindingsFor = bindingsForReply.rows;
-
-        for (const bindingFor of bindingsFor) {
-            const fromEndpointReply = await queries.getEndpointById(bindingFor.from);
-            const toEndpointReply = await queries.getEndpointById(bindingFor.to);
-            bindingFor.from = fromEndpointReply.rows[0];
-            bindingFor.to = toEndpointReply.rows[0];
-        }
-        activity.bindings = bindingsFor;
-
-        const subactivitiesForReply = await queries.getSubActivitiesFor(request.user.email);
-        const subactivitiesFor = subactivitiesForReply.rows;
-        activity.children = subactivitiesFor;
-    }
-
-    response.status(200).json(activities);
-};
 const getActivityById = async (request, response) => {
     const activitiesReply = await queries.getActivityById(request.params.activityId);
     const activity = activitiesReply.rows;

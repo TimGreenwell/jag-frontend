@@ -10,6 +10,7 @@ import {uuidV4} from "../utils/uuid.js";
 import Validation from "../utils/validation.js";
 import Binding from "./binding.js";
 import Endpoint from "./endpoint.js";
+import UserPrefs from "../utils/user-prefs.js";
 
 
 export default class Activity extends EventTarget {
@@ -29,7 +30,7 @@ export default class Activity extends EventTarget {
         // outputs = [],
         children = [],
         bindings = [],   // list of Binding
-        author = '',
+        author = UserPrefs.getAuthor(),
         createdDate,
         modifiedDate,
         expectedDuration = ``,

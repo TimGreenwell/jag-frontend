@@ -25,7 +25,7 @@ import UserPrefs from "./utils/user-prefs.js";     // Controller - injection poi
 // import GraphService from './services/graph-service.js';       // ?? - seems unused currently
 
 document.addEventListener(`DOMContentLoaded`, async () => {
-
+    console.log(document);
     StorageService.setPreferredStorage(UserPrefs.getDefaultStorageService());
     StorageService.setStoragesSynced(false);                    // write to all storages or just preferred
     StorageService.senderId = `jag-at`;                         // Cross-tab identifier

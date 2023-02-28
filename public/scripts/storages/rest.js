@@ -9,6 +9,7 @@
 
 import RESTUtils from '../utils/rest.js';
 import SchemaManager from "./schemas.js";
+import UserPrefs from "../utils/user-prefs.js";
 
 export default class RESTStorage {
 
@@ -50,7 +51,13 @@ export default class RESTStorage {
 
     async all(schema) {
         const urlHandle = SchemaManager.getRest(schema);
-        const path = this.__REST_PATHS.all.replace(`{urlHandle}`, urlHandle);
+        let path = this.__REST_PATHS.all.replace(`{urlHandle}`, urlHandle);
+        if (UserPrefs.getSharedMode()) {
+            path = `${path}?includeShared=true`
+        }
+        else {
+            path = `${path}?includeShared=false`
+        }
         const all = await RESTUtils.all(this._endpoint + path);
         return all;
     }

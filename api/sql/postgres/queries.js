@@ -1,16 +1,32 @@
 import * as pool from "../../db/postgres-config.js";
 import fs from "fs";
 import {request} from "express";
+import UserPrefs from "../../../public/scripts/utils/user-prefs.js";
 
-const getAllActivities = async () => {
+const getAllActivities = async (includeShared = false, author) => {
     console.log(`Query> getAllActivities`);
-    const selectActivities = fs.readFileSync(`api/sql/postgres/select/activities.sql`).toString();
-    const queryResult = await pool.query(selectActivities).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
+    console.log(`Get shared activities: ${includeShared}`);
+    console.log(`Author: ${author}`);
+    let queryResult;
+    if (includeShared) {
+        console.log(`Get em all`);
+        const selectActivities = fs.readFileSync(`api/sql/postgres/select/activities-shared.sql`).toString();
+        queryResult = await pool.query(selectActivities).
+            then((result) => {
+                return result;
+            }).catch((e) => {
+                console.log(`bad: ${e}`);
+            });
+    } else {
+        console.log(`Just get the owned ones`);
+        const selectActivities = fs.readFileSync(`api/sql/postgres/select/activities-owned.sql`).toString();
+        queryResult = await pool.query(selectActivities, [author]).
+            then((result) => {
+                return result;
+            }).catch((e) => {
+                console.log(`bad: ${e}`);
+            });
+    }
     return queryResult;
 };
 
@@ -18,20 +34,6 @@ const getActivityById = async (id) => {
     console.log(`Query> getActivityById`);
     const selectActivitiesById = fs.readFileSync(`api/sql/postgres/select/activity-by-id.sql`).toString();
     const queryResult = await pool.query(selectActivitiesById, [id]).
-        then((result) => {
-            return result;
-        }).catch((e) => {
-            console.log(`bad: ${e}`);
-        });
-    return queryResult;
-};
-
-
-const getActivityByOwner = async (owner) => {
-    const owner = request.
-    console.log(`Query> getActivityByOwner`);
-    const selectActivitiesById = fs.readFileSync(`api/sql/postgres/select/activity-by-owner.sql`).toString();
-    const queryResult = await pool.query(selectActivitiesById, [owner]).
         then((result) => {
             return result;
         }).catch((e) => {
@@ -223,12 +225,12 @@ const deleteJagByProjectId = async (id) => {
     return queryResult;
 };
 
-const updateActivity = async (activity) => {
+const updateActivity = async (activity, author) => {
     console.log(`Query> updateActivity`);
     const upsertActivity = fs.readFileSync(`api/sql/postgres/upsert/activity.sql`).toString();
     const values = [
         activity.urn,
-        activity.author,
+        activity.author = author,
         activity.collapsed,
         activity.connector.execution,
         activity.connector.operator,

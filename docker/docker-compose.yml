@@ -115,7 +115,7 @@ services:
       test: "curl -f auth:8080/auth/realms/master"
       interval: 5s
       timeout: 5s
-      retries: 30
+      retries: 60
     restart: unless-stopped
     # RESOURCES
     volumes:
@@ -143,8 +143,7 @@ services:
     ports:
       - '8888:8888'
     healthcheck:
-      test: "curl -f work.greenwell.de"
-#      test: "curl -f jag-server:8888/jag"
+      test: "curl -f jag-server:8888/jag"
       interval: 5s
       timeout: 5s
       retries: 20

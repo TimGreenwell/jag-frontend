@@ -38,4 +38,25 @@ export default class UserPrefs {
         this.defaultUrnPrefix = `${urn.split(`:`).slice(0, -1).join(`:`)}:`;
     }
 
+    static sharedMode = false;
+
+    static getSharedMode() {
+        return this.sharedMode;
+    }
+
+    static setSharedMode(sharedMode) {
+        this.sharedMode = sharedMode;
+    }
+
+    static author = `anonymous`;
+
+    static getAuthor() {
+        return this.author;
+    }
+
+    static setAuthor(author) {
+        this.author = author;
+    }
+
+
 }
